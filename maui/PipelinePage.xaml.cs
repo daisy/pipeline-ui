@@ -1,0 +1,81 @@
+namespace org.daisy.pipeline.ui;
+
+public partial class PipelinePage : ContentPage
+{
+    public Task PipelineMonitor;
+    public CancellationTokenSource PipelineMonitorCanceler;
+
+
+    protected override void OnNavigatedTo(NavigatedToEventArgs args)
+    {
+        base.OnNavigatedTo(args);
+        if (this.IsLoaded)
+        {
+            StatusLabel.Focus();
+            SemanticScreenReader.Announce(StatusLabel.Text);
+        }
+    }
+
+    public PipelinePage()
+	{
+		InitializeComponent();
+        PipelineMonitorCanceler = new CancellationTokenSource();
+        PipelineMonitor = Task.Run(monitorPipeline, PipelineMonitorCanceler.Token);
+
+
+    }
+
+    private void monitorPipeline()
+    {
+        do
+        {
+            // Check and update the pipeline page
+            Application.Current.Dispatcher.Dispatch(
+                () =>
+                {
+                    StatusLabel.Text =  $"DAISY Pipeline 2 is {PipelineWorker.State}";
+                    ErrorLog.Text = PipelineWorker.Errors;
+                    OutputLog.Text = PipelineWorker.Output;
+                    
+                    StartStopPipelineButton.Text = PipelineWorker.State < PipelineWorker.StateValue.Starting
+                    ? (PipelineWorker.State == PipelineWorker.StateValue.Stopping
+                            ? "Force stop the pipeline"
+                            : "Start the pipeline"
+                    ) : "Stop the pipeline";
+                }
+            );
+            Task.Delay(100).Wait();
+        } while ( PipelineWorker.State != PipelineWorker.StateValue.Stopped 
+            && !PipelineMonitorCanceler.Token.IsCancellationRequested
+         );
+    }
+
+    public void StartStopPipelineButtonClicked(object sender, EventArgs e)
+    {
+        
+        switch (PipelineWorker.State)
+        {
+            case PipelineWorker.StateValue.Stopped:
+                if (PipelineMonitor.Status == TaskStatus.Running)
+                {
+                    PipelineMonitorCanceler.Cancel();
+                    PipelineMonitor.Wait();
+                }
+                PipelineWorker.Start();
+                PipelineMonitorCanceler = new CancellationTokenSource();
+                PipelineMonitor = Task.Run(monitorPipeline, PipelineMonitorCanceler.Token);
+                break;
+            case PipelineWorker.StateValue.Stopping:
+                PipelineWorker.Stop(true);
+                break;
+            default:
+                PipelineWorker.Stop();
+                
+                break;
+        }
+        
+    }
+
+
+
+}

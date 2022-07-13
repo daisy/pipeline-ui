@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:controls="clr-namespace:org.daisy.pipeline.ui.Controls"
+             x:Class="org.daisy.pipeline.ui.NewJobPage"
+             Title="New job"
+             Padding="10" >
+    <ScrollView>
+        
+        <StackLayout Spacing="10">
+
+            <Picker x:Name="ScriptPicker"
+                    SelectedIndexChanged="OnScriptPickerSelectedIndexChanged"
+                    Title="Select a job to perform on the file:">
+                <!-- Compute the list of script that are compatible with the input file -->
+            </Picker>
+        
+            <!--When selecting a script, set a list of parameters here -->
+            <StackLayout x:Name="JobParameters" Spacing="10"/>
+
+            <HorizontalStackLayout>
+                <Button x:Name="ResetJobButton"
+                    Text="Reset the form"
+                    SemanticProperties.Hint="Reset the new job form"
+                    Clicked="OnResetJobButtonClicked" />
+
+                <Button x:Name="StartAJobButton"
+                    Text="Start the job"
+                    SemanticProperties.Hint="Select a file to convert with the Daisy Pipeline 2"
+                    Clicked="OnStartAJobButtonClicked" />
+            </HorizontalStackLayout>
+           
+
+        </StackLayout>
+    </ScrollView>
+</ContentPage>

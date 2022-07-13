@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<Shell
+    x:Class="org.daisy.pipeline.ui.AppShell"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:local="clr-namespace:org.daisy.pipeline.ui"
+    Shell.FlyoutBehavior="Locked"
+    Title="DAISY Pipeline 2">
+    <ShellContent
+        Title="+ New job"
+        ContentTemplate="{DataTemplate local:NewJobPage}"
+        Route="NewJob"/>
+    <FlyoutItem
+        Title="Jobs" 
+        FlyoutDisplayOptions="AsSingleItem"
+        x:Name="Jobs"
+        Route="jobs">
+        <!-- Keeping a jobs tab with empty page for default "jobs" label to be displayed in flyout ...  
+        But items are still added to flyout to keep the tabbed page behaviour -->
+        <Tab Title="Jobs" Route="empty" x:Name="Empty" > 
+            <ShellContent Title="No jobs launched" x:Name="NoJobs">
+                <ShellContent.Content>
+                    <ContentPage Title="No jobs launched yet">
+                        <StackLayout>
+                            <Label Text="No jobs launched yet"/>
+                        </StackLayout>
+                    </ContentPage>
+
+                </ShellContent.Content>
+            </ShellContent>
+        </Tab>
+    </FlyoutItem>
+    
+    <ShellContent
+        Title="Pipeline"
+        ContentTemplate="{DataTemplate local:PipelinePage}"
+        Route="Pipeline" />
+
+</Shell>

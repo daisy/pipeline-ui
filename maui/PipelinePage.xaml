@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="org.daisy.pipeline.ui.PipelinePage"
+             Title="Pipeline status">
+    <ScrollView>
+        <VerticalStackLayout>
+            <Label 
+                x:Name="StatusLabel"
+                Text="DAISY Pipeline 2 is Stopped"
+                VerticalOptions="Center" 
+                HorizontalOptions="Center" />
+        
+            <Button x:Name="StartStopPipelineButton"
+                    Text="Start the pipeline"
+                    Clicked="StartStopPipelineButtonClicked"/>
+
+            <Label 
+                x:Name="ErrorLogLabel"
+                Text="Pipeline errors"
+                VerticalOptions="Center" 
+                HorizontalOptions="Start" />
+            <Editor x:Name="ErrorLog" HeightRequest="250" AutoSize="TextChanges"
+                    SemanticProperties.Description="{Binding Source={x:Reference ErrorLogLabel}, Path=Text }"/>
+        
+            <Label 
+                x:Name="OutputLogLabel"
+                Text="Pipeline output"
+                VerticalOptions="Center" 
+                HorizontalOptions="Start" />
+            <Editor x:Name="OutputLog" SemanticProperties.Description="{Binding Source={x:Reference OutputLogLabel}, Path=Text }" 
+                    HeightRequest="250" AutoSize="TextChanges"/>
+        
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

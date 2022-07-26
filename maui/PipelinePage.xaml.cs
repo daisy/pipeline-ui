@@ -6,14 +6,14 @@ public partial class PipelinePage : ContentPage
     public CancellationTokenSource PipelineMonitorCanceler;
 
 
-    protected override void OnNavigatedTo(NavigatedToEventArgs args)
+    protected override async void OnNavigatedTo(NavigatedToEventArgs args)
     {
+       
         base.OnNavigatedTo(args);
-        if (this.IsLoaded)
-        {
-            StatusLabel.Focus();
-            SemanticScreenReader.Announce(StatusLabel.Text);
-        }
+        while (!this.IsLoaded) await Task.Delay(25);
+        StatusLabel.Focus();
+        SemanticScreenReader.Announce(StatusLabel.Text);
+        Application.Current.Windows[0].Title = App.MainTitle + " - " + this.Title;
     }
 
     public PipelinePage()
@@ -75,7 +75,6 @@ public partial class PipelinePage : ContentPage
         }
         
     }
-
 
 
 }

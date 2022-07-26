@@ -1,3 +1,5 @@
+using System.ComponentModel;
+
 namespace org.daisy.pipeline.ui.Controls;
 
 /// <summary>
@@ -6,13 +8,20 @@ namespace org.daisy.pipeline.ui.Controls;
 /// </summary>
 public class ParameterView : ContentView
 {
-    public Label ParameterLabel = new Label() {
+
+
+    #region view components
+    public Label ParameterLabel = new Label()
+    {
         HorizontalOptions = LayoutOptions.Start,
         Text = "Default text",
         VerticalOptions = LayoutOptions.Center,
     };
-
     public Button ParameterButton;
+    private Entry ParameterEntry;
+    private Switch ParameterSwitch;
+
+    #endregion
 
     private script.Parameter.DataType.Value _dataType = script.Parameter.DataType.Value.String;
 
@@ -22,6 +31,8 @@ public class ParameterView : ContentView
         set
         {
             _dataType = value;
+
+            HorizontalStackLayout container = new HorizontalStackLayout();
             switch (_dataType)
             {
                 case script.Parameter.DataType.Value.Directory:
@@ -35,47 +46,36 @@ public class ParameterView : ContentView
                         HorizontalOptions = LayoutOptions.Start,
                     };
                     ParameterButton.Clicked += OnInputButtonClicked;
+                    SemanticProperties.SetDescription(ParameterButton, $"Select a {typeName} for {_label}" );
                     ParameterEntry = new Entry() {
                         MinimumWidthRequest = 250,
                         VerticalOptions = LayoutOptions.Center
                     };
                     ParameterEntry.TextChanged += OnInputValueChange;
-                    Content = new StackLayout
+                    SemanticProperties.SetDescription(ParameterEntry, $"{_label}");
+                    container = new HorizontalStackLayout
                     {
-                        Children = {
-                        new HorizontalStackLayout
-                        {
-                            Spacing = 10,
-                            Children =
-                            {   
+                        Spacing = 10,
+                        Children =
+                            {
                                 ParameterLabel,
                                 ParameterButton,
                                 ParameterEntry
                             }
-                        },
-                        ValidationError
-
-                    }
                     };
                     break;
                 case script.Parameter.DataType.Value.Boolean:
                     ParameterSwitch = new Switch() { IsToggled = false };
                     ParameterSwitch.Toggled += OnInputValueChange;
-                    SemanticProperties.SetDescription(ParameterSwitch, _label);
-                    Content = new StackLayout
+                    SemanticProperties.SetDescription(ParameterSwitch, $"{_label}");
+                    container = new HorizontalStackLayout
                     {
+                        Spacing = 10,
                         Children = {
-                            new HorizontalStackLayout
-                            {
-                                Spacing = 10,
-                                Children =
-                                {
-                                    ParameterLabel,
-                                    ParameterSwitch
-                                }
-                            },
-                            ValidationError
+                            ParameterLabel,
+                            ParameterSwitch
                         }
+                            
                     };
                     break;
                 case script.Parameter.DataType.Value.String:
@@ -85,29 +85,29 @@ public class ParameterView : ContentView
                         VerticalOptions = LayoutOptions.Center
                     };
                     ParameterEntry.TextChanged += OnInputValueChange;
-                    SemanticProperties.SetDescription(ParameterEntry, _label);
-                    Content = new StackLayout
+                    SemanticProperties.SetDescription(ParameterEntry, $"{_label}");
+                    SemanticProperties.SetHint(ParameterEntry, $"Textual input for {_label}");
+                    container = new HorizontalStackLayout
                     {
+                        Spacing = 10,
                         Children = {
-                            new HorizontalStackLayout
-                            {
-                                Spacing = 10,
-                                Children =
-                                {
-                                    ParameterLabel,
-                                    ParameterEntry
-                                }
-                            },
-                            ValidationError
+                            ParameterLabel,
+                            ParameterEntry
                         }
                     };
                     break;
             }
+            
+            Content = new StackLayout
+            {
+                Children = {
+                    container,
+                    ValidationError
+                }
+            };
+            SemanticProperties.SetDescription(this, $"{_label} parameter");
         }
     }
-
-    private Entry ParameterEntry;
-    private Switch ParameterSwitch;
 
 
     private string _label;
@@ -119,6 +119,8 @@ public class ParameterView : ContentView
         set {
             _label = value;
             ParameterLabel.Text = _label;// + " : ";
+            // should also update semantic description of the parameter
+
         }
     }
 
@@ -207,25 +209,29 @@ public class ParameterView : ContentView
         }
     }
 
-	public ParameterView(script.Parameter.DataType.Value dataType = script.Parameter.DataType.Value.String)
+	public ParameterView(
+        string label,
+        script.Parameter.DataType.Value dataType = script.Parameter.DataType.Value.String)
 	{
-		DataType = dataType;
+        Label = label;
+        DataType = dataType;
 	}
 
     public pipeline.script.Parameter BoundParameter { get; set; } = null;
-    public ParameterView(pipeline.script.Parameter fromPipelineParameter) 
-        : this(fromPipelineParameter.DataTypeValue)
-    {
+    public ParameterView(
+        pipeline.script.Parameter fromPipelineParameter
+    ) : this(
+              string.IsNullOrEmpty(fromPipelineParameter.NiceName)
+                ? (string.IsNullOrEmpty(fromPipelineParameter.NameOrPort)
+                    ? "! Unnamed parameter !"
+                    : fromPipelineParameter.NameOrPort)
+                : fromPipelineParameter.NiceName,
+              fromPipelineParameter.DataTypeValue
+    ) {
         // Update default value if there is one provided for the parameter
         BoundParameter = fromPipelineParameter;
 
         Value = BoundParameter.UserValue ?? BoundParameter.DefaultValue ?? Value ?? "";
-        Label = (string.IsNullOrEmpty(BoundParameter.NiceName)
-                ? (string.IsNullOrEmpty(BoundParameter.NameOrPort)
-                    ? "! Unnamed parameter !"
-                    : BoundParameter.NameOrPort)
-                : BoundParameter.NiceName
-                );
 
         // pre-validate default value
         if ((BoundParameter.Required)  && string.IsNullOrEmpty((string)Value))
@@ -244,13 +250,39 @@ public class ParameterView : ContentView
                 Value = result.FullName;
                 OnValueChanged?.Invoke(this, new ParameterEventArgs() { Value = Value, valueType = typeof(string)});
             }
-        } else if(this.DataType == script.Parameter.DataType.Value.File){
-            var result = await FilePicker.Default.PickAsync(PickOptions.Default);
-            if (result != null)
+        } else if(this.DataType == script.Parameter.DataType.Value.File) {
+            var customFileType = new FilePickerFileType(
+                new Dictionary<DevicePlatform, IEnumerable<string>>
+                {
+                    { DevicePlatform.WinUI, new[] { ".xml" } },
+                    { DevicePlatform.macOS, new[] { "xml" } }, 
+                });
+            PickOptions options = new()
             {
-                Value = result.FullPath;
-                OnValueChanged?.Invoke(this, new ParameterEventArgs() { Value = Value, valueType = typeof(string) });
+                PickerTitle = "Please select a file",
+                FileTypes = customFileType,
+            };
+            try
+            {
+#if WINDOWS
+                // Temporary fix - the default picker raises an error since the last update
+                var temp = new org.daisy.pipeline.ui.Platforms.Windows.FilePickerAlt();
+                var result = await temp.PickAsync(options);
+                //var result = await FilePicker.Default.PickAsync(options);
+#else
+                var result = await FilePicker.Default.PickAsync(options);
+#endif
+
+                if (result != null)
+                {
+                    Value = result.FullPath;
+                    OnValueChanged?.Invoke(this, new ParameterEventArgs() { Value = Value, valueType = typeof(string) });
+                }
+            } catch (Exception ex)
+            {
+                Console.Write(ex.ToString());
             }
+            
         } else
         {
             // should be accessed, might need to throw 

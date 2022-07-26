@@ -4,6 +4,7 @@ using org.daisy.pipeline.job;
 using org.daisy.pipeline.ui.Controls;
 using System.Linq;
 using System.Reflection;
+using System.Threading;
 
 namespace org.daisy.pipeline.ui;
 
@@ -20,15 +21,18 @@ public partial class NewJobPage : ContentPage
         }
     }
 
-    protected override void OnNavigatedTo(NavigatedToEventArgs args)
+    protected override async void OnNavigatedTo(NavigatedToEventArgs args)
     {
         base.OnNavigatedTo(args);
-        if (this.IsLoaded)
-        {
-            ScriptPicker.Focus();
-            SemanticScreenReader.Announce(ScriptPicker.Title);
-        }
+        while (!this.IsLoaded) await Task.Delay(25);
+        ScriptPicker.Focus();
+        SemanticScreenReader.Announce(ScriptPicker.Title);
+        Application.Current.Windows[0].Title = App.MainTitle + " - " + this.Title;
+        
     }
+
+    
+
 
     public NewJobPage()
 	{
@@ -77,6 +81,13 @@ public partial class NewJobPage : ContentPage
         {
 
             ScriptPicker.ItemsSource = ScriptsList;
+        }
+
+        if (this.IsLoaded)
+        {
+            ScriptPicker.Focus();
+            SemanticScreenReader.Announce(ScriptPicker.Title);
+            Application.Current.Windows[0].Title = App.MainTitle + " - " + this.Title;
         }
 
     }

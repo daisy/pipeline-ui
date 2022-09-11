@@ -1,8 +1,22 @@
 import { useNavigate } from 'react-router-dom'
 import { useEffect } from 'react'
+import {
+  QueryClient,
+  QueryClientProvider,
+  useQuery,
+} from '@tanstack/react-query'
 
-import { Container, Heading, JobsList } from 'renderer/components'
+import {
+  JobsList,
+  ScriptsList,
+  Status,
+  TabList,
+  TabPanels,
+} from 'renderer/components'
 import { useWindowStore } from 'renderer/store'
+import React from 'react'
+import { TabContainer } from 'renderer/components/TabContainer'
+const queryClient = new QueryClient()
 
 export function MainScreen() {
   const { App } = window // The "App" comes from the bridge
@@ -26,12 +40,14 @@ export function MainScreen() {
   }
 
   return (
-    <Container>
-      <Heading>Hi, {App.username || 'there'}! 👋</Heading>
-
-      <h2>Jobs ✨</h2>
-
-      <JobsList />
-    </Container>
+    <QueryClientProvider client={queryClient}>
+      <header>
+        <h1>DAISY Pipeline</h1>
+        <Status />
+      </header>
+      <main>
+        <TabContainer />
+      </main>
+    </QueryClientProvider>
   )
 }

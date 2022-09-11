@@ -3,22 +3,22 @@ import {
   QueryClientProvider,
   useQuery,
 } from '@tanstack/react-query'
-import styles from './styles.module.sass'
-import { jobsXmlToJson } from 'renderer/pipelineXmlToJson'
+
+import { scriptsXmlToJson } from 'renderer/pipelineXmlToJson'
 
 const queryClient = new QueryClient()
 
-export function JobsList() {
+export function ScriptsList() {
   return (
     <QueryClientProvider client={queryClient}>
-      <Jobs />
+      <Scripts />
     </QueryClientProvider>
   )
 }
 
-function Jobs() {
-  const { isLoading, error, data } = useQuery(['jobsData'], async () => {
-    let res = await fetch('http://localhost:8181/ws/jobs')
+function Scripts() {
+  const { isLoading, error, data } = useQuery(['scriptsData'], async () => {
+    let res = await fetch('http://localhost:8181/ws/scripts')
     let xmlStr = await res.text()
     return xmlStr
   })
@@ -28,14 +28,14 @@ function Jobs() {
   if (error instanceof Error)
     return <p>An error has occurred: {error.message}</p>
 
-  let jobs = jobsXmlToJson(data)
-  if (!jobs) {
+  let scripts = scriptsXmlToJson(data)
+  if (!scripts) {
     return <p>An error has occurred</p>
   }
   return (
-    <ul className={styles.jobsList}>
-      {jobs.map((job) => (
-        <li>{JSON.stringify(job, null, '  ')}</li>
+    <ul>
+      {scripts.map((script) => (
+        <li>{JSON.stringify(script, null, '  ')}</li>
       ))}
     </ul>
   )

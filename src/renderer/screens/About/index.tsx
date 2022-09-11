@@ -1,15 +1,13 @@
-import { Container, Heading } from 'renderer/components'
+import React from 'react'
 
 import styles from './styles.module.sass'
 
 export function AboutScreen() {
   return (
-    <Container>
-      <Heading>About! 😎</Heading>
+    <>
+      <header>About! 😎</header>
 
-      <h2 className={styles.subtitle}>
-        Write an awesome text about your app here! ✨
-      </h2>
-    </Container>
+      <main></main>
+    </>
   )
 }

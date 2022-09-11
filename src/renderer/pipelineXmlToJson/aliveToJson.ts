@@ -1,6 +1,6 @@
-// <alive xmlns="http://www.daisy.org/ns/pipeline/data" localfs="true" authentication="false" version="1.0.0"/>
+import { Alive } from 'shared/types/pipeline'
 
-function aliveXmlToJson(xmlString: string) {
+function aliveXmlToJson(xmlString: string): Alive {
   let doc = new DOMParser().parseFromString(xmlString, 'text/xml')
   let aliveElm = doc.getElementsByTagName('alive')
   if (!aliveElm || aliveElm.length == 0) {
@@ -10,8 +10,8 @@ function aliveXmlToJson(xmlString: string) {
   }
   return {
     alive: true,
-    localfs: aliveElm[0].getAttribute('localfs'),
-    authentication: aliveElm[0].getAttribute('authentication'),
+    localfs: aliveElm[0].getAttribute('localfs') == 'true',
+    authentication: aliveElm[0].getAttribute('authentication') == 'true',
     version: aliveElm[0].getAttribute('version'),
   }
 }

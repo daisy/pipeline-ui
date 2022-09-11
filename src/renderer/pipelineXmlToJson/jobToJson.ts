@@ -1,4 +1,16 @@
-function jobXmlToJson(xmlString: string) {
+import {
+  Job,
+  NamedResult,
+  Results,
+  ResultFile,
+  Priority,
+  Status,
+  MessageLevel,
+} from 'shared/types/pipeline'
+import { scriptElementToJson } from './scriptToJson'
+
+function jobXmlToJson(xmlString: string): Job {
+  console.log(xmlString)
   let doc = new DOMParser().parseFromString(xmlString, 'text/xml')
   let jobElms = doc.getElementsByTagName('job')
   if (jobElms.length > 0) {
@@ -8,77 +20,83 @@ function jobXmlToJson(xmlString: string) {
   }
 }
 
-function jobElementToJson(jobElm: Element) {
-  let job = {
+function jobElementToJson(jobElm: Element): Job {
+  let job: Job = {
     id: jobElm.getAttribute('id'),
     href: jobElm.getAttribute('href'),
-    priority: jobElm.getAttribute('priority'),
-    status: jobElm.getAttribute('status'),
+    priority:
+      Priority[jobElm.getAttribute('priority') as keyof typeof Priority],
+    status: Status[jobElm.getAttribute('status') as keyof typeof Status],
   }
   let logElm = jobElm.getElementsByTagName('log')
   if (logElm) {
-    // @ts-ignore
-    job.log = { href: logElm[0].getAttribute('href') }
+    job.log = logElm[0].getAttribute('href')
   }
   let resultsElm = jobElm.getElementsByTagName('results')
   if (resultsElm) {
-    let results = {
+    let results: Results = {
       href: resultsElm[0].getAttribute('href'),
       mimeType: resultsElm[0].getAttribute('mime-type'),
+      namedResults: [],
     }
-    // @ts-ignore
     results.namedResults = Array.from(
       resultsElm[0].getElementsByTagName('result')
     )
       // filter out non-direct children
       .filter((resultElm) => resultElm.parentElement == resultsElm[0])
-      .map((resultElm) => {
-        let result = {
+      .map((resultElm): NamedResult => {
+        let namedResult: NamedResult = {
           from: resultElm.getAttribute('from'),
           href: resultElm.getAttribute('href'),
           mimeType: resultElm.getAttribute('mime-type'),
           name: resultElm.getAttribute('name'),
           nicename: resultElm.getAttribute('nicename'),
+          files: [],
         }
         // the results are structured so that a "result" element is nested inside another "result" element
         // and they have different attributes
         // @ts-ignore
-        result.files = Array.from(resultElm.getElementsByTagName('result')).map(
-          (resultFileElm) => {
-            let resultFile = {
-              mimeType: resultFileElm.getAttribute('mime-type'),
-              size: resultFileElm.getAttribute('size'),
-            }
-            if (resultFileElm.hasAttribute('file')) {
-              // @ts-ignore
-              resultFile.file = resultFileElm.getAttribute('file')
-            }
-            if (resultFileElm.hasAttribute('href')) {
-              // @ts-ignore
-              resultFile.href = resultFileElm.getAttribute('href')
-            }
-            return resultFile
+        namedResult.files = Array.from(
+          resultElm.getElementsByTagName('result')
+        ).map((resultFileElm) => {
+          let resultFile: ResultFile = {
+            mimeType: resultFileElm.getAttribute('mime-type'),
+            size: resultFileElm.getAttribute('size'),
           }
-        )
-        return result
+          if (resultFileElm.hasAttribute('file')) {
+            // @ts-ignore
+            resultFile.file = resultFileElm.getAttribute('file')
+          }
+          if (resultFileElm.hasAttribute('href')) {
+            // @ts-ignore
+            resultFile.href = resultFileElm.getAttribute('href')
+          }
+          return resultFile
+        })
+        return namedResult
       })
-    return results
+    job.results = results
   }
-  let messageElms = jobElm.getElementsByTagName('messages')
-  if (messageElms.length > 0) {
-    //@ts-ignore
+  let messagesElms = jobElm.getElementsByTagName('messages')
+  if (messagesElms.length > 0) {
     job.messages = Array.from(
-      messageElms[0].getElementsByTagName('message')
+      messagesElms[0].getElementsByTagName('message')
     ).map((messageElm) => {
       return {
-        level: messageElm.getAttribute('level'),
+        level:
+          MessageLevel[
+            messageElm.getAttribute('level') as keyof typeof MessageLevel
+          ],
         content: messageElm.getAttribute('content'),
-        sequence: messageElm.getAttribute('sequence'),
-        timestamp: messageElm.getAttribute('timestamp'),
+        sequence: parseInt(messageElm.getAttribute('sequence')),
+        timestamp: parseInt(messageElm.getAttribute('timestamp')),
       }
     })
-    //@ts-ignore
-    job.progress = messages.getAttribute('progress')
+    job.progress = parseInt(messagesElms[0].getAttribute('progress'))
+  }
+  let scriptElms = jobElm.getElementsByTagName('script')
+  if (scriptElms.length > 0) {
+    job.script = scriptElementToJson(scriptElms[0])
   }
   return job
 }

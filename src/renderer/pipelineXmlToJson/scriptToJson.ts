@@ -1,4 +1,6 @@
-function scriptXmlToJson(xmlString: string) {
+import { Script, ScriptInput, ScriptOption } from 'shared/types/pipeline'
+
+function scriptXmlToJson(xmlString: string): Script {
   let doc = new DOMParser().parseFromString(xmlString, 'text/xml')
   let scriptElms = doc.getElementsByTagName('script')
   if (scriptElms.length > 0) {
@@ -8,12 +10,12 @@ function scriptXmlToJson(xmlString: string) {
   }
 }
 
-function scriptElementToJson(scriptElm: Element) {
+function scriptElementToJson(scriptElm: Element): Script {
   let nicenameElm = scriptElm.getElementsByTagName('nicename')
   let descriptionElm = scriptElm.getElementsByTagName('description')
   let versionElm = scriptElm.getElementsByTagName('version')
 
-  let script = {
+  let script: Script = {
     id: scriptElm.getAttribute('id'),
     href: scriptElm.getAttribute('href'),
     nicename: (nicenameElm[0] as Element).textContent,
@@ -21,9 +23,8 @@ function scriptElementToJson(scriptElm: Element) {
     version: (versionElm[0] as Element).textContent,
   }
 
-  //@ts-ignore
   script.inputs = Array.from(scriptElm.getElementsByTagName('input')).map(
-    (inputElm) => {
+    (inputElm): ScriptInput => {
       return {
         desc: inputElm.getAttribute('input'),
         mediaType: inputElm.getAttribute('mediaType'),
@@ -35,9 +36,8 @@ function scriptElementToJson(scriptElm: Element) {
     }
   )
 
-  //@ts-ignore
   script.options = Array.from(scriptElm.getElementsByTagName('option')).map(
-    (optionElm) => {
+    (optionElm): ScriptOption => {
       return {
         desc: optionElm.getAttribute('input'),
         mediaType: optionElm.getAttribute('mediaType'),

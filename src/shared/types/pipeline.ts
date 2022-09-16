@@ -55,8 +55,13 @@ export type Message = {
   timestamp: number
 }
 
-export type Job = {
+export type AbstractJob = {
   id: string
+  nicename?: string
+  type: string
+}
+
+export type Job = AbstractJob & {
   href: string
   priority?: Priority
   status: Status
@@ -65,6 +70,7 @@ export type Job = {
   messages?: Array<Message>
   progress?: number
   script?: Script
+  type: 'Job'
 }
 
 export type ScriptInput = {
@@ -95,4 +101,28 @@ export type Script = {
   version?: string
   inputs?: Array<ScriptInput>
   options?: Array<ScriptOption>
+}
+
+export type NewJob = AbstractJob & {
+  type: 'NewJob'
+}
+
+export type NameValue = {
+  name: string
+  value: string
+}
+export type Callback = {
+  href: string
+  type: ['messages', 'status']
+  frequency: string
+}
+export type JobRequest = {
+  scriptHref: string
+  nicename?: string
+  priority?: ['high', 'medium', 'low']
+  batchId?: string
+  inputs?: Array<NameValue>
+  options?: Array<NameValue>
+  outputs?: Array<NameValue>
+  callbacks?: Array<Callback>
 }

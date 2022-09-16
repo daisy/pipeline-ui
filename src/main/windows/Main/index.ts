@@ -10,12 +10,12 @@ const { MAIN, TITLE } = APP_CONFIG
 export async function MainWindow() {
   const window = createWindow({
     id: 'main',
-    title: TITLE,
+    title: TITLE + 'HI',
     width: MAIN.WINDOW.WIDTH,
     height: MAIN.WINDOW.HEIGHT,
     center: true,
     movable: true,
-    resizable: false,
+    resizable: true,
     alwaysOnTop: false,
 
     webPreferences: {

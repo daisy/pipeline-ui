@@ -10,7 +10,6 @@ import {
 import { scriptElementToJson } from './scriptToJson'
 
 function jobXmlToJson(xmlString: string): Job {
-  console.log(xmlString)
   let doc = new DOMParser().parseFromString(xmlString, 'text/xml')
   let jobElms = doc.getElementsByTagName('job')
   if (jobElms.length > 0) {
@@ -27,23 +26,34 @@ function jobElementToJson(jobElm: Element): Job {
     priority:
       Priority[jobElm.getAttribute('priority') as keyof typeof Priority],
     status: Status[jobElm.getAttribute('status') as keyof typeof Status],
+    type: 'Job',
   }
-  let logElm = jobElm.getElementsByTagName('log')
-  if (logElm) {
-    job.log = logElm[0].getAttribute('href')
+  // TODO is nicename an element or attribute on <job>?
+  // not sure at the moment so just check for it in both places
+  let nicenameElms = jobElm.getElementsByTagName('nicename')
+  if (nicenameElms.length > 0) {
+    job.nicename = nicenameElms[0].textContent
+  } else if (jobElm.hasAttribute('nicename')) {
+    job.nicename = jobElm.getAttribute('nicename')
+  } else {
+    job.nicename = 'Job'
   }
-  let resultsElm = jobElm.getElementsByTagName('results')
-  if (resultsElm) {
+  let logElms = jobElm.getElementsByTagName('log')
+  if (logElms.length > 0) {
+    job.log = logElms[0].getAttribute('href')
+  }
+  let resultsElms = jobElm.getElementsByTagName('results')
+  if (resultsElms.length > 0) {
     let results: Results = {
-      href: resultsElm[0].getAttribute('href'),
-      mimeType: resultsElm[0].getAttribute('mime-type'),
+      href: resultsElms[0].getAttribute('href'),
+      mimeType: resultsElms[0].getAttribute('mime-type'),
       namedResults: [],
     }
     results.namedResults = Array.from(
-      resultsElm[0].getElementsByTagName('result')
+      resultsElms[0].getElementsByTagName('result')
     )
       // filter out non-direct children
-      .filter((resultElm) => resultElm.parentElement == resultsElm[0])
+      .filter((resultElm) => resultElm.parentElement == resultsElms[0])
       .map((resultElm): NamedResult => {
         let namedResult: NamedResult = {
           from: resultElm.getAttribute('from'),

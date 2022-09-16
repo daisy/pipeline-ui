@@ -1,14 +1,14 @@
 .status
     align-self: center
-    
+    width: 5em
     .online
         &::after
             content: '🟢'
-            padding-left: 1em
+            padding-left: 0.5em
     .offline
         &::after 
             content: '🔴'
-            padding-left: 1em
+            padding-left: 0.5em
     .checking
         &::after
             overflow: hidden
@@ -17,7 +17,7 @@
             -webkit-animation: ellipsis steps(4,end) 900ms infinite     
             animation: ellipsis steps(4,end) 900ms infinite
             content: "\2026" /* ascii code for the ellipsis character */
-            width: 0px
+            width: 0
 
 @keyframes ellipsis 
   to 

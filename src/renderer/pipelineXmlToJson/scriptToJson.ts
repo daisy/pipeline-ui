@@ -26,7 +26,7 @@ function scriptElementToJson(scriptElm: Element): Script {
   script.inputs = Array.from(scriptElm.getElementsByTagName('input')).map(
     (inputElm): ScriptInput => {
       return {
-        desc: inputElm.getAttribute('input'),
+        desc: inputElm.getAttribute('desc'),
         mediaType: inputElm.getAttribute('mediaType'),
         name: inputElm.getAttribute('name'),
         sequence: inputElm.getAttribute('sequence') == 'true',
@@ -39,7 +39,7 @@ function scriptElementToJson(scriptElm: Element): Script {
   script.options = Array.from(scriptElm.getElementsByTagName('option')).map(
     (optionElm): ScriptOption => {
       return {
-        desc: optionElm.getAttribute('input'),
+        desc: optionElm.getAttribute('desc'),
         mediaType: optionElm.getAttribute('mediaType'),
         name: optionElm.getAttribute('name'),
         sequence: optionElm.getAttribute('sequence') == 'true',

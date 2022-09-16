@@ -6,16 +6,9 @@ import {
   useQuery,
 } from '@tanstack/react-query'
 
-import {
-  JobsList,
-  ScriptsList,
-  Status,
-  TabList,
-  TabPanels,
-} from 'renderer/components'
+import { Status, TabView } from 'renderer/components'
 import { useWindowStore } from 'renderer/store'
 import React from 'react'
-import { TabContainer } from 'renderer/components/TabContainer'
 const queryClient = new QueryClient()
 
 export function MainScreen() {
@@ -46,7 +39,7 @@ export function MainScreen() {
         <Status />
       </header>
       <main>
-        <TabContainer />
+        <TabView />
       </main>
     </QueryClientProvider>
   )

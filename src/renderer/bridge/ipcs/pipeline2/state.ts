@@ -1,14 +1,15 @@
 import { ipcRenderer } from 'electron'
 
 import { IPC } from 'shared/constants'
+import { PipelineState } from 'shared/types'
 
 export function onPipelineStateChanged(callback) {
   const channel = IPC.PIPELINE.STATE.CHANGED
 
-  ipcRenderer.on(channel, callback)
+  return ipcRenderer.on(channel, callback)
 }
 
-export function getPipelineState() {
+export function getPipelineState(): Promise<PipelineState | null> {
   const channel = IPC.PIPELINE.STATE.GET
 
   return ipcRenderer.invoke(channel)

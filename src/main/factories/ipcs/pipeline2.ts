@@ -1,13 +1,14 @@
-import { BrowserWindow, ipcMain } from 'electron'
+import { BrowserWindow, ipcMain, Tray } from 'electron'
 import { resolve, delimiter, relative, dirname } from 'path'
 import { APP_CONFIG } from '~/app.config'
-import { Webservice, PipelineStatus } from 'shared/types'
+import { Webservice, PipelineStatus, PipelineState } from 'shared/types'
 import { IPC } from 'shared/constants'
 import { setTimeout } from 'timers/promises'
 import { spawn, ChildProcessWithoutNullStreams, exec } from 'child_process'
 import { existsSync, readdirSync, statSync } from 'fs'
 
 import { createServer } from 'net'
+import { PipelineTray } from 'main/windows'
 
 var walk = function (dir, filter?: (name: string) => boolean) {
   var results = []
@@ -69,12 +70,6 @@ export interface Pipeline2IPCProps {
   onError?: (error: string) => void
 
   onMessage?: (message: string) => void
-}
-
-export interface Pipeline2IPCState {
-  status: PipelineStatus
-  messages: Array<string>
-  errors: Array<string>
 }
 
 export class Pipeline2Error extends Error {
@@ -141,9 +136,9 @@ const getAvailablePort = async (startPort: number, endPort: number) => {
 export class Pipeline2IPC {
   props: Pipeline2IPCProps
   // Default state
-  state: Pipeline2IPCState
+  state: PipelineState
 
-  listeners: Array<(data: Pipeline2IPCState) => void> = []
+  listeners: Array<(data: PipelineState) => void> = []
 
   private instance?: ChildProcessWithoutNullStreams
   /**
@@ -186,12 +181,27 @@ export class Pipeline2IPC {
     })
   }
 
+  /**
+   * Change the webservice configuration (stop and restart the server if so)
+   * @param webservice
+   */
+  updateWebservice(webservice: Webservice) {
+    const isRunning = this.state.status !== PipelineStatus.STOPPED
+    isRunning && this.stop()
+    this.props.webservice = webservice
+    isRunning && this.launch()
+  }
+
   setState(newState: {
+    runningWebservice?: Webservice
     status?: PipelineStatus
     messages?: Array<string>
     errors?: Array<string>
   }) {
     this.state = {
+      runningWebservice:
+        newState.runningWebservice ??
+        (this.state && this.state.runningWebservice),
       status:
         newState.status ??
         ((this.state && this.state.status) || PipelineStatus.STOPPED),
@@ -207,7 +217,7 @@ export class Pipeline2IPC {
   /**
    * Launch a local instance of the pipeline using the current webservice settings
    */
-  async launch() {
+  async launch(): Promise<PipelineState> {
     if (!this.instance || this.state.status == PipelineStatus.STOPPED) {
       this.setState({
         status: PipelineStatus.STARTING,
@@ -414,14 +424,16 @@ export class Pipeline2IPC {
       //await setTimeout(60000)
       this.setState({
         status: PipelineStatus.RUNNING,
+        runningWebservice: this.props.webservice,
       })
     }
+    return this.state
   }
 
   /**
    * Stopping the pipeline
    */
-  stop() {
+  async stop() {
     if (this.instance) {
       console.log('closing pipeline')
       let finished = false
@@ -437,34 +449,59 @@ export class Pipeline2IPC {
     })
   }
 
-  registerListener(callback: (data: Pipeline2IPCState) => void) {
+  registerListener(callback: (data: PipelineState) => void) {
     this.listeners.push(callback)
   }
 }
 
-/**
- * Register a pipeline instance to IPC for communication with selected windows
- * @param pipeline2instance instance to manage
- * @param boundedWindows windows that are allowed to manage pipeline and/or get state updates
- */
-export function RegisterPipeline2ToIPC(
+const bindInstanceToApplication = (
   pipeline2instance: Pipeline2IPC,
-  boundedWindows: Array<BrowserWindow> = []
-) {
-  ipcMain.on(IPC.PIPELINE.START, async (event) => {
-    pipeline2instance.launch()
-  })
-  ipcMain.on(IPC.PIPELINE.STOP, (event) => {
-    pipeline2instance.stop()
-  })
-  // get state from the instance
-  ipcMain.handle(IPC.PIPELINE.STATE.GET, (event) => {
-    return pipeline2instance.state
-  })
-  // pipeline state listener
+  boundedWindows: Array<BrowserWindow> = [],
+  tray?: PipelineTray
+) => {
   boundedWindows.forEach((window) => {
     pipeline2instance.registerListener((state) => {
       window.webContents.send(IPC.PIPELINE.STATE.CHANGED, state)
     })
   })
+  tray && tray.bindToPipeline(pipeline2instance)
+}
+
+/**
+ * Register the management of a pipeline instance to IPC for communication with selected windows
+ * @param pipeline2instance global instance to manage
+ * @param boundedWindows windows that are allowed to manage pipeline and/or get state updates
+ *
+ */
+export function registerPipeline2ToIPC(
+  pipeline2instance: Pipeline2IPC,
+  boundedWindows: Array<BrowserWindow> = [],
+  applicationTray?: PipelineTray
+) {
+  // start the pipeline runner.
+  ipcMain.handle(IPC.PIPELINE.START, async (event, webserviceProps) => {
+    // New settings requested with an existing instance :
+    // Destroy the instance if new settings are requested
+    if (webserviceProps) {
+      pipeline2instance.updateWebservice(webserviceProps)
+    }
+    console.debug(IPC.PIPELINE.START)
+    return pipeline2instance.launch()
+  })
+
+  // Stop the pipeline instance
+  ipcMain.on(IPC.PIPELINE.STOP, (event) => pipeline2instance.stop())
+
+  // get state from the instance
+  ipcMain.handle(IPC.PIPELINE.STATE.GET, (event) => {
+    console.debug(IPC.PIPELINE.STATE.GET)
+    return pipeline2instance.state || null
+  })
+
+  ipcMain.handle(IPC.PIPELINE.PROPS.GET, (event) => {
+    console.debug(IPC.PIPELINE.PROPS.GET)
+    return pipeline2instance.props || null
+  })
+  // pipeline state listener
+  bindInstanceToApplication(pipeline2instance, boundedWindows, applicationTray)
 }

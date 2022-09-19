@@ -1,3 +1,34 @@
+/**
+ * Webservice connexion
+ *
+ */
+export type Webservice = {
+  host: string
+  port: number
+  path?: string
+  ssl?: boolean
+}
+
+/**
+ * Local instance possible status
+ */
+export enum PipelineStatus {
+  STARTING = 'starting',
+  RUNNING = 'running',
+  STOPPED = 'stopped',
+  ERROR = 'error',
+}
+
+/**
+ * Local instance state to be used by front
+ */
+export interface PipelineState {
+  runningWebservice?: Webservice
+  status: PipelineStatus
+  messages: Array<string>
+  errors: Array<string>
+}
+
 export type Alive = {
   alive: boolean
   localfs?: boolean

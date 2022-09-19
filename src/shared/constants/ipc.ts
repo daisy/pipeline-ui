@@ -5,4 +5,15 @@ export const IPC = {
       WHEN_CLOSE: 'windows: when-about-window-close',
     },
   },
+  PIPELINE: {
+    START: 'pipeline: start',
+    STOP: 'pipeline: stop',
+    STATE: {
+      GET: 'pipeline: state-get',
+      CHANGED: 'pipeline: state-changed',
+    },
+    PROPS: {
+      GET: 'pipeline: props-get',
+    },
+  },
 }

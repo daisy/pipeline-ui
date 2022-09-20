@@ -1,10 +1,10 @@
 import { useQuery } from '@tanstack/react-query'
 import { useState } from 'react'
 import { scriptsXmlToJson } from 'renderer/pipelineXmlToJson'
-import { Script } from '../Script'
+import { ScriptForm } from '../ScriptForm'
 import styles from './styles.module.sass'
 
-export function CreateJobPane() {
+export function NewJobPane() {
   const [selectedScript, setSelectedScript] = useState(null)
 
   const { isLoading, error, data } = useQuery(['scriptsData'], async () => {
@@ -29,31 +29,34 @@ export function CreateJobPane() {
   }
 
   return (
-    <div className={styles.CreateJobPane}>
+    <div className={styles.NewJobPane}>
       {selectedScript == null ? (
-        <div>
+        <>
           <h2>New Job</h2>
-          <label htmlFor="script">Select a script:</label>
-          <select id="script" onChange={(e) => handleOnSelectChange(e)}>
-            <option value={null}>None</option>
-            {scripts.map((script, idx) => (
-              <option key={idx} value={script.id}>
-                {script.nicename}
-              </option>
-            ))}
-          </select>
-        </div>
+          <div>
+            <label htmlFor="script">Select a script:</label>
+            <select id="script" onChange={(e) => handleOnSelectChange(e)}>
+              <option value={null}>None</option>
+              {scripts.map((script, idx) => (
+                <option key={idx} value={script.id}>
+                  {script.nicename}
+                </option>
+              ))}
+            </select>
+          </div>
+          <button>Cancel new job</button>
+        </>
       ) : (
         <></>
       )}
       {selectedScript != null ? (
-        <Script scriptHref={selectedScript.href} />
+        <ScriptForm scriptHref={selectedScript.href} />
       ) : (
         <></>
       )}
-      <div>
-        <button>Cancel new job</button>
-      </div>
+      
+      
+      
     </div>
   )
 }

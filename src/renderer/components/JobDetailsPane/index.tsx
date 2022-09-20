@@ -26,7 +26,7 @@ export function JobDetailsPane({ jobHref }) {
   jobData = jobXmlToJson(data)
 
   return (
-    <div className={styles.JobDetailsPane}>
+    <div>
       <h2>Job</h2>
       <p> {jobData.id}</p>
     </div>

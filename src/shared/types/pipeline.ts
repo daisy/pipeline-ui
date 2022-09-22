@@ -1,12 +1,27 @@
 /**
- * Webservice connexion
+ * Webservice connexion data to compute url for fetch:
+ *
+ * - host should be a valid ipv4 or hostname
+ * - port should be a number matching an opened port on the host
+ * - path should be a valid url subpath, starting by a "/" (but not ending by a "/"), like "/ws"
+ * - ssl is a boolean stating if the webservice is using ssl encryptin (requiring https)
  *
  */
 export type Webservice = {
   host: string
-  port: number
+  port?: number
   path?: string
   ssl?: boolean
+}
+/**
+ * Utility function to get base url string from webservice
+ * @param ws webservice
+ * @returns
+ */
+export function baseurl(ws: Webservice) {
+  return `${ws.ssl ? 'https' : 'http'}://${ws.host}${
+    ws.port ? ':' + ws.port : ''
+  }${ws.path ?? ''}`
 }
 
 /**
@@ -25,8 +40,8 @@ export enum PipelineStatus {
 export interface PipelineState {
   runningWebservice?: Webservice
   status: PipelineStatus
-  messages: Array<string>
-  errors: Array<string>
+  // messages: Array<string>
+  // errors: Array<string>
 }
 
 export type Alive = {

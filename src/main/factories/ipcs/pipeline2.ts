@@ -137,8 +137,13 @@ export class Pipeline2IPC {
   props: Pipeline2IPCProps
   // Default state
   state: PipelineState
+  stateListeners: Array<(data: PipelineState) => void> = []
 
-  listeners: Array<(data: PipelineState) => void> = []
+  messages: Array<string>
+  messagesListeners: Array<(data: string) => void> = []
+
+  errors: Array<string>
+  errorsListeners: Array<(data: string) => void> = []
 
   private instance?: ChildProcessWithoutNullStreams
   /**
@@ -170,14 +175,14 @@ export class Pipeline2IPC {
       logsFolder:
         (props && props.logsFolder) ??
         resolve(osAppDataFolder, 'DAISY Pipeline 2', 'log'),
-      onError: props && props.onError,
-      onMessage: props && props.onMessage,
+      onError: (props && props.onError) || console.error,
+      onMessage: (props && props.onMessage) || console.debug,
     }
     this.instance = null
+    this.errors = []
+    this.messages = []
     this.setState({
       status: PipelineStatus.STOPPED,
-      messages: [],
-      errors: [],
     })
   }
 
@@ -195,8 +200,6 @@ export class Pipeline2IPC {
   setState(newState: {
     runningWebservice?: Webservice
     status?: PipelineStatus
-    messages?: Array<string>
-    errors?: Array<string>
   }) {
     this.state = {
       runningWebservice:
@@ -205,12 +208,27 @@ export class Pipeline2IPC {
       status:
         newState.status ??
         ((this.state && this.state.status) || PipelineStatus.STOPPED),
-      messages:
-        newState.messages ?? ((this.state && this.state.messages) || []),
-      errors: newState.errors ?? ((this.state && this.state.errors) || []),
     }
-    this.listeners.forEach((callback) => {
+    this.stateListeners.forEach((callback) => {
       callback(this.state)
+    })
+  }
+  pushMessage(message: string) {
+    this.messages.push(message)
+    if (this.props.onMessage) {
+      this.props.onMessage(message)
+    }
+    this.messagesListeners.forEach((callback) => {
+      callback(message)
+    })
+  }
+  pushError(message: string) {
+    this.errors.push(message)
+    if (this.props.onError) {
+      this.props.onError(message)
+    }
+    this.errorsListeners.forEach((callback) => {
+      callback(message)
     })
   }
 
@@ -261,9 +279,8 @@ export class Pipeline2IPC {
         } catch (error) {
           this.setState({
             status: PipelineStatus.ERROR,
-            messages: [(error.name ? error.name + ' - ' : '') + error.message],
-            errors: [(error.name ? error.name + ' - ' : '') + error.message],
           })
+          this.pushError(error)
           return
         }
       }
@@ -384,18 +401,14 @@ export class Pipeline2IPC {
 
       this.instance.stdout.on('data', (data) => {
         let message = data.toString()
-        this.setState({
-          messages: [message, ...this.state.messages],
-        })
+        this.pushMessage(message)
         if (this.props.onMessage) {
           this.props.onMessage(message)
         }
       })
       this.instance.stderr.on('data', (data) => {
         let error = data.toString()
-        this.setState({
-          errors: [error, ...this.state.errors],
-        })
+        this.pushError(error)
         if (this.props.onError) {
           this.props.onError(error)
         }
@@ -404,21 +417,15 @@ export class Pipeline2IPC {
         let message = `Pipeline exiting with code ${code} and signal ${signal}`
         this.setState({
           status: PipelineStatus.STOPPED,
-          messages: [message, ...this.state.messages],
         })
-        if (this.props.onMessage) {
-          this.props.onMessage(message)
-        }
+        this.pushMessage(message)
       })
       this.instance.on('close', (code: number, args: any[]) => {
         let message = `Pipeline closing with code: ${code} args: ${args}`
         this.setState({
           status: PipelineStatus.STOPPED,
-          messages: [message, ...this.state.messages],
         })
-        if (this.props.onMessage) {
-          this.props.onMessage(message)
-        }
+        this.pushMessage(message)
       })
       // */
       //await setTimeout(60000)
@@ -444,13 +451,19 @@ export class Pipeline2IPC {
       this.instance = null
       this.state.status = PipelineStatus.STOPPED
     }
-    this.listeners.forEach((callback) => {
+    this.stateListeners.forEach((callback) => {
       callback(this.state)
     })
   }
 
-  registerListener(callback: (data: PipelineState) => void) {
-    this.listeners.push(callback)
+  registerStateListener(callback: (data: PipelineState) => void) {
+    this.stateListeners.push(callback)
+  }
+  registerMessageListener(callback: (data: string) => void) {
+    this.messagesListeners.push(callback)
+  }
+  registerErrorsListener(callback: (data: string) => void) {
+    this.errorsListeners.push(callback)
   }
 }
 
@@ -460,8 +473,14 @@ const bindInstanceToApplication = (
   tray?: PipelineTray
 ) => {
   boundedWindows.forEach((window) => {
-    pipeline2instance.registerListener((state) => {
+    pipeline2instance.registerStateListener((state) => {
       window.webContents.send(IPC.PIPELINE.STATE.CHANGED, state)
+    })
+    pipeline2instance.registerMessageListener((message) => {
+      window.webContents.send(IPC.PIPELINE.MESSAGES.UPDATE, message)
+    })
+    pipeline2instance.registerErrorsListener((error) => {
+      window.webContents.send(IPC.PIPELINE.ERRORS.UPDATE, error)
     })
   })
   tray && tray.bindToPipeline(pipeline2instance)
@@ -502,6 +521,18 @@ export function registerPipeline2ToIPC(
     console.debug(IPC.PIPELINE.PROPS.GET)
     return pipeline2instance.props || null
   })
+
+  // get messages from the instance
+  ipcMain.handle(IPC.PIPELINE.MESSAGES.GET, (event) => {
+    console.debug(IPC.PIPELINE.MESSAGES.GET)
+    return pipeline2instance.messages || null
+  })
+  // get errors from the instance
+  ipcMain.handle(IPC.PIPELINE.ERRORS.GET, (event) => {
+    console.debug(IPC.PIPELINE.ERRORS.GET)
+    return pipeline2instance.errors || null
+  })
+
   // pipeline state listener
   bindInstanceToApplication(pipeline2instance, boundedWindows, applicationTray)
 }

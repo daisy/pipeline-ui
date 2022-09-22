@@ -15,5 +15,13 @@ export const IPC = {
     PROPS: {
       GET: 'pipeline: props-get',
     },
+    MESSAGES: {
+      UPDATE: 'pipeline: messages-update',
+      GET: 'pipeline: messages-get',
+    },
+    ERRORS: {
+      UPDATE: 'pipeline: errors-update',
+      GET: 'pipeline: errors-get',
+    },
   },
 }

@@ -75,7 +75,7 @@ export class PipelineTray {
    */
   bindToPipeline(pipeline: Pipeline2IPC) {
     // setup listeners to update tray based on states
-    pipeline.registerListener((newState) =>
+    pipeline.registerStateListener((newState) =>
       this.updateElectronTray(newState, pipeline)
     )
     this.updateElectronTray(pipeline.state, pipeline)

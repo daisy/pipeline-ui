@@ -400,18 +400,19 @@ export class Pipeline2IPC {
       })
 
       this.instance.stdout.on('data', (data) => {
-        let message = data.toString()
-        this.pushMessage(message)
-        if (this.props.onMessage) {
-          this.props.onMessage(message)
+        let message: string = data.toString()
+        // Webservice is started and pipeline is ready to run
+        if (message.includes('PipelineWebService - component started')) {
+          this.setState({
+            status: PipelineStatus.RUNNING,
+            runningWebservice: this.props.webservice,
+          })
         }
+        this.pushMessage(message)
       })
       this.instance.stderr.on('data', (data) => {
         let error = data.toString()
         this.pushError(error)
-        if (this.props.onError) {
-          this.props.onError(error)
-        }
       })
       this.instance.on('exit', (code, signal) => {
         let message = `Pipeline exiting with code ${code} and signal ${signal}`
@@ -428,9 +429,8 @@ export class Pipeline2IPC {
         this.pushMessage(message)
       })
       // */
-      //await setTimeout(60000)
       this.setState({
-        status: PipelineStatus.RUNNING,
+        status: PipelineStatus.STARTING,
         runningWebservice: this.props.webservice,
       })
     }
@@ -481,6 +481,12 @@ const bindInstanceToApplication = (
     })
     pipeline2instance.registerErrorsListener((error) => {
       window.webContents.send(IPC.PIPELINE.ERRORS.UPDATE, error)
+    })
+    ipcMain.on(IPC.PIPELINE.STATE.SEND, (event) => {
+      window.webContents.send(
+        IPC.PIPELINE.STATE.CHANGED,
+        pipeline2instance.state
+      )
     })
   })
   tray && tray.bindToPipeline(pipeline2instance)

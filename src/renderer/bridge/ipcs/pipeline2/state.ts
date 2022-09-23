@@ -9,8 +9,12 @@ export function onPipelineStateChanged(callback) {
   return ipcRenderer.on(channel, callback)
 }
 
+export function requestPipelineState() {
+  const channel = IPC.PIPELINE.STATE.SEND
+  ipcRenderer.send(channel)
+}
+
 export function getPipelineState(): Promise<PipelineState | null> {
   const channel = IPC.PIPELINE.STATE.GET
-
   return ipcRenderer.invoke(channel)
 }

@@ -28,6 +28,7 @@ export function baseurl(ws: Webservice) {
  * Local instance possible status
  */
 export enum PipelineStatus {
+  UNKNOWN = 'unknown',
   STARTING = 'starting',
   RUNNING = 'running',
   STOPPED = 'stopped',

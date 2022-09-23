@@ -1,54 +1,97 @@
-import { useState } from 'react'
+import { Fragment, useEffect, useState } from 'react'
 import { Tab } from '../Tab'
 import { TabPanel } from '../TabPanel'
 import { useQuery } from '@tanstack/react-query'
 import { jobsXmlToJson } from 'renderer/pipelineXmlToJson'
-import { NewJob } from 'shared/types/pipeline'
+import { AbstractJob, baseurl, Job, NewJob, PipelineState, PipelineStatus, Webservice } from 'shared/types/pipeline'
 import styles from './styles.module.sass'
+import { useWindowStore } from 'renderer/store'
+import { pipeline } from 'stream'
+
+
 
 export function TabView() {
-  const [selectedJobId, setSelectedJobId] = useState('')
-  // newJobs have a tab but haven't been submitted to the pipeline yet
-  const [newJobs, setNewJobs] = useState([])
-  const { isLoading, error, data } = useQuery(['jobs'], async () => {
-    let res = await fetch('http://localhost:8181/ws/jobs')
-    let xmlStr = await res.text()
-    return xmlStr
+  const {App} = window
+
+  const {pipeline} = useWindowStore()
+  
+  const [viewState, setViewState] = useState<{
+    selectedJobId:string,
+    newJobs:Array<AbstractJob>,
+    jobs:Array<AbstractJob>,
+    error?:Error,
+    isLoading:boolean
+  }>({
+    selectedJobId:'',
+    newJobs:[],
+    jobs:[],
+    isLoading:false
   })
-
-  if (isLoading) return <span>Loading...</span>
-
-  if (error instanceof Error)
-    return <span>An error has occurred: {error.message}</span>
-
-  let jobsJson = jobsXmlToJson(data)
-  //@ts-ignore
-  let jobs: Array<AbstractJob> = jobsJson.concat(newJobs)
-  let handleOnTabSelect = (job) => {
+  const handleOnTabSelect = (job) => {
     console.log('Select ', job.id)
-    setSelectedJobId(job.id)
+    setViewState((oldState)=>({
+      ...oldState,
+      selectedJobId:job.id,
+    }))
+    
   }
-  let createJob = () => {
+  const createJob = () => {
     const theNewJob: NewJob = {
-      id: `new-job-${newJobs.length + 1}`,
+      id: `new-job-${viewState.newJobs.length + 1}`,
       nicename: 'New job',
       type: 'NewJob',
     }
-
-    const updateNewJobs = [...newJobs, theNewJob]
-    setNewJobs(updateNewJobs)
-    setSelectedJobId(theNewJob.id)
+    const updateNewJobs = [...viewState.newJobs, theNewJob]
+    setViewState((oldState)=>({
+      ...oldState,
+      selectedJobId:theNewJob.id,
+      newJobs:updateNewJobs
+    }))
     return theNewJob
   }
 
-  if (selectedJobId == '') {
-    setSelectedJobId(jobs[0]?.id ?? '')
-  }
+  useEffect(() => {
+    if(pipeline.status === PipelineStatus.RUNNING){
+      const ws = pipeline.runningWebservice
+      setViewState({
+        ...viewState,
+        isLoading:true
+      })
+      fetch(`${baseurl(ws)}/jobs`).then(async (response) => {
+        const jobsJson = jobsXmlToJson(await response.text())
+        setViewState({
+          ...viewState,
+          jobs:jobsJson,
+          error:null,
+          isLoading:false
+        })
+      }).catch((error) => {
+        // Keep previous list of jobs
+        setViewState({
+          ...viewState,
+          error:error,
+          isLoading:false
+        })
+      })
+    } 
+  } ,[pipeline])
 
-  return (
+  let displayedJobs = [...viewState.jobs, ...viewState.newJobs] as Array<AbstractJob>
+
+  const selectedJobId = (
+    viewState.selectedJobId == '' ? 
+      (displayedJobs[0]?.id ?? '') : 
+      viewState.selectedJobId
+  )
+  
+  if (viewState.isLoading){
+    return <span>Loading jobs ...</span>
+  } else if (viewState.error && viewState.error instanceof Error){
+    return <span>An error has occurred: {viewState.error.message}</span>
+  } else return (
     <>
       <div role="tablist" style={styles}>
-        {jobs.map((job, idx) => {
+        {displayedJobs.map((job, idx) => {
           return (
             <Tab
               label={job.nicename}
@@ -67,8 +110,8 @@ export function TabView() {
           id="create-job"
         />
       </div>
-      {jobs.map((job, idx) => (
-        <TabPanel job={job} key={idx} isSelected={job.id == selectedJobId} />
+      {displayedJobs.map((job, idx) => (
+        <TabPanel job={job} key={`job-panel-${idx}`} isSelected={job.id == selectedJobId} />
       ))}
     </>
   )

@@ -47,6 +47,12 @@ export function WindowStoreProvider({ children }) {
     App.getPipelineState().then((value)=>{
       setPipelineState(value)
     })
+    App.getPipelineMessages().then(messages => {
+      setPipelineMessages(messages)
+    })
+    App.getPipelineMessages().then(errors => {
+      setPipelineMessages(errors)
+    })
   },[])
 
   App.onPipelineStateChanged((event,newState) => {

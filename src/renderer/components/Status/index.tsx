@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react'
-
 import { aliveXmlToJson } from 'renderer/pipelineXmlToJson'
 import { useWindowStore } from 'renderer/store'
 import { baseurl, PipelineStatus } from 'shared/types'

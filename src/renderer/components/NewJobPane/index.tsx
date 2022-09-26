@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { scriptsXmlToJson } from 'renderer/pipelineXmlToJson'
 import { useWindowStore } from 'renderer/store'
 import { baseurl, PipelineStatus, Script } from 'shared/types'
+import { useQuery } from '@tanstack/react-query'
 import { ScriptForm } from '../ScriptForm'
 import styles from './styles.module.sass'
 

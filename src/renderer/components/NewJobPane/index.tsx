@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { scriptsXmlToJson } from 'renderer/pipelineXmlToJson'
+import { scriptsXmlToJson } from 'renderer/pipelineXmlConverter'
 import { useWindowStore } from 'renderer/store'
 import { baseurl, PipelineStatus, Script } from 'shared/types'
 import { useQuery } from '@tanstack/react-query'

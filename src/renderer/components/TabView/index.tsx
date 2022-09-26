@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Tab } from '../Tab'
 import { TabPanel } from '../TabPanel'
 import { useQuery } from '@tanstack/react-query'
-import { jobsXmlToJson } from 'renderer/pipelineXmlToJson'
+import { jobsXmlToJson } from 'renderer/pipelineXmlConverter'
 import { NewJob } from 'shared/types/pipeline'
 import styles from './styles.module.sass'
 

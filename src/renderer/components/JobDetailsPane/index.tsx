@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
-import { jobXmlToJson } from 'renderer/pipelineXmlToJson'
+import { jobXmlToJson } from 'renderer/pipelineXmlConverter'
 import styles from './styles.module.sass'
 
 export function JobDetailsPane({ jobHref }) {

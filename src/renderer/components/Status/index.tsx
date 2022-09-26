@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
 
-import { aliveXmlToJson } from 'renderer/pipelineXmlToJson'
+import { aliveXmlToJson } from 'renderer/pipelineXmlConverter'
 import styles from './styles.module.sass'
 const statusMsgs = {
   online: 'Online',

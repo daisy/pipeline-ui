@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
 import { useState } from 'react'
-import { scriptsXmlToJson } from 'renderer/pipelineXmlToJson'
+import { scriptsXmlToJson } from 'renderer/pipelineXmlConverter'
 import { ScriptForm } from '../ScriptForm'
 import styles from './styles.module.sass'
 

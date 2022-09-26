@@ -110,6 +110,7 @@ export type NewJob = AbstractJob & {
 export type NameValue = {
   name: string
   value: string
+  isFile: boolean
 }
 export type Callback = {
   href: string

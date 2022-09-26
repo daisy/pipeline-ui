@@ -1,5 +1,5 @@
-import { useQuery } from '@tanstack/react-query'
-import { scriptXmlToJson } from 'renderer/pipelineXmlToJson'
+import { useQuery, useMutation } from '@tanstack/react-query'
+import { scriptXmlToJson, jobRequestToXml } from 'renderer/pipelineXmlConverter'
 import { JobRequest } from 'shared/types/pipeline'
 import styles from './styles.module.sass'
 
@@ -24,7 +24,7 @@ export function ScriptForm({ scriptHref }) {
   }
 
   // submit a job
-  let handleOnSubmit = (e) => {
+  let handleOnSubmit = async (e) => {
     let jobRequest: JobRequest = {
       scriptHref: script.href,
       nicename: script.nicename,
@@ -39,27 +39,49 @@ export function ScriptForm({ scriptHref }) {
     }
     let inputs = scriptFormElm.querySelectorAll('input')
     Array.from(inputs).map((input) => {
+      let isFile = input.getAttribute('data-is-file') == 'true'
       if (input.getAttribute('data-kind') == 'input') {
-        jobRequest.inputs.push({ name: input.id, value: input.value })
+        jobRequest.inputs.push({ name: input.id, value: input.value, isFile: false })
       }
       if (input.getAttribute('data-kind') == 'option') {
-        jobRequest.options.push({ name: input.id, value: input.value })
+        jobRequest.options.push({ name: input.id, value: input.value, isFile: false })
       }
     })
     // get the inner span with the value of the selected file or folder
     let fileOrFoldersElms = scriptFormElm.querySelectorAll(".fileOrFolderField")
     Array.from(fileOrFoldersElms).map((elm) => {
-      console.log(elm)
       let name = elm.querySelector('button')?.id.replace('button-', '')
       let kind = elm.getAttribute('data-kind')
       let value = elm.querySelector('span')?.textContent ?? ''
       return { name, value, kind }
     }).map(data => {
-      console.log("data", data)
       let arr = data.kind == 'input' ? jobRequest.inputs : jobRequest.options
-      arr.push({ name: data.name, value: data.value})
+      arr.push({ name: data.name, value: data.value, isFile: true})
     })
-    console.log('REQUEST', jobRequest)
+    let xmlStr = jobRequestToXml(jobRequest)
+    
+    console.log(xmlStr)
+
+    // test that our XML parses
+    // let doc = new DOMParser().parseFromString(xmlStr, 'text/xml')
+    // console.log(doc.getElementsByTagName('jobRequest')[0].nodeName)
+
+    const formData  = new FormData();
+    formData.set('job-request', `${xmlStr}`);
+
+    // Display the key/value pairs
+for (var pair of formData.entries()) {
+  console.log(pair[0]+ ', ' + pair[1]); 
+}
+
+
+    let res = await fetch('http://localhost:8181/ws/jobs', 
+      { 
+        method: 'POST',
+        body: xmlStr,
+        mode: 'no-cors'
+      });
+    console.log("MUT", res)
   }
 
   // keep it simple for now by only showing required inputs and options

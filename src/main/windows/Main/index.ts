@@ -29,8 +29,14 @@ export async function MainWindow() {
 
   ENVIRONMENT.IS_DEV && window.webContents.openDevTools({ mode: 'detach' })
 
-  window.on('close', () =>
-    BrowserWindow.getAllWindows().forEach((window) => window.destroy())
+  window.on(
+    'close',
+    (event) => {
+      event.preventDefault()
+      window.hide()
+      return false
+    }
+    //BrowserWindow.getAllWindows().forEach((window) => window.destroy())
   )
 
   return window

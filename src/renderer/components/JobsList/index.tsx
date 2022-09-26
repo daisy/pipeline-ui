@@ -5,20 +5,25 @@ import {
 } from '@tanstack/react-query'
 import styles from './styles.module.sass'
 import { jobsXmlToJson } from 'renderer/pipelineXmlToJson'
+import { baseurl, Webservice } from 'shared/types'
 
 const queryClient = new QueryClient()
 
 export function JobsList() {
   return (
     <QueryClientProvider client={queryClient}>
-      <Jobs />
+      <Jobs/>
     </QueryClientProvider>
   )
 }
 
 function Jobs() {
+  const {App} = window
   const { isLoading, error, data } = useQuery(['jobsData'], async () => {
-    let res = await fetch('http://localhost:8181/ws/jobs')
+    const state = await App.getPipelineState()
+    const ws = state.runningWebservice
+    if(!ws) throw new Error("DAISY pipeline is not running")
+    let res = await fetch(`${baseurl(ws)}/jobs`)
     let xmlStr = await res.text()
     return xmlStr
   })

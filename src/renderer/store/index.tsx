@@ -1,35 +1,83 @@
-import { useContext, createContext, useState } from 'react'
+import { useContext, createContext, useState, useEffect } from 'react'
+import { PipelineState, PipelineStatus, Webservice } from 'shared/types'
 
 export interface WindowStore {
   about: {
     isOpen: boolean
-    setAboutWindowState: (value: boolean) => void
-  }
+  },
+  pipeline:PipelineState,
+  messages:Array<string>,
+  errors:Array<string>,
+  // react dispatcher
+  setPipelineState: React.Dispatch<React.SetStateAction<PipelineState>>
+  setAboutWindowState:React.Dispatch<React.SetStateAction<{isOpen: boolean}>>,
+  setPipelineErrors: React.Dispatch<React.SetStateAction<string[]>>,
+  setPipelineMessages: React.Dispatch<React.SetStateAction<string[]>>
 }
 
-const WindowStoreContext = createContext({} as WindowStore)
+const { App } = window
+
+const WindowStoreContext = createContext({
+  about:{
+    isOpen:false
+  },
+  pipeline : {
+    status:PipelineStatus.UNKNOWN
+  },
+  messages:[],
+  errors:[]
+} as WindowStore)
 
 export function useWindowStore() {
   return useContext(WindowStoreContext)
 }
 
 export function WindowStoreProvider({ children }) {
-  const [state, setState] = useState({
-    about: { isOpen: false, setAboutWindowState },
+
+  const [about, setAboutWindowState] = useState({
+    isOpen:false
+  })
+  const [pipeline, setPipelineState] = useState<PipelineState>({
+    status:PipelineStatus.UNKNOWN
+  })
+  const [messages, setPipelineMessages] = useState<Array<string>>([])
+  const [errors, setPipelineErrors] = useState<Array<string>>([])
+
+  useEffect(()=>{
+    App.getPipelineState().then((value)=>{
+      setPipelineState(value)
+    })
+    App.getPipelineMessages().then(messages => {
+      setPipelineMessages(messages)
+    })
+    App.getPipelineMessages().then(errors => {
+      setPipelineMessages(errors)
+    })
+  },[])
+
+  App.onPipelineStateChanged((event,newState) => {
+    setPipelineState(newState)
+  })
+  App.onPipelineMessage((event,message)=>{
+    setPipelineMessages([message, ...messages])
+  })
+  App.onPipelineError((event,error)=>{
+    setPipelineErrors([error, ...errors])
   })
 
-  function setAboutWindowState(value: boolean) {
-    setState((state) => ({
-      ...state,
-      about: {
-        ...state.about,
-        isOpen: value,
-      },
-    }))
+  const sharedStore = {
+    about: about,
+    pipeline:pipeline,
+    messages:messages,
+    errors:errors,
+    setAboutWindowState,
+    setPipelineState,
+    setPipelineMessages,
+    setPipelineErrors,
   }
-
+  
   return (
-    <WindowStoreContext.Provider value={state}>
+    <WindowStoreContext.Provider value={sharedStore}>
       {children}
     </WindowStoreContext.Provider>
   )

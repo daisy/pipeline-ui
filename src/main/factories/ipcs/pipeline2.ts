@@ -372,6 +372,7 @@ export class Pipeline2IPC {
         '-Dorg.daisy.pipeline.ws.localfs=true',
         '-Dorg.daisy.pipeline.ws.authentication=false',
         '-Dorg.daisy.pipeline.ws.host=' + this.props.webservice.host,
+        '-Dorg.daisy.pipeline.ws.cors=true',
       ]
       if (this.props.webservice.path) {
         SystemProps.push(

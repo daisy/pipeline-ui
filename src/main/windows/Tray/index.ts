@@ -1,4 +1,4 @@
-import { app, Menu, Tray, BrowserWindow, ipcMain, ipcRenderer } from 'electron'
+import { app, Menu, Tray, BrowserWindow, ipcMain, ipcRenderer, nativeImage } from 'electron'
 import { APP_CONFIG } from '~/app.config'
 import { resolve } from 'path'
 import {
@@ -22,8 +22,11 @@ export class PipelineTray {
     aboutWindow?: BrowserWindow,
     pipeline?: Pipeline2IPC
   ) {
+    const icon = nativeImage.createFromPath(
+      resolve(APP_CONFIG.FOLDERS.RESOURCES, 'icons', 'icon.icns')
+    )
     this.tray = new Tray(
-      resolve(APP_CONFIG.FOLDERS.RESOURCES, 'icons', 'icon.ico')
+      icon
     )
 
     this.menuBaseTemplate = [

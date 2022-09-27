@@ -162,7 +162,7 @@ export class Pipeline2IPC {
         resolve(APP_CONFIG.FOLDERS.RESOURCES, 'daisy-pipeline'),
       jrePath:
         (props && props.jrePath) ??
-        resolve(APP_CONFIG.FOLDERS.RESOURCES, 'jre'),
+        resolve(APP_CONFIG.FOLDERS.RESOURCES, 'daisy-pipeline', 'jre'),
       // Note : [49152 ; 65535] is the range of dynamic port,  0 is reserved for error case
       webservice: (props && props.webservice) ?? {
         host: 'localhost',

@@ -18,11 +18,17 @@ makeAppWithSingleInstanceLock(async () => {
   await app.whenReady()
   const pipelineInstance = new Pipeline2IPC()
   const mainWindow = await makeAppSetup(MainWindow)
-
-  pipelineInstance.launch().then((state) => {
-    mainWindow.webContents.send(IPC.PIPELINE.STATE.CHANGED, state)
-  })
-  const tray = new PipelineTray(mainWindow, null, pipelineInstance)
+  let tray = null
+  try {
+    pipelineInstance.launch().then((state) => {
+      mainWindow.webContents.send(IPC.PIPELINE.STATE.CHANGED, state)
+    })
+  
+    tray = new PipelineTray(mainWindow, null, pipelineInstance)
+  } catch (error) {
+    console.log(error)
+  }
+  
 
   registerAboutWindowCreationByIPC()
   registerPipeline2ToIPC(pipelineInstance, [mainWindow], tray)

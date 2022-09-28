@@ -1,5 +1,5 @@
-import { BrowserWindow, ipcMain, Tray } from 'electron'
-import { resolve, delimiter, relative, dirname } from 'path'
+import { BrowserWindow, ipcMain } from 'electron'
+import { resolve, delimiter, relative } from 'path'
 import { APP_CONFIG } from '~/app.config'
 import { Webservice, PipelineStatus, PipelineState } from 'shared/types'
 import { IPC } from 'shared/constants'
@@ -93,38 +93,29 @@ const getAvailablePort = async (startPort: number, endPort: number) => {
   let portOpened = 0
 
   // Port seeking : if port is in use, retry with a different port
-  server.on(
-    'error',
-    ((err) => {
-      console.log(err)
-      if (err.name === 'EADDRINUSE') {
-        portChecked += 1
-        if (portChecked <= endPort) {
-          console.log('Checking for ' + portChecked.toString())
-          server.listen(startPort)
-        } else {
-          throw new Pipeline2Error(
-            'NO_PORT',
-            'No port available to host the pipeline webservice'
-          )
-        }
-      }
-    }).bind(this)
-  )
+  server.on('error', (err: NodeJS.ErrnoException) => {
+    console.log(`Port ${portChecked.toString()} is not usable : `)
+    console.log(err)
+    portChecked += 1
+    if (portChecked <= endPort) {
+      console.log(' -> Checking for ' + portChecked.toString())
+      server.listen(portChecked)
+    } else {
+      throw new Pipeline2Error(
+        'NO_PORT',
+        'No port available to host the pipeline webservice'
+      )
+    }
+  })
 
-  server.on(
-    'listening',
-    ((event) => {
-      console.log('listening for ' + portChecked.toString())
-      // close the server if listening a port succesfully
-      server.close()
-      portOpened = portChecked
-      console.log(portOpened.toString() + ' is available')
-    }).bind(this)
-  )
+  server.on('listening', (event) => {
+    // close the server if listening a port succesfully
+    server.close()
+    portOpened = portChecked
+    console.log(portOpened.toString() + ' is available')
+  })
   server.listen(portChecked)
   while (portOpened == 0 && portChecked <= endPort) {
-    console.log('waiting - ' + portOpened + ' ' + portChecked)
     await setTimeout(1000)
   }
   return portOpened

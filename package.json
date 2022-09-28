@@ -6,7 +6,19 @@
   "main": "./node_modules/.dev-temp-build/main.js",
   "devTempBuildFolder": "./node_modules/.dev-temp-build",
   "devServer": "http://localhost:4927",
-  "author": "DAISY Developers",
+  "author": {
+    "name": "DAISY development team",
+    "email": "daisy-pipeline@mail.daisy.org"
+  },
+  "contributors": [
+    {
+      "name" : "Marisa DeMeglio",
+      "email" : "marisa.demeglio@gmail.com"
+    },{
+      "name": "Nicolas Pavie",
+      "email": "pavie.nicolas@gmail.com"
+    }
+  ],
   "license": "MIT",
   "scripts": {
     "start": "electron .",
@@ -46,7 +58,7 @@
     "@svgr/webpack": "^6.3.1",
     "@swc/cli": "^0.1.57",
     "@swc/core": "^1.2.237",
-    "@types/node": "^18.7.6",
+    "@types/node": "^18.7.23",
     "@types/react": "^18.0.17",
     "@types/react-dom": "^18.0.6",
     "@typescript-eslint/eslint-plugin": "^5.33.1",

@@ -310,6 +310,7 @@ export class Pipeline2IPC {
       )
 
       let JavaOptions = [
+        '-server',
         '-Dcom.sun.management.jmxremote',
         '--add-opens=java.base/java.security=ALL-UNNAMED',
         '--add-opens=java.base/java.net=ALL-UNNAMED',
@@ -337,12 +338,13 @@ export class Pipeline2IPC {
           ).replace('\\', '/') +
           '"',
         // XMLCalabash base configuration file
-        '-Dorg.daisy.pipeline.xproc.configuration=' +
+        '-Dorg.daisy.pipeline.xproc.configuration="' +
           resolve(
             this.props.localPipelineHome,
             'etc',
             'config-calabash.xml'
-          ).replace('\\', '/'),
+          ).replace('\\', '/') +
+          '"',
         // Updater configuration
         '-Dorg.daisy.pipeline.updater.bin="' +
           resolve(
@@ -366,7 +368,7 @@ export class Pipeline2IPC {
         // to make ${org.daisy.pipeline.data}, ${org.daisy.pipeline.logdir} and ${org.daisy.pipeline.mode}
         // available in config-logback.xml and felix.properties
         // note that config-logback.xml is the only place where ${org.daisy.pipeline.mode} is used
-        '-Dorg.daisy.pipeline.data=' + this.props.appDataFolder,
+        '-Dorg.daisy.pipeline.data="' + this.props.appDataFolder + '"',
         '-Dorg.daisy.pipeline.logdir="' + this.props.logsFolder + '"',
         '-Dorg.daisy.pipeline.mode=webservice',
         '-Dorg.daisy.pipeline.ws.localfs=true',
@@ -392,7 +394,7 @@ export class Pipeline2IPC {
         ...JavaOptions,
         ...SystemProps,
         '-classpath',
-        `"${relativeJarFiles.map((path) => ';' + path).join('')}"`,
+        `"${delimiter}${relativeJarFiles.join(delimiter)}${delimiter}"`,
         'org.daisy.pipeline.webservice.impl.PipelineWebService',
       ]
       console.debug(command + ' ' + args.join(' '))

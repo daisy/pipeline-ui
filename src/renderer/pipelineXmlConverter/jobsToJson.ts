@@ -1,4 +1,4 @@
-import { Job } from 'shared/types/pipeline'
+import { Job } from 'shared/types'
 import { jobElementToJson } from './jobToJson'
 import { parseXml } from './parser'
 

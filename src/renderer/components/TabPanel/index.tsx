@@ -1,6 +1,6 @@
 import { NewJobPane } from '../NewJobPane'
 import { JobDetailsPane } from '../JobDetailsPane'
-import { Job, JobState } from 'shared/types/pipeline'
+import { Job, JobState } from 'shared/types'
 
 import styles from './styles.module.sass'
 

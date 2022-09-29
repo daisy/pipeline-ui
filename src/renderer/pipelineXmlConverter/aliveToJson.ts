@@ -1,4 +1,4 @@
-import { Alive } from 'shared/types/pipeline'
+import { Alive } from 'shared/types'
 import { parseXml } from './parser'
 
 function aliveXmlToJson(xmlString: string): Alive {

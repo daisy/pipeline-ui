@@ -1,5 +1,5 @@
-import { BrowserWindow, ipcMain, Tray } from 'electron'
-import { resolve, delimiter, relative, dirname } from 'path'
+import { BrowserWindow, ipcMain } from 'electron'
+import { resolve, delimiter, relative } from 'path'
 import { APP_CONFIG } from '~/app.config'
 import { Webservice, PipelineStatus, PipelineState } from 'shared/types'
 import { IPC } from 'shared/constants'
@@ -93,38 +93,29 @@ const getAvailablePort = async (startPort: number, endPort: number) => {
   let portOpened = 0
 
   // Port seeking : if port is in use, retry with a different port
-  server.on(
-    'error',
-    ((err) => {
-      console.log(err)
-      if (err.name === 'EADDRINUSE') {
-        portChecked += 1
-        if (portChecked <= endPort) {
-          console.log('Checking for ' + portChecked.toString())
-          server.listen(startPort)
-        } else {
-          throw new Pipeline2Error(
-            'NO_PORT',
-            'No port available to host the pipeline webservice'
-          )
-        }
-      }
-    }).bind(this)
-  )
+  server.on('error', (err: NodeJS.ErrnoException) => {
+    console.log(`Port ${portChecked.toString()} is not usable : `)
+    console.log(err)
+    portChecked += 1
+    if (portChecked <= endPort) {
+      console.log(' -> Checking for ' + portChecked.toString())
+      server.listen(portChecked)
+    } else {
+      throw new Pipeline2Error(
+        'NO_PORT',
+        'No port available to host the pipeline webservice'
+      )
+    }
+  })
 
-  server.on(
-    'listening',
-    ((event) => {
-      console.log('listening for ' + portChecked.toString())
-      // close the server if listening a port succesfully
-      server.close()
-      portOpened = portChecked
-      console.log(portOpened.toString() + ' is available')
-    }).bind(this)
-  )
+  server.on('listening', (event) => {
+    // close the server if listening a port succesfully
+    server.close()
+    portOpened = portChecked
+    console.log(portOpened.toString() + ' is available')
+  })
   server.listen(portChecked)
   while (portOpened == 0 && portChecked <= endPort) {
-    console.log('waiting - ' + portOpened + ' ' + portChecked)
     await setTimeout(1000)
   }
   return portOpened
@@ -310,6 +301,7 @@ export class Pipeline2IPC {
       )
 
       let JavaOptions = [
+        '-server',
         '-Dcom.sun.management.jmxremote',
         '--add-opens=java.base/java.security=ALL-UNNAMED',
         '--add-opens=java.base/java.net=ALL-UNNAMED',
@@ -337,12 +329,13 @@ export class Pipeline2IPC {
           ).replace('\\', '/') +
           '"',
         // XMLCalabash base configuration file
-        '-Dorg.daisy.pipeline.xproc.configuration=' +
+        '-Dorg.daisy.pipeline.xproc.configuration="' +
           resolve(
             this.props.localPipelineHome,
             'etc',
             'config-calabash.xml'
-          ).replace('\\', '/'),
+          ).replace('\\', '/') +
+          '"',
         // Updater configuration
         '-Dorg.daisy.pipeline.updater.bin="' +
           resolve(
@@ -366,7 +359,7 @@ export class Pipeline2IPC {
         // to make ${org.daisy.pipeline.data}, ${org.daisy.pipeline.logdir} and ${org.daisy.pipeline.mode}
         // available in config-logback.xml and felix.properties
         // note that config-logback.xml is the only place where ${org.daisy.pipeline.mode} is used
-        '-Dorg.daisy.pipeline.data=' + this.props.appDataFolder,
+        '-Dorg.daisy.pipeline.data="' + this.props.appDataFolder + '"',
         '-Dorg.daisy.pipeline.logdir="' + this.props.logsFolder + '"',
         '-Dorg.daisy.pipeline.mode=webservice',
         '-Dorg.daisy.pipeline.ws.localfs=true',
@@ -392,7 +385,7 @@ export class Pipeline2IPC {
         ...JavaOptions,
         ...SystemProps,
         '-classpath',
-        `"${relativeJarFiles.map((path) => ';' + path).join('')}"`,
+        `"${delimiter}${relativeJarFiles.join(delimiter)}${delimiter}"`,
         'org.daisy.pipeline.webservice.impl.PipelineWebService',
       ]
       console.debug(command + ' ' + args.join(' '))

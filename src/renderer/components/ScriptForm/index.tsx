@@ -23,11 +23,18 @@ export function ScriptForm({ job, removeJob, updateJob }) {
   if (isLoading) return <p>Loading...</p>
 
   if (error instanceof Error)
-    return <p>An error has occurred: {error.message}</p>
+    return <p>Error: {error.message}</p>
 
-  let script = scriptXmlToJson(data)
+  let script =  null
+  try {
+    script = scriptXmlToJson(data)
+    console.log("script", script)
+  }
+  catch(err) {
+    return <p>Error {err.message}</p>
+  }
   if (!script) {
-    return <p>An error has occurred</p>
+    return <p>Error</p>
   }
 
   // keep it simple for now by only showing required inputs and options
@@ -52,8 +59,8 @@ export function ScriptForm({ job, removeJob, updateJob }) {
     }
     
     let {inputs, options} = getFormData (e.target.parentElement.parentElement)
-    
-    // TODO add the inputs and options to the job request
+    jobRequest.inputs = inputs
+    jobRequest.options = options
 
     let xmlStr = jobRequestToXml(jobRequest)
     
@@ -76,6 +83,7 @@ export function ScriptForm({ job, removeJob, updateJob }) {
 
     // TODO put the href for the new job as the param
     let job_ = {...job, href: 'TODO', state: JobState.SUBMITTED}
+    console.log("SCRIPT FORM job", job_)
     updateJob(job.id, job_)
   }
 

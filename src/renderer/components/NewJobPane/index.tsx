@@ -19,11 +19,14 @@ export function NewJobPane({job, removeJob, updateJob}) {
   if (isLoading) return <p>Loading...</p>
 
   if (error instanceof Error)
-    return <p>An error has occurred: {error.message}</p>
+    return <p>Error {error.message}</p>
 
-  let scripts = scriptsXmlToJson(data)
-  if (!scripts) {
-    return <p>An error has occurred (no scripts data available)</p>
+  let scripts = []
+  try {
+    scripts = scriptsXmlToJson(data)
+  }
+  catch (err) {
+    return <p>Error {err.message}</p>
   }
 
   let handleOnSelectChange = (e) => {

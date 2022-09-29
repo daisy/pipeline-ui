@@ -1,13 +1,9 @@
 import { Script, ScriptInput, ScriptOption } from 'shared/types/pipeline'
+import { parseXml } from './parser'
 
 function scriptXmlToJson(xmlString: string): Script {
-  let doc = new DOMParser().parseFromString(xmlString, 'text/xml')
-  let scriptElms = doc.getElementsByTagName('script')
-  if (scriptElms.length > 0) {
-    return scriptElementToJson(scriptElms[0])
-  } else {
-    throw new Error('Could not parse script XML')
-  }
+  let scriptElm = parseXml(xmlString, 'script')
+  return scriptElementToJson(scriptElm)
 }
 
 function scriptElementToJson(scriptElm: Element): Script {

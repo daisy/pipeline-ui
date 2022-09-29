@@ -8,15 +8,11 @@ import {
   MessageLevel,
 } from 'shared/types/pipeline'
 import { scriptElementToJson } from './scriptToJson'
+import { parseXml } from './parser'
 
 function jobXmlToJson(xmlString: string): Job {
-  let doc = new DOMParser().parseFromString(xmlString, 'text/xml')
-  let jobElms = doc.getElementsByTagName('job')
-  if (jobElms.length > 0) {
-    return jobElementToJson(jobElms[0])
-  } else {
-    throw new Error('Could not parse job XML')
-  }
+  let jobElm = parseXml(xmlString, 'job')
+  return jobElementToJson(jobElm)
 }
 
 function jobElementToJson(jobElm: Element): Job {

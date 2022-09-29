@@ -33,9 +33,13 @@ export function TabView() {
   }
 
   let updateJob = (jobId, job) => {
-    let j = jobs.find(jobObj => jobObj.id == jobId)
-    j = {...job}
-    setJobs([...jobs])
+    let jobs_ = jobs.map(j => {
+      if (j.id == jobId) {
+        return {...job}
+      }
+      else return j
+    })
+    setJobs(jobs_)
   }
   /**end**/
 

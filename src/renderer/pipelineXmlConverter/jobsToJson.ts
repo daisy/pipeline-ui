@@ -1,9 +1,10 @@
 import { Job } from 'shared/types/pipeline'
 import { jobElementToJson } from './jobToJson'
+import { parseXml } from './parser'
 
 function jobsXmlToJson(xmlString: string): Array<Job> {
-  let doc = new DOMParser().parseFromString(xmlString, 'text/xml')
-  let jobs = Array.from(doc.getElementsByTagName('job')).map((jobElm) => {
+  let jobsElm = parseXml(xmlString, 'jobs')
+  let jobs = Array.from(jobsElm.getElementsByTagName('job')).map((jobElm) => {
     let job = jobElementToJson(jobElm)
     return job
   })

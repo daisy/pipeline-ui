@@ -1,92 +1,57 @@
-import { useEffect, useState } from 'react'
-import { scriptsXmlToJson } from 'renderer/pipelineXmlConverter'
-import { useWindowStore } from 'renderer/store'
-import { baseurl, PipelineStatus, Script } from 'shared/types'
 import { useQuery } from '@tanstack/react-query'
+import { useState } from 'react'
+import { scriptsXmlToJson } from 'renderer/pipelineXmlConverter'
 import { ScriptForm } from '../ScriptForm'
 import styles from './styles.module.sass'
 
-export function NewJobPane() {
-  const {pipeline} = useWindowStore()
-  
-  const [viewState, setViewState] = useState<{
-    selectedScript:Script|null
-    scripts:Script[],
-    error?:Error,
-    isLoading:boolean
-  }>({
-    selectedScript:null,
-    scripts:[],
-    isLoading:false
+// the temporary "new job" has its own ID
+export function NewJobPane({job, removeJob, updateJob}) {
+  const [selectedScript, setSelectedScript] = useState(null)
+
+  // TODO move this to app-level context
+  // we don't need to refetch the list of scripts every time
+  const { isLoading, error, data } = useQuery(['scriptsData'], async () => {
+    let res = await fetch('http://localhost:8181/ws/scripts')
+    let xmlStr = await res.text()
+    return xmlStr
   })
 
-  const handleOnSelectChange = (e) => {
-    let selection = viewState.scripts.find((script) => script.id == e.target.value)
-    setViewState({
-      ...viewState,
-      selectedScript:selection
-    })
+  if (isLoading) return <p>Loading...</p>
+
+  if (error instanceof Error)
+    return <p>An error has occurred: {error.message}</p>
+
+  let scripts = scriptsXmlToJson(data)
+  if (!scripts) {
+    return <p>An error has occurred (no scripts data available)</p>
   }
 
-  useEffect(() => {
-    if(pipeline.status === PipelineStatus.RUNNING){
-      const ws = pipeline.runningWebservice
-      setViewState({
-        ...viewState,
-        isLoading:true
-      })
-      fetch(`${baseurl(ws)}/scripts`).then(async (response) => {
-        const scriptsJson = scriptsXmlToJson(await response.text())
-        setViewState({
-          ...viewState,
-          scripts:scriptsJson,
-          error:null,
-          isLoading:false
-        })
-      }).catch((error) => {
-        // Keep previous list of scripts
-        setViewState({
-          ...viewState,
-          error:error,
-          isLoading:false
-        })
-      })
-    } 
-  } ,[pipeline])
+  let handleOnSelectChange = (e) => {
+    let selection = scripts.find((script) => script.id == e.target.value)
+    setSelectedScript(selection)
+  }
 
-
-  if (viewState.isLoading){
-    return <span>Loading jobs ...</span>
-  } else if (viewState.error && viewState.error instanceof Error){
-    return <span>An error has occurred: {viewState.error.message}</span>
-  } else {
-    return (
-      <div className={styles.NewJobPane}>
-        {viewState.selectedScript == null ? (
-          <>
-            <h2>New Job</h2>
-            <div>
-              <label htmlFor="script">Select a script:</label>
-              <select id="script" onChange={(e) => handleOnSelectChange(e)}>
-                <option value={null}>None</option>
-                {viewState.scripts.map((script, idx) => (
-                  <option key={idx} value={script.id}>
-                    {script.nicename}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <button>Cancel new job</button>
-          </>
-        ) : (
-          <></>
-        )}
-        {viewState.selectedScript != null ? (
-          <ScriptForm scriptHref={viewState.selectedScript.href} />
-        ) : (
-          <></>
-        )}
+  let job_ = {...job}
+  if (selectedScript) job_.scriptHref = selectedScript.href
+  return (
+    <div className={styles.NewJobPane}>
+      <div className={styles.SelectScript}>
+        <label htmlFor="script">Select a script:</label>
+        <select id="script" onChange={(e) => handleOnSelectChange(e)}>
+          <option value={null}>None</option>
+          {scripts.map((script, idx) => (
+            <option key={idx} value={script.id}>
+              {script.nicename}
+            </option>
+          ))}
+        </select>
       </div>
-    )
-  }
+      {selectedScript != null ? 
+      <ScriptForm 
+        job={job_} 
+        removeJob={removeJob} 
+        updateJob={updateJob}/> 
+        : ''}
+    </div>
+  )
 }

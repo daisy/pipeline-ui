@@ -4,7 +4,7 @@ import {
   Results,
   ResultFile,
   Priority,
-  Status,
+  JobStatus,
   MessageLevel,
 } from 'shared/types/pipeline'
 import { scriptElementToJson } from './scriptToJson'
@@ -21,11 +21,11 @@ function jobXmlToJson(xmlString: string): Job {
 
 function jobElementToJson(jobElm: Element): Job {
   let job: Job = {
-    id: jobElm.getAttribute('id'),
+    jobId: jobElm.getAttribute('id'),
     href: jobElm.getAttribute('href'),
     priority:
       Priority[jobElm.getAttribute('priority') as keyof typeof Priority],
-    status: Status[jobElm.getAttribute('status') as keyof typeof Status],
+    status: JobStatus[jobElm.getAttribute('status') as keyof typeof JobStatus],
     type: 'Job',
   }
   // TODO is nicename an element or attribute on <job>?

@@ -19,6 +19,7 @@ export type Webservice = {
  * @returns
  */
 export function baseurl(ws: Webservice) {
+  if (!ws) return ''
   return `${ws.ssl ? 'https' : 'http'}://${ws.host}${
     ws.port ? ':' + ws.port : ''
   }${ws.path ?? ''}`
@@ -58,12 +59,12 @@ export enum Priority {
   HIGH = 'high',
 }
 
-export enum Status {
+export enum JobStatus {
   SUCCESS = 'SUCCESS',
-  ERROR = 'Error',
-  IDLE = 'Idle',
-  RUNNING = 'Running',
-  FAIL = 'Fail',
+  ERROR = 'ERROR',
+  IDLE = 'IDLE',
+  RUNNING = 'RUNNING',
+  FAIL = 'FAIL',
 }
 
 export type ResultFile = {
@@ -102,22 +103,27 @@ export type Message = {
   timestamp: number
 }
 
-export type AbstractJob = {
-  id: string
-  nicename?: string
-  type: string
-}
-
-export type Job = AbstractJob & {
-  href: string
+export type JobData = {
   priority?: Priority
-  status: Status
+  status?: JobStatus
   log?: string
   results?: Results
   messages?: Array<Message>
   progress?: number
   script?: Script
-  type: 'Job'
+}
+
+export enum JobState {
+  NEW,
+  SUBMITTED
+}
+
+export type Job = {
+  id: string
+  state: JobState
+  nicename: string
+  scriptHref?: string
+  href?: string
 }
 
 export type ScriptInput = {
@@ -148,10 +154,6 @@ export type Script = {
   version?: string
   inputs?: Array<ScriptInput>
   options?: Array<ScriptOption>
-}
-
-export type NewJob = AbstractJob & {
-  type: 'NewJob'
 }
 
 export type NameValue = {

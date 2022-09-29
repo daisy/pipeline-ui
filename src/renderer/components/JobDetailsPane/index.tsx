@@ -2,7 +2,7 @@ import { useQuery } from '@tanstack/react-query'
 import { jobXmlToJson } from 'renderer/pipelineXmlConverter'
 import styles from './styles.module.sass'
 
-export function JobDetailsPane({ jobHref }) {
+export function JobDetailsPane({ jobHref, removeJob }) {
   let jobData = null
   console.log('Job details pane', jobHref)
   // get the rest of the job data
@@ -26,9 +26,11 @@ export function JobDetailsPane({ jobHref }) {
   jobData = jobXmlToJson(data)
 
   return (
-    <div>
+    <div className={styles.jobDetails}>
       <h2>Job</h2>
       <p> {jobData.id}</p>
+      <p> {jobData.status}</p>
+      <code>{JSON.stringify(jobData)}</code>
     </div>
   )
 }

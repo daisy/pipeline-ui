@@ -1,43 +1,15 @@
-import { useState, useEffect } from 'react'
+import { useQuery } from '@tanstack/react-query'
 import { aliveXmlToJson } from 'renderer/pipelineXmlConverter'
-import { useWindowStore } from 'renderer/store'
-import { baseurl, PipelineStatus } from 'shared/types'
+import { PipelineStatus } from 'shared/types/pipeline'
 import styles from './styles.module.sass'
-
-const statusMsgs = {
-  starting: 'Starting',
-  online: 'Online',
-  offline: 'Offline',
-  checking: 'Checking',
-}
+import { useContext } from 'react'
+import { useWindowStore } from 'renderer/store'
 
 export function Status() {
-
   const {pipeline} = useWindowStore()
-  const [status, setStatus] = useState('offline')
-
-  useEffect(() => {
-    if(pipeline.status == PipelineStatus.STARTING){
-      setStatus('starting')
-    } else if(pipeline.status !== PipelineStatus.RUNNING){
-      // No webservice active
-      setStatus('offline')
-    } else {
-      setStatus('checking')
-      const ws = pipeline.runningWebservice
-      fetch(`${baseurl(ws)}/alive`).then(response => response.text()).then(value => {
-        const alive = aliveXmlToJson(value).alive
-        if(alive){
-          setStatus('online')
-        }
-      }).catch((error) => setStatus('offline'))
-    }
-  } ,[pipeline])
-  
   return (
-    <div className={styles.status}>
-      <span className={styles[status]}>{statusMsgs[status]}</span>
-    </div>
-  )
+      <div className={styles.status}>
+        <span className={styles[pipeline.status]}>{pipeline.status}</span>
+      </div>
+    )
 }
-//*/

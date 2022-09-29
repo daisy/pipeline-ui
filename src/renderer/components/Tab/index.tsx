@@ -1,6 +1,6 @@
 import styles from './styles.module.sass'
 
-export function Tab({ id, label, isSelected, onTabSelect, ariaLabel = '' }) {
+export function Tab({ id, label, isSelected, onTabSelect, ariaLabel = '', title = '' }) {
   return (
     <button
       style={styles}
@@ -9,6 +9,7 @@ export function Tab({ id, label, isSelected, onTabSelect, ariaLabel = '' }) {
       aria-selected={isSelected}
       tabIndex={isSelected ? 0 : -1}
       aria-label={ariaLabel ?? ''}
+      title={title ?? ''}
       id={id}
     >
       {label}

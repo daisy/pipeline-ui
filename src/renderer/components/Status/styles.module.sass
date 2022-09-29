@@ -1,19 +1,16 @@
 .status
     align-self: center
-    width: 5em
-    .online
+    width: 6em
+    text-transform: capitalize
+    .running
         &::after
             content: '🟢'
             padding-left: 0.5em
-    .starting
-        &::after
-            content: '🟡'
-            padding-left: 0.5em
-    .offline
+    .error, .unknown, .stopped
         &::after 
             content: '🔴'
             padding-left: 0.5em
-    .checking
+    .starting
         &::after
             overflow: hidden
             display: inline-block

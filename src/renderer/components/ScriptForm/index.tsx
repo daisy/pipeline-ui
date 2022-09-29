@@ -1,13 +1,21 @@
 import { useQuery, useMutation } from '@tanstack/react-query'
 import { scriptXmlToJson, jobRequestToXml } from 'renderer/pipelineXmlConverter'
-import { JobRequest } from 'shared/types/pipeline'
+import { JobRequest, JobState } from 'shared/types/pipeline'
 import styles from './styles.module.sass'
+import { useState, useContext } from 'react'
+import { useWindowStore } from 'renderer/store'
+import { baseurl } from 'shared/types/pipeline'
 
 const { App } = window // The "App" comes from the bridge
 
-export function ScriptForm({ scriptHref }) {
-  const { isLoading, error, data } = useQuery([scriptHref], async () => {
-    let res = await fetch(scriptHref)
+export function ScriptForm({ job, removeJob, updateJob }) {
+  // IS_FORM, IS_SUBMITTING, IS_ERROR
+  const [formStatus, setFormStatus] = useState('IS_FORM')
+  let pipeline = useWindowStore()
+
+  // load the script and find out about its ports, options, etc
+  const { isLoading, error, data } = useQuery([job.scriptHref], async () => {
+    let res = await fetch(job.scriptHref)
     let xmlStr = await res.text()
     console.log(xmlStr)
     return xmlStr
@@ -23,67 +31,6 @@ export function ScriptForm({ scriptHref }) {
     return <p>An error has occurred</p>
   }
 
-  // submit a job
-  let handleOnSubmit = async (e) => {
-    let jobRequest: JobRequest = {
-      scriptHref: script.href,
-      nicename: script.nicename,
-      inputs: [],
-      options: []
-    }
-    
-    let scriptFormElm = e.target.parentElement.parentElement;
-    if (!scriptFormElm) {
-      console.log("Form error")
-      return
-    }
-    let inputs = scriptFormElm.querySelectorAll('input')
-    Array.from(inputs).map((input) => {
-      let isFile = input.getAttribute('data-is-file') == 'true'
-      if (input.getAttribute('data-kind') == 'input') {
-        jobRequest.inputs.push({ name: input.id, value: input.value, isFile: false })
-      }
-      if (input.getAttribute('data-kind') == 'option') {
-        jobRequest.options.push({ name: input.id, value: input.value, isFile: false })
-      }
-    })
-    // get the inner span with the value of the selected file or folder
-    let fileOrFoldersElms = scriptFormElm.querySelectorAll(".fileOrFolderField")
-    Array.from(fileOrFoldersElms).map((elm) => {
-      let name = elm.querySelector('button')?.id.replace('button-', '')
-      let kind = elm.getAttribute('data-kind')
-      let value = elm.querySelector('span')?.textContent ?? ''
-      return { name, value, kind }
-    }).map(data => {
-      let arr = data.kind == 'input' ? jobRequest.inputs : jobRequest.options
-      arr.push({ name: data.name, value: data.value, isFile: true})
-    })
-    let xmlStr = jobRequestToXml(jobRequest)
-    
-    console.log(xmlStr)
-
-    // test that our XML parses
-    // let doc = new DOMParser().parseFromString(xmlStr, 'text/xml')
-    // console.log(doc.getElementsByTagName('jobRequest')[0].nodeName)
-
-    const formData  = new FormData();
-    formData.set('job-request', `${xmlStr}`);
-
-    // Display the key/value pairs
-for (var pair of formData.entries()) {
-  console.log(pair[0]+ ', ' + pair[1]); 
-}
-
-
-    let res = await fetch('http://localhost:8181/ws/jobs', 
-      { 
-        method: 'POST',
-        body: xmlStr,
-        mode: 'no-cors'
-      });
-    console.log("MUT", res)
-  }
-
   // keep it simple for now by only showing required inputs and options
   let requiredInputs = script.inputs
     .filter((input) => input.required)
@@ -95,24 +42,76 @@ for (var pair of formData.entries()) {
     .map((option) => ({ ...option, kind: 'option' }))
   let allRequired = [...requiredInputs, ...requiredOptions]
   
+  // submit a job
+  let handleOnSubmit = async (e) => {
+    setFormStatus('IS_SUBMITTING')
+    let jobRequest: JobRequest = {
+      scriptHref: script.href,
+      nicename: script.nicename,
+      inputs: [],
+      options: []
+    }
+    
+    let {inputs, options} = getFormData (e.target.parentElement.parentElement)
+    
+    // TODO add the inputs and options to the job request
+
+    let xmlStr = jobRequestToXml(jobRequest)
+    
+    // test that our XML parses
+    // let doc = new DOMParser().parseFromString(xmlStr, 'text/xml')
+    // console.log(doc.getElementsByTagName('jobRequest')[0].nodeName)
+
+    // this post request submits the job to the pipeline webservice
+    let res = await fetch(`${baseurl(pipeline.runningWebservice)}/jobs`, 
+    { 
+      method: 'POST',
+      body: xmlStr,
+      mode: 'no-cors'
+    });
+    console.log("RESPONSE", res)
+
+    // enable this when the responses stop being opaque (when there's a new pipeline update)
+    // TODO: what's the status code for a successful post?
+    //if (res.status != 200) formStatusStatus('IS_ERROR')
+
+    // TODO put the href for the new job as the param
+    let job_ = {...job, href: 'TODO', state: JobState.SUBMITTED}
+    updateJob(job.id, job_)
+  }
+
   return (
     <div className={styles.ScriptForm}>
-      <h2>{script.nicename}</h2>
-      {allRequired.map((item, idx) => (
-        <FormField item={item} key={idx} />
-      ))}
-      <div className={styles.SubmitCancel}>
-        <button>Cancel new job</button>
-        <button
-          id="run-script"
-          type="submit"
-          onClick={(e) => handleOnSubmit(e)}
-        >Run</button>
-      </div>
+      <h3>{script.nicename}</h3>
+
+      {formStatus == 'IS_FORM' ?       
+        <>
+        <p>Required fields:</p>
+        <ul>
+        {allRequired.map((item, idx) => (
+          <li key={idx}><FormField item={item} key={idx} /></li>
+        ))}
+        </ul>
+        <div className={styles.SubmitCancel}>
+          <button onClick={(e) => removeJob(job.id)}>Cancel new job</button>
+          <button
+            id="run-script"
+            type="submit"
+            onClick={(e) => handleOnSubmit(e, pipeline, script, setFormStatus, updateJob)}
+          >Run</button>
+        </div>
+        </>
+      : formStatus == 'IS_SUBMITTING' ? 
+      <p>Submitting...</p>
+      : formStatus == 'IS_ERROR' ? 
+      <p>Error</p>
+      : ''
+    }
     </div>
   )
 }
 
+// create a form element for the item
 // item.type can be:
 // anyFileURI, anyDirURI, xsd:string, xsd:dateTime, xsd:boolean, xsd:integer, xsd:float, xsd:double, xsd:decimal
 // item.mediaType is a file type e.g. application/x-dtbook+xml
@@ -154,11 +153,11 @@ function FormField({ item }) {
   }
 }
 
-// we need a file or folder selector 
+// create a file or folder selector 
 // we can't use HTML <input type="file" ...> because even with the folder option enabled by "webkitdirectory"
 // it won't let users select an empty folder
 // and we can't reuse <input type="file" ...> even as a control to trigger electron's native file picker
-// because you can't set the value on the input field programmatically
+// because you can't set the value on the input field programmatically (yes we could use loads of react code to work around this but let's not)
 // so this function provides a button to browse and a text display of the path
 function FileOrFolderField({item}) {
   let handleInputClick = async (e, item) => {
@@ -182,4 +181,39 @@ function FileOrFolderField({item}) {
       </div>
       
     </div>)
+}
+
+// return all the inputs and options in the form
+function getFormData(scriptFormElm) {
+  let inputData = []
+  let optionData = []
+
+  if (!scriptFormElm) {
+    console.log("Form error")
+    return
+  }
+  let inputs = scriptFormElm.querySelectorAll('input')
+  Array.from(inputs).map((input) => {
+    if (input.getAttribute('data-kind') == 'input') {
+      inputData.push({ name: input.id, value: input.value, isFile: false })
+    }
+    if (input.getAttribute('data-kind') == 'option') {
+      optionData.push({ name: input.id, value: input.value, isFile: false })
+    }
+  })
+  // get the inner span with the value of the selected file or folder
+  let fileOrFoldersElms = scriptFormElm.querySelectorAll(".fileOrFolderField")
+  Array.from(fileOrFoldersElms).map((elm) => {
+    let name = elm.querySelector('button')?.id.replace('button-', '')
+    let kind = elm.getAttribute('data-kind')
+    let value = elm.querySelector('span')?.textContent ?? ''
+    return { name, value, kind }
+  }).map(data => {
+    let arr = data.kind == 'input' ? inputData : optionData
+    arr.push({ name: data.name, value: data.value, isFile: true})
+  })
+  // TODO validate the fields
+
+  return {inputs: inputData, options: optionData}
+
 }

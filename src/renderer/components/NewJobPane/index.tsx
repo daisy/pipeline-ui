@@ -9,28 +9,7 @@ import {baseurl} from 'shared/types/pipeline'
 // the temporary "new job" has its own ID
 export function NewJobPane({job, removeJob, updateJob}) {
   const [selectedScript, setSelectedScript] = useState(null)
-  const {pipeline} = useWindowStore()
-
-  // TODO move this to app-level context
-  // we don't need to refetch the list of scripts every time
-  const { isLoading, error, data } = useQuery(['scriptsData'], async () => {
-    let res = await fetch(`${baseurl(pipeline.runningWebservice)}/scripts`)
-    let xmlStr = await res.text()
-    return xmlStr
-  })
-
-  if (isLoading) return <p>Loading...</p>
-
-  if (error instanceof Error)
-    return <p>Error {error.message}</p>
-
-  let scripts = []
-  try {
-    scripts = scriptsXmlToJson(data)
-  }
-  catch (err) {
-    return <p>Error {err.message}</p>
-  }
+  const {pipeline, scripts} = useWindowStore()
 
   let handleOnSelectChange = (e) => {
     let selection = scripts.find((script) => script.id == e.target.value)

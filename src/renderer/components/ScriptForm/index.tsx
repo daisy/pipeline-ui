@@ -1,42 +1,19 @@
 import { useQuery, useMutation } from '@tanstack/react-query'
-import { scriptXmlToJson, jobRequestToXml } from 'renderer/pipelineXmlConverter'
-import { JobRequest, JobState } from 'shared/types/pipeline'
+import { scriptXmlToJson, jobRequestToXml, jobXmlToJson } from 'renderer/pipelineXmlConverter'
+import { JobRequest, JobState, baseurl } from 'shared/types'
 import styles from './styles.module.sass'
 import { useState, useContext } from 'react'
-import { useWindowStore } from 'renderer/store'
-import { baseurl } from 'shared/types/pipeline'
+import { useWindowStore, useScriptStore } from 'renderer/store'
 
 const { App } = window // The "App" comes from the bridge
 
 export function ScriptForm({ job, removeJob, updateJob }) {
   // IS_FORM, IS_SUBMITTING, IS_ERROR
   const [formStatus, setFormStatus] = useState('IS_FORM')
-  const {pipeline} = useWindowStore()
+  const {pipeline, scripts} = useWindowStore()
 
-  // load the script and find out about its ports, options, etc
-  const { isLoading, error, data } = useQuery([job.scriptHref], async () => {
-    let res = await fetch(job.scriptHref)
-    let xmlStr = await res.text()
-    return xmlStr
-  })
-
-  if (isLoading) return <p>Loading...</p>
-
-  if (error instanceof Error)
-    return <p>Error: {error.message}</p>
-
-  let script =  null
-  try {
-    script = scriptXmlToJson(data)
-    console.log("script", script)
-  }
-  catch(err) {
-    return <p>Error {err.message}</p>
-  }
-  if (!script) {
-    return <p>Error</p>
-  }
-
+  let script = scripts.find(s => s.href == job.scriptHref)
+  
   // keep it simple for now by only showing required inputs and options
   let requiredInputs = script.inputs
     .filter((input) => input.required)
@@ -73,18 +50,28 @@ export function ScriptForm({ job, removeJob, updateJob }) {
     { 
       method: 'POST',
       body: xmlStr,
-      mode: 'no-cors'
+      mode: 'cors'
     });
     console.log("RESPONSE", res)
+    console.log("RESPONSE headers", ...res.headers)
 
-    // enable this when the responses stop being opaque (when there's a new pipeline update)
-    // TODO: what's the status code for a successful post?
-    //if (res.status != 200) formStatusStatus('IS_ERROR')
+    if (res.status != 201) {
+      setFormStatus('IS_ERROR')
+    }
+    else {
+      let newJobXml = await res.text()
+      try {
+        let newJobJson = jobXmlToJson(newJobXml)
+        let job_ = {...job, href: newJobJson.href, state: JobState.SUBMITTED}
+        console.log("SCRIPT FORM job", job_)
+        updateJob(job.id, job_)
+      }
+      catch(err) {
+        setFormStatus('IS_ERROR')
+      }
+    }
 
-    // TODO put the href for the new job as the param
-    let job_ = {...job, href: 'TODO', state: JobState.SUBMITTED}
-    console.log("SCRIPT FORM job", job_)
-    updateJob(job.id, job_)
+    
   }
 
   return (
@@ -210,15 +197,20 @@ function getFormData(scriptFormElm) {
   // get the inner span with the value of the selected file or folder
   let fileOrFoldersElms = scriptFormElm.querySelectorAll(".fileOrFolderField")
   Array.from(fileOrFoldersElms).map((elm) => {
+    console.log(elm)
     let name = elm.querySelector('button')?.id.replace('button-', '')
-    let kind = elm.getAttribute('data-kind')
+    let kind = elm.querySelector('button').getAttribute('data-kind')
     let value = elm.querySelector('span')?.textContent ?? ''
     return { name, value, kind }
   }).map(data => {
+    console.log("DATA", data)
     let arr = data.kind == 'input' ? inputData : optionData
     arr.push({ name: data.name, value: data.value, isFile: true})
   })
   // TODO validate the fields
+
+  console.log(inputData)
+  console.log(optionData)
 
   return {inputs: inputData, options: optionData}
 

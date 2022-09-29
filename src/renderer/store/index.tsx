@@ -1,5 +1,6 @@
 import { useContext, createContext, useState, useEffect } from 'react'
-import { PipelineState, PipelineStatus, Webservice } from 'shared/types'
+import { PipelineState, PipelineStatus, Webservice, baseurl, Script } from 'shared/types'
+import { scriptsXmlToJson, scriptXmlToJson} from 'renderer/pipelineXmlConverter'
 
 export interface WindowStore {
   about: {
@@ -25,7 +26,8 @@ const WindowStoreContext = createContext({
     status:PipelineStatus.UNKNOWN
   },
   messages:[],
-  errors:[]
+  errors:[],
+  scripts: []
 } as WindowStore)
 
 export function useWindowStore() {
@@ -42,10 +44,15 @@ export function WindowStoreProvider({ children }) {
   })
   const [messages, setPipelineMessages] = useState<Array<string>>([])
   const [errors, setPipelineErrors] = useState<Array<string>>([])
+  const [scripts, setScripts] = useState<Array<Script>>([])
 
   useEffect(()=>{
     App.getPipelineState().then((value)=>{
       setPipelineState(value)
+      if (value.status == PipelineStatus.RUNNING) {
+        console.log("getting scripts (useEffect)")
+        getScripts(`${baseurl(value.runningWebservice)}/scripts`, setScripts)
+      }
     })
     App.getPipelineMessages().then(messages => {
       setPipelineMessages(messages)
@@ -55,8 +62,12 @@ export function WindowStoreProvider({ children }) {
     })
   },[])
 
-  App.onPipelineStateChanged((event,newState) => {
+  App.onPipelineStateChanged(async (event,newState) => {
     setPipelineState(newState)
+    if (newState.status == PipelineStatus.RUNNING && scripts.length == 0) {
+      console.log("getting scripts (onPipelineStateChanged)")
+      await getScripts(`${baseurl(value.runningWebservice)}/scripts`, setScripts)
+    }
   })
   App.onPipelineMessage((event,message)=>{
     setPipelineMessages([message, ...messages])
@@ -70,6 +81,7 @@ export function WindowStoreProvider({ children }) {
     pipeline:pipeline,
     messages:messages,
     errors:errors,
+    scripts: scripts,
     setAboutWindowState,
     setPipelineState,
     setPipelineMessages,
@@ -81,4 +93,19 @@ export function WindowStoreProvider({ children }) {
       {children}
     </WindowStoreContext.Provider>
   )
+}
+
+async function getScripts(url, setScriptsFn) {
+  let res = await fetch(url)
+  let xmlStr = await res.text()
+  console.log(xmlStr)
+
+  let scriptsData = scriptsXmlToJson(xmlStr)
+  let completeScriptsData = await Promise.all(scriptsData.map(async scriptData => {
+    res = await fetch(scriptData.href)
+    xmlStr = await res.text()
+    return scriptXmlToJson(xmlStr)
+  }))
+  console.log("setting scripts", completeScriptsData)
+  setScriptsFn(completeScriptsData)
 }

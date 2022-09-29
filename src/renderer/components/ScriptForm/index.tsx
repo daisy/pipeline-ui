@@ -11,13 +11,12 @@ const { App } = window // The "App" comes from the bridge
 export function ScriptForm({ job, removeJob, updateJob }) {
   // IS_FORM, IS_SUBMITTING, IS_ERROR
   const [formStatus, setFormStatus] = useState('IS_FORM')
-  let pipeline = useWindowStore()
+  const {pipeline} = useWindowStore()
 
   // load the script and find out about its ports, options, etc
   const { isLoading, error, data } = useQuery([job.scriptHref], async () => {
     let res = await fetch(job.scriptHref)
     let xmlStr = await res.text()
-    console.log(xmlStr)
     return xmlStr
   })
 
@@ -161,7 +160,6 @@ function FormField({ item }) {
 // so this function provides a button to browse and a text display of the path
 function FileOrFolderField({item}) {
   let handleInputClick = async (e, item) => {
-    console.log(item)
     e.preventDefault()
     let filename = await App.showOpenFileDialog()
     e.target.nextElementSibling.textContent = filename  

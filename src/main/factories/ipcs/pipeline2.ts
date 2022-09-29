@@ -81,13 +81,25 @@ export class Pipeline2Error extends Error {
   }
 }
 
+// Dev notes :
+// - port seeking in nodejs default to ipv6 ':::' for unset or localhost hostname
+// - ipv4 and 6 do not share ports (based on some tests, one app could listen to an ipv4 port while another listen to the same on the ipv6 side)
+//
+// Some comments on SOF say that hostname resolution is OS dependent, but some clues on github issues for nodejs
+// states that the resolution for 'localhost' defaults to ipv6, starting a version of nodejs i can't remember the number
+
 /**
  * seek for an opened port, or return null if none is available
- * @param hostname
+ *
  * @param startPort
  * @param endPort
+ * @param host optional hostname or ip adress (default to 127.0.0.1)
  */
-const getAvailablePort = async (startPort: number, endPort: number) => {
+const getAvailablePort = async (
+  startPort: number,
+  endPort: number,
+  host: string = '127.0.0.1'
+) => {
   let server = createServer()
   let portChecked = startPort
   let portOpened = 0
@@ -99,7 +111,7 @@ const getAvailablePort = async (startPort: number, endPort: number) => {
     portChecked += 1
     if (portChecked <= endPort) {
       console.log(' -> Checking for ' + portChecked.toString())
-      server.listen(portChecked)
+      server.listen(portChecked, host)
     } else {
       throw new Pipeline2Error(
         'NO_PORT',
@@ -107,14 +119,17 @@ const getAvailablePort = async (startPort: number, endPort: number) => {
       )
     }
   })
-
+  // Listening successfully on a port
   server.on('listening', (event) => {
     // close the server if listening a port succesfully
-    server.close()
-    portOpened = portChecked
-    console.log(portOpened.toString() + ' is available')
+    server.close(() => {
+      // select the port when the server is closed
+      portOpened = portChecked
+    })
+    console.log(portChecked.toString() + ' is available')
   })
-  server.listen(portChecked)
+  // Start the port seeking
+  server.listen(portChecked, host)
   while (portOpened == 0 && portChecked <= endPort) {
     await setTimeout(1000)
   }
@@ -156,8 +171,8 @@ export class Pipeline2IPC {
         resolve(APP_CONFIG.FOLDERS.RESOURCES, 'daisy-pipeline', 'jre'),
       // Note : [49152 ; 65535] is the range of dynamic port,  0 is reserved for error case
       webservice: (props && props.webservice) ?? {
-        host: 'localhost',
-        port: 8181,
+        host: '127.0.0.1', // Note : localhost resolve as ipv6 ':::' in nodejs, but we need ipv4 for the pipeline
+        port: 0,
         path: '/ws',
       },
       appDataFolder:
@@ -237,7 +252,7 @@ export class Pipeline2IPC {
       ) {
         console.log('Searching for an valid port')
         try {
-          await getAvailablePort(49152, 65535)
+          await getAvailablePort(49152, 65535, this.props.webservice.host)
             .then(
               ((port) => {
                 this.props.webservice.port = port
@@ -268,14 +283,14 @@ export class Pipeline2IPC {
               throw err
             })
         } catch (error) {
-          this.setState({
-            status: PipelineStatus.ERROR,
-          })
           this.pushError(error)
-          return
+          // no port available, try to use the usual 8181
+          this.props.webservice.port = 8181
         }
       }
-      console.debug('Launching pipeline')
+      console.log(
+        `Launching pipeline on ${this.props.webservice.host}:${this.props.webservice.port}`
+      )
       let ClassFolders = [
         resolve(this.props.localPipelineHome, 'system'),
         resolve(this.props.localPipelineHome, 'modules'),
@@ -388,7 +403,6 @@ export class Pipeline2IPC {
         `"${delimiter}${relativeJarFiles.join(delimiter)}${delimiter}"`,
         'org.daisy.pipeline.webservice.impl.PipelineWebService',
       ]
-      console.debug(command + ' ' + args.join(' '))
       this.instance = spawn(command, args, {
         cwd: this.props.localPipelineHome,
       })
@@ -398,8 +412,10 @@ export class Pipeline2IPC {
         // Webservice is started and pipeline is ready to run
         // Both formats of messages have been observed from the Pipeline
         // TODO: find out which one(s) to use
-        if (message.includes('PipelineWebService - component started') 
-          || message.includes('WebService] component started')) {
+        if (
+          message.includes('PipelineWebService - component started') ||
+          message.includes('WebService] component started')
+        ) {
           this.setState({
             status: PipelineStatus.RUNNING,
             runningWebservice: this.props.webservice,

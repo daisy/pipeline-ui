@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Tab } from '../Tab'
 import { TabPanel } from '../TabPanel'
 import { Job, JobState, Script, baseurl } from 'shared/types/pipeline'
@@ -53,6 +53,12 @@ export function TabView() {
     setSelectedJobId(job.id)
   }
 
+  // workaround to support just one job (multiple jobs are causing issues)
+  useEffect(() => {
+    addJob()
+  }, [])
+  
+
   return (
     <>
       <div role="tablist" style={styles}>
@@ -67,13 +73,14 @@ export function TabView() {
             />
           )
         })}
-        <Tab
+        {/* workaround to support just one job (multiple jobs are causing issues)*/}
+        {/* <Tab
           label="+"
           isSelected="false"
           onTabSelect={(e) => addJob()}
           aria-label="Create job"
           id="create-job"
-        />
+        /> */}
       </div>
       {jobs.map((job, idx) => (
         <TabPanel job={job} key={idx} isSelected={job.id == selectedJobId} removeJob={removeJob} updateJob={updateJob}/>

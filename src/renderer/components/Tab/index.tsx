@@ -11,6 +11,7 @@ export function Tab({ id, label, isSelected, onTabSelect, ariaLabel = '', title 
       aria-label={ariaLabel ?? ''}
       title={title ?? ''}
       id={id}
+      hidden
     >
       {label}
     </button>

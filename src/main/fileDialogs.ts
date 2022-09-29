@@ -10,7 +10,7 @@ let localizationStrings = {
     'dialog.select': 'Select',
     'dialog.allfiles': 'All files',
     'dialog.chooseepub': 'Choose EPUB',
-    'dialog.check': 'Check',
+    'dialog.check': 'Select',
     'dialog.chooseepubfile': 'Choose EPUB file',
     'dialog.chooseepubdir': 'Choose EPUB directory'
 }

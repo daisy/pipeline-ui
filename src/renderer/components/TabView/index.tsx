@@ -24,7 +24,8 @@ export function TabView() {
   }
   let addJob = () => {
     let theNewJob = createJob()
-    setJobs([...jobs, theNewJob]);
+    setJobs([...jobs, theNewJob])
+    handleOnTabSelect(theNewJob)
   }
 
   let removeJob = (jobId) => {

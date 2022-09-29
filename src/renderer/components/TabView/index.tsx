@@ -1,17 +1,17 @@
 import { useState } from 'react'
 import { Tab } from '../Tab'
 import { TabPanel } from '../TabPanel'
-import { Job, JobState } from 'shared/types/pipeline'
+import { Job, JobState, Script, baseurl } from 'shared/types/pipeline'
 import styles from './styles.module.sass'
-import { useContext } from 'react'
 import { useWindowStore } from 'renderer/store'
 
 export function TabView() {
+
   const {pipeline} = useWindowStore()
   const [selectedJobId, setSelectedJobId] = useState('')
-
-  // all of this job management stuff should probably go in a higher-level context
-  /**start**/
+  
+  // Job management
+  /* start */
   const [jobs, setJobs] = useState([])
   
   let createJob = () => {
@@ -41,12 +41,16 @@ export function TabView() {
     })
     setJobs(jobs_)
   }
-  /**end**/
+  /* end */
 
   if (selectedJobId == '' && jobs.length > 0 && jobs[0].id) {
     setSelectedJobId(jobs[0].id)
   }
 
+  let handleOnTabSelect = (job) => {
+    console.log('Select ', job.id)
+    setSelectedJobId(job.id)
+  }
 
   return (
     <>

@@ -3,15 +3,18 @@ import { useState } from 'react'
 import { scriptsXmlToJson } from 'renderer/pipelineXmlConverter'
 import { ScriptForm } from '../ScriptForm'
 import styles from './styles.module.sass'
+import {useWindowStore} from 'renderer/store'
+import {baseurl} from 'shared/types/pipeline'
 
 // the temporary "new job" has its own ID
 export function NewJobPane({job, removeJob, updateJob}) {
   const [selectedScript, setSelectedScript] = useState(null)
+  const {pipeline} = useWindowStore()
 
   // TODO move this to app-level context
   // we don't need to refetch the list of scripts every time
   const { isLoading, error, data } = useQuery(['scriptsData'], async () => {
-    let res = await fetch('http://localhost:8181/ws/scripts')
+    let res = await fetch(`${baseurl(pipeline.runningWebservice)}/scripts`)
     let xmlStr = await res.text()
     return xmlStr
   })

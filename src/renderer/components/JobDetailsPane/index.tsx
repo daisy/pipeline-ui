@@ -7,10 +7,11 @@ export function JobDetailsPane( {job, removeJob, updateJob}) {
   console.log('Job details pane', job.href)
   // get the rest of the job data
   const { isLoading, error, data } = useQuery([job.href], async () => {
+    console.log('fetching job', job.href)
     let res = await fetch(job.href)
     let xmlStr = await res.text()
     return xmlStr
-  })
+  }, { refetchInterval: 4000})
 
   if (isLoading) {
     return <p>Loading...</p>

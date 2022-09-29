@@ -49,10 +49,6 @@ export function WindowStoreProvider({ children }) {
   useEffect(()=>{
     App.getPipelineState().then((value)=>{
       setPipelineState(value)
-      if (value.status == PipelineStatus.RUNNING) {
-        console.log("getting scripts (useEffect)")
-        getScripts(`${baseurl(value.runningWebservice)}/scripts`, setScripts)
-      }
     })
     App.getPipelineMessages().then(messages => {
       setPipelineMessages(messages)
@@ -62,12 +58,15 @@ export function WindowStoreProvider({ children }) {
     })
   },[])
 
+  useEffect(() => {
+    if (pipeline.status == PipelineStatus.RUNNING && scripts.length == 0) {
+      console.log("getting scripts (useEffect)")
+      getScripts(`${baseurl(pipeline.runningWebservice)}/scripts`, setScripts)
+    }
+  }, [pipeline])
+
   App.onPipelineStateChanged(async (event,newState) => {
     setPipelineState(newState)
-    if (newState.status == PipelineStatus.RUNNING && scripts.length == 0) {
-      console.log("getting scripts (onPipelineStateChanged)")
-      await getScripts(`${baseurl(value.runningWebservice)}/scripts`, setScripts)
-    }
   })
   App.onPipelineMessage((event,message)=>{
     setPipelineMessages([message, ...messages])

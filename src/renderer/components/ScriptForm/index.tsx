@@ -13,11 +13,11 @@ export function ScriptForm({ job, removeJob, updateJob }) {
   const {pipeline, scripts} = useWindowStore()
 
   let script = scripts.find(s => s.href == job.scriptHref)
-  
+
   // keep it simple for now by only showing required inputs and options
   let requiredInputs = script.inputs
     .filter((input) => input.required)
-    // inputs are always files
+    // inputs are always files (vs options)
     .map((input) => ({ ...input, type: 'anyFileURI', kind: 'input' }))
 
   let requiredOptions = script.options
@@ -52,8 +52,6 @@ export function ScriptForm({ job, removeJob, updateJob }) {
       body: xmlStr,
       mode: 'cors'
     });
-    console.log("RESPONSE", res)
-    console.log("RESPONSE headers", ...res.headers)
 
     if (res.status != 201) {
       setFormStatus('IS_ERROR')
@@ -63,7 +61,6 @@ export function ScriptForm({ job, removeJob, updateJob }) {
       try {
         let newJobJson = jobXmlToJson(newJobXml)
         let job_ = {...job, href: newJobJson.href, state: JobState.SUBMITTED}
-        console.log("SCRIPT FORM job", job_)
         updateJob(job.id, job_)
       }
       catch(err) {

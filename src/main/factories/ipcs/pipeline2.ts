@@ -157,7 +157,7 @@ export class Pipeline2IPC {
       // Note : [49152 ; 65535] is the range of dynamic port,  0 is reserved for error case
       webservice: (props && props.webservice) ?? {
         host: 'localhost',
-        port: 0,
+        port: 8181,
         path: '/ws',
       },
       appDataFolder:
@@ -396,7 +396,10 @@ export class Pipeline2IPC {
       this.instance.stdout.on('data', (data) => {
         let message: string = data.toString()
         // Webservice is started and pipeline is ready to run
-        if (message.includes('PipelineWebService - component started')) {
+        // Both formats of messages have been observed from the Pipeline
+        // TODO: find out which one(s) to use
+        if (message.includes('PipelineWebService - component started') 
+          || message.includes('WebService] component started')) {
           this.setState({
             status: PipelineStatus.RUNNING,
             runningWebservice: this.props.webservice,

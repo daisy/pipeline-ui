@@ -13,6 +13,8 @@ import {
 } from './windows'
 import { setupFileDialogEvents } from './fileDialogs'
 import { IPC } from 'shared/constants'
+import { setupClipboardEvents } from './clipboard'
+
 
 makeAppWithSingleInstanceLock(async () => {
   await app.whenReady()
@@ -33,4 +35,5 @@ makeAppWithSingleInstanceLock(async () => {
   registerAboutWindowCreationByIPC()
   registerPipeline2ToIPC(pipelineInstance, [mainWindow], tray)
   setupFileDialogEvents()
+  setupClipboardEvents()
 })

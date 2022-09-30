@@ -377,7 +377,7 @@ export class Pipeline2IPC {
         // to make ${org.daisy.pipeline.data}, ${org.daisy.pipeline.logdir} and ${org.daisy.pipeline.mode}
         // available in config-logback.xml and felix.properties
         // note that config-logback.xml is the only place where ${org.daisy.pipeline.mode} is used
-        '-Dorg.daisy.pipeline.data="' + this.props.appDataFolder + '"',
+        '-Dorg.daisy.pipeline.data=' + this.props.appDataFolder + '',
         '-Dorg.daisy.pipeline.logdir="' + this.props.logsFolder + '"',
         '-Dorg.daisy.pipeline.mode=webservice',
         '-Dorg.daisy.pipeline.ws.localfs=true',

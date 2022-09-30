@@ -59,6 +59,7 @@ export function ScriptForm({ job, removeJob, updateJob }) {
     else {
       let newJobXml = await res.text()
       try {
+        setFormStatus('SUBMITTED')
         let newJobJson = jobXmlToJson(newJobXml)
         let job_ = {...job, href: newJobJson.href, state: JobState.SUBMITTED}
         updateJob(job.id, job_)
@@ -96,6 +97,8 @@ export function ScriptForm({ job, removeJob, updateJob }) {
       <p>Submitting...</p>
       : formStatus == 'IS_ERROR' ? 
       <p>Error</p>
+      : formStatus == 'SUBMITTED' ?
+      <p>Submitted</p>
       : ''
     }
     </div>
@@ -194,20 +197,15 @@ function getFormData(scriptFormElm) {
   // get the inner span with the value of the selected file or folder
   let fileOrFoldersElms = scriptFormElm.querySelectorAll(".fileOrFolderField")
   Array.from(fileOrFoldersElms).map((elm) => {
-    console.log(elm)
     let name = elm.querySelector('button')?.id.replace('button-', '')
     let kind = elm.querySelector('button').getAttribute('data-kind')
     let value = elm.querySelector('span')?.textContent ?? ''
     return { name, value, kind }
   }).map(data => {
-    console.log("DATA", data)
     let arr = data.kind == 'input' ? inputData : optionData
     arr.push({ name: data.name, value: data.value, isFile: true})
   })
   // TODO validate the fields
-
-  console.log(inputData)
-  console.log(optionData)
 
   return {inputs: inputData, options: optionData}
 

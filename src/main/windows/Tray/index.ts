@@ -32,7 +32,7 @@ export class PipelineTray {
     pipeline?: Pipeline2IPC
   ) {
     const icon = nativeImage.createFromPath(
-      resolveUnpacked('resources', 'icons', 'icon.icns')
+      resolveUnpacked('resources', 'icons', 'tray.png')
     )
     this.tray = new Tray(icon)
 

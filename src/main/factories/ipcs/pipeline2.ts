@@ -457,6 +457,11 @@ export class Pipeline2IPC {
    * Stopping the pipeline
    */
   async stop(appIsClosing = false) {
+    if (appIsClosing) {
+      this.stateListeners = []
+      this.messagesListeners = []
+      this.errorsListeners = []
+    }
     if (this.instance) {
       info('closing pipeline')
       let finished = false
@@ -465,11 +470,9 @@ export class Pipeline2IPC {
         this.instance.kill('SIGKILL')
       }
       this.instance = null
-      if (!appIsClosing)
-        this.setState({
-          status: PipelineStatus.STOPPED,
-        })
-      this.state.status = PipelineStatus.STOPPED
+      this.setState({
+        status: PipelineStatus.STOPPED,
+      })
     }
   }
 

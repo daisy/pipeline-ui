@@ -43,7 +43,7 @@ const showEpubFileOrFolderBrowseDialog = async (callback) => {
   const filePath = await showOpenDialog({
     title: localize('dialog.chooseepub'),
     buttonLabel: localize('dialog.check'),
-    properties: ['openFile', 'openDirectory'],
+    properties: ['openFile'],
     //filters: [{name: 'EPUB', extensions: ['epub']}, {name: localize("dialog.allfiles"), extensions: ['*']}],
   })
   if (callback && filePath) {

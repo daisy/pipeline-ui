@@ -24,7 +24,7 @@
   "scripts": {
     "start": "electron .",
     "build": "cross-env NODE_ENV=production yarn r clean webpack:main webpack:renderer",
-    "postbuild": "node ./bin/modules/postbuild/index.js && permissions",
+    "postbuild": "node ./bin/modules/postbuild/index.js permissions",
     "predev": "cross-var \"rimraf $npm_package_devTempBuildFolder\"",
     "dev": "concurrently \"cross-env BROWSER=none yarn dev:renderer\" \"yarn r server:wait permissions nodemon:start\"",
     "dev:main": "cross-env NODE_ENV=development yarn r webpack:main start",

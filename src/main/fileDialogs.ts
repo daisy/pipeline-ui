@@ -1,6 +1,7 @@
 import { ipcMain, dialog, BrowserWindow, shell } from 'electron'
 
 import { info } from 'electron-log'
+import { pathToFileURL } from 'node:url'
 
 // helper functions
 const {
@@ -161,7 +162,7 @@ async function showOpenDialog(options) {
   }
   const filePath = res.filePaths[0]
   if (filePath) {
-    return filePath
+    return pathToFileURL(filePath)
   } else {
     return undefined
   }

@@ -113,7 +113,7 @@ export class PipelineTray {
         label: 'Quit',
         click: (item, window, event) => {
           BrowserWindow.getAllWindows().forEach((window) => window.destroy())
-          pipeline.stop()
+          pipeline.stop(true)
           app.quit()
         },
       },

@@ -1,4 +1,4 @@
-import { BrowserWindow, ipcMain } from 'electron'
+import { app, BrowserWindow, ipcMain } from 'electron'
 import { resolve, delimiter, relative } from 'path'
 import { APP_CONFIG } from '~/app.config'
 import { Webservice, PipelineStatus, PipelineState } from 'shared/types'
@@ -456,7 +456,7 @@ export class Pipeline2IPC {
   /**
    * Stopping the pipeline
    */
-  async stop() {
+  async stop(appIsClosing = false) {
     if (this.instance) {
       info('closing pipeline')
       let finished = false
@@ -465,11 +465,12 @@ export class Pipeline2IPC {
         this.instance.kill('SIGKILL')
       }
       this.instance = null
+      if (!appIsClosing)
+        this.setState({
+          status: PipelineStatus.STOPPED,
+        })
       this.state.status = PipelineStatus.STOPPED
     }
-    this.stateListeners.forEach((callback) => {
-      callback(this.state)
-    })
   }
 
   registerStateListener(callback: (data: PipelineState) => void) {
@@ -490,19 +491,27 @@ const bindInstanceToApplication = (
 ) => {
   boundedWindows.forEach((window) => {
     pipeline2instance.registerStateListener((state) => {
-      window.webContents.send(IPC.PIPELINE.STATE.CHANGED, state)
+      window &&
+        window.webContents &&
+        window.webContents.send(IPC.PIPELINE.STATE.CHANGED, state)
     })
     pipeline2instance.registerMessageListener((message) => {
-      window.webContents.send(IPC.PIPELINE.MESSAGES.UPDATE, message)
+      window &&
+        window.webContents &&
+        window.webContents.send(IPC.PIPELINE.MESSAGES.UPDATE, message)
     })
     pipeline2instance.registerErrorsListener((error) => {
-      window.webContents.send(IPC.PIPELINE.ERRORS.UPDATE, error)
+      window &&
+        window.webContents &&
+        window.webContents.send(IPC.PIPELINE.ERRORS.UPDATE, error)
     })
     ipcMain.on(IPC.PIPELINE.STATE.SEND, (event) => {
-      window.webContents.send(
-        IPC.PIPELINE.STATE.CHANGED,
-        pipeline2instance.state
-      )
+      window &&
+        window.webContents &&
+        window.webContents.send(
+          IPC.PIPELINE.STATE.CHANGED,
+          pipeline2instance.state
+        )
     })
   })
   tray && tray.bindToPipeline(pipeline2instance)

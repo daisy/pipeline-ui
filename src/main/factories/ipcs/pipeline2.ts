@@ -9,6 +9,9 @@ import { existsSync, readdirSync, statSync } from 'fs'
 
 import { createServer } from 'net'
 import { PipelineTray } from 'main/windows'
+import { resolveUnpacked } from 'shared/utils'
+
+import { info } from 'electron-log'
 
 var walk = function (dir, filter?: (name: string) => boolean) {
   var results = []
@@ -106,11 +109,11 @@ const getAvailablePort = async (
 
   // Port seeking : if port is in use, retry with a different port
   server.on('error', (err: NodeJS.ErrnoException) => {
-    console.log(`Port ${portChecked.toString()} is not usable : `)
-    console.log(err)
+    info(`Port ${portChecked.toString()} is not usable : `)
+    info(err)
     portChecked += 1
     if (portChecked <= endPort) {
-      console.log(' -> Checking for ' + portChecked.toString())
+      info(' -> Checking for ' + portChecked.toString())
       server.listen(portChecked, host)
     } else {
       throw new Pipeline2Error(
@@ -126,7 +129,7 @@ const getAvailablePort = async (
       // select the port when the server is closed
       portOpened = portChecked
     })
-    console.log(portChecked.toString() + ' is available')
+    info(portChecked.toString() + ' is available')
   })
   // Start the port seeking
   server.listen(portChecked, host)
@@ -165,10 +168,10 @@ export class Pipeline2IPC {
     this.props = {
       localPipelineHome:
         (props && props.localPipelineHome) ??
-        resolve(APP_CONFIG.FOLDERS.RESOURCES, 'daisy-pipeline'),
+        resolveUnpacked('resources', 'daisy-pipeline'),
       jrePath:
         (props && props.jrePath) ??
-        resolve(APP_CONFIG.FOLDERS.RESOURCES, 'daisy-pipeline', 'jre'),
+        resolveUnpacked('resources', 'daisy-pipeline', 'jre'),
       // Note : [49152 ; 65535] is the range of dynamic port,  0 is reserved for error case
       webservice: (props && props.webservice) ?? {
         host: '127.0.0.1', // Note : localhost resolve as ipv6 ':::' in nodejs, but we need ipv4 for the pipeline
@@ -250,7 +253,7 @@ export class Pipeline2IPC {
         this.props.webservice.port !== undefined &&
         this.props.webservice.port === 0
       ) {
-        console.log('Searching for an valid port')
+        info('Searching for an valid port')
         try {
           await getAvailablePort(49152, 65535, this.props.webservice.host)
             .then(
@@ -288,7 +291,7 @@ export class Pipeline2IPC {
           this.props.webservice.port = 8181
         }
       }
-      console.log(
+      info(
         `Launching pipeline on ${this.props.webservice.host}:${this.props.webservice.port}`
       )
       let ClassFolders = [
@@ -455,7 +458,7 @@ export class Pipeline2IPC {
    */
   async stop() {
     if (this.instance) {
-      console.log('closing pipeline')
+      info('closing pipeline')
       let finished = false
       finished = this.instance.kill()
       if (!finished) {

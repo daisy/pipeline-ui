@@ -1,4 +1,12 @@
-import { app, Menu, Tray, BrowserWindow, ipcMain, ipcRenderer, nativeImage } from 'electron'
+import {
+  app,
+  Menu,
+  Tray,
+  BrowserWindow,
+  ipcMain,
+  ipcRenderer,
+  nativeImage,
+} from 'electron'
 import { APP_CONFIG } from '~/app.config'
 import { resolve } from 'path'
 import {
@@ -9,6 +17,7 @@ import {
 import { MainWindow, AboutWindow } from '../../windows'
 import { IPC } from 'shared/constants'
 import { PipelineState, PipelineStatus } from 'shared/types'
+import { resolveUnpacked } from 'shared/utils'
 
 export class PipelineTray {
   tray: Tray
@@ -23,11 +32,9 @@ export class PipelineTray {
     pipeline?: Pipeline2IPC
   ) {
     const icon = nativeImage.createFromPath(
-      resolve(APP_CONFIG.FOLDERS.RESOURCES, 'icons', 'icon.icns')
+      resolveUnpacked('resources', 'icons', 'icon.icns')
     )
-    this.tray = new Tray(
-      icon
-    )
+    this.tray = new Tray(icon)
 
     this.menuBaseTemplate = [
       {
@@ -55,7 +62,7 @@ export class PipelineTray {
     } else {
       this.pipelineMenu = [
         {
-          label: 'No pipeline installation found',
+          label: 'Pipeline could not be launched',
         },
         {
           label: 'Quit',

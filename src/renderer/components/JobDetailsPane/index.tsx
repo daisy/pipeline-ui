@@ -61,14 +61,15 @@ function JobResults({ jobId, results }) {
       if (idx != -1) {
         file = file.slice(0, idx + jobId.length) + '/'
         file = file.replace('file:', '')
+        file = decodeURI(file)
       }
     }
   }
 
   if (file != '') {
     return (
-      <button onClick={(e) => App.copyToClipboard(file)}>
-        Copy path to results
+      <button className={styles.copyPathButton} onClick={(e) => App.copyToClipboard(file)}>
+        Show results folder
       </button>
     )
   } else {

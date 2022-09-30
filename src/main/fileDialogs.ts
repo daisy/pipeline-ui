@@ -162,7 +162,7 @@ async function showOpenDialog(options) {
   }
   const filePath = res.filePaths[0]
   if (filePath) {
-    return pathToFileURL(filePath)
+    return pathToFileURL(filePath).href
   } else {
     return undefined
   }

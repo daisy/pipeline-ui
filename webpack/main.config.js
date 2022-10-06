@@ -6,17 +6,17 @@ const { APP_CONFIG } = require('../app.config')
 const { FOLDERS } = APP_CONFIG
 
 module.exports = {
-  target: 'electron-main',
+    target: 'electron-main',
 
-  ...sharedOptions,
+    ...sharedOptions,
 
-  entry: {
-    main: resolve(FOLDERS.ENTRY_POINTS.MAIN),
-    bridge: resolve(FOLDERS.ENTRY_POINTS.BRIDGE),
-  },
+    entry: {
+        main: resolve(FOLDERS.ENTRY_POINTS.MAIN),
+        bridge: resolve(FOLDERS.ENTRY_POINTS.BRIDGE),
+    },
 
-  output: {
-    path: resolve(FOLDERS.DEV_TEMP_BUILD),
-    filename: '[name].js',
-  },
+    output: {
+        path: resolve(FOLDERS.DEV_TEMP_BUILD),
+        filename: '[name].js',
+    },
 }

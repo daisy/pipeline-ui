@@ -5,39 +5,39 @@ const { resolve } = require('path')
 const { isDev } = require('./utils')
 
 exports.sharedOptions = {
-  mode: isDev ? 'development' : 'production',
+    mode: isDev ? 'development' : 'production',
 
-  stats: 'minimal',
+    stats: 'minimal',
 
-  performance: {
-    hints: false,
-  },
-
-  devtool: isDev ? 'inline-source-map' : 'source-map',
-
-  resolve: {
-    extensions: ['.tsx', '.ts', '.js', '.jsx'],
-
-    alias: {
-      '~': resolve(),
+    performance: {
+        hints: false,
     },
 
-    plugins: [new TsconfigPathsPlugin({})],
-  },
+    devtool: isDev ? 'inline-source-map' : 'source-map',
 
-  optimization: {
-    usedExports: true,
-  },
+    resolve: {
+        extensions: ['.tsx', '.ts', '.js', '.jsx'],
 
-  module: {
-    rules: [
-      {
-        test: /\.(js|ts|tsx|jsx)$/,
-        loader: 'swc-loader',
-        exclude: /node_modules/,
-      },
-    ],
-  },
+        alias: {
+            '~': resolve(),
+        },
 
-  plugins: [new SimpleProgressWebpackPlugin({ format: 'minimal' })],
+        plugins: [new TsconfigPathsPlugin({})],
+    },
+
+    optimization: {
+        usedExports: true,
+    },
+
+    module: {
+        rules: [
+            {
+                test: /\.(js|ts|tsx|jsx)$/,
+                loader: 'swc-loader',
+                exclude: /node_modules/,
+            },
+        ],
+    },
+
+    plugins: [new SimpleProgressWebpackPlugin({ format: 'minimal' })],
 }

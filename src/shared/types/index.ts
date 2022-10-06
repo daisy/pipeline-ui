@@ -1,19 +1,19 @@
 import {
-  BrowserWindowConstructorOptions,
-  IpcMainInvokeEvent,
-  BrowserWindow,
+    BrowserWindowConstructorOptions,
+    IpcMainInvokeEvent,
+    BrowserWindow,
 } from 'electron'
 
 export type BrowserWindowOrNull = Electron.BrowserWindow | null
 
 export interface WindowProps extends BrowserWindowConstructorOptions {
-  id: string
+    id: string
 }
 
 export interface WindowCreationByIPC {
-  channel: string
-  window(): BrowserWindowOrNull
-  callback(window: BrowserWindow, event: IpcMainInvokeEvent): void
+    channel: string
+    window(): BrowserWindowOrNull
+    callback(window: BrowserWindow, event: IpcMainInvokeEvent): void
 }
 
 export * from './pipeline'

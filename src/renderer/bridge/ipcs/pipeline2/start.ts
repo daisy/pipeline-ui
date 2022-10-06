@@ -5,8 +5,8 @@ import { IPC } from 'shared/constants'
 import { PipelineState, Webservice } from 'shared/types'
 
 export function launchPipeline(
-  webserviceProps?: Webservice
+    webserviceProps?: Webservice
 ): Promise<PipelineState> {
-  const channel = IPC.PIPELINE.START
-  return ipcRenderer.invoke(channel, webserviceProps)
+    const channel = IPC.PIPELINE.START
+    return ipcRenderer.invoke(channel, webserviceProps)
 }

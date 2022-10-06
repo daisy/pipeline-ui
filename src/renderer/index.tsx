@@ -7,9 +7,9 @@ import { AppRoutes } from './routes'
 import './styles/globals.sass'
 
 ReactDom.createRoot(document.querySelector('app') as HTMLElement).render(
-  <React.StrictMode>
-    <WindowStoreProvider>
-      <AppRoutes />
-    </WindowStoreProvider>
-  </React.StrictMode>
+    <React.StrictMode>
+        <WindowStoreProvider>
+            <AppRoutes />
+        </WindowStoreProvider>
+    </React.StrictMode>
 )

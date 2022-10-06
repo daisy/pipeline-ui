@@ -8,10 +8,10 @@
  *
  */
 export type Webservice = {
-  host: string
-  port?: number
-  path?: string
-  ssl?: boolean
+    host: string
+    port?: number
+    path?: string
+    ssl?: boolean
 }
 /**
  * Utility function to get base url string from webservice
@@ -19,160 +19,160 @@ export type Webservice = {
  * @returns
  */
 export function baseurl(ws: Webservice) {
-  if (!ws) return ''
-  return `${ws.ssl ? 'https' : 'http'}://${ws.host}${
-    ws.port ? ':' + ws.port : ''
-  }${ws.path ?? ''}`
+    if (!ws) return ''
+    return `${ws.ssl ? 'https' : 'http'}://${ws.host}${
+        ws.port ? ':' + ws.port : ''
+    }${ws.path ?? ''}`
 }
 
 /**
  * Local instance possible status
  */
 export enum PipelineStatus {
-  UNKNOWN = 'unknown',
-  STARTING = 'starting',
-  RUNNING = 'running',
-  STOPPED = 'stopped',
-  ERROR = 'error',
+    UNKNOWN = 'unknown',
+    STARTING = 'starting',
+    RUNNING = 'running',
+    STOPPED = 'stopped',
+    ERROR = 'error',
 }
 
 /**
  * Local instance state to be used by front
  */
 export interface PipelineState {
-  runningWebservice?: Webservice
-  status: PipelineStatus
-  // messages: Array<string>
-  // errors: Array<string>
+    runningWebservice?: Webservice
+    status: PipelineStatus
+    // messages: Array<string>
+    // errors: Array<string>
 }
 
 export type Alive = {
-  alive: boolean
-  localfs?: boolean
-  authentication?: boolean
-  version?: string
+    alive: boolean
+    localfs?: boolean
+    authentication?: boolean
+    version?: string
 }
 
 export enum Priority {
-  LOW = 'low',
-  MEDIUM = 'medium',
-  HIGH = 'high',
+    LOW = 'low',
+    MEDIUM = 'medium',
+    HIGH = 'high',
 }
 
 export enum JobStatus {
-  SUCCESS = 'SUCCESS',
-  ERROR = 'ERROR',
-  IDLE = 'IDLE',
-  RUNNING = 'RUNNING',
-  FAIL = 'FAIL',
+    SUCCESS = 'SUCCESS',
+    ERROR = 'ERROR',
+    IDLE = 'IDLE',
+    RUNNING = 'RUNNING',
+    FAIL = 'FAIL',
 }
 
 export type ResultFile = {
-  mimeType: string
-  size: string
-  file?: string
-  href?: string
+    mimeType: string
+    size: string
+    file?: string
+    href?: string
 }
 export type NamedResult = {
-  from: string
-  href: string
-  mimeType: string
-  name: string
-  nicename: string
-  files: Array<ResultFile>
+    from: string
+    href: string
+    mimeType: string
+    name: string
+    nicename: string
+    files: Array<ResultFile>
 }
 
 export type Results = {
-  href: string
-  mimeType: string
-  namedResults: Array<NamedResult>
+    href: string
+    mimeType: string
+    namedResults: Array<NamedResult>
 }
 
 export enum MessageLevel {
-  ERROR = 'ERROR',
-  WARNING = 'WARNING',
-  INFO = 'INFO',
-  DEBUG = 'DEBUG',
-  TRACE = 'TRACE',
+    ERROR = 'ERROR',
+    WARNING = 'WARNING',
+    INFO = 'INFO',
+    DEBUG = 'DEBUG',
+    TRACE = 'TRACE',
 }
 
 export type Message = {
-  level: MessageLevel
-  content: string
-  sequence: number
-  timestamp: number
+    level: MessageLevel
+    content: string
+    sequence: number
+    timestamp: number
 }
 
 export type JobData = {
-  priority?: Priority
-  status?: JobStatus
-  log?: string
-  results?: Results
-  messages?: Array<Message>
-  progress?: number
-  script?: Script
+    priority?: Priority
+    status?: JobStatus
+    log?: string
+    results?: Results
+    messages?: Array<Message>
+    progress?: number
+    script?: Script
 }
 
 export enum JobState {
-  NEW,
-  SUBMITTED
+    NEW,
+    SUBMITTED,
 }
 
 export type Job = {
-  id: string
-  state: JobState
-  nicename: string
-  scriptHref?: string
-  href?: string
+    id: string
+    state: JobState
+    nicename: string
+    scriptHref?: string
+    href?: string
 }
 
 export type ScriptInput = {
-  desc?: string
-  mediaType?: string
-  name: string
-  sequence?: boolean
-  required?: boolean
-  nicename?: string
+    desc?: string
+    mediaType?: string
+    name: string
+    sequence?: boolean
+    required?: boolean
+    nicename?: string
 }
 
 export type ScriptOption = {
-  desc?: string
-  mediaType?: string
-  name: string
-  sequence?: boolean
-  required?: boolean
-  nicename?: string
-  ordered?: boolean
-  type?: string
+    desc?: string
+    mediaType?: string
+    name: string
+    sequence?: boolean
+    required?: boolean
+    nicename?: string
+    ordered?: boolean
+    type?: string
 }
 
 export type Script = {
-  id: string
-  href: string
-  nicename: string
-  description: string
-  version?: string
-  inputs?: Array<ScriptInput>
-  options?: Array<ScriptOption>
+    id: string
+    href: string
+    nicename: string
+    description: string
+    version?: string
+    inputs?: Array<ScriptInput>
+    options?: Array<ScriptOption>
 }
 
 export type NameValue = {
-  name: string
-  value: string
-  isFile: boolean
+    name: string
+    value: string
+    isFile: boolean
 }
 export type Callback = {
-  href: string
-  type: ['messages', 'status']
-  frequency: string
+    href: string
+    type: ['messages', 'status']
+    frequency: string
 }
 export type JobRequest = {
-  scriptHref: string
-  nicename?: string
-  priority?: ['high', 'medium', 'low']
-  batchId?: string
-  inputs?: Array<NameValue>
-  options?: Array<NameValue>
-  outputs?: Array<NameValue>
-  callbacks?: Array<Callback>
+    scriptHref: string
+    nicename?: string
+    priority?: ['high', 'medium', 'low']
+    batchId?: string
+    inputs?: Array<NameValue>
+    options?: Array<NameValue>
+    outputs?: Array<NameValue>
+    callbacks?: Array<Callback>
 }

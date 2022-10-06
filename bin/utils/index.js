@@ -1,4 +1,4 @@
 module.exports = {
-  ...require('./question'),
-  ...require('./exec'),
+    ...require('./question'),
+    ...require('./exec'),
 }

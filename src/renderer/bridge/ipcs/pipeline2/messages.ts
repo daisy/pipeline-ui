@@ -3,13 +3,13 @@ import { ipcRenderer } from 'electron'
 import { IPC } from 'shared/constants'
 
 export function onPipelineMessage(callback) {
-  const channel = IPC.PIPELINE.MESSAGES.UPDATE
+    const channel = IPC.PIPELINE.MESSAGES.UPDATE
 
-  return ipcRenderer.on(channel, callback)
+    return ipcRenderer.on(channel, callback)
 }
 
 export function getPipelineMessages(): Promise<Array<string> | null> {
-  const channel = IPC.PIPELINE.MESSAGES.GET
+    const channel = IPC.PIPELINE.MESSAGES.GET
 
-  return ipcRenderer.invoke(channel)
+    return ipcRenderer.invoke(channel)
 }

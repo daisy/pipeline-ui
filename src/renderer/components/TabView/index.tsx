@@ -70,14 +70,13 @@ export function TabView() {
                         />
                     )
                 })}
-                {/* workaround to support just one job (multiple jobs are causing issues)*/}
-                {/* <Tab
-          label="+"
-          isSelected="false"
-          onTabSelect={(e) => addJob()}
-          aria-label="Create job"
-          id="create-job"
-        /> */}
+                <Tab
+                    label="+"
+                    isSelected="false"
+                    onTabSelect={(e) => addJob()}
+                    aria-label="Create job"
+                    id="create-job"
+                />
             </div>
             {jobs.map((job, idx) => (
                 <TabPanel

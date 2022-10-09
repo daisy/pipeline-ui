@@ -8,7 +8,6 @@ export function Tab({
     ariaLabel = '',
     title = '',
 }) {
-    // TODO remove 'hidden' attribute, it's just part of the alpha workaround
     return (
         <button
             style={styles}
@@ -19,7 +18,6 @@ export function Tab({
             aria-label={ariaLabel ?? ''}
             title={title ?? ''}
             id={id}
-            hidden
         >
             {label}
         </button>

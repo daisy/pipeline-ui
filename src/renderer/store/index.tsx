@@ -18,6 +18,7 @@ export interface WindowStore {
     pipeline: PipelineState
     messages: Array<string>
     errors: Array<string>
+    scripts: Array<Script>
     // react dispatcher
     setPipelineState: React.Dispatch<React.SetStateAction<PipelineState>>
     setAboutWindowState: React.Dispatch<

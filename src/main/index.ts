@@ -43,9 +43,7 @@ makeAppWithSingleInstanceLock(async () => {
 
     registerAboutWindowCreationByIPC()
     registerPipeline2ToIPC(pipelineInstance)
-    bindWindowToPipeline(mainWindow, pipelineInstance, (event) => {
-        BrowserWindow.getAllWindows().forEach((window) => window.destroy())
-    })
+    bindWindowToPipeline(mainWindow, pipelineInstance)
     setupFileDialogEvents()
     setupClipboardEvents()
 })

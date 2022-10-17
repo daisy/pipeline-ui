@@ -104,24 +104,22 @@ export class PipelineTray {
             {
                 label: 'Create a job',
                 click: async (item, window, event) => {
-                    console.log('Try to open main')
                     try {
                         this.mainWindow.show()
                     } catch (error) {
-                        console.log('Create main')
                         this.mainWindow = await MainWindow()
                         bindWindowToPipeline(this.mainWindow, pipeline)
-                        console.log(
-                            (ENVIRONMENT.IS_DEV
-                                ? APP_CONFIG.RENDERER.DEV_SERVER.URL
-                                : `file://${__dirname}/index.html`) + '/main'
-                        )
-                        this.mainWindow.loadURL('/')
+                        const devServerURL = `${APP_CONFIG.RENDERER.DEV_SERVER.URL}#/main`
+                        ENVIRONMENT.IS_DEV
+                            ? this.mainWindow.loadURL(devServerURL)
+                            : this.mainWindow.loadFile('index.html', {
+                                  hash: `/main`,
+                              })
                     }
                 },
             },
         ]
-        this.tray.setToolTip('DAISY Pipeline 2 - ' + newState.status)
+        this.tray.setToolTip('DAISY Pipeline 2 is ' + newState.status)
         // Update tray
         this.tray.setContextMenu(
             Menu.buildFromTemplate([

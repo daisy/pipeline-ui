@@ -1,6 +1,5 @@
-import { app, BrowserWindow, ipcMain } from 'electron'
+import { ipcMain } from 'electron'
 import { resolve, delimiter, relative } from 'path'
-import { APP_CONFIG } from '~/app.config'
 import { Webservice, PipelineStatus, PipelineState } from 'shared/types'
 import { IPC } from 'shared/constants'
 import { setTimeout } from 'timers/promises'
@@ -8,7 +7,6 @@ import { spawn, ChildProcessWithoutNullStreams, exec } from 'child_process'
 import { existsSync, readdirSync, statSync } from 'fs'
 
 import { createServer } from 'net'
-import { PipelineTray } from 'main/windows'
 import { resolveUnpacked } from 'shared/utils'
 
 import { info } from 'electron-log'
@@ -516,7 +514,6 @@ export class Pipeline2IPC {
         this.stateListeners.set(callerID, callback)
     }
     removeStateListener(callerID: string) {
-        console.log('removing ' + callerID)
         this.stateListeners.delete(callerID)
     }
 

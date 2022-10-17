@@ -1,6 +1,6 @@
-import { BrowserWindow, Event, ipcMain } from 'electron'
+import { app, BrowserWindow, Event, ipcMain } from 'electron'
 
-import { ENVIRONMENT, IPC } from 'shared/constants'
+import { ENVIRONMENT, IPC, PLATFORM } from 'shared/constants'
 import { WindowProps } from 'shared/types'
 import { APP_CONFIG } from '~/app.config'
 import { Pipeline2IPC } from '../ipcs/pipeline2'
@@ -8,19 +8,17 @@ import { Pipeline2IPC } from '../ipcs/pipeline2'
 /**
  * Bind a window to a pipeline instance.
  * This binding require that the pipeline is already registered in IPC.
- * @param binding
- * @param pipeline
- * @param onCloseEventCallback
+ * @param binding the window to bind the pipeline with
+ * @param pipeline the pipeline instance to use
+ * @param onCloseEventCallback the windows closing callback (if the on close event is not cumulated, might be useless)
  */
 export function bindWindowToPipeline(
     binding: BrowserWindow,
-    pipeline: Pipeline2IPC,
-    onCloseEventCallback?: (event: Event) => void
+    pipeline: Pipeline2IPC
 ) {
     // Keep the window id here as it is removed before the close event
     const windowID = binding.id
     pipeline.registerStateListener(`${windowID}`, (state) => {
-        console.log(`sending state to ${windowID}`)
         binding.webContents.send(IPC.PIPELINE.STATE.CHANGED, state)
     })
 
@@ -41,8 +39,6 @@ export function bindWindowToPipeline(
         pipeline.removeStateListener(`${windowID}`)
         pipeline.removeMessageListener(`${windowID}`)
         pipeline.removeErrorsListener(`${windowID}`)
-        // Do the close event
-        onCloseEventCallback && onCloseEventCallback(event)
     })
 }
 
@@ -77,6 +73,10 @@ export function createWindow({ id, ...settings }: WindowProps) {
             })
         }
     )
+
+    if (PLATFORM.IS_MAC) {
+        app.dock.show()
+    }
 
     return window
 }

@@ -1,7 +1,7 @@
 import { app, BrowserWindow } from 'electron'
 import { join } from 'path'
 
-import { ENVIRONMENT } from 'shared/constants'
+import { ENVIRONMENT, PLATFORM } from 'shared/constants'
 import { createWindow, Pipeline2IPC } from 'main/factories'
 import { APP_CONFIG } from '~/app.config'
 
@@ -29,17 +29,9 @@ export async function MainWindow() {
 
     ENVIRONMENT.IS_DEV && window.webContents.openDevTools({ mode: 'detach' })
 
-    window.on(
-        'close',
-        (event) => {
-            BrowserWindow.getAllWindows().forEach((window) => window.destroy())
-
-            // event.preventDefault()
-            // window.hide()
-            // return false
-        }
-        //BrowserWindow.getAllWindows().forEach((window) => window.destroy())
-    )
+    window.on('close', (event) => {
+        BrowserWindow.getAllWindows().forEach((window) => window.destroy())
+    })
 
     return window
 }

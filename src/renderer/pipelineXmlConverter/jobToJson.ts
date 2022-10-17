@@ -1,44 +1,44 @@
 import {
-    Job,
     NamedResult,
     Results,
     ResultFile,
     Priority,
     JobStatus,
+    JobData,
     MessageLevel,
 } from 'shared/types/pipeline'
 import { scriptElementToJson } from './scriptToJson'
 import { parseXml } from './parser'
 
-function jobXmlToJson(xmlString: string): Job {
+function jobXmlToJson(xmlString: string): JobData {
     let jobElm = parseXml(xmlString, 'job')
     return jobElementToJson(jobElm)
 }
 
-function jobElementToJson(jobElm: Element): Job {
-    let job: Job = {
-        jobId: jobElm.getAttribute('id'),
-        href: jobElm.getAttribute('href'),
+function jobElementToJson(jobElm: Element): JobData {
+    let jobData: JobData = {
+        id: jobElm.getAttribute('id'),
         priority:
             Priority[jobElm.getAttribute('priority') as keyof typeof Priority],
         status: JobStatus[
             jobElm.getAttribute('status') as keyof typeof JobStatus
         ],
-        type: 'Job',
+        href: jobElm.getAttribute('href'),
     }
+
     // TODO is nicename an element or attribute on <job>?
     // not sure at the moment so just check for it in both places
     let nicenameElms = jobElm.getElementsByTagName('nicename')
     if (nicenameElms.length > 0) {
-        job.nicename = nicenameElms[0].textContent
+        jobData.nicename = nicenameElms[0].textContent
     } else if (jobElm.hasAttribute('nicename')) {
-        job.nicename = jobElm.getAttribute('nicename')
+        jobData.nicename = jobElm.getAttribute('nicename')
     } else {
-        job.nicename = 'Job'
+        jobData.nicename = 'Job'
     }
     let logElms = jobElm.getElementsByTagName('log')
     if (logElms.length > 0) {
-        job.log = logElms[0].getAttribute('href')
+        jobData.log = logElms[0].getAttribute('href')
     }
     let resultsElms = jobElm.getElementsByTagName('results')
     if (resultsElms.length > 0) {
@@ -83,11 +83,11 @@ function jobElementToJson(jobElm: Element): Job {
                 })
                 return namedResult
             })
-        job.results = results
+        jobData.results = results
     }
     let messagesElms = jobElm.getElementsByTagName('messages')
     if (messagesElms.length > 0) {
-        job.messages = Array.from(
+        jobData.messages = Array.from(
             messagesElms[0].getElementsByTagName('message')
         ).map((messageElm) => {
             return {
@@ -101,13 +101,13 @@ function jobElementToJson(jobElm: Element): Job {
                 timestamp: parseInt(messageElm.getAttribute('timestamp')),
             }
         })
-        job.progress = parseInt(messagesElms[0].getAttribute('progress'))
+        jobData.progress = parseInt(messagesElms[0].getAttribute('progress'))
     }
     let scriptElms = jobElm.getElementsByTagName('script')
     if (scriptElms.length > 0) {
-        job.script = scriptElementToJson(scriptElms[0])
+        jobData.script = scriptElementToJson(scriptElms[0])
     }
-    return job
+    return jobData
 }
 
 export { jobXmlToJson, jobElementToJson }

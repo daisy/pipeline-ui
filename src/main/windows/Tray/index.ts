@@ -10,12 +10,13 @@ import {
 import { APP_CONFIG } from '~/app.config'
 import { resolve } from 'path'
 import {
+    bindWindowToPipeline,
     makeAppSetup,
     makeAppWithSingleInstanceLock,
     Pipeline2IPC,
 } from '../../factories'
 import { MainWindow, AboutWindow } from '../../windows'
-import { IPC } from 'shared/constants'
+import { ENVIRONMENT, IPC } from 'shared/constants'
 import { PipelineState, PipelineStatus } from 'shared/types'
 import { resolveUnpacked } from 'shared/utils'
 
@@ -23,8 +24,8 @@ export class PipelineTray {
     tray: Tray
     mainWindow: BrowserWindow
     pipeline?: Pipeline2IPC = null
-    menuBaseTemplate = []
-    pipelineMenu = null
+    menuBaseTemplate: Array<Electron.MenuItemConstructorOptions> = []
+    pipelineMenu: Array<Electron.MenuItemConstructorOptions> = []
 
     constructor(
         mainWindow: BrowserWindow,
@@ -35,24 +36,25 @@ export class PipelineTray {
             resolveUnpacked('resources', 'icons', 'tray.png')
         )
         this.tray = new Tray(icon)
-
+        this.mainWindow = mainWindow
         this.menuBaseTemplate = [
+            // {
+            //     label: 'About',
+            //     click: (item, window, event) => {
+            //         if (!aboutWindow) {
+            //             aboutWindow = AboutWindow()
+            //         }
+            //         aboutWindow.show()
+            //     },
+            // },
             {
-                label: 'Open UI',
-                click: async (item, window, event) => {
-                    if (!mainWindow) {
-                        mainWindow = await makeAppSetup(MainWindow)
-                    }
-                    mainWindow.show()
-                },
-            },
-            {
-                label: 'About',
+                label: 'Quit',
                 click: (item, window, event) => {
-                    if (!aboutWindow) {
-                        aboutWindow = AboutWindow()
-                    }
-                    aboutWindow.show()
+                    BrowserWindow.getAllWindows().forEach((window) =>
+                        window.destroy()
+                    )
+                    pipeline && pipeline.stop(true)
+                    app.quit()
                 },
             },
         ]
@@ -63,22 +65,14 @@ export class PipelineTray {
             this.pipelineMenu = [
                 {
                     label: 'Pipeline could not be launched',
-                },
-                {
-                    label: 'Quit',
-                    click: (item, window, event) => {
-                        BrowserWindow.getAllWindows().forEach((window) =>
-                            window.destroy()
-                        )
-                        app.quit()
-                    },
+                    enabled: false,
                 },
             ]
             this.tray.setToolTip('DAISY Pipeline 2')
             this.tray.setContextMenu(
                 Menu.buildFromTemplate([
-                    ...this.menuBaseTemplate,
                     ...this.pipelineMenu,
+                    ...this.menuBaseTemplate,
                 ])
             )
         }
@@ -90,7 +84,7 @@ export class PipelineTray {
      */
     bindToPipeline(pipeline: Pipeline2IPC) {
         // setup listeners to update tray based on states
-        pipeline.registerStateListener((newState) =>
+        pipeline.registerStateListener('tray', (newState) =>
             this.updateElectronTray(newState, pipeline)
         )
         this.updateElectronTray(pipeline.state, pipeline)
@@ -104,24 +98,26 @@ export class PipelineTray {
     updateElectronTray(newState: PipelineState, pipeline: Pipeline2IPC) {
         this.pipelineMenu = [
             {
-                label:
-                    newState.status == PipelineStatus.RUNNING
-                        ? 'Stop the pipeline'
-                        : 'Start the pipeline',
-                click: (item, window, event) => {
-                    newState.status == PipelineStatus.RUNNING
-                        ? pipeline.stop()
-                        : pipeline.launch()
-                },
+                label: `Pipeline is ${newState.status}`,
+                enabled: false,
             },
             {
-                label: 'Quit',
-                click: (item, window, event) => {
-                    BrowserWindow.getAllWindows().forEach((window) =>
-                        window.destroy()
-                    )
-                    pipeline.stop(true)
-                    app.quit()
+                label: 'Create a job',
+                click: async (item, window, event) => {
+                    console.log('Try to open main')
+                    try {
+                        this.mainWindow.show()
+                    } catch (error) {
+                        console.log('Create main')
+                        this.mainWindow = await MainWindow()
+                        bindWindowToPipeline(this.mainWindow, pipeline)
+                        console.log(
+                            (ENVIRONMENT.IS_DEV
+                                ? APP_CONFIG.RENDERER.DEV_SERVER.URL
+                                : `file://${__dirname}/index.html`) + '/main'
+                        )
+                        this.mainWindow.loadURL('/')
+                    }
                 },
             },
         ]
@@ -129,8 +125,8 @@ export class PipelineTray {
         // Update tray
         this.tray.setContextMenu(
             Menu.buildFromTemplate([
-                ...this.menuBaseTemplate,
                 ...this.pipelineMenu,
+                ...this.menuBaseTemplate,
             ])
         )
     }

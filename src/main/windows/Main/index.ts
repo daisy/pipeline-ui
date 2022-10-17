@@ -1,8 +1,8 @@
-import { BrowserWindow } from 'electron'
+import { app, BrowserWindow } from 'electron'
 import { join } from 'path'
 
 import { ENVIRONMENT } from 'shared/constants'
-import { createWindow } from 'main/factories'
+import { createWindow, Pipeline2IPC } from 'main/factories'
 import { APP_CONFIG } from '~/app.config'
 
 const { MAIN, TITLE } = APP_CONFIG
@@ -32,9 +32,11 @@ export async function MainWindow() {
     window.on(
         'close',
         (event) => {
-            event.preventDefault()
-            window.hide()
-            return false
+            BrowserWindow.getAllWindows().forEach((window) => window.destroy())
+
+            // event.preventDefault()
+            // window.hide()
+            // return false
         }
         //BrowserWindow.getAllWindows().forEach((window) => window.destroy())
     )

@@ -30,7 +30,9 @@ export async function makeAppSetup(createWindow: () => Promise<BrowserWindow>) {
         )
     )
 
-    app.on('window-all-closed', () => !PLATFORM.IS_MAC && app.quit())
+    app.on('window-all-closed', () => {
+        //!PLATFORM.IS_MAC && app.quit()
+    })
 
     return window
 }

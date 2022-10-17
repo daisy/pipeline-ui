@@ -146,13 +146,22 @@ export class Pipeline2IPC {
     props: Pipeline2IPCProps
     // Default state
     state: PipelineState
-    stateListeners: Array<(data: PipelineState) => void> = []
+    stateListeners: Map<string, (data: PipelineState) => void> = new Map<
+        string,
+        (data: PipelineState) => void
+    >()
 
     messages: Array<string>
-    messagesListeners: Array<(data: string) => void> = []
+    messagesListeners: Map<string, (data: string) => void> = new Map<
+        string,
+        (data: string) => void
+    >()
 
     errors: Array<string>
-    errorsListeners: Array<(data: string) => void> = []
+    errorsListeners: Map<string, (data: string) => void> = new Map<
+        string,
+        (data: string) => void
+    >()
 
     private instance?: ChildProcessWithoutNullStreams
     /**
@@ -184,8 +193,8 @@ export class Pipeline2IPC {
             logsFolder:
                 (props && props.logsFolder) ??
                 resolve(osAppDataFolder, 'DAISY Pipeline 2', 'log'),
-            onError: (props && props.onError) || console.error,
-            onMessage: (props && props.onMessage) || console.debug,
+            onError: (props && props.onError) || null, //console.error,
+            onMessage: (props && props.onMessage) || null, // console.debug,
         }
         this.instance = null
         this.errors = []
@@ -218,9 +227,9 @@ export class Pipeline2IPC {
                 newState.status ??
                 ((this.state && this.state.status) || PipelineStatus.STOPPED),
         }
-        this.stateListeners.forEach((callback) => {
+        for (const [callerID, callback] of this.stateListeners) {
             callback(this.state)
-        })
+        }
     }
     pushMessage(message: string) {
         this.messages.push(message)
@@ -482,9 +491,9 @@ export class Pipeline2IPC {
      */
     async stop(appIsClosing = false) {
         if (appIsClosing) {
-            this.stateListeners = []
-            this.messagesListeners = []
-            this.errorsListeners = []
+            this.stateListeners.clear()
+            this.messagesListeners.clear()
+            this.errorsListeners.clear()
         }
         if (this.instance) {
             info('closing pipeline')
@@ -500,48 +509,33 @@ export class Pipeline2IPC {
         }
     }
 
-    registerStateListener(callback: (data: PipelineState) => void) {
-        this.stateListeners.push(callback)
+    registerStateListener(
+        callerID: string,
+        callback: (data: PipelineState) => void
+    ) {
+        this.stateListeners.set(callerID, callback)
     }
-    registerMessageListener(callback: (data: string) => void) {
-        this.messagesListeners.push(callback)
+    removeStateListener(callerID: string) {
+        console.log('removing ' + callerID)
+        this.stateListeners.delete(callerID)
     }
-    registerErrorsListener(callback: (data: string) => void) {
-        this.errorsListeners.push(callback)
-    }
-}
 
-const bindInstanceToApplication = (
-    pipeline2instance: Pipeline2IPC,
-    boundedWindows: Array<BrowserWindow> = [],
-    tray?: PipelineTray
-) => {
-    boundedWindows.forEach((window) => {
-        pipeline2instance.registerStateListener((state) => {
-            window &&
-                window.webContents &&
-                window.webContents.send(IPC.PIPELINE.STATE.CHANGED, state)
-        })
-        pipeline2instance.registerMessageListener((message) => {
-            window &&
-                window.webContents &&
-                window.webContents.send(IPC.PIPELINE.MESSAGES.UPDATE, message)
-        })
-        pipeline2instance.registerErrorsListener((error) => {
-            window &&
-                window.webContents &&
-                window.webContents.send(IPC.PIPELINE.ERRORS.UPDATE, error)
-        })
-        ipcMain.on(IPC.PIPELINE.STATE.SEND, (event) => {
-            window &&
-                window.webContents &&
-                window.webContents.send(
-                    IPC.PIPELINE.STATE.CHANGED,
-                    pipeline2instance.state
-                )
-        })
-    })
-    tray && tray.bindToPipeline(pipeline2instance)
+    registerMessagesListener(
+        callerID: string,
+        callback: (data: string) => void
+    ) {
+        this.messagesListeners.set(callerID, callback)
+    }
+    removeMessageListener(callerID: string) {
+        this.messagesListeners.delete(callerID)
+    }
+
+    registerErrorsListener(callerID: string, callback: (data: string) => void) {
+        this.errorsListeners.set(callerID, callback)
+    }
+    removeErrorsListener(callerID: string) {
+        this.errorsListeners.delete(callerID)
+    }
 }
 
 /**
@@ -550,11 +544,7 @@ const bindInstanceToApplication = (
  * @param boundedWindows windows that are allowed to manage pipeline and/or get state updates
  *
  */
-export function registerPipeline2ToIPC(
-    pipeline2instance: Pipeline2IPC,
-    boundedWindows: Array<BrowserWindow> = [],
-    applicationTray?: PipelineTray
-) {
+export function registerPipeline2ToIPC(pipeline2instance: Pipeline2IPC) {
     // start the pipeline runner.
     ipcMain.handle(IPC.PIPELINE.START, async (event, webserviceProps) => {
         // New settings requested with an existing instance :
@@ -562,7 +552,6 @@ export function registerPipeline2ToIPC(
         if (webserviceProps) {
             pipeline2instance.updateWebservice(webserviceProps)
         }
-        console.debug(IPC.PIPELINE.START)
         return pipeline2instance.launch()
     })
 
@@ -571,30 +560,19 @@ export function registerPipeline2ToIPC(
 
     // get state from the instance
     ipcMain.handle(IPC.PIPELINE.STATE.GET, (event) => {
-        console.debug(IPC.PIPELINE.STATE.GET)
         return pipeline2instance.state || null
     })
 
     ipcMain.handle(IPC.PIPELINE.PROPS.GET, (event) => {
-        console.debug(IPC.PIPELINE.PROPS.GET)
         return pipeline2instance.props || null
     })
 
     // get messages from the instance
     ipcMain.handle(IPC.PIPELINE.MESSAGES.GET, (event) => {
-        console.debug(IPC.PIPELINE.MESSAGES.GET)
         return pipeline2instance.messages || null
     })
     // get errors from the instance
     ipcMain.handle(IPC.PIPELINE.ERRORS.GET, (event) => {
-        console.debug(IPC.PIPELINE.ERRORS.GET)
         return pipeline2instance.errors || null
     })
-
-    // pipeline state listener
-    bindInstanceToApplication(
-        pipeline2instance,
-        boundedWindows,
-        applicationTray
-    )
 }

@@ -1,8 +1,9 @@
-import { app } from 'electron'
+import { app, BrowserWindow } from 'electron'
 
 import { error } from 'electron-log'
 
 import {
+    bindWindowToPipeline,
     makeAppSetup,
     makeAppWithSingleInstanceLock,
     Pipeline2IPC,
@@ -22,7 +23,7 @@ makeAppWithSingleInstanceLock(async () => {
     const pipelineInstance = new Pipeline2IPC()
     const mainWindow = await makeAppSetup(MainWindow)
 
-    let tray = null
+    let tray: PipelineTray = null
     try {
         pipelineInstance
             .launch()
@@ -41,7 +42,10 @@ makeAppWithSingleInstanceLock(async () => {
     }
 
     registerAboutWindowCreationByIPC()
-    registerPipeline2ToIPC(pipelineInstance, [mainWindow], tray)
+    registerPipeline2ToIPC(pipelineInstance)
+    bindWindowToPipeline(mainWindow, pipelineInstance, (event) => {
+        BrowserWindow.getAllWindows().forEach((window) => window.destroy())
+    })
     setupFileDialogEvents()
     setupClipboardEvents()
 })

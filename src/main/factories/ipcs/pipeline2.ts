@@ -425,6 +425,13 @@ export class Pipeline2IPC {
             })
 
             this.instance.stdout.on('data', (data) => {
+                // marisa experiment: don't analyze stdout data if the pipeline is already up and running
+                // checking each stdout message slows the UI to a crawl when the pipeline is outputting a lot of messages
+                // (e.g. when it's running a job)
+                if (this.state.status == PipelineStatus.RUNNING) {
+                    return
+                }
+
                 let message: string = data.toString()
                 // Webservice is started and pipeline is ready to run
                 // Both formats of messages have been observed from the Pipeline
@@ -443,8 +450,9 @@ export class Pipeline2IPC {
                 this.pushMessage(message)
             })
             this.instance.stderr.on('data', (data) => {
-                let error = data.toString()
-                this.pushError(error)
+                // marisa experiment: don't analyze stdout, see above for explanation
+                // let error = data.toString()
+                // this.pushError(error)
             })
             this.instance.on('exit', (code, signal) => {
                 let message = `Pipeline exiting with code ${code} and signal ${signal}`

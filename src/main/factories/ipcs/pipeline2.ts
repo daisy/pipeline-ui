@@ -1,4 +1,4 @@
-import { ipcMain } from 'electron'
+import { app, ipcMain } from 'electron'
 import { resolve, delimiter, relative } from 'path'
 import { Webservice, PipelineStatus, PipelineState } from 'shared/types'
 import { IPC } from 'shared/constants'
@@ -167,11 +167,9 @@ export class Pipeline2IPC {
      * @param parameters
      */
     constructor(props?: Pipeline2IPCProps) {
-        const osAppDataFolder =
-            process.env.APPDATA ||
-            (process.platform == 'darwin'
-                ? process.env.HOME + '/Library/Preferences'
-                : process.env.HOME + '/.local/share')
+        const osAppDataFolder = app.getPath('userData')
+        info(app.getPath('userData'))
+        info(app.getPath('logs'))
         this.props = {
             localPipelineHome:
                 (props && props.localPipelineHome) ??
@@ -186,11 +184,8 @@ export class Pipeline2IPC {
                 path: '/ws',
             },
             appDataFolder:
-                (props && props.appDataFolder) ??
-                resolve(osAppDataFolder, 'DAISY Pipeline 2'),
-            logsFolder:
-                (props && props.logsFolder) ??
-                resolve(osAppDataFolder, 'DAISY Pipeline 2', 'log'),
+                (props && props.appDataFolder) ?? app.getPath('userData'),
+            logsFolder: (props && props.logsFolder) ?? app.getPath('logs'),
             onError: (props && props.onError) || null, //console.error,
             onMessage: (props && props.onMessage) || null, // console.debug,
         }
@@ -430,7 +425,6 @@ export class Pipeline2IPC {
             this.instance = spawn(command, args, {
                 cwd: this.props.localPipelineHome,
             })
-
             this.instance.stdout.on('data', (data) => {
                 // marisa experiment: don't analyze stdout data if the pipeline is already up and running
                 // checking each stdout message slows the UI to a crawl when the pipeline is outputting a lot of messages

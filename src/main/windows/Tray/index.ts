@@ -33,20 +33,11 @@ export class PipelineTray {
         pipeline?: Pipeline2IPC
     ) {
         const icon = nativeImage.createFromPath(
-            resolveUnpacked('resources', 'icons', 'tray.png')
+            resolveUnpacked('resources', 'icons', 'logo_32x32.png')
         )
         this.tray = new Tray(icon)
         this.mainWindow = mainWindow
         this.menuBaseTemplate = [
-            // {
-            //     label: 'About',
-            //     click: (item, window, event) => {
-            //         if (!aboutWindow) {
-            //             aboutWindow = AboutWindow()
-            //         }
-            //         aboutWindow.show()
-            //     },
-            // },
             {
                 label: 'Quit',
                 click: (item, window, event) => {
@@ -103,6 +94,7 @@ export class PipelineTray {
             },
             {
                 label: 'Create a job',
+                enabled: newState.status == PipelineStatus.RUNNING,
                 click: async (item, window, event) => {
                     try {
                         this.mainWindow.show()

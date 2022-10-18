@@ -20,12 +20,12 @@ export interface WindowStore {
     errors: Array<string>
     scripts: Array<Script>
     // react dispatcher
-    setPipelineState: React.Dispatch<React.SetStateAction<PipelineState>>
-    setAboutWindowState: React.Dispatch<
+    setPipelineState?: React.Dispatch<React.SetStateAction<PipelineState>>
+    setAboutWindowState?: React.Dispatch<
         React.SetStateAction<{ isOpen: boolean }>
     >
-    setPipelineErrors: React.Dispatch<React.SetStateAction<string[]>>
-    setPipelineMessages: React.Dispatch<React.SetStateAction<string[]>>
+    setPipelineErrors?: React.Dispatch<React.SetStateAction<string[]>>
+    setPipelineMessages?: React.Dispatch<React.SetStateAction<string[]>>
 }
 
 const { App } = window
@@ -82,12 +82,12 @@ export function WindowStoreProvider({ children }) {
     App.onPipelineStateChanged(async (event, newState) => {
         setPipelineState(newState)
     })
-    App.onPipelineMessage((event, message) => {
-        setPipelineMessages([message, ...messages])
-    })
-    App.onPipelineError((event, error) => {
-        setPipelineErrors([error, ...errors])
-    })
+    // App.onPipelineMessage((event, message) => {
+    //     setPipelineMessages([message, ...messages])
+    // })
+    // App.onPipelineError((event, error) => {
+    //     setPipelineErrors([error, ...errors])
+    // })
 
     const sharedStore = {
         about: about,

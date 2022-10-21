@@ -1,4 +1,3 @@
-import { useQuery } from '@tanstack/react-query'
 import { aliveXmlToJson } from 'renderer/pipelineXmlConverter'
 import { PipelineStatus } from 'shared/types/pipeline'
 import styles from './styles.module.sass'

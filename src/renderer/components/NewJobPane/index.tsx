@@ -1,15 +1,12 @@
-import { useQuery } from '@tanstack/react-query'
 import { useState } from 'react'
-import { scriptsXmlToJson } from 'renderer/pipelineXmlConverter'
 import { ScriptForm } from '../ScriptForm'
 import styles from './styles.module.sass'
 import { useWindowStore } from 'renderer/store'
-import { baseurl } from 'shared/types/pipeline'
 
 // the temporary "new job" has its own ID
 export function NewJobPane({ job, removeJob, updateJob }) {
     const [selectedScript, setSelectedScript] = useState(null)
-    const { pipeline, scripts } = useWindowStore()
+    const { scripts } = useWindowStore()
 
     let handleOnSelectChange = (e) => {
         let selection = scripts.find((script) => script.id == e.target.value)

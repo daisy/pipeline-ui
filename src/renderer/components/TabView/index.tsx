@@ -1,24 +1,17 @@
 import { useState, useEffect } from 'react'
-import { Tab } from '../Tab'
+import { AddJobTab, JobTab } from '../Tab'
 import { TabPanel } from '../TabPanel'
-import { Job, JobState, Script, baseurl } from 'shared/types/pipeline'
+import { Job, JobState } from 'shared/types/pipeline'
 import styles from './styles.module.sass'
-import { useWindowStore } from 'renderer/store'
 
 export function TabView() {
-    const { pipeline } = useWindowStore()
     const [selectedJobId, setSelectedJobId] = useState('')
-
-    // Job management
-    /* start */
-    const [jobs, setJobs] = useState([])
+    const [jobs, setJobs] = useState(Array<Job>)
 
     let createJob = () => {
         return {
             id: `job-${jobs.length + 1}`,
-            nicename: 'New job',
             state: JobState.NEW,
-            data: null,
         }
     }
     let addJob = () => {
@@ -39,8 +32,8 @@ export function TabView() {
             } else return j
         })
         setJobs(jobs_)
+        console.log('update jobs')
     }
-    /* end */
 
     if (selectedJobId == '' && jobs.length > 0 && jobs[0].id) {
         setSelectedJobId(jobs[0].id)
@@ -51,9 +44,11 @@ export function TabView() {
         setSelectedJobId(job.id)
     }
 
-    // workaround to support just one job (multiple jobs are causing issues)
+    // make sure there's at least a new job tab open
     useEffect(() => {
-        addJob()
+        if (jobs.length == 0) {
+            addJob()
+        }
     }, [])
 
     return (
@@ -61,22 +56,15 @@ export function TabView() {
             <div role="tablist" style={styles}>
                 {jobs.map((job, idx) => {
                     return (
-                        <Tab
-                            label={job.nicename}
-                            isSelected={job.id == selectedJobId}
-                            onTabSelect={(e) => handleOnTabSelect(job)}
+                        <JobTab
+                            job={job}
                             key={idx}
-                            id={`tab-${job.id}`}
+                            isSelected={job.id == selectedJobId}
+                            onSelect={handleOnTabSelect}
                         />
                     )
                 })}
-                <Tab
-                    label="+"
-                    isSelected="false"
-                    onTabSelect={(e) => addJob()}
-                    aria-label="Create job"
-                    id="create-job"
-                />
+                <AddJobTab onSelect={addJob} />
             </div>
             {jobs.map((job, idx) => (
                 <TabPanel

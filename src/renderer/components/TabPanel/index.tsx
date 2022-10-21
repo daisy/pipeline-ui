@@ -20,11 +20,7 @@ export function TabPanel({ job, isSelected, removeJob, updateJob }) {
                     updateJob={updateJob}
                 />
             ) : (
-                <JobDetailsPane
-                    job={job}
-                    removeJob={removeJob}
-                    updateJob={updateJob}
-                />
+                <JobDetailsPane job={job} removeJob={removeJob} />
             )}
         </div>
     )

@@ -1,13 +1,12 @@
+import styles from './styles.module.sass'
 import { useQuery } from '@tanstack/react-query'
 import { jobXmlToJson } from 'renderer/pipelineXmlConverter'
-import styles from './styles.module.sass'
-import { useEffect, useState } from 'react'
+
 const { App } = window
 
-export function JobDetailsPane({ job, removeJob, updateJob }) {
-    console.log('Job details pane', job.href)
+export function JobDetailsPane({ job, removeJob }) {
+    console.log('Job details pane', JSON.stringify(job))
 
-    // get the rest of the job data
     const { isLoading, error, data } = useQuery(
         [job.href],
         async () => {
@@ -20,20 +19,13 @@ export function JobDetailsPane({ job, removeJob, updateJob }) {
     )
 
     if (isLoading) {
-        return <p>Loading job details...</p>
+        return <>Loading...</>
     }
     if (error instanceof Error) {
-        return <p>Error {error.message}</p>
+        return <>Error {error.message}</>
     }
-
     if (!data) {
-        console.log('no job data')
-
-        return (
-            <>
-                <p>Loading...</p>
-            </>
-        )
+        return <>No data</>
     }
 
     return (
@@ -41,7 +33,7 @@ export function JobDetailsPane({ job, removeJob, updateJob }) {
             <h2>Job: {data.nicename}</h2>
             <p> Status: {data.status}</p>
             {data.status == 'SUCCESS' ? (
-                <JobResults jobId={data.jobId} results={data.results} />
+                <JobResults jobId={data.id} results={data.results} />
             ) : (
                 ''
             )}

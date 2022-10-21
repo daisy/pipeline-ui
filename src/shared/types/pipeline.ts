@@ -20,9 +20,8 @@ export type Webservice = {
  */
 export function baseurl(ws: Webservice) {
     if (!ws) return ''
-    return `${ws.ssl ? 'https' : 'http'}://${ws.host}${
-        ws.port ? ':' + ws.port : ''
-    }${ws.path ?? ''}`
+    // eslint-disable-next-line
+    return `${ws.ssl ? 'https' : 'http'}://${ws.host}${ws.port ? ':' + ws.port : ''}${ws.path ?? ''}`
 }
 
 /**
@@ -103,7 +102,9 @@ export type Message = {
     timestamp: number
 }
 
+// JobData is the JSON representation of Pipeline WS data for a single job
 export type JobData = {
+    id: string // the ID from the pipeline
     priority?: Priority
     status?: JobStatus
     log?: string
@@ -111,6 +112,9 @@ export type JobData = {
     messages?: Array<Message>
     progress?: number
     script?: Script
+    nicename?: string
+    scriptHref?: string
+    href: string
 }
 
 export enum JobState {
@@ -118,17 +122,16 @@ export enum JobState {
     SUBMITTED,
 }
 
+// a Job is an object entirely managed by the UI
 export type Job = {
-    id: string
-    state: JobState
-    nicename: string
-    scriptHref?: string
+    id: string // the ID assigned interally
     href?: string
+    state: JobState
 }
 
 export type ScriptInput = {
     desc?: string
-    mediaType?: string
+    mediaType?: Array<string>
     name: string
     sequence?: boolean
     required?: boolean
@@ -137,7 +140,7 @@ export type ScriptInput = {
 
 export type ScriptOption = {
     desc?: string
-    mediaType?: string
+    mediaType?: Array<string>
     name: string
     sequence?: boolean
     required?: boolean

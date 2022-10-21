@@ -1,13 +1,9 @@
-import { useQuery, useMutation } from '@tanstack/react-query'
-import {
-    scriptXmlToJson,
-    jobRequestToXml,
-    jobXmlToJson,
-} from 'renderer/pipelineXmlConverter'
+import { jobRequestToXml, jobXmlToJson } from 'renderer/pipelineXmlConverter'
 import { JobRequest, JobState, baseurl } from 'shared/types'
 import styles from './styles.module.sass'
-import { useState, useContext } from 'react'
-import { useWindowStore, useScriptStore } from 'renderer/store'
+import { useState } from 'react'
+import { useWindowStore } from 'renderer/store'
+import { mediaTypesFileFilters } from 'shared/constants'
 
 const { App } = window // The "App" comes from the bridge
 
@@ -98,15 +94,7 @@ export function ScriptForm({ job, removeJob, updateJob }) {
                         <button
                             id="run-script"
                             type="submit"
-                            onClick={(e) =>
-                                handleOnSubmit(
-                                    e,
-                                    pipeline,
-                                    script,
-                                    setFormStatus,
-                                    updateJob
-                                )
-                            }
+                            onClick={(e) => handleOnSubmit(e)}
                         >
                             Run
                         </button>
@@ -177,7 +165,40 @@ function FormField({ item }) {
 function FileOrFolderField({ item }) {
     let handleInputClick = async (e, item) => {
         e.preventDefault()
-        let filename = await App.showOpenFileDialog()
+        // is it a file, folder, or either?
+        let properties =
+            item.type == 'anyFileURI'
+                ? ['openFile']
+                : item.type == 'anyDirURI'
+                ? ['openFolder']
+                : ['openFile', 'openFolder']
+        // what file type(s)?
+        console.log('media type', item.mediaType)
+        let filters_ = Array.isArray(item.mediaType)
+            ? item.mediaType
+                  .filter((mediaType) =>
+                      mediaTypesFileFilters.hasOwnProperty(mediaType)
+                  )
+                  .map((mediaType) => mediaTypesFileFilters[mediaType])
+            : []
+        
+        // merge the values in the filters so that instead of
+        // filters: [{name: 'EPUB', extensions: ['epub']}, {name: 'Package', extensions['opf']}]
+        // we get
+        // filters: [{name: "EPUB, Package", extensions: ['epub', 'opf']}]
+        let filterNames = filters_.map((f) => f.name).join(', ')
+        let filterExts = filters_.map((f) => f.extensions).flat()
+        
+        let filters = [{ name: filterNames, extensions: filterExts }]
+
+        filters.push(mediaTypesFileFilters['*'])
+
+        let filename = await App.showOpenFileDialog({
+            title: `Select ${item.name}`,
+            buttonLabel: 'Select',
+            properties,
+            filters,
+        })
         e.target.nextElementSibling.textContent = filename
     }
     // all items that make it to this function have type of 'anyFileURI' or 'anyDirURI'`
@@ -189,7 +210,7 @@ function FileOrFolderField({ item }) {
                 <button
                     type="button"
                     id={`button-${item.name}`}
-                    required={item.required}
+                    data-required={item.required}
                     data-kind={item.kind}
                     onClick={(e) => handleInputClick(e, item)}
                 >
@@ -211,7 +232,7 @@ function getFormData(scriptFormElm) {
         return
     }
     let inputs = scriptFormElm.querySelectorAll('input')
-    Array.from(inputs).map((input) => {
+    Array.from(inputs).map((input: HTMLInputElement) => {
         if (input.getAttribute('data-kind') == 'input') {
             inputData.push({
                 name: input.id,
@@ -230,7 +251,7 @@ function getFormData(scriptFormElm) {
     // get the inner span with the value of the selected file or folder
     let fileOrFoldersElms = scriptFormElm.querySelectorAll('.fileOrFolderField')
     Array.from(fileOrFoldersElms)
-        .map((elm) => {
+        .map((elm: HTMLElement) => {
             let name = elm.querySelector('button')?.id.replace('button-', '')
             let kind = elm.querySelector('button').getAttribute('data-kind')
             let value = elm.querySelector('span')?.textContent ?? ''

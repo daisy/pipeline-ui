@@ -16,6 +16,7 @@ module.exports = {
             'error',
             {
                 semi: false,
+                endOfLine: 'auto',
                 singleQuote: true,
                 tabWidth: 4,
                 useTabs: false,

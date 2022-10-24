@@ -7,7 +7,6 @@ const queryClient = new QueryClient()
 
 export function MainScreen() {
     const { pipeline } = useWindowStore()
-    console.log('Pipeline: ', pipeline)
 
     return (
         <QueryClientProvider client={queryClient}>

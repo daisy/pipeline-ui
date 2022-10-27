@@ -1,10 +1,8 @@
 const { APP_CONFIG } = require('./app.config')
 
-const { NAME, AUTHOR, TITLE, DESCRIPTION, FOLDERS } = APP_CONFIG
+const { APP_ID, AUTHOR, TITLE, DESCRIPTION, FOLDERS } = APP_CONFIG
 
 const CURRENT_YEAR = new Date().getFullYear()
-const AUTHOR_IN_KEBAB_CASE = AUTHOR.name.replace(/\s+/g, '-')
-const APP_ID = `com.${AUTHOR_IN_KEBAB_CASE}.${NAME}`.toLowerCase()
 
 module.exports = {
     appId: APP_ID,
@@ -19,6 +17,8 @@ module.exports = {
     mac: {
         icon: `${FOLDERS.RESOURCES}/icons/logo.icns`,
         category: 'public.app-category.utilities',
+        identity: 'US Fund for DAISY (SAMG8AWD69)',
+        hardenedRuntime: true,
     },
 
     dmg: {
@@ -35,4 +35,6 @@ module.exports = {
         icon: `${FOLDERS.RESOURCES}/icons/logo_256x256.png`,
         target: ['nsis', 'portable', 'zip'],
     },
+
+    afterSign: 'buildtools/notarize.js',
 }

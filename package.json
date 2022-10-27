@@ -7,7 +7,7 @@
   "devTempBuildFolder": "./node_modules/.dev-temp-build",
   "devServer": "http://localhost:4927",
   "author": {
-    "name": "DAISY development team",
+    "name": "DAISY Consortium",
     "email": "daisy-pipeline@mail.daisy.org"
   },
   "contributors": [
@@ -73,6 +73,7 @@
     "css-loader": "^6.7.1",
     "electron": "^20.0.3",
     "electron-builder": "^23.3.3",
+    "electron-notarize": "^1.2.2",
     "electron-react-devtools": "^0.5.3",
     "eslint": "^8.22.0",
     "eslint-config-prettier": "^8.5.0",

@@ -168,8 +168,6 @@ export class Pipeline2IPC {
      */
     constructor(props?: Pipeline2IPCProps) {
         const osAppDataFolder = app.getPath('userData')
-        info(app.getPath('userData'))
-        info(app.getPath('logs'))
         this.props = {
             localPipelineHome:
                 (props && props.localPipelineHome) ??

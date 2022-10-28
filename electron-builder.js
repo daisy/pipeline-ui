@@ -17,7 +17,7 @@ module.exports = {
     },
 
     mac: {
-        icon: `${FOLDERS.RESOURCES}/icons/icon.icns`,
+        icon: `${FOLDERS.RESOURCES}/icons/logo.icns`,
         category: 'public.app-category.utilities',
     },
 
@@ -32,7 +32,7 @@ module.exports = {
     },
 
     win: {
-        icon: `${FOLDERS.RESOURCES}/icons/icon.ico`,
+        icon: `${FOLDERS.RESOURCES}/icons/logo_256x256.png`,
         target: ['nsis', 'portable', 'zip'],
     },
 }

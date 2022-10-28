@@ -27,17 +27,20 @@ export class PipelineTray {
     menuBaseTemplate: Array<Electron.MenuItemConstructorOptions> = []
     pipelineMenu: Array<Electron.MenuItemConstructorOptions> = []
 
-    constructor(
-        mainWindow: BrowserWindow,
-        aboutWindow?: BrowserWindow,
-        pipeline?: Pipeline2IPC
-    ) {
+    constructor(mainWindow: BrowserWindow, pipeline?: Pipeline2IPC) {
         const icon = nativeImage.createFromPath(
             resolveUnpacked('resources', 'icons', 'logo_32x32.png')
         )
         this.tray = new Tray(icon)
         this.mainWindow = mainWindow
         this.menuBaseTemplate = [
+            // Note : uncomment if we want those window
+            // {
+            //     label: 'About',
+            //     click: async (item, window, event) => {
+            //         ipcMain.emit(IPC.WINDOWS.ABOUT.CREATE)
+            //     },
+            // },
             {
                 label: 'Quit',
                 click: (item, window, event) => {
@@ -101,9 +104,10 @@ export class PipelineTray {
                     } catch (error) {
                         this.mainWindow = await MainWindow()
                         bindWindowToPipeline(this.mainWindow, pipeline)
-                        const devServerURL = `${APP_CONFIG.RENDERER.DEV_SERVER.URL}#/main`
                         ENVIRONMENT.IS_DEV
-                            ? this.mainWindow.loadURL(devServerURL)
+                            ? this.mainWindow.loadURL(
+                                  `${APP_CONFIG.RENDERER.DEV_SERVER.URL}#/main`
+                              )
                             : this.mainWindow.loadFile('index.html', {
                                   hash: `/main`,
                               })

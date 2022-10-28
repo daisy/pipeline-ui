@@ -9,15 +9,17 @@ export function registerAboutWindowCreationByIPC() {
         channel: IPC.WINDOWS.ABOUT.CREATE,
         window: AboutWindow,
 
-        callback(window, { sender }) {
+        callback(window, event) {
             const channel = IPC.WINDOWS.ABOUT.WHEN_CLOSE
-
             ipcMain.removeHandler(channel)
-
-            window.on('closed', () =>
-                sender.send(channel, {
-                    message: 'About window closed!',
-                })
+            window.on(
+                'closed',
+                () =>
+                    event &&
+                    event.sender &&
+                    event.sender.send(channel, {
+                        message: 'About window closed!',
+                    })
             )
         },
     })

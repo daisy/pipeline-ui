@@ -38,14 +38,6 @@ const showOpenFileDialog = async (callback, dialogOptions) => {
 }
 
 function setupFileDialogEvents() {
-    //  event.sender is Electron.WebContents
-    //  const win = BrowserWindow.fromWebContents(event.sender) || undefined;
-    //  const webcontent = webContents.fromId(payload.webContentID); // webcontents.id is identical
-
-    ipcMain.on(IPC_EVENT_showItemInFolder, (event, payload) => {
-        shell.showItemInFolder(payload.path)
-    })
-
     // comes from the renderer process (ipcRenderer.send())
     ipcMain.on(IPC_EVENT_showOpenFileDialog, async (event, payload) => {
         await showOpenFileDialog((filePath) => {

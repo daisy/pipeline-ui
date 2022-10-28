@@ -14,15 +14,8 @@ function setupClipboardEvents() {
     //  const webcontent = webContents.fromId(payload.webContentID); // webcontents.id is identical
 
     ipcMain.on(IPC_EVENT_copyToClipboard, (event, payload) => {
-        let f = payload
-        // copyToClipboard(payload)
-        if (PLATFORM.IS_WINDOWS) {
-            if (f[0] == '/') {
-                f = f.slice(1)
-                f = f.replaceAll('/', '\\')
-            }
-        }
-        shell.showItemInFolder(f)
+        // TODO
+        // but we don't need clipboard just yet
     })
 }
 export { setupClipboardEvents }

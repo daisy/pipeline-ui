@@ -10,7 +10,7 @@ export function TabPanel({ job, isSelected, removeJob, updateJob }) {
             className={styles.TabPanel}
             role="tabpanel"
             hidden={!isSelected}
-            aria-labelledby={`tab-${job.id}`}
+            aria-labelledby={`tab-${job.internalId}`}
             tabIndex={0}
         >
             {job.state == JobState.NEW ? (

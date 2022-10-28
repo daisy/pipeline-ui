@@ -7,33 +7,15 @@ const { App } = window
 export function JobDetailsPane({ job, removeJob }) {
     console.log('Job details pane', JSON.stringify(job))
 
-    const { isLoading, error, data } = useQuery(
-        [job.href],
-        async () => {
-            console.log('fetching job', job.href)
-            let res = await fetch(job.href)
-            let xmlStr = await res.text()
-            return jobXmlToJson(xmlStr)
-        },
-        { refetchInterval: 3000 }
-    )
-
-    if (isLoading) {
-        return <>Loading...</>
-    }
-    if (error instanceof Error) {
-        return <>Error {error.message}</>
-    }
-    if (!data) {
-        return <>No data</>
-    }
-
     return (
         <div className={styles.jobDetails}>
-            <h2>Job: {data.nicename}</h2>
-            <p> Status: {data.status}</p>
-            {data.status == 'SUCCESS' ? (
-                <JobResults jobId={data.id} results={data.results} />
+            <h2>Job: {job.jobData.nicename}</h2>
+            <p> Status: {job.jobData.status}</p>
+            {job.jobData.status == 'SUCCESS' ? (
+                <JobResults
+                    jobId={job.jobData.jobId}
+                    results={job.jobData.results}
+                />
             ) : (
                 ''
             )}
@@ -62,7 +44,7 @@ function JobResults({ jobId, results }) {
         return (
             <button
                 className={styles.copyPathButton}
-                onClick={(e) => App.copyToClipboard(file)}
+                onClick={(e) => App.showItemInFolder(file)}
             >
                 Show results folder
             </button>

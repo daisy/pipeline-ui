@@ -7,12 +7,12 @@ import { mediaTypesFileFilters } from 'shared/constants'
 
 const { App } = window // The "App" comes from the bridge
 
-export function ScriptForm({ job, removeJob, updateJob }) {
+export function ScriptForm({ job, scriptHref, removeJob, updateJob }) {
     // IS_FORM, IS_SUBMITTING, IS_ERROR
     const [formStatus, setFormStatus] = useState('IS_FORM')
     const { pipeline, scripts } = useWindowStore()
 
-    let script = scripts.find((s) => s.href == job.scriptHref)
+    let script = scripts.find((s) => s.href == scriptHref)
 
     // keep it simple for now by only showing required inputs and options
     let requiredInputs = script.inputs
@@ -63,10 +63,10 @@ export function ScriptForm({ job, removeJob, updateJob }) {
                 let newJobJson = jobXmlToJson(newJobXml)
                 let job_ = {
                     ...job,
-                    href: newJobJson.href,
                     state: JobState.SUBMITTED,
+                    jobData: newJobJson,
                 }
-                updateJob(job.id, job_)
+                updateJob(job_.internalId, job_)
             } catch (err) {
                 setFormStatus('IS_ERROR')
             }
@@ -88,7 +88,7 @@ export function ScriptForm({ job, removeJob, updateJob }) {
                         ))}
                     </ul>
                     <div className={styles.SubmitCancel}>
-                        <button onClick={(e) => removeJob(job.id)}>
+                        <button onClick={(e) => removeJob(job.internalId)}>
                             Cancel new job
                         </button>
                         <button
@@ -181,14 +181,14 @@ function FileOrFolderField({ item }) {
                   )
                   .map((mediaType) => mediaTypesFileFilters[mediaType])
             : []
-        
+
         // merge the values in the filters so that instead of
         // filters: [{name: 'EPUB', extensions: ['epub']}, {name: 'Package', extensions['opf']}]
         // we get
         // filters: [{name: "EPUB, Package", extensions: ['epub', 'opf']}]
         let filterNames = filters_.map((f) => f.name).join(', ')
         let filterExts = filters_.map((f) => f.extensions).flat()
-        
+
         let filters = [{ name: filterNames, extensions: filterExts }]
 
         filters.push(mediaTypesFileFilters['*'])

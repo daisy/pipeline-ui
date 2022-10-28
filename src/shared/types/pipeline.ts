@@ -102,9 +102,14 @@ export type Message = {
     timestamp: number
 }
 
+export type Job = {
+    internalId: string // the ID assigned internally by the UI
+    state: JobState
+    jobData?: JobData
+}
 // JobData is the JSON representation of Pipeline WS data for a single job
 export type JobData = {
-    id: string // the ID from the pipeline
+    jobId: string // the ID from the pipeline
     priority?: Priority
     status?: JobStatus
     log?: string
@@ -120,13 +125,6 @@ export type JobData = {
 export enum JobState {
     NEW,
     SUBMITTED,
-}
-
-// a Job is an object entirely managed by the UI
-export type Job = {
-    id: string // the ID assigned interally
-    href?: string
-    state: JobState
 }
 
 export type ScriptInput = {

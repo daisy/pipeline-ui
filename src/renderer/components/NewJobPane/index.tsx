@@ -14,7 +14,7 @@ export function NewJobPane({ job, removeJob, updateJob }) {
     }
 
     let job_ = { ...job }
-    if (selectedScript) job_.scriptHref = selectedScript.href
+    // if (selectedScript) job_.scriptHref = selectedScript.href
     return (
         <div className={styles.NewJobPane}>
             <div className={styles.SelectScript}>
@@ -31,6 +31,7 @@ export function NewJobPane({ job, removeJob, updateJob }) {
             {selectedScript != null ? (
                 <ScriptForm
                     job={job_}
+                    scriptHref={selectedScript.href}
                     removeJob={removeJob}
                     updateJob={updateJob}
                 />

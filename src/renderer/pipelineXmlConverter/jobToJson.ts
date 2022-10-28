@@ -17,7 +17,7 @@ function jobXmlToJson(xmlString: string): JobData {
 
 function jobElementToJson(jobElm: Element): JobData {
     let jobData: JobData = {
-        id: jobElm.getAttribute('id'),
+        jobId: jobElm.getAttribute('id'),
         priority:
             Priority[jobElm.getAttribute('priority') as keyof typeof Priority],
         status: JobStatus[

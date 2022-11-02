@@ -1,0 +1,192 @@
+<!doctype html>
+<html>
+
+<head>
+    <title>DAISY Pipeline</title>
+</head>
+
+<body>
+    <header>
+        <h1>DAISY Pipeline</h1>
+        <p>Status: running</p>
+    </header>
+    <main>
+        <div role="tablist">
+            <button role="tab" aria-selected="true" tabIndex="0" aria-label="Tab 0" title="Tab 0" id="tab-0">
+                Zero
+            </button>
+            <button role="tab" aria-selected="false" tabIndex="-1" aria-label="Tab 1" title="Tab 1" id="tab-1">
+                One
+            </button>
+            <button role="tab" aria-selected="false" tabIndex="-1" aria-label="Tab 2" title="Tab 2" id="tab-2">
+                One
+            </button>
+        </div>
+        <div role="tabpanel" aria-labelledby="tab-0" tabIndex="0">
+            <section>
+                <h2>EPUB 3 Validator</h2>
+                <p>Validate an EPUB</p>
+            </section>
+            <section>
+                <p>Status: Completed</p>
+                <p>Messages:</p>
+                <ul class="job-messages">
+                    <li>TODO</li>
+                    <li>TODO</li>
+                    <li>TODO</li>
+                    <li>TODO</li>
+                    <li>TODO</li>
+                </ul>
+            </section>
+            <section class="job-settings">
+                <h3>Job settings</h3>
+                <ul>
+                    <li>Input HTMLThe HTML you want to convert to braille. </li>
+                    <li>Style sheets </li>
+                    <li>Style sheet parameters </li>
+                    <li>Braille code </li>
+                    <li>Transformer features </li>
+                    <li>Include preview </li>
+                    <li>Include PEF </li>
+                    <li>Include OBFL </li>
+                    <li>Output file format </li>
+                    <li>ASCII braille table for HTML preview </li>
+                    <li>Page layout: Page width </li>
+                    <li>Page layout: Page height </li>
+                    <li>Page layout: Duplex </li>
+                    <li>Headers/footers: Levels in footer </li>
+                    <li>Translation/formatting of text: Hyphenation </li>
+                    <li>Translation/formatting of text: Hyphenation at page boundaries </li>
+                    <li>Translation/formatting of text: Line spacing </li>
+                    <li>Translation/formatting of text: Capital letters </li>
+                    <li>Block elements: Include captions </li>
+                    <li>Block elements: Include images </li>
+                    <li>Block elements: Include line groups </li>
+                    <li>Inline elements: Include production notes </li>
+                    <li>Page numbers: Show braille page numbers </li>
+                    <li>Page numbers: Show print page numbers </li>
+                    <li>Page numbers: Force braille page break </li>
+                    <li>Table of contents: Table of contents depth </li>
+                    <li>Table of contents: Exclude headings </li>
+                    <li>Volumes: Maximum number of sheets </li>
+                    <li>Volumes: Allow breaks within sections. </li>
+                    <li>Volumes: Prefer breaks at higher level sections. </li>
+                    <li>Placement of content: Notes placement </li>
+                </ul>
+            </section>
+            <section class="job-results">
+                <button>
+                    Show results folder
+                </button>
+            </section>
+        </div>
+        <div role="tabpanel" aria-labelledby="tab-1" hidden>
+            <div class="select-script">
+                <label for="script">Select a script:</label>
+                <select id="script">
+                    <option>None</option>
+                    <option value="daisy3-to-epub3">DAISY 3 to EPUB 3</option>
+                    <option value="dtbook-validator">DTBook Validator</option>
+                    <option value="epub2-to-epub3">EPUB Upgrader</option>
+                    <option value="epub3-to-daisy202">EPUB 3 to DAISY 2.02</option>
+                    <option value="dtbook-to-epub3">DTBook to EPUB 3</option>
+                    <option value="html-to-epub3">HTML to EPUB 3</option>
+                    <option value="epub3-validator">EPUB 3 Validator</option>
+                    <option value="zedai-to-html">ZedAI to HTML</option>
+                    <option value="html-to-pef">HTML to braille</option>
+                    <option value="dtbook-to-daisy3">DTBook to DAISY 3</option>
+                    <option value="nimas-fileset-validator">NIMAS Fileset Validator</option>
+                    <option value="dtbook-to-zedai">DTBook to ZedAI</option>
+                    <option value="epub3-to-epub3">EPUB 3 Enhancer</option>
+                    <option value="daisy3-to-daisy202">DAISY 3 to DAISY 2.02</option>
+                    <option value="daisy202-to-daisy3">DAISY 2.02 to DAISY 3</option>
+                    <option value="dtbook-to-rtf">DTBook to RTF</option>
+                    <option value="daisy202-to-epub3">DAISY 2.02 to EPUB 3</option>
+                    <option value="daisy202-validator">DAISY 2.02 Validator</option>
+                    <option value="dtbook-to-pef">DTBook to braille</option>
+                    <option value="epub3-to-pef">EPUB 3 to braille</option>
+                    <option value="zedai-to-pef">ZedAI to braille</option>
+                    <option value="dtbook-to-html">DTBook to HTML</option>
+                    <option value="zedai-to-epub3">ZedAI to EPUB 3</option>
+                    <option value="dtbook-to-odt">DTBook to ODT</option>
+                    <option value="epub-to-daisy">EPUB to DAISY</option>
+                    <option value="epub3-to-daisy3">EPUB 3 to DAISY 3</option>
+                </select>
+            </div>
+            <div class="script-form">
+                <h3>DAISY 2.02 to EPUB 3</h3>
+                <p>Required fields:</p>
+                <ul>
+                    <li>
+                        <FormField item={item} key={idx} />
+                    </li>
+                </ul>
+                <div className="submitCancel">
+                    <button onClick={(e)=> removeJob(job.internalId)}>
+                        Cancel new job
+                    </button>
+                    <button id="run-script" type="submit" onClick={(e)=> handleOnSubmit(e)}
+                        >
+                        Run
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div role="tabpanel" aria-labelledby="tab-2" hidden>
+            <div class="select-script">
+                <label for="script">Select a script:</label>
+                <select id="script">
+                    <option>None</option>
+                    <option value="daisy3-to-epub3">DAISY 3 to EPUB 3</option>
+                    <option value="dtbook-validator">DTBook Validator</option>
+                    <option value="epub2-to-epub3">EPUB Upgrader</option>
+                    <option value="epub3-to-daisy202">EPUB 3 to DAISY 2.02</option>
+                    <option value="dtbook-to-epub3">DTBook to EPUB 3</option>
+                    <option value="html-to-epub3">HTML to EPUB 3</option>
+                    <option value="epub3-validator">EPUB 3 Validator</option>
+                    <option value="zedai-to-html">ZedAI to HTML</option>
+                    <option value="html-to-pef">HTML to braille</option>
+                    <option value="dtbook-to-daisy3">DTBook to DAISY 3</option>
+                    <option value="nimas-fileset-validator">NIMAS Fileset Validator</option>
+                    <option value="dtbook-to-zedai">DTBook to ZedAI</option>
+                    <option value="epub3-to-epub3">EPUB 3 Enhancer</option>
+                    <option value="daisy3-to-daisy202">DAISY 3 to DAISY 2.02</option>
+                    <option value="daisy202-to-daisy3">DAISY 2.02 to DAISY 3</option>
+                    <option value="dtbook-to-rtf">DTBook to RTF</option>
+                    <option value="daisy202-to-epub3">DAISY 2.02 to EPUB 3</option>
+                    <option value="daisy202-validator">DAISY 2.02 Validator</option>
+                    <option value="dtbook-to-pef">DTBook to braille</option>
+                    <option value="epub3-to-pef">EPUB 3 to braille</option>
+                    <option value="zedai-to-pef">ZedAI to braille</option>
+                    <option value="dtbook-to-html">DTBook to HTML</option>
+                    <option value="zedai-to-epub3">ZedAI to EPUB 3</option>
+                    <option value="dtbook-to-odt">DTBook to ODT</option>
+                    <option value="epub-to-daisy">EPUB to DAISY</option>
+                    <option value="epub3-to-daisy3">EPUB 3 to DAISY 3</option>
+                </select>
+            </div>
+        </div>
+        
+
+    </main>
+    <script>
+        let selectedTab = "tab-0";
+        Array.from(document.querySelectorAll("[role=tab]")).map(tab => tab.addEventListener('click', (e) => {
+            Array.from(document.querySelectorAll("[role=tab]")).map(tab_ => {
+                tab_.setAttribute('hidden', true);
+                tab_.setAttribute('tabIndex', -1);
+            });
+            Array.from(document.querySelectorAll("[role=tabpanel]")).map(tabPanel => {
+                tabPanel.setAttribute('hidden', true);
+                tabPanel.setAttribute('tabIndex', -1);
+            });
+
+            e.target.removeAttribute('hidden');
+            e.target.setAttribute('tabIndex', "0");
+            document.querySelector(`[aria-labelledby=${e.target.id}`).removeAttribute('hidden');
+            document.querySelector(`[aria-labelledby=${e.target.id}`).setAttribute('tabIndex', '0');
+        }));
+    </script>
+</body>
+
+</html>

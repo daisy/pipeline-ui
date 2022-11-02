@@ -71,7 +71,6 @@ export function WindowStoreProvider({ children }) {
 
     useEffect(() => {
         if (pipeline.status == PipelineStatus.RUNNING && scripts.length == 0) {
-            console.log('getting scripts (useEffect)')
             getScripts(
                 `${baseurl(pipeline.runningWebservice)}/scripts`,
                 setScripts
@@ -111,7 +110,6 @@ export function WindowStoreProvider({ children }) {
 async function getScripts(url, setScriptsFn) {
     let res = await fetch(url)
     let xmlStr = await res.text()
-    console.log(xmlStr)
 
     let scriptsData = scriptsXmlToJson(xmlStr)
     let completeScriptsData = await Promise.all(
@@ -121,7 +119,6 @@ async function getScripts(url, setScriptsFn) {
             return scriptXmlToJson(xmlStr)
         })
     )
-    console.log('setting scripts', completeScriptsData)
 
     // this is unrelated but handy: get all the file types and option types for scripts
     let inputMediaTypes = completeScriptsData
@@ -142,10 +139,10 @@ async function getScripts(url, setScriptsFn) {
         .flat()
 
     // get unique lists
-    let allMediaTypes = [...inputMediaTypes, ...optionMediaTypes]
-    allMediaTypes = Array.from(new Set(allMediaTypes))
-    console.log(allMediaTypes)
-    console.log(Array.from(new Set(optionTypes)))
+    // let allMediaTypes = [...inputMediaTypes, ...optionMediaTypes]
+    // allMediaTypes = Array.from(new Set(allMediaTypes))
+    // console.log(allMediaTypes)
+    // console.log(Array.from(new Set(optionTypes)))
 
     setScriptsFn(completeScriptsData)
 }

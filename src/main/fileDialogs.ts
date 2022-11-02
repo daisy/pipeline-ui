@@ -32,7 +32,6 @@ const showOpenFileDialog = async (callback, dialogOptions) => {
         filePath = undefined
     }
     if (callback && filePath) {
-        console.log('Selected', filePath)
         callback(filePath)
     }
 }

@@ -69,16 +69,30 @@ As of Oct 2022
 * The user is presented with a choice of scripts
 * The user adds *required* parameters only to their script choice
 * The job runs and the app displays its latest status
-* When the job is done, the user may copy the path to the results on the clipboard
+* When the job is done, the user may view the results in a folder
+* Many jobs can run at once, in a tabbed interface
 
 ## Known to-dos
 
-* After a user starts filling out a new job form, if they press "cancel", ask them if they want to cancel
-* Also confirm deleting a job
-* Move the pipeline "online" status to a preferences pane where you can specify the pipeline installation
-* Reintroduce tabbed interface
-* Validate job submission form fields
-* Display validation status directly for validation jobs
-* Open result files/folder in finder/file explorer
-* Generally more defensive coding
+### Script selection
+* Drag and drop files to filter suggested scripts
+* Or just pick a script
 
+### Job submission
+* After a user starts filling out a new job form, if they press "cancel", ask them if they want to cancel
+* Validate job submission form fields
+* Support multiple files
+* Support pipeline datatypes (e.g. script options)
+
+### Job details
+* Confirm deleting a job
+* Display validation status directly for validation jobs
+
+### General
+* Move the pipeline "online" status to a preferences pane where you can specify the pipeline installation
+* Redesign main menu
+
+### Behind the scenes todos
+
+* Global state via redux
+* Basic testing framework via selenium

@@ -41,6 +41,12 @@ export class PipelineTray {
             //         ipcMain.emit(IPC.WINDOWS.ABOUT.CREATE)
             //     },
             // },
+            // {
+            //     label: 'Settings',
+            //     click: async (item, window, event) => {
+            //         ipcMain.emit(IPC.WINDOWS.SETTINGS.CREATE)
+            //     },
+            // },
             {
                 label: 'Quit',
                 click: (item, window, event) => {

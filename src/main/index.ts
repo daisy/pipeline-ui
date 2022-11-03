@@ -15,11 +15,14 @@ import {
     Pipeline2IPC,
     registerPipeline2ToIPC,
 } from './factories'
+
 import {
     MainWindow,
-    registerAboutWindowCreationByIPC,
     PipelineTray,
+    registerAboutWindowCreationByIPC,
+    registerSettingsWindowCreationByIPC,
 } from './windows'
+
 import { setupFileDialogEvents } from './fileDialogs'
 import { IPC } from 'shared/constants'
 import { setupShowInFolderEvents } from './folder'
@@ -40,13 +43,13 @@ makeAppWithSingleInstanceLock(async () => {
                 error(err)
                 throw err
             })
-        tray = new PipelineTray(mainWindow, null, pipelineInstance)
+        tray = new PipelineTray(mainWindow, pipelineInstance)
     } catch (err) {
         error(err)
         // quit app for now but we might need to think for a better handling for the user
         app.quit()
     }
-
+    registerSettingsWindowCreationByIPC()
     registerAboutWindowCreationByIPC()
     registerPipeline2ToIPC(pipelineInstance)
     bindWindowToPipeline(mainWindow, pipelineInstance)

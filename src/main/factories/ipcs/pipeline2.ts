@@ -3,36 +3,19 @@ import { resolve, delimiter, relative } from 'path'
 import { Webservice, PipelineStatus, PipelineState } from 'shared/types'
 import { IPC } from 'shared/constants'
 import { setTimeout } from 'timers/promises'
-import { spawn, ChildProcessWithoutNullStreams, exec } from 'child_process'
-import { existsSync, readdirSync, statSync } from 'fs'
+import { spawn, ChildProcessWithoutNullStreams } from 'child_process'
+import { existsSync } from 'fs'
 
-import { createServer } from 'net'
+import { getAvailablePort, Pipeline2Error, walk } from './utils'
+
 import { resolveUnpacked } from 'shared/utils'
 
 import { info } from 'electron-log'
-import { aliveXmlToJson } from 'renderer/pipelineXmlConverter'
 
 import { request as httpRequest } from 'http'
 // NP : for future use if we want to use the app
 // to also manage a pipeline behind https
 //import { request as httpsRequest } from 'https'
-
-var walk = function (dir, filter?: (name: string) => boolean) {
-    var results = []
-    var list = readdirSync(dir)
-    list.forEach(function (file) {
-        file = resolve(dir, file)
-        var stat = statSync(file)
-        if (stat && stat.isDirectory()) {
-            /* Recurse into a subdirectory */
-            results = results.concat(walk(file))
-        } else {
-            /* Is a file */
-            ;(!filter || filter(file)) && results.push(file)
-        }
-    })
-    return results
-}
 
 /**
  * Properties for initializing ipc with the daisy pipeline 2
@@ -77,70 +60,6 @@ export interface Pipeline2IPCProps {
     onError?: (error: string) => void
 
     onMessage?: (message: string) => void
-}
-
-export class Pipeline2Error extends Error {
-    name: string
-
-    constructor(name: string, message?: string, options?: ErrorOptions) {
-        super(message, options)
-        this.name = name
-    }
-}
-
-// Dev notes :
-// - port seeking in nodejs default to ipv6 ':::' for unset or localhost hostname
-// - ipv4 and 6 do not share ports (based on some tests, one app could listen to an ipv4 port while another listen to the same on the ipv6 side)
-//
-// Some comments on SOF say that hostname resolution is OS dependent, but some clues on github issues for nodejs
-// states that the resolution for 'localhost' defaults to ipv6, starting a version of nodejs i can't remember the number
-
-/**
- * seek for an opened port, or return null if none is available
- *
- * @param startPort
- * @param endPort
- * @param host optional hostname or ip adress (default to 127.0.0.1)
- */
-const getAvailablePort = async (
-    startPort: number,
-    endPort: number,
-    host: string = '127.0.0.1'
-) => {
-    let server = createServer()
-    let portChecked = startPort
-    let portOpened = 0
-
-    // Port seeking : if port is in use, retry with a different port
-    server.on('error', (err: NodeJS.ErrnoException) => {
-        info(`Port ${portChecked.toString()} is not usable : `)
-        info(err)
-        portChecked += 1
-        if (portChecked <= endPort) {
-            info(' -> Checking for ' + portChecked.toString())
-            server.listen(portChecked, host)
-        } else {
-            throw new Pipeline2Error(
-                'NO_PORT',
-                'No port available to host the pipeline webservice'
-            )
-        }
-    })
-    // Listening successfully on a port
-    server.on('listening', (event) => {
-        // close the server if listening a port succesfully
-        server.close(() => {
-            // select the port when the server is closed
-            portOpened = portChecked
-        })
-        info(portChecked.toString() + ' is available')
-    })
-    // Start the port seeking
-    server.listen(portChecked, host)
-    while (portOpened == 0 && portChecked <= endPort) {
-        await setTimeout(1000)
-    }
-    return portOpened
 }
 
 /**
@@ -528,7 +447,7 @@ export class Pipeline2IPC {
             })
         }
         // Launch the async state monitoring loop
-        this.stateMonitor()
+        // this.stateMonitor()
         return this.state
     }
 
@@ -556,29 +475,59 @@ export class Pipeline2IPC {
         }
     }
 
+    /**
+     * Add a listener on state changes
+     * @param callerID an id to identify the caller
+     * @param callback function to run on new state
+     */
     registerStateListener(
         callerID: string,
         callback: (data: PipelineState) => void
     ) {
         this.stateListeners.set(callerID, callback)
     }
+
+    /**
+     * Remove a state listener
+     * @param callerID the id of the caller which had registered the listener
+     */
     removeStateListener(callerID: string) {
         this.stateListeners.delete(callerID)
     }
 
+    /**
+     * Add a listener on the messages stack
+     * @param callerID the id of the element that register the listener
+     * @param callback the function to run when a new message is added on the stack
+     */
     registerMessagesListener(
         callerID: string,
         callback: (data: string) => void
     ) {
         this.messagesListeners.set(callerID, callback)
     }
+
+    /**
+     * Remove a listener on the messages stack
+     * @param callerID the id of the caller which had registered the listener
+     */
     removeMessageListener(callerID: string) {
         this.messagesListeners.delete(callerID)
     }
 
+    /**
+     * Add a listener on the error messages stack
+     * @param callerID the id of the element that register the listener
+     * @param callback the function to run when a new error message is added on the stack
+     */
     registerErrorsListener(callerID: string, callback: (data: string) => void) {
         this.errorsListeners.set(callerID, callback)
     }
+
+    /**
+     * Remove a listener on the error messages stack
+     * @param callerID the id of the caller which had registered the listener
+     */
     removeErrorsListener(callerID: string) {
         this.errorsListeners.delete(callerID)
     }

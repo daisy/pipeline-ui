@@ -1,6 +1,11 @@
 import { app, ipcMain } from 'electron'
 import { resolve, delimiter, relative } from 'path'
-import { Webservice, PipelineStatus, PipelineState } from 'shared/types'
+import {
+    Webservice,
+    PipelineStatus,
+    PipelineState,
+    ApplicationSettings,
+} from 'shared/types'
 import { IPC } from 'shared/constants'
 import { setTimeout } from 'timers/promises'
 import { spawn, ChildProcessWithoutNullStreams } from 'child_process'
@@ -63,7 +68,7 @@ export interface Pipeline2IPCProps {
 }
 
 /**
- * [Pipeline2IPC description]
+ * Local DAISY Pipeline 2 management class
  */
 export class Pipeline2IPC {
     props: Pipeline2IPCProps
@@ -440,7 +445,6 @@ export class Pipeline2IPC {
                 })
                 this.pushMessage(message)
             })
-            // */
             this.setState({
                 status: PipelineStatus.STARTING,
                 runningWebservice: this.props.webservice,
@@ -468,10 +472,10 @@ export class Pipeline2IPC {
             if (!finished) {
                 this.instance.kill('SIGKILL')
             }
-            this.instance = null
             this.setState({
                 status: PipelineStatus.STOPPED,
             })
+            return
         }
     }
 
@@ -534,20 +538,49 @@ export class Pipeline2IPC {
 }
 
 /**
- * Register the management of a pipeline instance to IPC for communication with selected windows
- * @param pipeline2instance global instance to manage
- * @param boundedWindows windows that are allowed to manage pipeline and/or get state updates
- *
+ * Register the management of a local pipeline instance to IPC for communication with selected windows
+ * @returns the managed instance for supplemental bindings
  */
-export function registerPipeline2ToIPC(pipeline2instance: Pipeline2IPC) {
+export function registerPipeline2ToIPC(
+    settings?: ApplicationSettings
+): Pipeline2IPC {
+    // Instance managed through IPC calls within the app
+    let pipeline2instance = new Pipeline2IPC(
+        settings ? settings.localPipelineProps : undefined
+    )
+    // Update the instance if the settings are being updated
+    ipcMain.on(
+        IPC.WINDOWS.SETTINGS.UPDATE,
+        (event, newSettings: ApplicationSettings) => {
+            info('pipeline has received settings update')
+            // Check if pipeline should be deactivated
+            if (
+                newSettings.runLocalPipeline == false &&
+                pipeline2instance.state.status != PipelineStatus.STOPPED
+            ) {
+                pipeline2instance.stop()
+            } else {
+                // FIXME: change the always restart on update by only restart if settings have changed
+                pipeline2instance.stop().then(() => {
+                    if (newSettings.localPipelineProps) {
+                        pipeline2instance.props = {
+                            ...pipeline2instance.props,
+                            ...newSettings.localPipelineProps,
+                        }
+                    }
+                    pipeline2instance.launch()
+                })
+            }
+        }
+    )
     // start the pipeline runner.
-    ipcMain.handle(IPC.PIPELINE.START, async (event, webserviceProps) => {
+    ipcMain.on(IPC.PIPELINE.START, async (event, webserviceProps) => {
         // New settings requested with an existing instance :
         // Destroy the instance if new settings are requested
         if (webserviceProps) {
             pipeline2instance.updateWebservice(webserviceProps)
         }
-        return pipeline2instance.launch()
+        pipeline2instance.launch()
     })
 
     // Stop the pipeline instance
@@ -558,6 +591,7 @@ export function registerPipeline2ToIPC(pipeline2instance: Pipeline2IPC) {
         return pipeline2instance.state || null
     })
 
+    // get properties of the instance
     ipcMain.handle(IPC.PIPELINE.PROPS.GET, (event) => {
         return pipeline2instance.props || null
     })
@@ -570,4 +604,11 @@ export function registerPipeline2ToIPC(pipeline2instance: Pipeline2IPC) {
     ipcMain.handle(IPC.PIPELINE.ERRORS.GET, (event) => {
         return pipeline2instance.errors || null
     })
+
+    // Launch the pipeline if requested in the settings
+    if (!settings || (settings && settings.runLocalPipeline)) {
+        pipeline2instance.launch()
+    }
+
+    return pipeline2instance
 }

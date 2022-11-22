@@ -106,6 +106,10 @@ export type Job = {
     internalId: string // the ID assigned internally by the UI
     state: JobState
     jobData?: JobData
+    jobRequest?: JobRequest
+    script?: Script
+    // jobRequest.script also has script info (returned from ws);
+    // however, storing it separately gives us access to more details
 }
 // JobData is the JSON representation of Pipeline WS data for a single job
 export type JobData = {

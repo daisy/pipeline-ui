@@ -1,27 +1,14 @@
-import { NewJobPane } from '../NewJobPane'
-import { JobDetailsPane } from '../JobDetailsPane'
-import { Job, JobState } from 'shared/types'
-
-import styles from './styles.module.sass'
-
-export function TabPanel({ job, isSelected, removeJob, updateJob }) {
+export function TabPanel({ id, tabId, isSelected, children }) {
     return (
         <div
-            className={styles.TabPanel}
+            className="tabPanel"
+            id={id}
             role="tabpanel"
             hidden={!isSelected}
-            aria-labelledby={`tab-${job.internalId}`}
+            aria-labelledby={tabId}
             tabIndex={0}
         >
-            {job.state == JobState.NEW ? (
-                <NewJobPane
-                    job={job}
-                    removeJob={removeJob}
-                    updateJob={updateJob}
-                />
-            ) : (
-                <JobDetailsPane job={job} removeJob={removeJob} />
-            )}
+            <div className="fixed-height-layout">{children}</div>
         </div>
     )
 }

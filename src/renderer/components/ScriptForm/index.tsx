@@ -1,9 +1,11 @@
 import { jobRequestToXml, jobXmlToJson } from 'renderer/pipelineXmlConverter'
-import { JobRequest, JobState, baseurl } from 'shared/types'
+import { JobRequest, JobState, baseurl, Script } from 'shared/types'
 import styles from './styles.module.sass'
 import { useState } from 'react'
 import { useWindowStore } from 'renderer/store'
 import { mediaTypesFileFilters } from 'shared/constants'
+import { getAllOptional, getAllRequired, ID } from 'renderer/utils'
+import { Section } from '../Section'
 
 const { App } = window // The "App" comes from the bridge
 
@@ -14,16 +16,8 @@ export function ScriptForm({ job, scriptHref, removeJob, updateJob }) {
 
     let script = scripts.find((s) => s.href == scriptHref)
 
-    // keep it simple for now by only showing required inputs and options
-    let requiredInputs = script.inputs
-        .filter((input) => input.required)
-        // inputs are always files (vs options)
-        .map((input) => ({ ...input, type: 'anyFileURI', kind: 'input' }))
-
-    let requiredOptions = script.options
-        .filter((option) => option.required)
-        .map((option) => ({ ...option, kind: 'option' }))
-    let allRequired = [...requiredInputs, ...requiredOptions]
+    let required = getAllRequired(script)
+    let optional = getAllOptional(script)
 
     // submit a job
     let handleOnSubmit = async (e) => {
@@ -41,11 +35,9 @@ export function ScriptForm({ job, scriptHref, removeJob, updateJob }) {
         jobRequest.inputs = inputs
         jobRequest.options = options
 
-        let xmlStr = jobRequestToXml(jobRequest)
+        console.log('jobreq', jobRequest)
 
-        // test that our XML parses
-        // let doc = new DOMParser().parseFromString(xmlStr, 'text/xml')
-        // console.log(doc.getElementsByTagName('jobRequest')[0].nodeName)
+        let xmlStr = jobRequestToXml(jobRequest)
 
         // this post request submits the job to the pipeline webservice
         let res = await fetch(`${baseurl(pipeline.runningWebservice)}/jobs`, {
@@ -55,6 +47,7 @@ export function ScriptForm({ job, scriptHref, removeJob, updateJob }) {
         })
 
         if (res.status != 201) {
+            console.log(res)
             setFormStatus('IS_ERROR')
         } else {
             let newJobXml = await res.text()
@@ -65,6 +58,8 @@ export function ScriptForm({ job, scriptHref, removeJob, updateJob }) {
                     ...job,
                     state: JobState.SUBMITTED,
                     jobData: newJobJson,
+                    jobRequest,
+                    script,
                 }
                 updateJob(job_.internalId, job_)
             } catch (err) {
@@ -74,32 +69,55 @@ export function ScriptForm({ job, scriptHref, removeJob, updateJob }) {
     }
 
     return (
-        <div className={styles.ScriptForm}>
-            <h3>{script.nicename}</h3>
+        <>
+            <section
+                className="header"
+                aria-labelledby={`${ID(job.internalId)}-script-hd`}
+            >
+                <div>
+                    <h1 id={`${ID(job.internalId)}-script-hd`}>
+                        {script.nicename}
+                    </h1>
+                    <p>{script.description}</p>
+                </div>
+                <button
+                    className="run"
+                    type="submit"
+                    onClick={(e) => handleOnSubmit(e)}
+                >
+                    Run
+                </button>
+            </section>
 
             {formStatus == 'IS_FORM' ? (
-                <>
-                    <p>Required fields:</p>
-                    <ul>
-                        {allRequired.map((item, idx) => (
-                            <li key={idx}>
-                                <FormField item={item} key={idx} />
-                            </li>
-                        ))}
-                    </ul>
-                    <div className={styles.SubmitCancel}>
-                        <button onClick={(e) => removeJob(job.internalId)}>
-                            Cancel new job
-                        </button>
-                        <button
-                            id="run-script"
-                            type="submit"
-                            onClick={(e) => handleOnSubmit(e)}
-                        >
-                            Run
-                        </button>
-                    </div>
-                </>
+                <div className="flexgrid">
+                    <Section
+                        className="required-fields"
+                        id={`${ID(job.internalId)}-required`}
+                        label="Required information"
+                    >
+                        <ul className="fields">
+                            {required.map((item, idx) => (
+                                <li key={idx}>
+                                    <FormField item={item} key={idx} />
+                                </li>
+                            ))}
+                        </ul>
+                    </Section>
+                    <Section
+                        className="optional-fields"
+                        id={`${ID(job.internalId)}-optional`}
+                        label="Options"
+                    >
+                        <ul className="fields">
+                            {optional.map((item, idx) => (
+                                <li key={idx}>
+                                    <FormField item={item} key={idx} />
+                                </li>
+                            ))}
+                        </ul>
+                    </Section>
+                </div>
             ) : formStatus == 'IS_SUBMITTING' ? (
                 <p>Submitting...</p>
             ) : formStatus == 'IS_ERROR' ? (
@@ -109,7 +127,7 @@ export function ScriptForm({ job, scriptHref, removeJob, updateJob }) {
             ) : (
                 ''
             )}
-        </div>
+        </>
     )
 }
 
@@ -144,7 +162,7 @@ function FormField({ item }) {
         return (
             <div>
                 <label htmlFor={item.name}>{item.nicename}</label>
-                <span className={styles.description}>{item.desc}</span>
+                <span className="description">{item.desc}</span>
                 <input
                     type={inputType}
                     id={item.name}
@@ -173,7 +191,6 @@ function FileOrFolderField({ item }) {
                 ? ['openFolder']
                 : ['openFile', 'openFolder']
         // what file type(s)?
-        console.log('media type', item.mediaType)
         let filters_ = Array.isArray(item.mediaType)
             ? item.mediaType
                   .filter((mediaType) =>
@@ -203,9 +220,9 @@ function FileOrFolderField({ item }) {
     }
     // all items that make it to this function have type of 'anyFileURI' or 'anyDirURI'`
     return (
-        <div className={styles.FileOrFolderField}>
+        <div className="FileOrFolder">
             <label htmlFor={`button-${item.name}`}>{item.nicename}</label>
-            <span className={styles.description}>{item.desc}</span>
+            <span className="description">{item.desc}</span>
             <div className="fileOrFolderField">
                 <button
                     type="button"
@@ -223,6 +240,8 @@ function FileOrFolderField({ item }) {
 }
 
 // return all the inputs and options in the form
+// this is a very not-react way to do it
+// but I would prefer not to be tied to react at every level
 function getFormData(scriptFormElm) {
     let inputData = []
     let optionData = []

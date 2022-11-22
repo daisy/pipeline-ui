@@ -1,25 +1,73 @@
-import styles from './styles.module.sass'
-import { useQuery } from '@tanstack/react-query'
-import { jobXmlToJson } from 'renderer/pipelineXmlConverter'
+import { JobStatus } from '/shared/types'
+import { Messages } from './Messages'
+import { Settings } from './Settings'
+import { Results } from './Results'
+import { Section } from '../Section'
+
+import { ID } from '../../utils'
 
 const { App } = window
 
+const readableStatus = {
+    IDLE: 'Waiting',
+    RUNNING: 'Running',
+    ERROR: 'Error',
+    SUCCESS: 'Completed',
+    FAIL: 'Error',
+}
+
 export function JobDetailsPane({ job, removeJob }) {
-    console.log('Job details pane', JSON.stringify(job))
+    console.log('Job details pane', job)
 
     return (
-        <div className={styles.jobDetails}>
-            <h2>Job: {job.jobData.nicename}</h2>
-            <p> Status: {job.jobData.status}</p>
-            {job.jobData.status == 'SUCCESS' ? (
-                <JobResults
-                    jobId={job.jobData.jobId}
-                    results={job.jobData.results}
-                />
-            ) : (
-                ''
-            )}
-        </div>
+        <>
+            <section
+                className="header"
+                aria-labelledby={`${ID(job.internalId)}-hd`}
+            >
+                <div>
+                    <h1 id={`${ID(job.internalId)}-hd`}>
+                        {job.jobData.nicename}
+                    </h1>
+                    <p>{job.script.description}</p>
+                    <p aria-live="polite" className="status success">
+                        Job status: {readableStatus[job.jobData.status]}
+                    </p>
+                </div>
+                {job.jobData.status == JobStatus.SUCCESS ||
+                job.jobData.status == JobStatus.FAIL ? (
+                    <JobResults
+                        jobId={job.jobData.jobId}
+                        results={job.jobData.results}
+                    />
+                ) : (
+                    ''
+                )}
+            </section>
+            <div className="flexgrid">
+                <Section
+                    label="Settings"
+                    className="job-settings"
+                    id={`${ID(job.internalId)}-job-settings`}
+                >
+                    <Settings job={job} />
+                </Section>
+                <Section
+                    label="Messages"
+                    className="job-messages"
+                    id={`${ID(job.internalId)}-job-messages`}
+                >
+                    <Messages job={job} />
+                </Section>
+                <Section
+                    label="Results"
+                    className="job-results"
+                    id={`${ID(job.internalId)}-job-results`}
+                >
+                    <Results job={job} />
+                </Section>
+            </div>
+        </>
     )
 }
 
@@ -43,13 +91,13 @@ function JobResults({ jobId, results }) {
     if (file != '') {
         return (
             <button
-                className={styles.copyPathButton}
+                className="jobResults"
                 onClick={(e) => App.showItemInFolder(file)}
             >
                 Show results folder
             </button>
         )
     } else {
-        return <p>Results unavailable</p>
+        return <p className="jobResults">Results unavailable</p>
     }
 }

@@ -1,10 +1,11 @@
 import { useState } from 'react'
 import { ScriptForm } from '../ScriptForm'
-import styles from './styles.module.sass'
 import { useWindowStore } from 'renderer/store'
+import { ID } from 'renderer/utils'
 
-// the temporary "new job" has its own ID
 export function NewJobPane({ job, removeJob, updateJob }) {
+    console.log('new job pane for ', job)
+
     const [selectedScript, setSelectedScript] = useState(null)
     const { scripts } = useWindowStore()
 
@@ -14,11 +15,21 @@ export function NewJobPane({ job, removeJob, updateJob }) {
     }
 
     let job_ = { ...job }
-    // if (selectedScript) job_.scriptHref = selectedScript.href
+
+    
+
     return (
-        <div className={styles.NewJobPane}>
-            <div className={styles.SelectScript}>
-                <label htmlFor="script">Select a script:</label>
+        <>
+            <section
+                className="select-script"
+                aria-labelledby={`${ID(job.internalId)}-select-script}`}
+            >
+                <label
+                    id={`${ID(job.internalId)}-select-script}`}
+                    htmlFor="script"
+                >
+                    Select a script:
+                </label>
                 <select id="script" onChange={(e) => handleOnSelectChange(e)}>
                     <option value={null}>None</option>
                     {scripts.map((script, idx) => (
@@ -27,7 +38,7 @@ export function NewJobPane({ job, removeJob, updateJob }) {
                         </option>
                     ))}
                 </select>
-            </div>
+            </section>
             {selectedScript != null ? (
                 <ScriptForm
                     job={job_}
@@ -38,6 +49,6 @@ export function NewJobPane({ job, removeJob, updateJob }) {
             ) : (
                 ''
             )}
-        </div>
+        </>
     )
 }

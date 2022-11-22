@@ -1,6 +1,6 @@
 import React from 'react'
 
-import styles from './styles.module.sass'
+// import styles from './styles.module.sass'
 
 export function AboutScreen() {
     return (

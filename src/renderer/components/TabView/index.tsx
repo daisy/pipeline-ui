@@ -1,10 +1,12 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { AddJobTab, JobTab } from '../Tab'
 import { TabPanel } from '../TabPanel'
 import { Job, JobStatus, JobState } from 'shared/types/pipeline'
-import styles from './styles.module.sass'
 import { useQuery } from '@tanstack/react-query'
 import { jobXmlToJson } from 'renderer/pipelineXmlConverter'
+import { NewJobPane } from '../NewJobPane'
+import { JobDetailsPane } from '../JobDetailsPane'
+import { ID } from 'renderer/utils'
 
 const NEW_JOB = (id) => ({
     internalId: id,
@@ -21,7 +23,6 @@ export function TabView() {
             let fetchJobData = async (job) => {
                 let res = await fetch(job.jobData.href)
                 let xmlStr = await res.text()
-                console.log(`Fetching job data ${job.internalId}`, xmlStr)
                 if (xmlStr) return jobXmlToJson(xmlStr)
                 else return null
             }
@@ -44,7 +45,6 @@ export function TabView() {
             if (updatedJobs.length == 0) {
                 updatedJobs.push(NEW_JOB('job-0'))
             }
-            console.log('jobsData query', updatedJobs)
             setJobs(updatedJobs)
             return updatedJobs
         },
@@ -80,7 +80,6 @@ export function TabView() {
             } else return j
         })
         setJobs(jobs_)
-        console.log('update jobs', jobs_)
     }
 
     if (selectedJobId == '' && jobs.length > 0 && jobs[0].internalId) {
@@ -92,30 +91,53 @@ export function TabView() {
         setSelectedJobId(job.internalId)
     }
 
+    let handleOnCloseTab = (job) => {
+        // TODO warn the user first
+        removeJob(job.internalId)
+    }
+
     return (
         <>
-            <div role="tablist" style={styles}>
+            <div role="tablist">
                 {jobs.map((job, idx) => {
                     return (
                         <JobTab
-                            job={job}
+                            id={`${ID(job.internalId)}-tab`}
+                            tabpanelId={`${ID(job.internalId)}-tabpanel`}
+                            label={
+                                job.state == JobState.NEW
+                                    ? 'New Job'
+                                    : job.jobData.nicename
+                            }
                             key={idx}
                             isSelected={job.internalId == selectedJobId}
                             onSelect={handleOnTabSelect}
+                            onClose={handleOnCloseTab}
                         />
                     )
                 })}
                 <AddJobTab onSelect={addJob} />
             </div>
-            {jobs.map((job, idx) => (
-                <TabPanel
-                    job={job}
-                    key={idx}
-                    isSelected={job.internalId == selectedJobId}
-                    removeJob={removeJob}
-                    updateJob={updateJob}
-                />
-            ))}
+            {jobs.map((job, idx) => {
+                return (
+                    <TabPanel
+                        id={`${ID(job.internalId)}-tabpanel`}
+                        tabId={`${ID(job.internalId)}-tab`}
+                        key={idx}
+                        isSelected={job.internalId == selectedJobId}
+                    >
+                        {job.state == JobState.NEW ? (
+                            <NewJobPane
+                                job={job}
+                                removeJob={removeJob}
+                                updateJob={updateJob}
+                            />
+                        ) : (
+                            <JobDetailsPane job={job} removeJob={removeJob} />
+                        )}
+                    </TabPanel>
+                )
+            })}
         </>
     )
 }

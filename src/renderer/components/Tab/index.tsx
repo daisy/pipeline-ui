@@ -1,48 +1,52 @@
-import styles from './styles.module.sass'
+import * as SvgIcons from '../SvgIcons'
 
-function GenericTab({
+export function JobTab({
     id,
+    tabpanelId,
     label,
     isSelected,
-    onTabSelect,
-    ariaLabel = '',
-    title = '',
+    onSelect,
+    onClose,
 }) {
     return (
-        <button
-            style={styles}
-            role="tab"
-            onClick={(e) => onTabSelect(e)}
-            aria-selected={isSelected}
-            tabIndex={isSelected ? 0 : -1}
-            aria-label={ariaLabel ?? ''}
-            title={title ?? ''}
-            id={id}
-        >
-            {label}
-        </button>
+        <div className="tab">
+            <button
+                id={id}
+                aria-selected={isSelected}
+                tabIndex={isSelected ? 0 : -1}
+                aria-controls={tabpanelId}
+                role="tab"
+                type="button"
+                onClick={(e) => onSelect()}
+            >
+                {label}
+            </button>
+            <button
+                className="close-tab"
+                type="button"
+                onClick={(e) => onClose()}
+                aria-label={`Close tab "${label}"`}
+            >
+                <SvgIcons.CloseTab width="20" height="20" />
+            </button>
+        </div>
     )
 }
 
 export function AddJobTab({ onSelect }) {
     return (
-        <GenericTab
-            label="+"
-            isSelected="false"
-            onTabSelect={(e) => onSelect()}
-            aria-label="Create job"
-            id="create-job"
-        />
-    )
-}
-
-export function JobTab({ job, isSelected, onSelect }) {
-    return (
-        <GenericTab
-            label="New job"
-            isSelected={isSelected}
-            id={job.internalId}
-            onTabSelect={(e) => onSelect(job)}
-        />
+        <div className="tab">
+            <button
+                id="create-job"
+                aria-selected="false"
+                tabIndex={-1}
+                role="tab"
+                type="button"
+                onClick={(e) => onSelect()}
+                aria-label="Create job"
+            >
+                <SvgIcons.AddTab width="24" height="24" />
+            </button>
+        </div>
     )
 }

@@ -13,6 +13,7 @@ const API = {
     username: process.env.USER,
     showOpenFileDialog: ipcs.showOpenFileDialog,
     showItemInFolder: ipcs.showItemInFolder,
+    whenAboutWindowClosed: ipcs.whenAboutWindowClose,
 }
 
 contextBridge.exposeInMainWorld('App', API)

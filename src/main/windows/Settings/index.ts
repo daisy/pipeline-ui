@@ -4,13 +4,13 @@ import { APP_CONFIG } from '~/app.config'
 
 export * from './ipcs'
 
-export function AboutWindow() {
+export function SettingsWindow() {
     const window = createWindow({
-        id: 'about',
-        title: `${APP_CONFIG.TITLE} - About`,
+        id: 'settings',
+        title: `${APP_CONFIG.TITLE} - Settings`,
         width: 450,
         height: 350,
-        resizable: false,
+        resizable: true,
         alwaysOnTop: true,
 
         webPreferences: {

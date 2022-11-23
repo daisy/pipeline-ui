@@ -77,16 +77,9 @@ export function WindowStoreProvider({ children }) {
             )
         }
     }, [pipeline])
-
     App.onPipelineStateChanged(async (event, newState) => {
         setPipelineState(newState)
     })
-    // App.onPipelineMessage((event, message) => {
-    //     setPipelineMessages([message, ...messages])
-    // })
-    // App.onPipelineError((event, error) => {
-    //     setPipelineErrors([error, ...errors])
-    // })
 
     const sharedStore = {
         about: about,

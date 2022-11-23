@@ -10,6 +10,12 @@ import { createServer } from 'net'
 import { resolveUnpacked } from 'shared/utils'
 
 import { info } from 'electron-log'
+import { aliveXmlToJson } from 'renderer/pipelineXmlConverter'
+
+import { request as httpRequest } from 'http'
+// NP : for future use if we want to use the app
+// to also manage a pipeline behind https
+//import { request as httpsRequest } from 'https'
 
 var walk = function (dir, filter?: (name: string) => boolean) {
     var results = []
@@ -148,6 +154,7 @@ export class Pipeline2IPC {
         string,
         (data: PipelineState) => void
     >()
+    runStateMonitor: boolean = true
 
     messages: Array<string>
     messagesListeners: Map<string, (data: string) => void> = new Map<
@@ -193,6 +200,53 @@ export class Pipeline2IPC {
         this.setState({
             status: PipelineStatus.STOPPED,
         })
+        this.stateMonitor = this.stateMonitor.bind(this)
+    }
+
+    /**
+     * Monitor function to watch the webservice state
+     */
+    async stateMonitor(refreshTimerInMillisecondes = 1000) {
+        while (this.runStateMonitor) {
+            await setTimeout(refreshTimerInMillisecondes).then(async () => {
+                return new Promise<string>((resolve, reject) => {
+                    const options = {
+                        host: this.props.webservice.host,
+                        port: this.props.webservice.port,
+                        path: this.props.webservice.path + '/alive',
+                    }
+                    const callback = (response) => {
+                        var data = ''
+                        response.on('data', (chunk) => {
+                            data += chunk
+                        })
+                        response.on('end', () => {
+                            resolve(data)
+                        })
+                    }
+                    const req = httpRequest(options, callback)
+                    req.on('error', (errorVal) => {
+                        reject(errorVal)
+                    })
+                    req.end()
+                })
+                    .then((value) => {
+                        if (this.state.status != PipelineStatus.RUNNING) {
+                            this.setState({
+                                status: PipelineStatus.RUNNING,
+                            })
+                        }
+                    })
+                    .catch(() => {
+                        // if pipeline went from running to offline
+                        if (this.state.status === PipelineStatus.RUNNING) {
+                            this.setState({
+                                status: PipelineStatus.STOPPED,
+                            })
+                        }
+                    })
+            })
+        }
     }
 
     /**
@@ -200,10 +254,10 @@ export class Pipeline2IPC {
      * @param webservice
      */
     updateWebservice(webservice: Webservice) {
-        const isRunning = this.state.status !== PipelineStatus.STOPPED
-        isRunning && this.stop()
-        this.props.webservice = webservice
-        isRunning && this.launch()
+        this.stop().then(() => {
+            this.props.webservice = webservice
+            this.launch()
+        })
     }
 
     setState(newState: {
@@ -423,30 +477,30 @@ export class Pipeline2IPC {
             this.instance = spawn(command, args, {
                 cwd: this.props.localPipelineHome,
             })
+            // NP Replace stdout analysis by webservice monitoring
             this.instance.stdout.on('data', (data) => {
                 // marisa experiment: don't analyze stdout data if the pipeline is already up and running
                 // checking each stdout message slows the UI to a crawl when the pipeline is outputting a lot of messages
                 // (e.g. when it's running a job)
-                if (this.state.status == PipelineStatus.RUNNING) {
-                    return
-                }
-
-                let message: string = data.toString()
+                // if (this.state.status == PipelineStatus.RUNNING) {
+                //     return
+                // }
+                //let message: string = data.toString()
                 // Webservice is started and pipeline is ready to run
                 // Both formats of messages have been observed from the Pipeline
                 // TODO: find out which one(s) to use
-                if (
-                    message.includes(
-                        'PipelineWebService - component started'
-                    ) ||
-                    message.includes('WebService] component started')
-                ) {
-                    this.setState({
-                        status: PipelineStatus.RUNNING,
-                        runningWebservice: this.props.webservice,
-                    })
-                }
-                this.pushMessage(message)
+                // if (
+                //     message.includes(
+                //         'PipelineWebService - component started'
+                //     ) ||
+                //     message.includes('WebService] component started')
+                // ) {
+                //     this.setState({
+                //         status: PipelineStatus.RUNNING,
+                //         runningWebservice: this.props.webservice,
+                //     })
+                // }
+                //this.pushMessage(message)
             })
             this.instance.stderr.on('data', (data) => {
                 // marisa experiment: don't analyze stdout, see above for explanation
@@ -473,6 +527,8 @@ export class Pipeline2IPC {
                 runningWebservice: this.props.webservice,
             })
         }
+        // Launch the async state monitoring loop
+        this.stateMonitor()
         return this.state
     }
 
@@ -480,6 +536,7 @@ export class Pipeline2IPC {
      * Stopping the pipeline
      */
     async stop(appIsClosing = false) {
+        this.runStateMonitor = false
         if (appIsClosing) {
             this.stateListeners.clear()
             this.messagesListeners.clear()

@@ -8,14 +8,10 @@ export function registerWindowCreationByIPC({
     window: createWindow,
 }: WindowCreationByIPC) {
     let window: BrowserWindowOrNull
-
-    ipcMain.handle(channel, (event) => {
+    ipcMain.on(channel, (event) => {
         if (!createWindow || window) return
-
         window = createWindow()
-
         window.on('closed', () => (window = null))
-
         callback && callback(window, event)
     })
 }

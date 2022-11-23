@@ -4,6 +4,10 @@ export const IPC = {
             CREATE: 'windows: create-about-window',
             WHEN_CLOSE: 'windows: when-about-window-close',
         },
+        SETTINGS: {
+            CREATE: 'windows: create-settings-window',
+            WHEN_CLOSE: 'windows: when-settings-window-close',
+        },
     },
     PIPELINE: {
         START: 'pipeline: start',

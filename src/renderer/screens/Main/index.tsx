@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { TabView } from 'renderer/components'
+import { MainView } from 'renderer/components'
 import { useWindowStore } from 'renderer/store'
 import { PipelineStatus } from 'shared/types/pipeline'
 
@@ -12,9 +12,9 @@ export function MainScreen() {
             <>
                 <main>
                     {pipeline.status == PipelineStatus.RUNNING ? (
-                        <TabView />
+                        <MainView />
                     ) : (
-                        ''
+                        'WAITING'
                     )}
                 </main>
             </>

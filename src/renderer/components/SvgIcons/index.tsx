@@ -1,3 +1,6 @@
+/*
+A few simple icons
+*/
 export function CloseTab({ width, height }) {
     return (
         <svg

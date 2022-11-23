@@ -1,4 +1,4 @@
-import { findValue, getAllOptional, getAllRequired } from 'renderer/utils'
+import { findValue, getAllOptional, getAllRequired } from 'renderer/utils/utils'
 
 export function Settings({ job }) {
     let required = getAllRequired(job.script)

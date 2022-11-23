@@ -53,6 +53,7 @@ function scriptElementToJson(scriptElm: Element): Script {
                 nicename: optionElm.getAttribute('nicename'),
                 ordered: optionElm.getAttribute('ordered') == 'true',
                 type: optionElm.getAttribute('type'),
+                default: optionElm.getAttribute('default'),
             }
         }
     )

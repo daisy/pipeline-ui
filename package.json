@@ -1,5 +1,5 @@
 {
-  "displayName": "DAISY Pipeline UI",
+  "displayName": "DAISY Pipeline",
   "name": "daisy-pipeline-ui",
   "description": "User interface for the DAISY Pipeline",
   "version": "0.1.0-alpha",
@@ -47,7 +47,9 @@
   },
   "dependencies": {
     "@tanstack/react-query": "^4.2.1",
+    "@types/marked": "^4.0.7",
     "electron-log": "^4.4.8",
+    "marked": "^4.2.3",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-router-dom": "^6.3.0",

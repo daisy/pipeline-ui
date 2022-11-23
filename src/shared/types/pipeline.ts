@@ -149,6 +149,7 @@ export type ScriptOption = {
     nicename?: string
     ordered?: boolean
     type?: string
+    default?: string
 }
 
 export type Script = {

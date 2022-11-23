@@ -1,7 +1,7 @@
 export function Results({ job }) {
     return (
         <ul aria-live="polite">
-            {job.jobData.results.namedResults.map((item) => (
+            {job.jobData.results?.namedResults.map((item) => (
                 <li>
                     <span>{item.nicename}</span>
                     {item.files.length > 1 ? (

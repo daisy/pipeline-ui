@@ -1,10 +1,13 @@
+/*
+Details of a submitted job
+*/
 import { JobStatus } from '/shared/types'
 import { Messages } from './Messages'
 import { Settings } from './Settings'
 import { Results } from './Results'
 import { Section } from '../Section'
 
-import { ID } from '../../utils'
+import { ID } from '../../utils/utils'
 
 const { App } = window
 
@@ -16,7 +19,7 @@ const readableStatus = {
     FAIL: 'Error',
 }
 
-export function JobDetailsPane({ job, removeJob }) {
+export function JobDetailsPane({ job }) {
     console.log('Job details pane', job)
 
     return (
@@ -30,7 +33,12 @@ export function JobDetailsPane({ job, removeJob }) {
                         {job.jobData.nicename}
                     </h1>
                     <p>{job.script.description}</p>
-                    <p aria-live="polite" className="status success">
+                    <p
+                        aria-live="polite"
+                        className={`status ${readableStatus[
+                            job.jobData.status
+                        ].toLowerCase()}`}
+                    >
                         Job status: {readableStatus[job.jobData.status]}
                     </p>
                 </div>
@@ -76,7 +84,7 @@ function JobResults({ jobId, results }) {
     // get the first file and use its path to figure out what is probably the output folder for the job
 
     let file = ''
-    if (results.namedResults.length > 0) {
+    if (results?.namedResults.length > 0) {
         if (results.namedResults[0].files.length > 0) {
             file = results.namedResults[0].files[0].file
             let idx = file.indexOf(jobId)

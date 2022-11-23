@@ -15,7 +15,7 @@ export function getRequiredOptions(script) {
         script.options
             .filter((item) => item.required)
             // inputs are always files (vs options)
-            .map((item) => ({ ...item, type: 'anyFileURI', kind: 'option' }))
+            .map((item) => ({ ...item, kind: 'option' }))
     )
 }
 
@@ -33,7 +33,7 @@ export function getOptionalOptions(script) {
         script.options
             .filter((item) => !item.required)
             // inputs are always files (vs options)
-            .map((item) => ({ ...item, type: 'anyFileURI', kind: 'option' }))
+            .map((item) => ({ ...item, kind: 'option' }))
     )
 }
 

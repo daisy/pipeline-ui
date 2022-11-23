@@ -119,30 +119,5 @@ async function getScripts(url, setScriptsFn) {
             return scriptXmlToJson(xmlStr)
         })
     )
-
-    // this is unrelated but handy: get all the file types and option types for scripts
-    let inputMediaTypes = completeScriptsData
-        .map((script) =>
-            script.inputs
-                .filter((i) => i.mediaType)
-                .map((i) => i.mediaType)
-                .flat()
-        )
-        .flat()
-
-    let optionMediaTypes = completeScriptsData
-        .map((script) => script.options.map((i) => i.mediaType).flat())
-        .flat()
-
-    let optionTypes = completeScriptsData
-        .map((script) => script.options.map((i) => i.type).flat())
-        .flat()
-
-    // get unique lists
-    // let allMediaTypes = [...inputMediaTypes, ...optionMediaTypes]
-    // allMediaTypes = Array.from(new Set(allMediaTypes))
-    // console.log(allMediaTypes)
-    // console.log(Array.from(new Set(optionTypes)))
-
     setScriptsFn(completeScriptsData)
 }

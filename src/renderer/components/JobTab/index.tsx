@@ -1,15 +1,21 @@
+/*
+Tab implementations
+*/
 import * as SvgIcons from '../SvgIcons'
 
 export function JobTab({
+    item,
     id,
     tabpanelId,
-    label,
     isSelected,
     onSelect,
     onClose,
 }) {
+    let job = item // item is a Job
+    let label = job?.jobData?.nicename ?? 'Untitled'
+
     return (
-        <div className="tab">
+        <div className="tab" onClick={(e) => onSelect(item)}>
             <button
                 id={id}
                 aria-selected={isSelected}
@@ -17,7 +23,7 @@ export function JobTab({
                 aria-controls={tabpanelId}
                 role="tab"
                 type="button"
-                onClick={(e) => onSelect()}
+                onClick={(e) => onSelect(item)}
             >
                 {label}
             </button>

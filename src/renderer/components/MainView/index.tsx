@@ -83,7 +83,7 @@ export function MainView() {
     }
 
     return (
-        <TabView
+        <TabView<Job>
             items={jobs}
             onTabCreate={addJob}
             onTabClose={removeJob}

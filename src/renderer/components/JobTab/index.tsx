@@ -1,7 +1,9 @@
 /*
 Tab implementations
 */
+import { Job } from 'shared/types'
 import * as SvgIcons from '../SvgIcons'
+import { ItemTabProps } from '../TabView'
 
 export function JobTab({
     item,
@@ -10,9 +12,9 @@ export function JobTab({
     isSelected,
     onSelect,
     onClose,
-}) {
+}: ItemTabProps<Job>) {
     let job = item // item is a Job
-    let label = job?.jobData?.nicename ?? 'Untitled'
+    let label = job?.jobData?.nicename ?? 'New job'
 
     return (
         <div className="tab" onClick={(e) => onSelect(item)}>

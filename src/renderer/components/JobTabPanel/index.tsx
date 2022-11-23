@@ -1,11 +1,18 @@
 /*
 Tab panel implementation
 */
-import { JobState } from 'shared/types'
+import { Job, JobState } from 'shared/types'
 import { JobDetailsPane } from '../JobDetailsPane'
 import { NewJobPane } from '../NewJobPane'
+import { ItemTabPanelProps } from '../TabView'
 
-export function JobTabPanel({ item, isSelected, id, tabId, updateItem }) {
+export function JobTabPanel({
+    item,
+    isSelected,
+    id,
+    tabId,
+    updateItem,
+}: ItemTabPanelProps<Job>) {
     let job = item // item is a Job
     return (
         <div

@@ -1,11 +1,12 @@
 /*
 Generic tab view component with tab list and tab panels
-Support for adding and removing tabs as well as submiting updates from within the tab panel
+Hooks for adding, removing, updating items
+Implementation should provide custom display components for rendering tab and panel contents
 */
 import { useState } from 'react'
 import { ID } from 'renderer/utils/utils'
 
-interface TabViewProps<T> {
+export interface TabViewProps<T> {
     items: T[]
     ItemTab: React.FunctionComponent<ItemTabProps<T>>
     AddItemTab: React.FunctionComponent<AddItemTabProps<T>>
@@ -15,7 +16,7 @@ interface TabViewProps<T> {
     updateItem: Function
 }
 
-interface ItemTabProps<T> {
+export interface ItemTabProps<T> {
     item: T
     id: string
     tabpanelId: string
@@ -24,11 +25,11 @@ interface ItemTabProps<T> {
     onClose: Function
 }
 
-interface AddItemTabProps<T> {
+export interface AddItemTabProps<T> {
     onSelect: Function
 }
 
-interface ItemTabPanelProps<T> {
+export interface ItemTabPanelProps<T> {
     id: string
     tabId: string
     item: T

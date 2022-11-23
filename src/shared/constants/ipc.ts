@@ -6,6 +6,9 @@ export const IPC = {
         },
         SETTINGS: {
             CREATE: 'windows: create-settings-window',
+            GET: 'settings: get',
+            UPDATE: 'settings: update',
+            CHANGED: 'settings: changed',
             WHEN_CLOSE: 'windows: when-settings-window-close',
         },
     },

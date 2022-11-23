@@ -13,6 +13,7 @@ import {
     makeAppSetup,
     makeAppWithSingleInstanceLock,
     Pipeline2IPC,
+    registerApplicationSettingsIPC,
     registerPipeline2ToIPC,
 } from './factories'
 
@@ -29,30 +30,26 @@ import { setupShowInFolderEvents } from './folder'
 
 makeAppWithSingleInstanceLock(async () => {
     await app.whenReady()
-    const pipelineInstance = new Pipeline2IPC()
+    // Windows
     const mainWindow = await makeAppSetup(MainWindow)
+    registerSettingsWindowCreationByIPC()
+    registerAboutWindowCreationByIPC()
+
+    // Settings
+    let settings = registerApplicationSettingsIPC()
+
+    // Pipeline instance creation with IPC communication registering
+    const pipelineInstance = registerPipeline2ToIPC(settings)
+    bindWindowToPipeline(mainWindow, pipelineInstance)
 
     let tray: PipelineTray = null
     try {
-        pipelineInstance
-            .launch()
-            .then((state) => {
-                mainWindow.webContents.send(IPC.PIPELINE.STATE.CHANGED, state)
-            })
-            .catch((err) => {
-                error(err)
-                throw err
-            })
         tray = new PipelineTray(mainWindow, pipelineInstance)
     } catch (err) {
         error(err)
         // quit app for now but we might need to think for a better handling for the user
         app.quit()
     }
-    registerSettingsWindowCreationByIPC()
-    registerAboutWindowCreationByIPC()
-    registerPipeline2ToIPC(pipelineInstance)
-    bindWindowToPipeline(mainWindow, pipelineInstance)
     setupFileDialogEvents()
     setupShowInFolderEvents()
     const isMac = process.platform === 'darwin'

@@ -5,6 +5,7 @@ import {
     Webservice,
     baseurl,
     Script,
+    ApplicationSettings,
 } from 'shared/types'
 import {
     scriptsXmlToJson,
@@ -19,6 +20,7 @@ export interface WindowStore {
     messages: Array<string>
     errors: Array<string>
     scripts: Array<Script>
+    settings: ApplicationSettings
     // react dispatcher
     setPipelineState?: React.Dispatch<React.SetStateAction<PipelineState>>
     setAboutWindowState?: React.Dispatch<
@@ -26,6 +28,7 @@ export interface WindowStore {
     >
     setPipelineErrors?: React.Dispatch<React.SetStateAction<string[]>>
     setPipelineMessages?: React.Dispatch<React.SetStateAction<string[]>>
+    setSettings?: React.Dispatch<React.SetStateAction<ApplicationSettings>>
 }
 
 const { App } = window
@@ -56,8 +59,14 @@ export function WindowStoreProvider({ children }) {
     const [messages, setPipelineMessages] = useState<Array<string>>([])
     const [errors, setPipelineErrors] = useState<Array<string>>([])
     const [scripts, setScripts] = useState<Array<Script>>([])
+    const [settings, setSettings] = useState<ApplicationSettings>({
+        downloadFolder: '',
+    })
 
     useEffect(() => {
+        App.getSettings().then((value) => {
+            setSettings(value)
+        })
         App.getPipelineState().then((value) => {
             setPipelineState(value)
         })
@@ -70,6 +79,32 @@ export function WindowStoreProvider({ children }) {
     }, [])
 
     useEffect(() => {
+        const interval = setInterval(async () => {
+            if (pipeline.runningWebservice) {
+                fetch(`${baseurl(pipeline.runningWebservice)}/alive`)
+                    .then((value: Response) => {
+                        if (pipeline.status != PipelineStatus.RUNNING) {
+                            pipeline.status = PipelineStatus.RUNNING
+                            setPipelineState({
+                                ...pipeline,
+                                status: PipelineStatus.RUNNING,
+                            })
+                        }
+                    })
+                    .catch((reason) => {
+                        // Change the status to error only if the previous one was the running status
+                        // (because the previous could be the starting one, and in this cas i don't want changes
+                        // as it may be only the delay of booting up returning an error)
+                        if (pipeline.status == PipelineStatus.RUNNING) {
+                            pipeline.status = PipelineStatus.STOPPED
+                            setPipelineState({
+                                ...pipeline,
+                                status: PipelineStatus.STOPPED,
+                            })
+                        }
+                    })
+            }
+        }, 1000)
         if (pipeline.status == PipelineStatus.RUNNING && scripts.length == 0) {
             getScripts(
                 `${baseurl(pipeline.runningWebservice)}/scripts`,
@@ -80,6 +115,9 @@ export function WindowStoreProvider({ children }) {
     App.onPipelineStateChanged(async (event, newState) => {
         setPipelineState(newState)
     })
+    App.onSettingsChanged(async (event, newSettings) => {
+        setSettings(newSettings)
+    })
 
     const sharedStore = {
         about: about,
@@ -87,10 +125,12 @@ export function WindowStoreProvider({ children }) {
         messages: messages,
         errors: errors,
         scripts: scripts,
+        settings: settings,
         setAboutWindowState,
         setPipelineState,
         setPipelineMessages,
         setPipelineErrors,
+        setSettings,
     }
 
     return (

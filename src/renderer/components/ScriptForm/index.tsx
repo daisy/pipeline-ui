@@ -254,10 +254,12 @@ function FileOrFolderField({ item, idprefix }) {
         filters.push(mediaTypesFileFilters['*'])
 
         let filename = await App.showOpenFileDialog({
-            title: `Select ${item.name}`,
-            buttonLabel: 'Select',
-            properties,
-            filters,
+            dialogOptions: {
+                title: `Select ${item.name}`,
+                buttonLabel: 'Select',
+                properties,
+                filters,
+            },
         })
         e.target.parentElement.querySelector('span.filename').textContent =
             filename

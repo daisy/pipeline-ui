@@ -233,3 +233,8 @@ ul.fields {
     display: flex;
     gap: calc(var(--pad)/2);
 }
+
+.filelink {
+    color: var(--primary-color-1);
+    // text-decoration: underline;
+}

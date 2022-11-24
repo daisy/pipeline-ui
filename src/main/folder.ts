@@ -5,6 +5,7 @@ import { PLATFORM } from 'shared/constants'
 import { IPC_EVENT_showItemInFolder } from '../shared/main-renderer-events'
 
 function setupShowInFolderEvents() {
+    // payload should be "/Path/to/folder" not file://..
     ipcMain.on(IPC_EVENT_showItemInFolder, (event, payload) => {
         let f = payload
         if (PLATFORM.IS_WINDOWS) {

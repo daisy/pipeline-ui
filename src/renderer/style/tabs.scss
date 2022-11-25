@@ -33,23 +33,11 @@
         color: var(--primary-color-1);
     }
     // TODO reinstate :has after upgrading electron
-    // &:has([aria-selected=false]):hover {
-    //     background-color: var(--secondary-color-2);
-    //     color: var(--secondary-2-contrast);
-    // }
-    // &:has([aria-selected=true]) {
-    //     background-color: var(--secondary-color-2);
-    //     color: var(--secondary-2-contrast);
-    //     border-bottom-color: var(--background-color);
-    //     border-bottom-width: 1px;
-    //     margin-bottom: -1px;
-    // }
-    // in the meantime, use these
-    [aria-selected=false]:hover {
+    &:has([aria-selected=false]):hover {
         background-color: var(--secondary-color-2);
         color: var(--secondary-2-contrast);
     }
-    [aria-selected=true] {
+    &:has([aria-selected=true]) {
         background-color: var(--secondary-color-2);
         color: var(--secondary-2-contrast);
         border-bottom-color: var(--background-color);

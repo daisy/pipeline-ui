@@ -67,7 +67,7 @@ As of Oct 2022
 * When the app starts, it also starts the Pipeline engine (dynamically using the first free port)
 * The list of scripts loads
 * The user is presented with a choice of scripts
-* The user adds *required* parameters only to their script choice
+* The user adds inputs and options to their script choice
 * The job runs and the app displays its latest status
 * When the job is done, the user may view the results in a folder
 * Many jobs can run at once, in a tabbed interface
@@ -82,11 +82,9 @@ As of Oct 2022
 * After a user starts filling out a new job form, if they press "cancel", ask them if they want to cancel
 * Validate job submission form fields
 * Support multiple files
-* Support pipeline datatypes (e.g. script options)
 
 ### Job details
 * Confirm deleting a job
-* Display validation status directly for validation jobs
 
 ### General
 * Move the pipeline "online" status to a preferences pane where you can specify the pipeline installation
@@ -96,3 +94,8 @@ As of Oct 2022
 
 * Global state via redux
 * Basic testing framework via selenium
+
+
+"electron": "^20.0.3",
+"electron-builder": "^23.3.3",
+"electron-react-devtools": "^0.5.3",

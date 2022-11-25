@@ -9,6 +9,7 @@ const {
 } = require('./package.json')
 
 exports.APP_CONFIG = {
+    APP_ID: `org.daisy.${NAME}`.toLowerCase(),
     NAME,
     TITLE,
     AUTHOR,

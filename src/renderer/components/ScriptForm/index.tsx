@@ -1,55 +1,66 @@
-import { useQuery, useMutation } from '@tanstack/react-query'
-import {
-    scriptXmlToJson,
-    jobRequestToXml,
-    jobXmlToJson,
-} from 'renderer/pipelineXmlConverter'
-import { JobRequest, JobState, baseurl } from 'shared/types'
-import styles from './styles.module.sass'
-import { useState, useContext } from 'react'
-import { useWindowStore, useScriptStore } from 'renderer/store'
+/*
+Fill out fields for a new job and submit it
+*/
+import { jobRequestToXml, jobXmlToJson } from 'renderer/pipelineXmlConverter'
+import { JobRequest, JobState, baseurl, Script } from 'shared/types'
+import { useState } from 'react'
+import { useWindowStore } from 'renderer/store'
+import { getAllOptional, getAllRequired, ID } from 'renderer/utils/utils'
+import { Section } from '../Section'
+import { marked } from 'marked'
+import { FileOrFolderField } from '../CustomFields/FileOrFolderField'
 
-const { App } = window // The "App" comes from the bridge
-
-export function ScriptForm({ job, removeJob, updateJob }) {
-    // IS_FORM, IS_SUBMITTING, IS_ERROR
-    const [formStatus, setFormStatus] = useState('IS_FORM')
+export function ScriptForm({ job, scriptHref, updateJob }) {
+    const [submitInProgress, setSubmitInProgress] = useState(false)
+    const [error, setError] = useState(false)
     const { pipeline, scripts } = useWindowStore()
+    let script = scripts.find((s) => s.href == scriptHref)
+    const [jobRequest, setJobRequest] = useState<JobRequest>({
+        scriptHref: script.href,
+        nicename: script.nicename,
+        inputs: [],
+        options: [],
+    })
 
-    let script = scripts.find((s) => s.href == job.scriptHref)
+    let required = getAllRequired(script)
+    let optional = getAllOptional(script)
 
-    // keep it simple for now by only showing required inputs and options
-    let requiredInputs = script.inputs
-        .filter((input) => input.required)
-        // inputs are always files (vs options)
-        .map((input) => ({ ...input, type: 'anyFileURI', kind: 'input' }))
+    let setValue = (value, data) => {
+        let inputs = [...jobRequest.inputs]
+        let options = [...jobRequest.options]
 
-    let requiredOptions = script.options
-        .filter((option) => option.required)
-        .map((option) => ({ ...option, kind: 'option' }))
-    let allRequired = [...requiredInputs, ...requiredOptions]
+        // update the array and return a new copy of it
+        let updateValue = (value, data, arr) => {
+            if (arr.find((i) => i.name == data.name)) {
+                let arr2 = arr.map((i) =>
+                    i.name == data.name ? { ...i, value, isFile } : i
+                )
+                return arr2
+            } else {
+                arr.push({
+                    name: data.name,
+                    value,
+                    isFile,
+                })
+                return [...arr]
+            }
+        }
+        let arr = data.kind == 'input' ? inputs : options
+        arr = updateValue(value, data, arr)
+
+        let isFile = data.type == 'anyFileURI' || data.type == 'anyDirURI'
+
+        setJobRequest({ ...jobRequest, inputs, options })
+    }
 
     // submit a job
-    let handleOnSubmit = async (e) => {
-        setFormStatus('IS_SUBMITTING')
-        let jobRequest: JobRequest = {
-            scriptHref: script.href,
-            nicename: script.nicename,
-            inputs: [],
-            options: [],
-        }
+    let onSubmit = async (e) => {
+        setSubmitInProgress(true)
 
-        let { inputs, options } = getFormData(
-            e.target.parentElement.parentElement
-        )
-        jobRequest.inputs = inputs
-        jobRequest.options = options
+        console.log('jobreq', jobRequest)
 
         let xmlStr = jobRequestToXml(jobRequest)
-
-        // test that our XML parses
-        // let doc = new DOMParser().parseFromString(xmlStr, 'text/xml')
-        // console.log(doc.getElementsByTagName('jobRequest')[0].nodeName)
+        console.log(xmlStr)
 
         // this post request submits the job to the pipeline webservice
         let res = await fetch(`${baseurl(pipeline.runningWebservice)}/jobs`, {
@@ -57,71 +68,99 @@ export function ScriptForm({ job, removeJob, updateJob }) {
             body: xmlStr,
             mode: 'cors',
         })
-
+        setSubmitInProgress(false)
         if (res.status != 201) {
-            setFormStatus('IS_ERROR')
+            setError(true)
         } else {
             let newJobXml = await res.text()
             try {
-                setFormStatus('SUBMITTED')
                 let newJobJson = jobXmlToJson(newJobXml)
                 let job_ = {
                     ...job,
-                    href: newJobJson.href,
                     state: JobState.SUBMITTED,
+                    jobData: newJobJson,
+                    jobRequest,
+                    script,
                 }
-                updateJob(job.id, job_)
+                updateJob(job_)
             } catch (err) {
-                setFormStatus('IS_ERROR')
+                setError(true)
             }
         }
     }
 
     return (
-        <div className={styles.ScriptForm}>
-            <h3>{script.nicename}</h3>
+        <>
+            <section
+                className="header"
+                aria-labelledby={`${ID(job.internalId)}-script-hd`}
+            >
+                <div>
+                    <h1 id={`${ID(job.internalId)}-script-hd`}>
+                        {script.nicename}
+                    </h1>
+                    <p>{script.description}</p>
+                </div>
+                <button
+                    className="run"
+                    type="submit"
+                    onClick={(e) => onSubmit(e)}
+                >
+                    Run
+                </button>
+                {error ? <p>Error</p> : ''}
+            </section>
 
-            {formStatus == 'IS_FORM' ? (
-                <>
-                    <p>Required fields:</p>
-                    <ul>
-                        {allRequired.map((item, idx) => (
-                            <li key={idx}>
-                                <FormField item={item} key={idx} />
-                            </li>
-                        ))}
-                    </ul>
-                    <div className={styles.SubmitCancel}>
-                        <button onClick={(e) => removeJob(job.id)}>
-                            Cancel new job
-                        </button>
-                        <button
-                            id="run-script"
-                            type="submit"
-                            onClick={(e) =>
-                                handleOnSubmit(
-                                    e,
-                                    pipeline,
-                                    script,
-                                    setFormStatus,
-                                    updateJob
-                                )
-                            }
-                        >
-                            Run
-                        </button>
-                    </div>
-                </>
-            ) : formStatus == 'IS_SUBMITTING' ? (
-                <p>Submitting...</p>
-            ) : formStatus == 'IS_ERROR' ? (
-                <p>Error</p>
-            ) : formStatus == 'SUBMITTED' ? (
-                <p>Submitted</p>
+            {!submitInProgress ? (
+                <div className="flexgrid">
+                    <Section
+                        className="required-fields"
+                        id={`${ID(job.internalId)}-required`}
+                        label="Required information"
+                    >
+                        <ul className="fields">
+                            {required.map((item, idx) => (
+                                <li key={idx}>
+                                    <FormField
+                                        item={item}
+                                        key={idx}
+                                        idprefix={`${ID(
+                                            job.internalId
+                                        )}-required`}
+                                        setValue={setValue}
+                                    />
+                                </li>
+                            ))}
+                        </ul>
+                    </Section>
+                    <Section
+                        className="optional-fields"
+                        id={`${ID(job.internalId)}-optional`}
+                        label="Options"
+                    >
+                        <ul className="fields">
+                            {optional.map((item, idx) => (
+                                <li key={idx}>
+                                    <FormField
+                                        item={item}
+                                        key={idx}
+                                        idprefix={`${ID(
+                                            job.internalId
+                                        )}-optional`}
+                                        setValue={setValue}
+                                    />
+                                </li>
+                            ))}
+                        </ul>
+                    </Section>
+                </div>
             ) : (
-                ''
+                <>
+                    <p>Submitting...</p>
+                    {error ? <p>Error</p> : ''}
+                </>
             )}
-        </div>
+        </>
     )
 }
 
@@ -129,118 +168,88 @@ export function ScriptForm({ job, removeJob, updateJob }) {
 // item.type can be:
 // anyFileURI, anyDirURI, xsd:string, xsd:dateTime, xsd:boolean, xsd:integer, xsd:float, xsd:double, xsd:decimal
 // item.mediaType is a file type e.g. application/x-dtbook+xml
-function FormField({ item }) {
+function FormField({ item, idprefix, setValue }) {
+    console.log('FORM FIELD', item)
     let inputType = 'text'
 
     if (item.type == 'anyFileURI') {
         inputType = 'file'
     } else if (item.type == 'anyDirURI') {
         inputType = 'file'
-    } else if (item.type == 'xsd:dateTime') {
+    } else if (item.type == 'xsd:dateTime' || item.type == 'datetime') {
         inputType = 'datetime-local'
-    } else if (item.type == 'xsd:boolean') {
+    } else if (item.type == 'xsd:boolean' || item.type == 'boolean') {
         inputType = 'checkbox'
-    } else if (item.type == 'xsd:string') {
+    } else if (item.type == 'xsd:string' || item.type == 'string') {
+        inputType = 'text'
+    } else if (
+        [
+            'xsd:integer',
+            'xsd:float',
+            'xsd:double',
+            'xsd:decimal',
+            'xs:integer',
+            'integer',
+            'number',
+        ].includes(item.type)
+    ) {
+        inputType = 'number'
+    } else {
         inputType = 'text'
     }
-    // catch-all for
-    // item.type == xsd:integer, xsd:float, xsd:double, xsd:decimal
-    // we can fine tune this later
-    else {
-        inputType = 'number'
-    }
 
-    if (inputType == 'file') {
-        return <FileOrFolderField item={item} />
-    } else {
-        return (
-            <div>
-                <label htmlFor={item.name}>{item.nicename}</label>
-                <span className={styles.description}>{item.desc}</span>
+    let controlId = `${idprefix}-${item.name}`
+    let desc = marked.parse(item.desc)
+    let onFileFolderSelect = (filename, data) => {
+        setValue(filename, data)
+    }
+    let onChange = (e, data) => {
+        if (e.target.getAttribute('type') == 'checkbox') {
+            setValue(e.checked, data)
+        } else {
+            setValue(e.value, data)
+        }
+    }
+    let dialogOpts =
+        item.type == 'anyFileURI'
+            ? ['openFile']
+            : item.type == 'anyDirURI'
+            ? ['openFolder']
+            : ['openFile', 'openFolder']
+
+    return (
+        <div className="script-field">
+            <label htmlFor={controlId}>{item.nicename}</label>
+            <span
+                className="description"
+                dangerouslySetInnerHTML={{ __html: desc }}
+            />
+            {inputType == 'file' ? (
+                <FileOrFolderField
+                    options={dialogOpts}
+                    elemId={controlId}
+                    mediaType={item.mediaType}
+                    name={item.name}
+                    onSelect={(filename) => onFileFolderSelect(filename, item)}
+                    useSystemPath={false}
+                />
+            ) : inputType == 'checkbox' ? (
                 <input
                     type={inputType}
-                    id={item.name}
                     required={item.required}
-                    data-kind={item.kind}
+                    onChange={(e) => onChange(e, item)}
+                    // TODO add item default
+                    id={controlId}
                 ></input>
-            </div>
-        )
-    }
-}
-
-// create a file or folder selector
-// we can't use HTML <input type="file" ...> because even with the folder option enabled by "webkitdirectory"
-// it won't let users select an empty folder
-// and we can't reuse <input type="file" ...> even as a control to trigger electron's native file picker
-// because you can't set the value on the input field programmatically (yes we could use loads of react code to work around this but let's not)
-// so this function provides a button to browse and a text display of the path
-function FileOrFolderField({ item }) {
-    let handleInputClick = async (e, item) => {
-        e.preventDefault()
-        let filename = await App.showOpenFileDialog()
-        e.target.nextElementSibling.textContent = filename
-    }
-    // all items that make it to this function have type of 'anyFileURI' or 'anyDirURI'`
-    return (
-        <div className={styles.FileOrFolderField}>
-            <label htmlFor={`button-${item.name}`}>{item.nicename}</label>
-            <span className={styles.description}>{item.desc}</span>
-            <div className="fileOrFolderField">
-                <button
-                    type="button"
-                    id={`button-${item.name}`}
+            ) : (
+                <input
+                    type={inputType}
                     required={item.required}
-                    data-kind={item.kind}
-                    onClick={(e) => handleInputClick(e, item)}
-                >
-                    Browse
-                </button>
-                <span tabIndex={0} id={`text-${item.name}`}></span>
-            </div>
+                    value={item.default}
+                    id={controlId}
+                    onChange={(e) => onChange(e, item)}
+                ></input>
+            )}
         </div>
     )
-}
-
-// return all the inputs and options in the form
-function getFormData(scriptFormElm) {
-    let inputData = []
-    let optionData = []
-
-    if (!scriptFormElm) {
-        console.log('Form error')
-        return
-    }
-    let inputs = scriptFormElm.querySelectorAll('input')
-    Array.from(inputs).map((input) => {
-        if (input.getAttribute('data-kind') == 'input') {
-            inputData.push({
-                name: input.id,
-                value: input.value,
-                isFile: false,
-            })
-        }
-        if (input.getAttribute('data-kind') == 'option') {
-            optionData.push({
-                name: input.id,
-                value: input.value,
-                isFile: false,
-            })
-        }
-    })
-    // get the inner span with the value of the selected file or folder
-    let fileOrFoldersElms = scriptFormElm.querySelectorAll('.fileOrFolderField')
-    Array.from(fileOrFoldersElms)
-        .map((elm) => {
-            let name = elm.querySelector('button')?.id.replace('button-', '')
-            let kind = elm.querySelector('button').getAttribute('data-kind')
-            let value = elm.querySelector('span')?.textContent ?? ''
-            return { name, value, kind }
-        })
-        .map((data) => {
-            let arr = data.kind == 'input' ? inputData : optionData
-            arr.push({ name: data.name, value: data.value, isFile: true })
-        })
-    // TODO validate the fields
-
-    return { inputs: inputData, options: optionData }
 }

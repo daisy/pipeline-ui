@@ -27,17 +27,26 @@ export class PipelineTray {
     menuBaseTemplate: Array<Electron.MenuItemConstructorOptions> = []
     pipelineMenu: Array<Electron.MenuItemConstructorOptions> = []
 
-    constructor(
-        mainWindow: BrowserWindow,
-        aboutWindow?: BrowserWindow,
-        pipeline?: Pipeline2IPC
-    ) {
+    constructor(mainWindow: BrowserWindow, pipeline?: Pipeline2IPC) {
         const icon = nativeImage.createFromPath(
             resolveUnpacked('resources', 'icons', 'logo_32x32.png')
         )
         this.tray = new Tray(icon)
         this.mainWindow = mainWindow
         this.menuBaseTemplate = [
+            // Note : uncomment if we want those window
+            // {
+            //     label: 'About',
+            //     click: async (item, window, event) => {
+            //         ipcMain.emit(IPC.WINDOWS.ABOUT.CREATE)
+            //     },
+            // },
+            {
+                label: 'Settings',
+                click: async (item, window, event) => {
+                    ipcMain.emit(IPC.WINDOWS.SETTINGS.CREATE)
+                },
+            },
             {
                 label: 'Quit',
                 click: (item, window, event) => {
@@ -75,9 +84,9 @@ export class PipelineTray {
      */
     bindToPipeline(pipeline: Pipeline2IPC) {
         // setup listeners to update tray based on states
-        pipeline.registerStateListener('tray', (newState) =>
+        pipeline.registerStateListener('tray', (newState) => {
             this.updateElectronTray(newState, pipeline)
-        )
+        })
         this.updateElectronTray(pipeline.state, pipeline)
     }
 
@@ -89,25 +98,33 @@ export class PipelineTray {
     updateElectronTray(newState: PipelineState, pipeline: Pipeline2IPC) {
         this.pipelineMenu = [
             {
-                label: `Pipeline is ${newState.status}`,
+                label: `Pipeline is ${
+                    newState.status == PipelineStatus.STARTING ||
+                    newState.status == PipelineStatus.RUNNING
+                        ? 'running'
+                        : 'stopped'
+                }`,
                 enabled: false,
             },
             {
                 label: 'Create a job',
-                enabled: newState.status == PipelineStatus.RUNNING,
+                enabled:
+                    newState.status == PipelineStatus.STARTING ||
+                    newState.status == PipelineStatus.RUNNING,
                 click: async (item, window, event) => {
                     try {
                         this.mainWindow.show()
                     } catch (error) {
                         this.mainWindow = await MainWindow()
                         bindWindowToPipeline(this.mainWindow, pipeline)
-                        const devServerURL = `${APP_CONFIG.RENDERER.DEV_SERVER.URL}#/main`
-                        ENVIRONMENT.IS_DEV
-                            ? this.mainWindow.loadURL(devServerURL)
-                            : this.mainWindow.loadFile('index.html', {
-                                  hash: `/main`,
-                              })
                     }
+                    ENVIRONMENT.IS_DEV
+                        ? this.mainWindow.loadURL(
+                              `${APP_CONFIG.RENDERER.DEV_SERVER.URL}#/main`
+                          )
+                        : this.mainWindow.loadFile('index.html', {
+                              hash: `/main`,
+                          })
                 },
             },
         ]

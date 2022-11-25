@@ -1,92 +1,93 @@
-import { useState, useEffect } from 'react'
-import { Tab } from '../Tab'
-import { TabPanel } from '../TabPanel'
-import { Job, JobState, Script, baseurl } from 'shared/types/pipeline'
-import styles from './styles.module.sass'
-import { useWindowStore } from 'renderer/store'
+/*
+Generic tab view component with tab list and tab panels
+Hooks for adding, removing, updating items
+Implementation should provide custom display components for rendering tab and panel contents
+*/
+import { useState } from 'react'
+import { ID } from 'renderer/utils/utils'
 
-export function TabView() {
-    const { pipeline } = useWindowStore()
-    const [selectedJobId, setSelectedJobId] = useState('')
+export interface TabViewProps<T> {
+    items: T[]
+    ItemTab: React.FunctionComponent<ItemTabProps<T>>
+    AddItemTab: React.FunctionComponent<AddItemTabProps<T>>
+    ItemTabPanel: React.FunctionComponent<ItemTabPanelProps<T>>
+    onTabClose: Function
+    onTabCreate: Function
+    updateItem: Function
+}
 
-    // Job management
-    /* start */
-    const [jobs, setJobs] = useState([])
+export interface ItemTabProps<T> {
+    item: T
+    id: string
+    tabpanelId: string
+    isSelected: boolean
+    onSelect: Function
+    onClose: Function
+}
 
-    let createJob = () => {
-        return {
-            id: `job-${jobs.length + 1}`,
-            nicename: 'New job',
-            state: JobState.NEW,
-            data: null,
-        }
+export interface AddItemTabProps<T> {
+    onSelect: Function
+}
+
+export interface ItemTabPanelProps<T> {
+    id: string
+    tabId: string
+    item: T
+    isSelected: boolean
+    updateItem: Function
+}
+
+export function TabView<T extends { internalId: string }>(
+    props: TabViewProps<T>
+) {
+    const {
+        items,
+        ItemTab,
+        AddItemTab,
+        ItemTabPanel,
+        onTabClose,
+        onTabCreate,
+        updateItem,
+    } = props
+
+    const [selectedItemId, setSelectedItemId] = useState('')
+    if (selectedItemId == '' && items.length > 0 && items[0].internalId) {
+        setSelectedItemId(items[0].internalId)
     }
-    let addJob = () => {
-        let theNewJob = createJob()
-        setJobs([...jobs, theNewJob])
-        handleOnTabSelect(theNewJob)
-    }
 
-    let removeJob = (jobId) => {
-        const jobs_ = jobs.filter((j) => j.id !== jobId)
-        setJobs(jobs_)
+    let onTabSelect = (item) => {
+        console.log('Select ', item)
+        setSelectedItemId(item.internalId)
     }
-
-    let updateJob = (jobId, job) => {
-        let jobs_ = jobs.map((j) => {
-            if (j.id == jobId) {
-                return { ...job }
-            } else return j
-        })
-        setJobs(jobs_)
-    }
-    /* end */
-
-    if (selectedJobId == '' && jobs.length > 0 && jobs[0].id) {
-        setSelectedJobId(jobs[0].id)
-    }
-
-    let handleOnTabSelect = (job) => {
-        console.log('Select ', job.id)
-        setSelectedJobId(job.id)
-    }
-
-    // workaround to support just one job (multiple jobs are causing issues)
-    useEffect(() => {
-        addJob()
-    }, [])
 
     return (
         <>
-            <div role="tablist" style={styles}>
-                {jobs.map((job, idx) => {
-                    return (
-                        <Tab
-                            label={job.nicename}
-                            isSelected={job.id == selectedJobId}
-                            onTabSelect={(e) => handleOnTabSelect(job)}
-                            key={idx}
-                            id={`tab-${job.id}`}
-                        />
-                    )
-                })}
-                <Tab
-                    label="+"
-                    isSelected="false"
-                    onTabSelect={(e) => addJob()}
-                    aria-label="Create job"
-                    id="create-job"
-                />
+            <div role="tablist">
+                {items.map((item, idx) => (
+                    <ItemTab
+                        key={idx}
+                        item={item}
+                        id={`${ID(item.internalId)}-tab`}
+                        tabpanelId={`${ID(item.internalId)}-tabpanel`}
+                        isSelected={selectedItemId == item.internalId}
+                        onSelect={onTabSelect}
+                        onClose={onTabClose}
+                    />
+                ))}
+                <AddItemTab onSelect={onTabCreate} />
             </div>
-            {jobs.map((job, idx) => (
-                <TabPanel
-                    job={job}
-                    key={idx}
-                    isSelected={job.id == selectedJobId}
-                    removeJob={removeJob}
-                    updateJob={updateJob}
-                />
-            ))}
+            {items.map((item, idx) => {
+                return (
+                    <ItemTabPanel
+                        key={idx}
+                        item={item}
+                        id={`${ID(item.internalId)}-tabpanel`}
+                        tabId={`${ID(item.internalId)}-tab`}
+                        isSelected={selectedItemId == item.internalId}
+                        updateItem={updateItem}
+                    />
+                )
+            })}
         </>
     )
 }

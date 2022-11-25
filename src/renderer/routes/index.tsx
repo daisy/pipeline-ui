@@ -1,6 +1,6 @@
 import { WindowRouter, Route } from './modules'
 
-import { MainScreen, AboutScreen } from 'renderer/screens'
+import { MainScreen, AboutScreen, SettingsScreen } from 'renderer/screens'
 
 export function AppRoutes() {
     return (
@@ -12,6 +12,7 @@ export function AppRoutes() {
                     </>
                 ),
                 about: () => <Route path="/" element={<AboutScreen />} />,
+                settings: () => <Route path="/" element={<SettingsScreen />} />,
             }}
         />
     )

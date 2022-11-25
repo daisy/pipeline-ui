@@ -20,9 +20,8 @@ export type Webservice = {
  */
 export function baseurl(ws: Webservice) {
     if (!ws) return ''
-    return `${ws.ssl ? 'https' : 'http'}://${ws.host}${
-        ws.port ? ':' + ws.port : ''
-    }${ws.path ?? ''}`
+    // eslint-disable-next-line
+    return `${ws.ssl ? 'https' : 'http'}://${ws.host}${ws.port ? ':' + ws.port : ''}${ws.path ?? ''}`
 }
 
 /**
@@ -103,7 +102,18 @@ export type Message = {
     timestamp: number
 }
 
+export type Job = {
+    internalId: string // the ID assigned internally by the UI
+    state: JobState
+    jobData?: JobData
+    jobRequest?: JobRequest
+    script?: Script
+    // jobRequest.script also has script info (returned from ws);
+    // however, storing it separately gives us access to more details
+}
+// JobData is the JSON representation of Pipeline WS data for a single job
 export type JobData = {
+    jobId: string // the ID from the pipeline
     priority?: Priority
     status?: JobStatus
     log?: string
@@ -111,6 +121,9 @@ export type JobData = {
     messages?: Array<Message>
     progress?: number
     script?: Script
+    nicename?: string
+    scriptHref?: string
+    href: string
 }
 
 export enum JobState {
@@ -118,32 +131,26 @@ export enum JobState {
     SUBMITTED,
 }
 
-export type Job = {
-    id: string
-    state: JobState
-    nicename: string
-    scriptHref?: string
-    href?: string
-}
-
-export type ScriptInput = {
+export type ScriptItemBase = {
     desc?: string
-    mediaType?: string
+    mediaType?: Array<string>
     name: string
     sequence?: boolean
     required?: boolean
     nicename?: string
-}
-
-export type ScriptOption = {
-    desc?: string
-    mediaType?: string
-    name: string
-    sequence?: boolean
-    required?: boolean
-    nicename?: string
-    ordered?: boolean
     type?: string
+    kind?: string
+}
+export type ScriptInput = ScriptItemBase & {
+    type: 'anyFileURI'
+    kind: 'input'
+}
+
+export type ScriptOption = ScriptItemBase & {
+    ordered?: boolean
+    type: string
+    default?: string
+    kind: 'option'
 }
 
 export type Script = {

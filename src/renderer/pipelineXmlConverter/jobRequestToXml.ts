@@ -1,8 +1,6 @@
 import { JobRequest } from 'shared/types/pipeline'
 
 function jobRequestToXml(jobRequest: JobRequest): string {
-    console.log('job request is ', jobRequest)
-
     let xmlString = `<?xml version="1.0" encoding="UTF-8" standalone="no"?>
   <jobRequest xmlns="http://www.daisy.org/ns/pipeline/data">
     <nicename>${jobRequest.nicename}</nicename>

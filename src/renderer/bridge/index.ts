@@ -12,6 +12,8 @@ const API = {
     sayHelloFromBridge: () => console.log('\nHello from bridgeAPI! 👋\n\n'),
     username: process.env.USER,
     showOpenFileDialog: ipcs.showOpenFileDialog,
+    showItemInFolder: ipcs.showItemInFolder,
+    whenAboutWindowClosed: ipcs.whenAboutWindowClose,
 }
 
 contextBridge.exposeInMainWorld('App', API)

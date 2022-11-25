@@ -21,28 +21,42 @@ function scriptElementToJson(scriptElm: Element): Script {
 
     script.inputs = Array.from(scriptElm.getElementsByTagName('input')).map(
         (inputElm): ScriptInput => {
+            let mediaType = []
+            let mediaTypeVal = inputElm.getAttribute('mediaType')
+            if (mediaTypeVal) {
+                mediaType = mediaTypeVal.split(' ')
+            }
             return {
                 desc: inputElm.getAttribute('desc'),
-                mediaType: inputElm.getAttribute('mediaType'),
+                mediaType,
                 name: inputElm.getAttribute('name'),
                 sequence: inputElm.getAttribute('sequence') == 'true',
                 required: inputElm.getAttribute('required') == 'true',
                 nicename: inputElm.getAttribute('nicename'),
+                type: 'anyFileURI',
+                kind: 'input',
             }
         }
     )
 
     script.options = Array.from(scriptElm.getElementsByTagName('option')).map(
         (optionElm): ScriptOption => {
+            let mediaType = []
+            let mediaTypeVal = optionElm.getAttribute('mediaType')
+            if (mediaTypeVal) {
+                mediaType = mediaTypeVal.split(' ')
+            }
             return {
                 desc: optionElm.getAttribute('desc'),
-                mediaType: optionElm.getAttribute('mediaType'),
+                mediaType,
                 name: optionElm.getAttribute('name'),
                 sequence: optionElm.getAttribute('sequence') == 'true',
                 required: optionElm.getAttribute('required') == 'true',
                 nicename: optionElm.getAttribute('nicename'),
                 ordered: optionElm.getAttribute('ordered') == 'true',
                 type: optionElm.getAttribute('type'),
+                default: optionElm.getAttribute('default'),
+                kind: 'option',
             }
         }
     )

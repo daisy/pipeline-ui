@@ -35,6 +35,6 @@ module.exports = {
         icon: `${FOLDERS.RESOURCES}/icons/logo_256x256.png`,
         target: ['nsis', 'portable', 'zip'],
     },
-
     afterSign: 'buildtools/notarize.js',
+    asarUnpack: ['resources/daisy-pipeline'],
 }

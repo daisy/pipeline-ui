@@ -1,45 +1,55 @@
-import { useQuery } from '@tanstack/react-query'
+/*
+Select a script and submit a new job
+*/
 import { useState } from 'react'
-import { scriptsXmlToJson } from 'renderer/pipelineXmlConverter'
 import { ScriptForm } from '../ScriptForm'
-import styles from './styles.module.sass'
 import { useWindowStore } from 'renderer/store'
-import { baseurl } from 'shared/types/pipeline'
+import { ID } from 'renderer/utils/utils'
 
-// the temporary "new job" has its own ID
-export function NewJobPane({ job, removeJob, updateJob }) {
+export function NewJobPane({ job, updateJob }) {
+    console.log('new job pane for ', job)
+
     const [selectedScript, setSelectedScript] = useState(null)
-    const { pipeline, scripts } = useWindowStore()
+    const { scripts } = useWindowStore()
 
-    let handleOnSelectChange = (e) => {
+    let onSelectChange = (e) => {
         let selection = scripts.find((script) => script.id == e.target.value)
         setSelectedScript(selection)
     }
 
     let job_ = { ...job }
-    if (selectedScript) job_.scriptHref = selectedScript.href
     return (
-        <div className={styles.NewJobPane}>
-            <div className={styles.SelectScript}>
-                <label htmlFor="script">Select a script:</label>
-                <select id="script" onChange={(e) => handleOnSelectChange(e)}>
+        <>
+            <section
+                className="select-script"
+                aria-labelledby={`${ID(job.internalId)}-select-script}`}
+            >
+                <label
+                    id={`${ID(job.internalId)}-select-script}`}
+                    htmlFor="script"
+                >
+                    Select a script:
+                </label>
+                <select id="script" onChange={(e) => onSelectChange(e)}>
                     <option value={null}>None</option>
-                    {scripts.map((script, idx) => (
-                        <option key={idx} value={script.id}>
-                            {script.nicename}
-                        </option>
-                    ))}
+                    {scripts
+                        .sort((a, b) => (a.nicename > b.nicename ? 1 : -1))
+                        .map((script, idx) => (
+                            <option key={idx} value={script.id}>
+                                {script.nicename}
+                            </option>
+                        ))}
                 </select>
-            </div>
+            </section>
             {selectedScript != null ? (
                 <ScriptForm
                     job={job_}
-                    removeJob={removeJob}
+                    scriptHref={selectedScript.href}
                     updateJob={updateJob}
                 />
             ) : (
                 ''
             )}
-        </div>
+        </>
     )
 }

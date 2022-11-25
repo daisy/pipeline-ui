@@ -33,6 +33,8 @@ function scriptElementToJson(scriptElm: Element): Script {
                 sequence: inputElm.getAttribute('sequence') == 'true',
                 required: inputElm.getAttribute('required') == 'true',
                 nicename: inputElm.getAttribute('nicename'),
+                type: 'anyFileURI',
+                kind: 'input',
             }
         }
     )
@@ -54,6 +56,7 @@ function scriptElementToJson(scriptElm: Element): Script {
                 ordered: optionElm.getAttribute('ordered') == 'true',
                 type: optionElm.getAttribute('type'),
                 default: optionElm.getAttribute('default'),
+                kind: 'option',
             }
         }
     )

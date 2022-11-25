@@ -1,4 +1,3 @@
-import styles from './styles.module.sass'
 import { useEffect, useState } from 'react'
 import { useWindowStore } from 'renderer/store'
 import { ApplicationSettings } from 'shared/types'
@@ -32,24 +31,21 @@ export function SettingsForm() {
     }
     return (
         <>
-            <form className={styles.settingsForm}>
+            <form className="settings-form">
                 <FileOrFolderField
-                    item={{
-                        type: 'anyDirURI',
-                        name: 'download folder',
-                        nicename: 'Default results folder',
-                        desc: 'A folder where all jobs will be automatically downloaded',
-                        kind: 'input',
-                        useSystemPath: false,
-                    }}
-                    selectedValue={newSettings.downloadFolder}
-                    handleSelection={downloadFolderChanged}
+                    options={['openFolder']}
+                    elemId="downloadFolder"
+                    mediaType={['']}
+                    name={'Download folder'}
+                    onSelect={downloadFolderChanged}
+                    useSystemPath={false}
                 />
                 {/* insert local pipeline settings form part here */}
                 {/* insert remote pipeline settings form part here */}
                 <button
                     id="save-settings"
                     onClick={handleSave}
+                    className="save-button"
                     // disabled={
                     //     JSON.stringify({ ...settings }) !=
                     //     JSON.stringify({ ...newSettings })

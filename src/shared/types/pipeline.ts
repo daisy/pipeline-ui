@@ -131,25 +131,26 @@ export enum JobState {
     SUBMITTED,
 }
 
-export type ScriptInput = {
+export type ScriptItemBase = {
     desc?: string
     mediaType?: Array<string>
     name: string
     sequence?: boolean
     required?: boolean
     nicename?: string
+    type?: string
+    kind?: string
+}
+export type ScriptInput = ScriptItemBase & {
+    type: 'anyFileURI'
+    kind: 'input'
 }
 
-export type ScriptOption = {
-    desc?: string
-    mediaType?: Array<string>
-    name: string
-    sequence?: boolean
-    required?: boolean
-    nicename?: string
+export type ScriptOption = ScriptItemBase & {
     ordered?: boolean
-    type?: string
+    type: string
     default?: string
+    kind: 'option'
 }
 
 export type Script = {

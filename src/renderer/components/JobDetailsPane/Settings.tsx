@@ -6,16 +6,16 @@ export function Settings({ job }) {
 
     return (
         <ul>
-            {required.map((item) => (
-                <li>
+            {required.map((item, idx) => (
+                <li key={idx}>
                     <span>{item.nicename}: </span>
                     <span>
                         {findValue(item.name, item.kind, job.jobRequest)}
                     </span>
                 </li>
             ))}
-            {optional.map((item) => (
-                <li>
+            {optional.map((item, idx) => (
+                <li key={idx}>
                     <span>{item.nicename}: </span>
                     <span>
                         {findValue(item.name, item.kind, job.jobRequest)}

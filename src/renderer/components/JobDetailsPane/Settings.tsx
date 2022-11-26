@@ -1,3 +1,4 @@
+// job settings, not application settings
 import { findValue, getAllOptional, getAllRequired } from 'renderer/utils/utils'
 
 export function Settings({ job }) {

@@ -212,9 +212,6 @@ ul.fields {
     button {
         border-radius: 4px;
     }
-    span {
-        overflow: scroll;
-    }
     .filename {
         align-self: center;
         font-family: var(--fw-font-family);
@@ -222,7 +219,7 @@ ul.fields {
         border: thin solid var(--primary-color-1);
         padding: 3px;
         border-radius: var(--border-radius);
-        width: 100ch;
+        overflow: scroll;
     }
 }
 

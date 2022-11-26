@@ -40,6 +40,7 @@ export function FileOrFolderField({
         }
     }
 
+    
     let onClick = async (e, name) => {
         e.preventDefault()
 
@@ -80,10 +81,11 @@ export function FileOrFolderField({
                 type="text"
                 tabIndex={0}
                 className="filename"
-                value={filename ?? defaultValue}
+                value={filename == '' ? defaultValue : filename}
                 onChange={onTextInput}
+                id={elemId}
             ></input>
-            <button type="button" onClick={(e) => onClick(e, name)} id={elemId}>
+            <button type="button" onClick={(e) => onClick(e, name)}>
                 {buttonLabel}
             </button>
         </div>

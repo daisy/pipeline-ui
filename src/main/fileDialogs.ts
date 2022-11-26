@@ -5,6 +5,7 @@ import { pathToFileURL } from 'node:url'
 import {
     IPC_EVENT_showItemInFolder,
     IPC_EVENT_showOpenFileDialog,
+    IPC_EVENT_showSaveDialog,
 } from '../shared/main-renderer-events'
 
 /*
@@ -42,6 +43,30 @@ const showOpenFileDialog = async (
     }
 }
 
+const showSaveDialog = async (
+    callback: (filepath: string) => void,
+    dialogOptions: Electron.SaveDialogOptions,
+    asFileURL: boolean = true
+): Promise<void> => {
+    let filePath
+    // @ts-ignore
+    const res = await dialog.showSaveDialog(
+        BrowserWindow ? BrowserWindow.getFocusedWindow() : undefined,
+        dialogOptions
+    )
+    if (res.canceled || !res.filePath) {
+        filePath = undefined
+    }
+    if (res.filePath) {
+        filePath = asFileURL ? pathToFileURL(res.filePath).href : res.filePath
+    } else {
+        filePath = undefined
+    }
+    if (callback && filePath) {
+        callback(filePath)
+    }
+}
+
 function setupFileDialogEvents() {
     // comes from the renderer process (ipcRenderer.send())
     ipcMain.on(IPC_EVENT_showOpenFileDialog, async (event, payload) => {
@@ -53,17 +78,10 @@ function setupFileDialogEvents() {
             payload.getFileURL
         )
     })
+    ipcMain.on(IPC_EVENT_showSaveDialog, async (event, payload) => {
+        await showSaveDialog((filePath) => {
+            event.sender.send(IPC_EVENT_showSaveDialog, filePath)
+        }, payload.getFileURL)
+    })
 }
-export { setupFileDialogEvents, showOpenFileDialog }
-
-// not used at the moment but probably will need this later
-async function showSaveDialog(options) {
-    const res = await dialog.showSaveDialog(
-        BrowserWindow ? BrowserWindow.getFocusedWindow() : undefined,
-        options
-    )
-    if (res.canceled || !res.filePath) {
-        return undefined
-    }
-    return res.filePath
-}
+export { setupFileDialogEvents, showOpenFileDialog, showSaveDialog }

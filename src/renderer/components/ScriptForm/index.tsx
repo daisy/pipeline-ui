@@ -2,7 +2,7 @@
 Fill out fields for a new job and submit it
 */
 import { jobRequestToXml, jobXmlToJson } from 'renderer/pipelineXmlConverter'
-import { JobRequest, JobState, baseurl, Script } from 'shared/types'
+import { JobRequest, JobState, baseurl, ScriptItemBase } from 'shared/types'
 import { useState } from 'react'
 import { useWindowStore } from 'renderer/store'
 import { getAllOptional, getAllRequired, ID } from 'renderer/utils/utils'
@@ -168,7 +168,15 @@ export function ScriptForm({ job, scriptHref, updateJob }) {
 // item.type can be:
 // anyFileURI, anyDirURI, xsd:string, xsd:dateTime, xsd:boolean, xsd:integer, xsd:float, xsd:double, xsd:decimal
 // item.mediaType is a file type e.g. application/x-dtbook+xml
-function FormField({ item, idprefix, setValue }) {
+function FormField({
+    item,
+    idprefix,
+    setValue,
+}: {
+    item: ScriptItemBase
+    idprefix: string
+    setValue: (string, Object) => void
+}) {
     console.log('FORM FIELD', item)
     let inputType = 'text'
 
@@ -218,22 +226,24 @@ function FormField({ item, idprefix, setValue }) {
             : ['openFile', 'openFolder']
 
     return (
-        <div className="script-field">
+        <div className="form-field">
             <label htmlFor={controlId}>{item.nicename}</label>
             <span
                 className="description"
                 dangerouslySetInnerHTML={{ __html: desc }}
             />
-            {inputType == 'file' ? (
+            {inputType == 'file' ? ( // 'item' may be an input or an option
                 <FileOrFolderField
-                    options={dialogOpts}
+                    type="open"
+                    dialogProperties={dialogOpts}
                     elemId={controlId}
                     mediaType={item.mediaType}
                     name={item.name}
                     onSelect={(filename) => onFileFolderSelect(filename, item)}
                     useSystemPath={false}
+                    buttonLabel="Browse"
                 />
-            ) : inputType == 'checkbox' ? (
+            ) : inputType == 'checkbox' ? ( // 'item' is an option
                 <input
                     type={inputType}
                     required={item.required}
@@ -242,10 +252,12 @@ function FormField({ item, idprefix, setValue }) {
                     id={controlId}
                 ></input>
             ) : (
+                // 'item' is an option
                 <input
                     type={inputType}
                     required={item.required}
-                    value={item.default}
+                    // @ts-ignore
+                    value={item.default} // options have default values sometimes
                     id={controlId}
                     onChange={(e) => onChange(e, item)}
                 ></input>

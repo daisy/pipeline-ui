@@ -1,5 +1,6 @@
 @use 'vars.scss' as *;
 @use 'tabs.scss' as *;
+@use 'settings.scss' as *;
 
 body {
     margin: calc(.25 * var(--pad));
@@ -214,6 +215,15 @@ ul.fields {
     span {
         overflow: scroll;
     }
+    .filename {
+        align-self: center;
+        font-family: var(--fw-font-family);
+        font-size: smaller;
+        border: thin solid var(--primary-color-1);
+        padding: 3px;
+        border-radius: var(--border-radius);
+        width: 100ch;
+    }
 }
 
 .description {
@@ -224,7 +234,7 @@ ul.fields {
 .value {
     font-family: var(--fw-font-family);
 }
-.script-field {
+.form-field {
     display: flex;
     flex-flow: column;
     gap: calc(var(--pad)/2);    
@@ -237,4 +247,9 @@ ul.fields {
 .filelink {
     color: var(--primary-color-1);
     // text-decoration: underline;
+}
+
+.confirm-save {
+    font-size: smaller;
+    font-style: italic;
 }

@@ -1,9 +1,12 @@
 .settings-form {
+    padding-left: 3px;
     display: flex;
     flex-direction: column;
-    gap: 1em;
+    gap: calc(var(--pad) * 2);
 }
 
-.save-button {
-    align-self: start;
+.save-settings {
+    display: flex;
+    gap: var(--pad);
+    align-items: center;
 }

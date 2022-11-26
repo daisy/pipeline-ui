@@ -10,50 +10,79 @@ const { App } = window
 // because you can't set the value on the input field programmatically (yes we could use loads of react code to work around this but let's not)
 // so this function provides a button to browse and a text display of the path
 export function FileOrFolderField({
-    options,
+    dialogProperties,
     elemId,
     mediaType,
+    onSelect,
     name = null,
-    buttonLabel = 'Browse',
+    type = 'open',
+    buttonLabel = 'Browse', // what the button is called that you click to bring up a file dialog
     useSystemPath = false,
-    onSelect = null,
+    defaultValue = '',
 }: {
-    options: string[]
-    elemId: string
-    mediaType: string[]
-    name?: string
-    buttonLabel?: string
-    useSystemPath?: boolean
-    onSelect?: (filename: string) => void
+    dialogProperties: string[] // electron dialog properties for open or save, depending on which one you're doing (see 'type')
+    elemId: string // ID for the control widget
+    mediaType: string[] // array of mimetypes
+    defaultValue?: string
+    onSelect: (filename: string) => void // callback function
+    name?: string // display name for the thing we're picking
+    type: 'open' | 'save' // 'open' or 'save' are a little different in electron
+    // save supports the 'createDirectory' property for macos
+    buttonLabel?: string // the label for the control (not the label on the dialog)
+    useSystemPath?: boolean // i forget what this is for but it defaults to 'true' and everywhere seems to set it to 'false'
 }) {
     const [filename, setFilename] = useState('')
 
-    let onClick = async (e, name) => {
-        e.preventDefault()
-
-        let filters = getFiletypeFilters(mediaType)
-
-        let filename = await App.showOpenFileDialog({
-            dialogOptions: {
-                title: `Select ${name ?? ''}`,
-                buttonLabel: 'Select',
-                // @ts-ignore
-                options,
-                filters,
-            },
-            asFileURL: !useSystemPath,
-        })
+    let updateFilename = (filename) => {
         setFilename(filename)
         if (onSelect) {
             onSelect(filename)
         }
     }
+
+    let onClick = async (e, name) => {
+        e.preventDefault()
+
+        let filters = getFiletypeFilters(mediaType)
+        let filename
+        let options = {
+            title: `Select ${name ?? ''}`,
+            defaultPath: filename ?? defaultValue,
+            buttonLabel: 'Select', // this is a different buttonLabel, it's the one for the actual file browse dialog
+            filters,
+            // @ts-ignore
+            properties: dialogProperties,
+        }
+        if (type == 'open') {
+            filename = await App.showOpenFileDialog({
+                //@ts-ignore
+                dialogOptions: options,
+                asFileURL: !useSystemPath,
+            })
+        } else if (type == 'save') {
+            filename = await App.showSaveDialog({
+                // @ts-ignore
+                dialogOptions: options,
+                asFileURL: !useSystemPath,
+            })
+        }
+        updateFilename(filename)
+    }
+
+    let onTextInput = (e) => {
+        updateFilename(e.target.value)
+    }
+
     // all items that make it to this function have type of 'anyFileURI' or 'anyDirURI'`
     return (
         <div className="file-or-folder">
-            <span tabIndex={0} className="filename">
-                {filename}
-            </span>
+            <input
+                type="text"
+                tabIndex={0}
+                className="filename"
+                value={filename ?? defaultValue}
+                onChange={onTextInput}
+            ></input>
             <button type="button" onClick={(e) => onClick(e, name)} id={elemId}>
                 {buttonLabel}
             </button>

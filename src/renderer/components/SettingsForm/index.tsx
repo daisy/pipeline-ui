@@ -12,36 +12,53 @@ export function SettingsForm() {
     const [newSettings, setNewSettings] = useState<ApplicationSettings>({
         ...settings,
     })
+    const [saved, setSaved] = useState(true)
     useEffect(() => {
         setNewSettings({
             ...settings,
         })
     }, [settings])
     // Changed folder
-    const downloadFolderChanged = (filename) => {
+    const resultsFolderChanged = (filename) => {
         setNewSettings({
             ...newSettings,
             downloadFolder: filename,
         })
+        setSaved(false)
     }
 
     // send back the settings for being save on disk
     const handleSave = () => {
         App.saveSettings(newSettings)
+        setSaved(true)
     }
     return (
-        <>
-            <form className="settings-form">
-                <FileOrFolderField
-                    options={['openFolder']}
-                    elemId="downloadFolder"
-                    mediaType={['']}
-                    name={'Download folder'}
-                    onSelect={downloadFolderChanged}
-                    useSystemPath={false}
-                />
+        <form className="settings-form">
+            <div>
+                <div className="form-field">
+                    <label htmlFor="resultsFolder">
+                        Default results folder
+                    </label>
+                    <span className="description">
+                        A folder where all jobs will be automatically downloaded
+                    </span>
+                    <FileOrFolderField
+                        type="open"
+                        dialogProperties={['openDirectory']}
+                        elemId="resultsFolder"
+                        mediaType={['']}
+                        name={'Results folder'}
+                        onSelect={resultsFolderChanged}
+                        useSystemPath={false}
+                        defaultValue={newSettings.downloadFolder}
+                        buttonLabel="Browse"
+                    />
+                </div>
                 {/* insert local pipeline settings form part here */}
                 {/* insert remote pipeline settings form part here */}
+            </div>
+            <div className="save-settings">
+                {' '}
                 <button
                     id="save-settings"
                     onClick={handleSave}
@@ -53,7 +70,14 @@ export function SettingsForm() {
                 >
                     Save
                 </button>
-            </form>
-        </>
+                {saved ? (
+                    <span className="confirm-save" aria-live="polite">
+                        Saved
+                    </span>
+                ) : (
+                    ''
+                )}
+            </div>
+        </form>
     )
 }

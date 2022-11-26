@@ -14,7 +14,7 @@ export function MainScreen() {
                     {pipeline.status == PipelineStatus.RUNNING ? (
                         <MainView />
                     ) : (
-                        'WAITING'
+                        <p>Starting the DAISY Pipeline...</p>
                     )}
                 </main>
             </>

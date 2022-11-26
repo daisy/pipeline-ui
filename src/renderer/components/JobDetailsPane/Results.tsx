@@ -1,8 +1,8 @@
 export function Results({ job }) {
     return (
         <ul aria-live="polite">
-            {job.jobData.results?.namedResults.map((item) => (
-                <li>
+            {job.jobData.results?.namedResults.map((item, idx) => (
+                <li key={idx}>
                     {item.files.length > 1 ? (
                         <>
                             <span>{item.nicename}</span>

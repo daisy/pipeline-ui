@@ -87,9 +87,18 @@ function jobElementToJson(jobElm: Element): JobData {
     }
     let messagesElms = jobElm.getElementsByTagName('messages')
     if (messagesElms.length > 0) {
+        //@ts-ignore
         jobData.messages = Array.from(
             messagesElms[0].getElementsByTagName('message')
         ).map((messageElm) => {
+            let timestamp = messageElm.getAttribute('timeStamp')
+            try {
+                timestamp = new Date(
+                    parseInt(messageElm.getAttribute('timeStamp'))
+                ).toISOString()
+            } catch (err) {
+                console.log(err)
+            }
             return {
                 level: MessageLevel[
                     messageElm.getAttribute(
@@ -98,7 +107,7 @@ function jobElementToJson(jobElm: Element): JobData {
                 ],
                 content: messageElm.getAttribute('content'),
                 sequence: parseInt(messageElm.getAttribute('sequence')),
-                timestamp: parseInt(messageElm.getAttribute('timestamp')),
+                timestamp,
             }
         })
         jobData.progress = parseInt(messagesElms[0].getAttribute('progress'))

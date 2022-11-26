@@ -25,6 +25,7 @@ export function ScriptForm({ job, scriptHref, updateJob }) {
     let required = getAllRequired(script)
     let optional = getAllOptional(script)
 
+    // set a value in a field on the script's form
     let setValue = (value, data) => {
         let inputs = [...jobRequest.inputs]
         let options = [...jobRequest.options]
@@ -152,6 +153,15 @@ export function ScriptForm({ job, scriptHref, updateJob }) {
                                 </li>
                             ))}
                         </ul>
+                    </Section>
+                    <Section 
+                        className="form-validation"
+                        id={`${ID(job.internalId)}-formval`}
+                        label="Messages">
+                            <ul className="form-messages">
+                                            <li>TODO: Form validation messages go here</li>
+                            </ul>
+
                     </Section>
                 </div>
             ) : (

@@ -12,3 +12,4 @@ export * from './pipeline2/state'
 export * from './pipeline2/props'
 
 export * from './settings'
+export * from './fileSystem'

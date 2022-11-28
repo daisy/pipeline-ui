@@ -3,7 +3,7 @@ Generic tab view component with tab list and tab panels
 Hooks for adding, removing, updating items
 Implementation should provide custom display components for rendering tab and panel contents
 */
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { ID } from 'renderer/utils/utils'
 
 export interface TabViewProps<T> {
@@ -27,6 +27,7 @@ export interface ItemTabProps<T> {
 
 export interface AddItemTabProps<T> {
     onSelect: Function
+    onItemWasCreated: Function
 }
 
 export interface ItemTabPanelProps<T> {
@@ -51,13 +52,32 @@ export function TabView<T extends { internalId: string }>(
     } = props
 
     const [selectedItemId, setSelectedItemId] = useState('')
-    if (selectedItemId == '' && items.length > 0 && items[0].internalId) {
-        setSelectedItemId(items[0].internalId)
-    }
+    useEffect(() => {
+        if (selectedItemId == '' && items.length > 0 && items[0].internalId) {
+            setSelectedItemId(items[0].internalId)
+        }
+    }, [])
 
     let onTabSelect = (item) => {
         console.log('Select ', item)
         setSelectedItemId(item.internalId)
+    }
+
+    let onTabClose_ = (id) => {
+        // focus on the previous tab
+        // tabIndex is the index of the tab in its array
+        let tabIndex = items.findIndex((i) => i.internalId == id)
+        let newSelectedIndex = tabIndex > 0 ? tabIndex - 1 : 0
+        let newId = items[newSelectedIndex].internalId
+        onTabClose(id)
+        setSelectedItemId(newId)
+    }
+
+    // when a tab is created, its new ID is reported back here so it can be selected automatically
+    let onItemWasCreated = (newId) => {
+        console.log("just created", newId)
+        console.log("items", items)
+        setSelectedItemId(newId)
     }
 
     return (
@@ -71,10 +91,13 @@ export function TabView<T extends { internalId: string }>(
                         tabpanelId={`${ID(item.internalId)}-tabpanel`}
                         isSelected={selectedItemId == item.internalId}
                         onSelect={onTabSelect}
-                        onClose={onTabClose}
+                        onClose={(e) => onTabClose_(item.internalId)}
                     />
                 ))}
-                <AddItemTab onSelect={onTabCreate} />
+                <AddItemTab
+                    onSelect={onTabCreate}
+                    onItemWasCreated={onItemWasCreated}
+                />
             </div>
             {items.map((item, idx) => {
                 return (

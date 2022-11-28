@@ -16,7 +16,7 @@ const NEW_JOB = (id) => ({
 
 export function MainView() {
     const [jobs, setJobs] = useState(Array<Job>)
-
+    const [nextJobId, setNextJobId] = useState(0)
     const { isLoading, error, data } = useQuery(
         ['jobsData'],
         async () => {
@@ -43,7 +43,8 @@ export function MainView() {
                 })
             )
             if (updatedJobs.length == 0) {
-                updatedJobs.push(NEW_JOB('job-0'))
+                updatedJobs.push(NEW_JOB(`job-${nextJobId}`))
+                setNextJobId(nextJobId + 1)
             }
             setJobs(updatedJobs)
             return updatedJobs
@@ -62,12 +63,15 @@ export function MainView() {
         return <></>
     }
 
-    let addJob = () => {
-        let theNewJob = NEW_JOB(`job-${jobs.length + 1}`)
+    let addJob = (onItemWasCreated) => {
+        let theNewJob = NEW_JOB(`job-${nextJobId}`)
         setJobs([...jobs, theNewJob])
+        setNextJobId(nextJobId + 1)
+        onItemWasCreated(theNewJob.internalId)
     }
 
     let removeJob = (jobId) => {
+        console.log('remove job', jobId)
         const jobs_ = jobs.filter((j) => j.internalId !== jobId)
         setJobs(jobs_)
     }

@@ -7,7 +7,7 @@ import { useWindowStore } from 'renderer/store'
 import { ID } from 'renderer/utils/utils'
 
 export function NewJobPane({ job, updateJob }) {
-    console.log('new job pane for ', job)
+    // console.log('new job pane for ', job)
 
     const [selectedScript, setSelectedScript] = useState(null)
     const { scripts } = useWindowStore()

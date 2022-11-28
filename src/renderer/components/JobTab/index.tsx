@@ -3,7 +3,7 @@ Tab implementations
 */
 import { Job } from 'shared/types'
 import * as SvgIcons from '../SvgIcons'
-import { ItemTabProps } from '../TabView'
+import { AddItemTabProps, ItemTabProps } from '../TabView'
 
 export function JobTab({
     item,
@@ -16,8 +16,19 @@ export function JobTab({
     let job = item // item is a Job
     let label = job?.jobData?.nicename ?? 'New job'
 
+    let onClose_ = (e, id) => {
+        console.log('jobtab onclose', id)
+        e.stopPropagation()
+        onClose(id)
+    }
+
     return (
-        <div className="tab" onClick={(e) => onSelect(item)}>
+        <div
+            className="tab"
+            onClick={(e) => {
+                onSelect(item)
+            }}
+        >
             <button
                 id={id}
                 aria-selected={isSelected}
@@ -32,7 +43,7 @@ export function JobTab({
             <button
                 className="close-tab"
                 type="button"
-                onClick={(e) => onClose()}
+                onClick={(e) => onClose_(e, job.internalId)}
                 aria-label={`Close tab "${label}"`}
             >
                 <SvgIcons.CloseTab width="20" height="20" />
@@ -41,17 +52,18 @@ export function JobTab({
     )
 }
 
-export function AddJobTab({ onSelect }) {
+export function AddJobTab({ onSelect, onItemWasCreated }: AddItemTabProps<Job>) {
     return (
-        <div className="tab">
+        <div className="tab" onClick={(e) => onSelect(onItemWasCreated)}>
             <button
                 id="create-job"
                 aria-selected="false"
                 tabIndex={-1}
                 role="tab"
                 type="button"
-                onClick={(e) => onSelect()}
+                onClick={(e) => onSelect(onItemWasCreated)}
                 aria-label="Create job"
+                title="Create job"
             >
                 <SvgIcons.AddTab width="24" height="24" />
             </button>

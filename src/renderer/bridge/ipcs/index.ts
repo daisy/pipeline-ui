@@ -13,3 +13,4 @@ export * from './pipeline2/props'
 
 export * from './settings'
 export * from './fileSystem'
+export * from './browser'

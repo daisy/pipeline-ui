@@ -53,30 +53,36 @@ export function TabView<T extends { internalId: string }>(
 
     const [selectedItemId, setSelectedItemId] = useState('')
     useEffect(() => {
+        console.log("use effect items", selectedItemId)
         if (selectedItemId == '' && items.length > 0 && items[0].internalId) {
+            console.log("nothing selected")
             setSelectedItemId(items[0].internalId)
         }
-    }, [])
+    }, [items])
 
     let onTabSelect = (item) => {
-        console.log('Select ', item)
         setSelectedItemId(item.internalId)
     }
 
     let onTabClose_ = (id) => {
-        // focus on the previous tab
-        // tabIndex is the index of the tab in its array
-        let tabIndex = items.findIndex((i) => i.internalId == id)
-        let newSelectedIndex = tabIndex > 0 ? tabIndex - 1 : 0
-        let newId = items[newSelectedIndex].internalId
-        onTabClose(id)
-        setSelectedItemId(newId)
+        if (items.length > 1) {
+            let newSelectedIndex = items.length - 2
+            let newId = items[newSelectedIndex].internalId
+            setSelectedItemId(newId)
+            onTabClose(id)
+        }
+        else if (items.length == 1){
+            onTabClose(id)
+            setSelectedItemId(items[0].internalId)
+        }
+        else {
+            setSelectedItemId('')
+        }
+
     }
 
     // when a tab is created, its new ID is reported back here so it can be selected automatically
     let onItemWasCreated = (newId) => {
-        console.log("just created", newId)
-        console.log("items", items)
         setSelectedItemId(newId)
     }
 

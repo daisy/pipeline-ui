@@ -14,6 +14,8 @@ const API = {
     showOpenFileDialog: ipcs.showOpenFileDialog,
     showSaveDialog: ipcs.showSaveDialog,
     showItemInFolder: ipcs.showItemInFolder,
+    openInBrowser: ipcs.openInBrowser,
+    pathExists: ipcs.pathExists,
     whenAboutWindowClosed: ipcs.whenAboutWindowClose,
 }
 

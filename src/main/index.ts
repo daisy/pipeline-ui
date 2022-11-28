@@ -27,6 +27,8 @@ import {
 import { setupFileDialogEvents } from './fileDialogs'
 import { IPC } from 'shared/constants'
 import { setupShowInFolderEvents } from './folder'
+import { setupFileSystemEvents } from './fileSystem'
+import { setupOpenInBrowserEvents } from './browser'
 
 makeAppWithSingleInstanceLock(async () => {
     await app.whenReady()
@@ -52,10 +54,14 @@ makeAppWithSingleInstanceLock(async () => {
     }
     setupFileDialogEvents()
     setupShowInFolderEvents()
+    setupOpenInBrowserEvents()
+    setupFileSystemEvents()
+
     const isMac = process.platform === 'darwin'
 
     // Template taken from electron documentation
     // To be completed
+    // @ts-ignore
     const template: MenuItemConstructorOptions = [
         // { role: 'appMenu' }
         ...(isMac
@@ -112,6 +118,7 @@ makeAppWithSingleInstanceLock(async () => {
         },
     ]
 
+    // @ts-ignore
     const menu = Menu.buildFromTemplate(template)
     Menu.setApplicationMenu(menu)
 })

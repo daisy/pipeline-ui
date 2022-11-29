@@ -1,6 +1,7 @@
 import {
     app,
     BrowserWindow,
+    ipcMain,
     Menu,
     MenuItemConstructorOptions,
     shell,
@@ -25,19 +26,19 @@ import {
 } from './windows'
 
 import { setupFileDialogEvents } from './fileDialogs'
-import { IPC } from 'shared/constants'
+import { ENVIRONMENT, IPC } from 'shared/constants'
 import { setupShowInFolderEvents } from './folder'
 import { registerFileIPC } from './factories/ipcs/file'
 import { setupFileSystemEvents } from './fileSystem'
 import { setupOpenInBrowserEvents } from './browser'
+import { APP_CONFIG } from '~/app.config'
 
 makeAppWithSingleInstanceLock(async () => {
     await app.whenReady()
     // Windows
-    const mainWindow = await makeAppSetup(MainWindow)
+    let mainWindow = await makeAppSetup(MainWindow)
     registerSettingsWindowCreationByIPC()
     registerAboutWindowCreationByIPC()
-    // File interaction
     registerFileIPC()
     // Settings
     let settings = registerApplicationSettingsIPC()
@@ -71,8 +72,35 @@ makeAppWithSingleInstanceLock(async () => {
                   {
                       label: app.name,
                       submenu: [
-                          //   { label: 'Create a new job' },
-                          //   { type: 'separator' },
+                          {
+                              label: 'Create a new job',
+                              click: async () => {
+                                  try {
+                                      mainWindow.show()
+                                  } catch (error) {
+                                      mainWindow = await MainWindow()
+                                      bindWindowToPipeline(
+                                          mainWindow,
+                                          pipelineInstance
+                                      )
+                                  }
+                                  ENVIRONMENT.IS_DEV
+                                      ? mainWindow.loadURL(
+                                            `${APP_CONFIG.RENDERER.DEV_SERVER.URL}#/main`
+                                        )
+                                      : mainWindow.loadFile('index.html', {
+                                            hash: `/main`,
+                                        })
+                              },
+                          },
+                          {
+                              label: 'Settings',
+                              click: async () => {
+                                  // Open the settings window
+                                  ipcMain.emit(IPC.WINDOWS.SETTINGS.CREATE)
+                              },
+                          },
+                          { type: 'separator' },
                           { role: 'services' },
                           { type: 'separator' },
                           { role: 'hide' },
@@ -87,7 +115,35 @@ makeAppWithSingleInstanceLock(async () => {
         // { role: 'fileMenu' }
         {
             label: 'File',
-            submenu: [isMac ? { role: 'close' } : { role: 'quit' }],
+            submenu: [
+                {
+                    label: 'Create a new job',
+                    click: async () => {
+                        try {
+                            mainWindow.show()
+                        } catch (error) {
+                            mainWindow = await MainWindow()
+                            bindWindowToPipeline(mainWindow, pipelineInstance)
+                        }
+                        ENVIRONMENT.IS_DEV
+                            ? mainWindow.loadURL(
+                                  `${APP_CONFIG.RENDERER.DEV_SERVER.URL}#/main`
+                              )
+                            : mainWindow.loadFile('index.html', {
+                                  hash: `/main`,
+                              })
+                    },
+                },
+                {
+                    label: 'Settings',
+                    click: async () => {
+                        // Open the settings window
+                        ipcMain.emit(IPC.WINDOWS.SETTINGS.CREATE)
+                    },
+                },
+                { type: 'separator' },
+                isMac ? { role: 'close' } : { role: 'quit' },
+            ],
         },
         {
             label: 'View',

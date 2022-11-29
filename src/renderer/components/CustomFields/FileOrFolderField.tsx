@@ -54,7 +54,7 @@ export function FileOrFolderField({
         let filename = ''
         let options = {
             title: `Select ${name ?? ''}`,
-            defaultPath: value?.replace('file://', ''),
+            defaultPath: value?.replace('file://', '') ?? '',
             buttonLabel: 'Select', // this is a different buttonLabel, it's the one for the actual file browse dialog
             filters,
             // @ts-ignore

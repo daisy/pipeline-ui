@@ -23,6 +23,7 @@ export interface ItemTabProps<T> {
     isSelected: boolean
     onSelect: Function
     onClose: Function
+    index: number
 }
 
 export interface AddItemTabProps<T> {
@@ -52,12 +53,21 @@ export function TabView<T extends { internalId: string }>(
     } = props
 
     const [selectedItemId, setSelectedItemId] = useState('')
+    const [selectedItem, setSelectedItem] = useState(null)
     useEffect(() => {
-        console.log("use effect items", selectedItemId)
+        // when items changes, see if we need to reconsider which tab is selected
+        // this is slightly imperfect as sometimes the user's current tab is switched when they close another one
+        // TODO: revisit
+
         if (selectedItemId == '' && items.length > 0 && items[0].internalId) {
-            console.log("nothing selected")
             setSelectedItemId(items[0].internalId)
+        } else if (!items.map((i) => i.internalId).includes(selectedItemId)) {
+            if (items.length > 0)
+                setSelectedItemId(items[items.length - 1].internalId)
         }
+
+        let sel = items.find((i) => i.internalId == selectedItemId)
+        setSelectedItem(sel)
     }, [items])
 
     let onTabSelect = (item) => {
@@ -70,15 +80,12 @@ export function TabView<T extends { internalId: string }>(
             let newId = items[newSelectedIndex].internalId
             setSelectedItemId(newId)
             onTabClose(id)
-        }
-        else if (items.length == 1){
+        } else if (items.length == 1) {
             onTabClose(id)
             setSelectedItemId(items[0].internalId)
-        }
-        else {
+        } else {
             setSelectedItemId('')
         }
-
     }
 
     // when a tab is created, its new ID is reported back here so it can be selected automatically
@@ -88,10 +95,11 @@ export function TabView<T extends { internalId: string }>(
 
     return (
         <>
-            <div role="tablist">
+            <div role="tablist" aria-live="polite">
                 {items.map((item, idx) => (
                     <ItemTab
                         key={idx}
+                        index={idx}
                         item={item}
                         id={`${ID(item.internalId)}-tab`}
                         tabpanelId={`${ID(item.internalId)}-tabpanel`}

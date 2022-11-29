@@ -85,7 +85,7 @@ input[type=checkbox] {
     display: grid;
     grid-template-columns: 60% auto;
     padding-bottom: var(--pad);
-    border-bottom: thin solid var(--primary-color-2);
+    // border-bottom: thin solid var(--primary-color-2);
     font-size: large;
 
     h1 span {

@@ -30,7 +30,7 @@ export function registerApplicationSettingsIPC(): ApplicationSettings {
                 path: '/ws',
             },
             appDataFolder: app.getPath('userData'),
-            logsFolder: app.getPath('logs'),
+            logsFolder: resolve(app.getPath('userData'), 'pipeline-logs'),
         },
         // Remote pipeline settings
         // - Use a remote pipeline instead of the local one

@@ -14,6 +14,8 @@ export function JobTabPanel({
     updateItem,
 }: ItemTabPanelProps<Job>) {
     let job = item // item is a Job
+    let type = job.state == JobState.NEW ? 'script' : 'job'
+
     return (
         <div
             className="tabPanel"
@@ -23,7 +25,7 @@ export function JobTabPanel({
             aria-labelledby={tabId}
             tabIndex={0}
         >
-            <div className="fixed-height-layout">
+            <div className={`fixed-height-layout ${type}`}>
                 {job.state == JobState.NEW ? (
                     <NewJobPane job={job} updateJob={updateItem} />
                 ) : (

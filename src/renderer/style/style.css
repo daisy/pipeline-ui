@@ -80,6 +80,33 @@
   height: var(--tab-panel-height);
 }
 
+.settings-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1em;
+}
+.settings-form input[type=button] {
+  display: inline-block;
+  width: min-content;
+  white-space: nowrap;
+  padding: 0.25em;
+  border: thin black solid;
+}
+.settings-form div {
+  display: flex;
+  gap: 1em;
+}
+.settings-form .settings-field {
+  display: flex;
+  flex-direction: column;
+}
+.settings-form .description {
+  display: block;
+}
+.settings-form .save-button {
+  align-self: flex-end;
+}
+
 body {
   margin: calc(0.25 * var(--pad));
   font-family: var(--font-family);
@@ -164,7 +191,7 @@ button {
 .status.success {
   border-bottom: 4px var(--success-color) solid;
 }
-.status.failure {
+.status.error {
   border-bottom: 4px var(--failure-color) solid;
 }
 
@@ -237,6 +264,7 @@ ul.fields {
   gap: var(--pad);
 }
 ul.fields li {
+  padding-bottom: var(--gap);
   border-bottom: thin white solid;
   display: flex;
   flex-wrap: wrap;
@@ -249,10 +277,6 @@ ul.fields li > * {
 ul.fields li > input[type=checkbox] {
   flex-basis: 2rem;
   accent-color: var(--secondary-color-2);
-}
-ul.fields li div:first-of-type {
-  display: flex;
-  flex-flow: column;
 }
 
 .file-input {
@@ -277,6 +301,21 @@ ul.fields li div:first-of-type {
 
 .value {
   font-family: var(--fw-font-family);
+}
+
+.script-field {
+  display: flex;
+  flex-flow: column;
+  gap: calc(var(--pad) / 2);
+}
+
+.file-or-folder {
+  display: flex;
+  gap: calc(var(--pad) / 2);
+}
+
+.filelink {
+  color: var(--primary-color-1);
 }
 
 /*# sourceMappingURL=style.css.map */

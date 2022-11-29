@@ -46,6 +46,10 @@ input[type=checkbox] {
 .file-or-folder {
     display: flex;
     gap: calc(var(--pad)/2);
+    
+    input {
+        width: 100%;
+    }
 }
 .description {
     font-style: italic;

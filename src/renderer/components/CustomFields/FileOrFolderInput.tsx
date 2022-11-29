@@ -87,7 +87,7 @@ export function FileOrFolderInput({
                 type="text"
                 tabIndex={0}
                 className="filename"
-                value={value}
+                value={value ?? ''}
                 onChange={onTextInput}
                 id={elemId}
                 required={required}

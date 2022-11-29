@@ -1,9 +1,13 @@
 # pipeline-ui
 A user interface for the DAISY Pipeline 2
 
-## Dev notes
+## Features
 
-This project was created from [this electron template](https://github.com/daltonmenezes/electron-app).
+* Easy-to-use desktop application for the powerful [DAISY Pipeline](http://daisy.github.io/pipeline/) engine 
+* Run multiple jobs in a tabbed interface
+* High contrast dark mode available
+* Basic [keyboard shortcuts](#keyboard-shortcuts)
+
 
 ## Usage notes
 
@@ -12,7 +16,7 @@ This project was created from [this electron template](https://github.com/dalton
 * Choose a script and fill out the appropriate fields
 * Run the job and observe its progress and results
 
-### Experimental keyboard shortcuts
+## Keyboard shortcuts
 
 Use these shortcuts with `Alt + Shift` on Windows or `Control + Opt` on Mac
 
@@ -20,27 +24,31 @@ Use these shortcuts with `Alt + Shift` on Windows or `Control + Opt` on Mac
 * `R` to run a job
 * `N` to add a new job
 
-## Ideas and todos
+## Development notes
+
+This project was created from [this electron template](https://github.com/daltonmenezes/electron-app).
+
+### Ideas and todos
 
 These will move to the issue tracker eventually.
 
-### Script selection
+#### Script selection
 * Drag and drop files to filter suggested scripts
 * Or just pick a script
 
-### Job submission
+#### Job submission
 * After a user starts filling out a new job form, if they close the tab, ask them if they want to cancel
 * Validate job submission form fields
 * Support multiple files
 
-### Job details
+#### Job details
 * Confirm deleting a job
 
-### General
+#### General
 * Move the pipeline "online" status to a preferences pane where you can specify the pipeline installation
 * Redesign main menu
 
-### Behind the scenes todos
+#### Behind the scenes todos
 
 * Global state via redux
 * Basic testing framework via selenium

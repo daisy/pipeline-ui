@@ -1,6 +1,7 @@
 @use 'vars.scss' as *;
 @use 'tabs.scss' as *;
 @use 'settings.scss' as *;
+@use 'scrollshadow.scss' as *;
 
 body {
     margin: calc(.25 * var(--pad));
@@ -25,229 +26,18 @@ button {
     color: var(--primary-color-1);
 }
 
-[role=tabpanel] {
-    // i.e. a button that's not a tab but rater in the main body of the tab panel
-    button:hover {
-        background-color: var(--secondary-color-2);
-        color: var(--secondary-2-contrast);
-    }
-}
-
-// the tab panel "header" 
-[role=tabpanel]{
-    .fixed-height-layout {
-        display: flex;
-        flex-direction: column;
-        gap: var(--pad);
-        max-height: var(--tab-panel-height);
-    }
-
-    .header {
-        line-height: .8;
-        display: grid;
-        grid-template-columns: 60% auto;
-        padding-bottom: var(--pad);
-        border-bottom: thin solid var(--primary-color-2);
-        font-size: large;
-    
-        h1 span {
-            font-size: small;
-            display: block;
-        }
-    
-        button.run {
-            font-size: larger;
-            font-weight: normal;
-            align-self: center;
-            cursor: pointer;
-        }
-        button.run:disabled {
-            cursor: default;
-            color: gray;
-            border-color: gray;
-        }
-        button.run:disabled:hover {
-            background-color: inherit;
-        }
-    }
-
-    // show sections as columns and make each one scroll independently
-    .flexgrid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, clamp(20rem, 100%, 30rem));
-        gap: calc(4 * var(--pad));
-        overflow-y: scroll;
-
-        > * {
-            overflow-y: scroll;
-        }
-
-        section {
-            h2 {
-                position: sticky;
-                top: 0;
-                background-color: var(--background-color);
-                color: var(--primary-color-1);
-                text-decoration: underline;
-                text-decoration-color: var(--primary-color-3);
-                text-decoration-thickness: 5px;
-            }
-            ul {
-                list-style-type: none;
-                padding: 0;
-                display: flex;
-                flex-direction: column;
-                gap: calc(var(--pad)/2);
-            }
-        }
-    }
-    // i think this helps a little to distinguish the sections, 
-    // as the columns stack and the viewport narrows
-    @media (max-width: 1000px) {
-        .flexgrid {
-            gap: calc(var(--pad));
-        }
-    }    
-}
-
-.status {
-    font-size: large;
-    font-weight: bold;
-    width: min-content;
-    white-space: nowrap;
-    
-    &.success {
-        border-bottom: 4px var(--success-color) solid;
-    }
-    &.error {
-        border-bottom: 4px var(--failure-color) solid;
-    }
-}
-
-
-
-.job-messages {
-    
-    ul {
-        font-family: var(--fw-font-family);
-        
-        .error {
-            color: var(--error-message-color);
-        }
-        .info {
-            color: var(--info-message-color);
-        }
-        .warning {
-            color: var(--warning-message-color);
-        }
-        .debug {
-            color: var(--debug-message-color);
-        }
-        .trace {
-            color: var(--trace-message-color);
-        }
-    }
-}
-
-.job-settings {
-    li {
-        display: flex;
-        flex-direction: row;
-        justify-content: space-between;
-        border-bottom: thin solid var(--primary-color-3);
-        
-        span:first-of-type {
-            max-width: 50%;
-        }
-    }
-    li:nth-of-type(even) {
-        background-color: var(--secondary-color-3);
-    }
-}
-
-.job-results {
-    width: min-content;
-    white-space: nowrap;
-}
-    
-.select-script {
-    display: flex;
-    flex-direction: row;
-    gap: calc(var(--pad)*2);
-    font-size: x-large;
-    
-    select {
-        font-size: large;
-        border: thin solid;
-        border-radius: 4px;
-    }
-    border-bottom: thin solid var(--primary-color-2);
-    padding-top: calc(var(--pad));
-    padding-bottom: calc(var(--pad));
-    padding-left: 2px;
-}
-
 input {
     display: block;
 }
-
+input:invalid {
+    border-color: var(--error-message-color);
+}
 input[type=checkbox] {
     width: calc(1.5 * var(--font-size));
     height: calc(1.5 * var(--font-size));
 }
-ul.fields {
-    padding: revert;
-    display: flex;
-    flex-direction: column;
-    gap: var(--pad);
 
-    li {
-        padding-bottom: var(--pad);
-        border-bottom: thin white solid;
-        display: flex;
-        flex-wrap: wrap;
-        gap: var(--pad);
-        align-items: center;        
-        > * {
-            flex-basis: 20rem;
-        }
-        > input[type=checkbox] {
-            flex-basis: 2rem;
-            accent-color: var(--secondary-color-2);
-        }
-    }
-}
 
-.file-input {
-    padding-left: 2px;
-    border-radius: 4px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    background-color: var(--primary-color-3);
-
-    button {
-        border-radius: 4px;
-    }
-    .filename {
-        align-self: center;
-        font-family: var(--fw-font-family);
-        font-size: smaller;
-        border: thin solid var(--primary-color-1);
-        padding: 3px;
-        border-radius: var(--border-radius);
-        overflow: scroll;
-    }
-}
-
-.description {
-    font-style: italic;
-    font-size: smaller;
-}
-
-.value {
-    font-family: var(--fw-font-family);
-}
 .form-field {
     display: flex;
     flex-flow: column;
@@ -257,44 +47,212 @@ ul.fields {
     display: flex;
     gap: calc(var(--pad)/2);
 }
-
+.description {
+    font-style: italic;
+    font-size: smaller;
+}
 .filelink {
     color: var(--primary-color-1);
     // text-decoration: underline;
 }
 
+[role=tabpanel] {
+    // i.e. a button that's not a tab but rater in the main body of the tab panel
+    button:hover {
+        background-color: var(--secondary-color-2);
+        color: var(--secondary-2-contrast);
+    }
+
+    a {
+        color: var(--primary-color-1);
+    }
+    a:hover {
+        text-decoration-thickness: 2px;
+    }
+}
+
+.fixed-height-layout {
+    display: flex;
+    flex-direction: column;
+    gap: var(--pad);
+    max-height: var(--tab-panel-height);
+    min-height: var(--tab-panel-height);
+}
+
+// the tab panel "header" 
+.header {
+    line-height: .8;
+    display: grid;
+    grid-template-columns: 60% auto;
+    padding-bottom: var(--pad);
+    border-bottom: thin solid var(--primary-color-2);
+    font-size: large;
+
+    h1 span {
+        font-size: small;
+        display: block;
+    }
+
+    button {
+        font-size: larger;
+        font-weight: normal;
+        align-self: center;
+        cursor: pointer;
+    }
+}
+// show sections as columns and make each one scroll independently
+.details {
+    display: grid;
+    grid-template-columns: repeat(auto-fit,25rem);
+    gap: calc(2 * var(--pad));
+    overflow-y: scroll;
+
+    > * {
+        overflow-y: scroll;
+        min-width: 25rem;
+    }
+
+    section {
+        h2 {
+            position: sticky;
+            top: 0;
+            background-color: var(--background-color);
+            color: var(--primary-color-1);
+            text-decoration: underline;
+            text-decoration-color: var(--primary-color-3);
+            text-decoration-thickness: 5px;
+        }
+        ul {
+            list-style-type: none;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            gap: calc(var(--pad)/2);
+        }
+    }
+}
+
+.job {
+    
+    .status {
+        font-size: large;
+        font-weight: bold;
+        width: min-content;
+        white-space: nowrap;
+        
+        &.success {
+            border-bottom: 4px var(--success-color) solid;
+        }
+        &.error {
+            border-bottom: 4px var(--failure-color) solid;
+        }
+    }
+
+    .details {
+        flex-grow: 2;
+        > * {
+            padding: 7px;
+        }
+        .job-messages {
+            ul {
+                font-family: var(--fw-font-family);
+                
+                .error {
+                    color: var(--error-message-color);
+                }
+                .info {
+                    color: var(--info-message-color);
+                }
+                .warning {
+                    color: var(--warning-message-color);
+                }
+                .debug {
+                    color: var(--debug-message-color);
+                }
+                .trace {
+                    color: var(--trace-message-color);
+                }
+            }
+        }
+
+        .job-settings {
+            li {
+                display: flex;
+                flex-direction: row;
+                justify-content: space-between;
+                border-bottom: thin solid var(--primary-color-3);
+                gap: calc(var(--pad)/2);
+
+                span:first-of-type {
+                    max-width: 50%;
+                }
+                span:last-of-type {
+                    font-family: var(--fw-font-family);
+                }
+            }
+            li:nth-of-type(even) {
+                background-color: var(--secondary-color-3);
+            }
+        }
+
+        .job-results {
+            width: min-content;
+            white-space: nowrap;
+        }
+    }
+}
+
+.script {
+    .select-script {
+        display: flex;
+        flex-direction: row;
+        gap: calc(var(--pad)*2);
+        font-size: x-large;
+        
+        select {
+            font-size: large;
+            border: thin solid;
+            border-radius: 4px;
+        }
+        border-bottom: thin solid var(--primary-color-2);
+        padding-top: calc(var(--pad));
+        padding-bottom: calc(var(--pad));
+        padding-left: 2px;
+    }
+
+    .details {
+        height: 100%;
+        grid-template-columns: 100%;
+        gap: var(--pad);
+        
+        ul.fields {
+            padding: revert;
+            display: flex;
+            flex-direction: column;
+            gap: var(--pad);
+        
+            li {
+                padding-bottom: var(--pad);
+                display: flex;
+                gap: var(--pad);
+                align-items: center;        
+                > * {
+                    flex-basis: 20rem;
+                }
+                > input[type=checkbox] {
+                    flex-basis: 2rem;
+                    accent-color: var(--secondary-color-2);
+                }
+                &:not(:last-child) {
+                    border-bottom: thin var(--primary-color-1) solid;
+                }
+            }
+        }
+    }
+}
+
+/* settings dialog */
 .confirm-save {
     font-size: smaller;
     font-style: italic;
-}
-
-/* scrolling shadow */
-/* Thanks to https://lea.verou.me/2012/04/background-attachment-local/ */
-.flexgrid section {
-	overflow: auto;
-	border: thin solid var(--primary-color-3);
-    border-radius: var(--border-radius);
-
-	background:
-		/* Shadow covers */
-		linear-gradient(var(--scrollshadow-cover) 30%, var(--scrollshadow-cover-alpha0)),
-		linear-gradient(var(--scrollshadow-cover-alpha0), var(--scrollshadow-cover) 70%) 0 100%,
-		
-		/* Shadows */
-		radial-gradient(50% 0, farthest-side, var(--scrollshadow-alpha02), var(--scrollshadow-alpha0)),
-		radial-gradient(50% 100%,farthest-side, var(--scrollshadow-alpha02), var(--scrollshadow-alpha0)) 0 100%;
-	background:
-		/* Shadow covers */
-		linear-gradient(var(--scrollshadow-cover) 30%, var(--scrollshadow-cover-alpha0)),
-		linear-gradient(var(--scrollshadow-cover-alpha0), var(--scrollshadow-cover) 70%) 0 100%,
-		
-		/* Shadows */
-		radial-gradient(farthest-side at 50% 0, var(--scrollshadow-alpha02), var(--scrollshadow-alpha0)),
-		radial-gradient(farthest-side at 50% 100%, var(--scrollshadow-alpha02), var(--scrollshadow-alpha0)) 0 100%;
-	background-repeat: no-repeat;
-	background-color: var(--background-color);
-	background-size: 100% 40px, 100% 40px, 100% 14px, 100% 14px;
-	
-	/* Opera doesn't support this in the shorthand */
-	background-attachment: local, local, scroll, scroll;
 }

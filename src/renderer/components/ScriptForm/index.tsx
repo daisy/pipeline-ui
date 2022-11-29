@@ -3,65 +3,82 @@ Fill out fields for a new job and submit it
 */
 import { jobRequestToXml, jobXmlToJson } from 'renderer/pipelineXmlConverter'
 import { JobRequest, JobState, baseurl, ScriptItemBase } from 'shared/types'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useWindowStore } from 'renderer/store'
-import { getAllOptional, getAllRequired, ID } from 'renderer/utils/utils'
+import {
+    findInputType,
+    findValue,
+    getAllOptional,
+    getAllRequired,
+    ID,
+} from 'renderer/utils/utils'
 import { Section } from '../Section'
-import { marked } from 'marked'
 import { FileOrFolderField } from '../CustomFields/FileOrFolderField'
+import Markdown from 'react-markdown'
+import remarkGfm from 'remark-gfm'
 
-export function ScriptForm({ job, scriptHref, updateJob }) {
+const { App } = window
+
+export function ScriptForm({ job, script, updateJob }) {
     const [submitInProgress, setSubmitInProgress] = useState(false)
     const [error, setError] = useState(false)
-    const { pipeline, scripts } = useWindowStore()
-    let script = scripts.find((s) => s.href == scriptHref)
-    const [jobRequest, setJobRequest] = useState<JobRequest>({
-        scriptHref: script.href,
-        nicename: script.nicename,
-        inputs: [],
-        options: [],
-    })
+    const { pipeline } = useWindowStore()
 
+    const [jobRequest, setJobRequest] = useState<JobRequest>(null)
+    useEffect(() => {
+        setJobRequest({
+            scriptHref: script.href,
+            nicename: script.nicename,
+            inputs: script.inputs.map((item) => ({
+                name: item.name,
+                value: null,
+                isFile: item.type == 'anyFileURI' || item.type == 'anyDirURI',
+            })),
+            options: script.options.map((item) => ({
+                name: item.name,
+                value: item.default ? item.default : null,
+                isFile: item.type == 'anyFileURI' || item.type == 'anyDirURI',
+            })),
+        })
+    }, [script])
     let required = getAllRequired(script)
     let optional = getAllOptional(script)
 
-    // set a value in a field on the script's form
-    let setValue = (value, data) => {
+    // take input from the form and add it to the job request
+    let saveValueInJobRequest = (value, data) => {
+        if (!jobRequest) {
+            return
+        }
         let inputs = [...jobRequest.inputs]
         let options = [...jobRequest.options]
 
         // update the array and return a new copy of it
         let updateValue = (value, data, arr) => {
-            if (arr.find((i) => i.name == data.name)) {
-                let arr2 = arr.map((i) =>
-                    i.name == data.name ? { ...i, value, isFile } : i
-                )
-                return arr2
-            } else {
-                arr.push({
-                    name: data.name,
-                    value,
-                    isFile,
-                })
-                return [...arr]
-            }
+            let arr2 = arr.map((i) =>
+                i.name == data.name ? { ...i, value } : i
+            )
+            return arr2
         }
-        let arr = data.kind == 'input' ? inputs : options
-        arr = updateValue(value, data, arr)
+        if (data.kind == 'input') {
+            inputs = updateValue(value, data, inputs)
+        } else {
+            options = updateValue(value, data, options)
+        }
+        let newJobRequest = {
+            ...jobRequest,
+            inputs: [...inputs],
+            options: [...options],
+        }
 
-        let isFile = data.type == 'anyFileURI' || data.type == 'anyDirURI'
-
-        setJobRequest({ ...jobRequest, inputs, options })
+        setJobRequest(newJobRequest)
     }
 
     // submit a job
     let onSubmit = async (e) => {
+        e.preventDefault()
         setSubmitInProgress(true)
 
-        console.log('jobreq', jobRequest)
-
         let xmlStr = jobRequestToXml(jobRequest)
-        console.log(xmlStr)
 
         // this post request submits the job to the pipeline webservice
         let res = await fetch(`${baseurl(pipeline.runningWebservice)}/jobs`, {
@@ -98,14 +115,14 @@ export function ScriptForm({ job, scriptHref, updateJob }) {
             >
                 <div>
                     <h1 id={`${ID(job.internalId)}-script-hd`}>
-                        {script.nicename}
+                        {script?.nicename}
                     </h1>
-                    <p>{script.description}</p>
+                    <p>{script?.description}</p>
                 </div>
                 <button
                     className="run"
                     type="submit"
-                    onClick={(e) => onSubmit(e)}
+                    form={`${ID(job.internalId)}-form`}
                 >
                     Run
                 </button>
@@ -113,7 +130,11 @@ export function ScriptForm({ job, scriptHref, updateJob }) {
             </section>
 
             {!submitInProgress ? (
-                <div className="flexgrid">
+                <form
+                    className="details"
+                    onSubmit={onSubmit}
+                    id={`${ID(job.internalId)}-form`}
+                >
                     <Section
                         className="required-fields"
                         id={`${ID(job.internalId)}-required`}
@@ -128,42 +149,47 @@ export function ScriptForm({ job, scriptHref, updateJob }) {
                                         idprefix={`${ID(
                                             job.internalId
                                         )}-required`}
-                                        setValue={setValue}
+                                        onChange={saveValueInJobRequest}
+                                        initialValue={findValue(
+                                            item.name,
+                                            item.kind,
+                                            jobRequest
+                                        )}
                                     />
                                 </li>
                             ))}
                         </ul>
                     </Section>
-                    <Section
-                        className="optional-fields"
-                        id={`${ID(job.internalId)}-optional`}
-                        label="Options"
-                    >
-                        <ul className="fields">
-                            {optional.map((item, idx) => (
-                                <li key={idx}>
-                                    <FormField
-                                        item={item}
-                                        key={idx}
-                                        idprefix={`${ID(
-                                            job.internalId
-                                        )}-optional`}
-                                        setValue={setValue}
-                                    />
-                                </li>
-                            ))}
-                        </ul>
-                    </Section>
-                    <Section 
-                        className="form-validation"
-                        id={`${ID(job.internalId)}-formval`}
-                        label="Messages">
-                            <ul className="form-messages">
-                                            <li>TODO: Form validation messages go here</li>
+                    {optional.length > 0 ? (
+                        <Section
+                            className="optional-fields"
+                            id={`${ID(job.internalId)}-optional`}
+                            label="Options"
+                        >
+                            <ul className="fields">
+                                {optional.map((item, idx) => (
+                                    <li key={idx}>
+                                        <FormField
+                                            item={item}
+                                            key={idx}
+                                            idprefix={`${ID(
+                                                job.internalId
+                                            )}-optional`}
+                                            onChange={saveValueInJobRequest}
+                                            initialValue={findValue(
+                                                item.name,
+                                                item.kind,
+                                                jobRequest
+                                            )}
+                                        />
+                                    </li>
+                                ))}
                             </ul>
-
-                    </Section>
-                </div>
+                        </Section>
+                    ) : (
+                        ''
+                    )}
+                </form>
             ) : (
                 <>
                     <p>Submitting...</p>
@@ -181,52 +207,29 @@ export function ScriptForm({ job, scriptHref, updateJob }) {
 function FormField({
     item,
     idprefix,
-    setValue,
+    onChange,
+    initialValue,
 }: {
     item: ScriptItemBase
     idprefix: string
-    setValue: (string, Object) => void
+    onChange: (string, ScriptItemBase) => void // function to set the value in a parent-level collection.
+    initialValue: any // the initialValue
 }) {
-    console.log('FORM FIELD', item)
-    let inputType = 'text'
-
-    if (item.type == 'anyFileURI') {
-        inputType = 'file'
-    } else if (item.type == 'anyDirURI') {
-        inputType = 'file'
-    } else if (item.type == 'xsd:dateTime' || item.type == 'datetime') {
-        inputType = 'datetime-local'
-    } else if (item.type == 'xsd:boolean' || item.type == 'boolean') {
-        inputType = 'checkbox'
-    } else if (item.type == 'xsd:string' || item.type == 'string') {
-        inputType = 'text'
-    } else if (
-        [
-            'xsd:integer',
-            'xsd:float',
-            'xsd:double',
-            'xsd:decimal',
-            'xs:integer',
-            'integer',
-            'number',
-        ].includes(item.type)
-    ) {
-        inputType = 'number'
-    } else {
-        inputType = 'text'
-    }
-
+    let inputType = findInputType(item.type)
+    const [value, setValue] = useState(initialValue)
     let controlId = `${idprefix}-${item.name}`
-    let desc = marked.parse(item.desc)
-    let onFileFolderSelect = (filename, data) => {
-        setValue(filename, data)
+
+    let onFileFolderChange = (filename, data) => {
+        console.log('onFileFolderChange', filename)
+        onChange(filename, data)
     }
-    let onChange = (e, data) => {
-        if (e.target.getAttribute('type') == 'checkbox') {
-            setValue(e.checked, data)
-        } else {
-            setValue(e.value, data)
-        }
+    let onInputChange = (e, data) => {
+        let newValue =
+            e.target.getAttribute('type') == 'checkbox'
+                ? e.target.checked
+                : e.target.value
+        setValue(newValue)
+        onChange(newValue, data)
     }
     let dialogOpts =
         item.type == 'anyFileURI'
@@ -235,13 +238,34 @@ function FormField({
             ? ['openFolder']
             : ['openFile', 'openFolder']
 
+    let externalLinkClick = (e) => {
+        e.preventDefault()
+        App.openInBrowser(e.target.href)
+    }
+
     return (
         <div className="form-field">
             <label htmlFor={controlId}>{item.nicename}</label>
-            <span
-                className="description"
-                dangerouslySetInnerHTML={{ __html: desc }}
-            />
+            <span className="description">
+                <Markdown
+                    remarkPlugins={[remarkGfm]}
+                    components={{
+                        a: (props) => {
+                            return (
+                                <a
+                                    href={props.href}
+                                    onClick={externalLinkClick}
+                                >
+                                    {props.children}
+                                </a>
+                            )
+                        },
+                    }}
+                >
+                    {item.desc}
+                </Markdown>
+            </span>
+
             {inputType == 'file' ? ( // 'item' may be an input or an option
                 <FileOrFolderField
                     type="open"
@@ -249,17 +273,19 @@ function FormField({
                     elemId={controlId}
                     mediaType={item.mediaType}
                     name={item.name}
-                    onSelect={(filename) => onFileFolderSelect(filename, item)}
+                    onChange={(filename) => onFileFolderChange(filename, item)}
                     useSystemPath={false}
                     buttonLabel="Browse"
+                    required={item.required}
+                    initialValue={initialValue}
                 />
             ) : inputType == 'checkbox' ? ( // 'item' is an option
                 <input
                     type={inputType}
                     required={item.required}
-                    onChange={(e) => onChange(e, item)}
-                    // TODO add item default
+                    onChange={(e) => onInputChange(e, item)}
                     id={controlId}
+                    checked={value === 'true' || value === true}
                 ></input>
             ) : (
                 // 'item' is an option
@@ -267,9 +293,9 @@ function FormField({
                     type={inputType}
                     required={item.required}
                     // @ts-ignore
-                    value={item.default} // options have default values sometimes
+                    value={initialValue}
                     id={controlId}
-                    onChange={(e) => onChange(e, item)}
+                    onChange={(e) => onInputChange(e, item)}
                 ></input>
             )}
         </div>

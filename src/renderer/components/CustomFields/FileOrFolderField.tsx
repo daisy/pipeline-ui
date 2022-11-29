@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { mediaTypesFileFilters } from 'shared/constants'
 
 const { App } = window
@@ -13,42 +13,48 @@ export function FileOrFolderField({
     dialogProperties,
     elemId,
     mediaType,
-    onSelect,
+    onChange,
     name = null,
     type = 'open',
     buttonLabel = 'Browse', // what the button is called that you click to bring up a file dialog
     useSystemPath = false,
-    defaultValue = '',
+    required = false,
+    initialValue = '',
 }: {
     dialogProperties: string[] // electron dialog properties for open or save, depending on which one you're doing (see 'type')
     elemId: string // ID for the control widget
     mediaType: string[] // array of mimetypes
-    defaultValue?: string
-    onSelect: (filename: string) => void // callback function
+    onChange: (filename: string) => void // callback function
+    initialValue?: string // the displayed value
     name?: string // display name for the thing we're picking
     type: 'open' | 'save' // 'open' or 'save' are a little different in electron
     // save supports the 'createDirectory' property for macos
     buttonLabel?: string // the label for the control (not the label on the dialog)
     useSystemPath?: boolean // i forget what this is for but it defaults to 'true' and everywhere seems to set it to 'false'
+    required?: boolean
 }) {
-    const [filename, setFilename] = useState('')
+    // the value is stored internally as it can be set 2 ways
+    // and also broadcast via onChange so that a parent component can subscribe
+    const [value, setValue] = useState('')
+
+    useEffect(() => {
+        setValue(initialValue)
+    }, [initialValue])
 
     let updateFilename = (filename) => {
-        setFilename(filename)
-        if (onSelect) {
-            onSelect(filename)
+        setValue(filename)
+        if (onChange) {
+            onChange(filename)
         }
     }
 
-    
     let onClick = async (e, name) => {
         e.preventDefault()
-
         let filters = getFiletypeFilters(mediaType)
-        let filename
+        let filename = ''
         let options = {
             title: `Select ${name ?? ''}`,
-            defaultPath: filename ?? defaultValue,
+            defaultPath: value?.replace('file://', ''),
             buttonLabel: 'Select', // this is a different buttonLabel, it's the one for the actual file browse dialog
             filters,
             // @ts-ignore
@@ -81,9 +87,10 @@ export function FileOrFolderField({
                 type="text"
                 tabIndex={0}
                 className="filename"
-                value={filename == '' ? defaultValue : filename}
+                value={value}
                 onChange={onTextInput}
                 id={elemId}
+                required={required}
             ></input>
             <button type="button" onClick={(e) => onClick(e, name)}>
                 {buttonLabel}

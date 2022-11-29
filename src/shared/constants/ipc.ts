@@ -34,4 +34,9 @@ export const IPC = {
             GET: 'pipeline: errors-get',
         },
     },
+    FILE: {
+        SAVE: 'file: save',
+        UNZIP: 'file: unzip',
+        OPEN: 'file: open',
+    },
 }

@@ -20,8 +20,6 @@ const readableStatus = {
 }
 
 export function JobDetailsPane({ job }) {
-    console.log('Job details pane', job)
-
     return (
         <>
             <section
@@ -39,7 +37,7 @@ export function JobDetailsPane({ job }) {
                             job.jobData.status
                         ].toLowerCase()}`}
                     >
-                        Job status: {readableStatus[job.jobData.status]}
+                        Job status: {readableStatus[job.jobData.status]} {job.jobData.progress ? `(${job.jobData.progress * 100}%)` : '' }
                     </p>
                 </div>
                 {job.jobData.status == JobStatus.SUCCESS ||
@@ -52,7 +50,7 @@ export function JobDetailsPane({ job }) {
                     ''
                 )}
             </section>
-            <div className="flexgrid">
+            <div className="details">
                 <Section
                     label="Settings"
                     className="job-settings"

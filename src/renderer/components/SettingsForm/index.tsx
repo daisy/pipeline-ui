@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useWindowStore } from 'renderer/store'
 import { ApplicationSettings } from 'shared/types'
-import { FileOrFolderField } from '../CustomFields/FileOrFolderField'
+import { FileOrFolderInput } from '../CustomFields/FileOrFolderInput'
 
 const { App } = window // The "App" comes from the bridge
 
@@ -35,14 +35,14 @@ export function SettingsForm() {
     return (
         <form className="settings-form">
             <div>
-                <div className="form-field">
+                <div className="settings-field">
                     <label htmlFor="resultsFolder">
                         Default results folder
                     </label>
                     <span className="description">
                         A folder where all jobs will be automatically downloaded
                     </span>
-                    <FileOrFolderField
+                    <FileOrFolderInput
                         type="open"
                         dialogProperties={['openDirectory']}
                         elemId="resultsFolder"
@@ -61,6 +61,7 @@ export function SettingsForm() {
                 {' '}
                 <button
                     id="save-settings"
+                    type="submit"
                     onClick={handleSave}
                     className="save-button"
                     type="submit"

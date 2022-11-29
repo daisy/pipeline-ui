@@ -13,7 +13,8 @@ import {
     ID,
 } from 'renderer/utils/utils'
 import { Section } from '../Section'
-import { FileOrFolderField } from '../CustomFields/FileOrFolderField'
+import { marked } from 'marked'
+import { FileOrFolderInput } from '../CustomFields/FileOrFolderInput'
 import Markdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 
@@ -236,8 +237,8 @@ function FormField({
         item.type == 'anyFileURI'
             ? ['openFile']
             : item.type == 'anyDirURI'
-            ? ['openFolder']
-            : ['openFile', 'openFolder']
+            ? ['openDirectory']
+            : ['openFile', 'openDirectory']
 
     let externalLinkClick = (e) => {
         e.preventDefault()
@@ -268,7 +269,7 @@ function FormField({
             </span>
 
             {inputType == 'file' ? ( // 'item' may be an input or an option
-                <FileOrFolderField
+                <FileOrFolderInput
                     type="open"
                     dialogProperties={dialogOpts}
                     elemId={controlId}

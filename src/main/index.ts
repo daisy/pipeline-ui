@@ -72,28 +72,6 @@ makeAppWithSingleInstanceLock(async () => {
                   {
                       label: app.name,
                       submenu: [
-                          {
-                              label: 'Create a new job',
-                              click: async () => {
-                                  try {
-                                      mainWindow.show()
-                                  } catch (error) {
-                                      mainWindow = await MainWindow()
-                                      bindWindowToPipeline(
-                                          mainWindow,
-                                          pipelineInstance
-                                      )
-                                  }
-                              },
-                          },
-                          {
-                              label: 'Settings',
-                              click: async () => {
-                                  // Open the settings window
-                                  ipcMain.emit(IPC.WINDOWS.SETTINGS.CREATE)
-                              },
-                          },
-                          { type: 'separator' },
                           { role: 'services' },
                           { type: 'separator' },
                           { role: 'hide' },

@@ -12,12 +12,12 @@ export function JobTab({
     isSelected,
     onSelect,
     onClose,
+    index,
 }: ItemTabProps<Job>) {
     let job = item // item is a Job
     let label = job?.jobData?.nicename ?? 'New job'
 
     let onClose_ = (e, id) => {
-        console.log('jobtab onclose', id)
         e.stopPropagation()
         onClose(id)
     }
@@ -37,8 +37,9 @@ export function JobTab({
                 role="tab"
                 type="button"
                 onClick={(e) => onSelect(item)}
+                accessKey={index < 9 ?`${index + 1}` : index == 9 ? '0' : ''}
             >
-                {label}
+                {index + 1}. {label}
             </button>
             <button
                 className="close-tab"
@@ -52,7 +53,10 @@ export function JobTab({
     )
 }
 
-export function AddJobTab({ onSelect, onItemWasCreated }: AddItemTabProps<Job>) {
+export function AddJobTab({
+    onSelect,
+    onItemWasCreated,
+}: AddItemTabProps<Job>) {
     return (
         <div className="tab" onClick={(e) => onSelect(onItemWasCreated)}>
             <button
@@ -64,6 +68,7 @@ export function AddJobTab({ onSelect, onItemWasCreated }: AddItemTabProps<Job>) 
                 onClick={(e) => onSelect(onItemWasCreated)}
                 aria-label="Create job"
                 title="Create job"
+                accessKey="n"
             >
                 <SvgIcons.AddTab width="24" height="24" />
             </button>

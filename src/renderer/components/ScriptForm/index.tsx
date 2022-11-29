@@ -123,6 +123,7 @@ export function ScriptForm({ job, script, updateJob }) {
                     className="run"
                     type="submit"
                     form={`${ID(job.internalId)}-form`}
+                    accessKey="r"
                 >
                     Run
                 </button>

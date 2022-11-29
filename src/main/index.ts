@@ -146,6 +146,10 @@ makeAppWithSingleInstanceLock(async () => {
             ],
         },
         {
+            label: 'Edit',
+            submenu: [{ role: 'copy' }, { role: 'paste' }],
+        },
+        {
             label: 'View',
             submenu: [
                 { role: 'resetZoom' },

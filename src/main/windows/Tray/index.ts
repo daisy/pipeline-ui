@@ -128,7 +128,13 @@ export class PipelineTray {
                 },
             },
         ]
-        this.tray.setToolTip('DAISY Pipeline 2 is ' + newState.status)
+        this.tray.setToolTip(
+            'DAISY Pipeline 2 is ' +
+                (newState.status == PipelineStatus.STARTING ||
+                newState.status == PipelineStatus.RUNNING
+                    ? 'running'
+                    : 'stopped')
+        )
         // Update tray
         this.tray.setContextMenu(
             Menu.buildFromTemplate([

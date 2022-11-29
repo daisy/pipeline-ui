@@ -6,14 +6,16 @@ export function Results({ job }) {
 
     return (
         <ul aria-live="polite">
-            {job.jobData.results?.namedResults.map((item, idx) => (
-                <li key={idx}>
+            {job.jobData.results?.namedResults.map((item, itemIndex) => (
+                <li key={`result-${itemIndex}`}>
                     {item.files.length > 1 ? (
                         <>
                             <span>{item.nicename}</span>
                             <ul>
-                                {item.files.map((resultFile) => (
-                                    <li>
+                                {item.files.map((resultFile, resultIndex) => (
+                                    <li
+                                        key={`result-${itemIndex}-file-${resultIndex}`}
+                                    >
                                         <FileLink fileHref={resultFile.file} />
                                     </li>
                                 ))}
@@ -47,8 +49,9 @@ interface FileLinkProps {
 }
 
 function FileLink({ fileHref, children }: FileLinkProps) {
-    // console.log('filehref', fileHref)
-    let localPath = fileHref ? decodeURI(fileHref.replace('file:', '')) : ''
+    let localPath = fileHref
+        ? decodeURI(fileHref.replace('file:', '').replace('///', '/'))
+        : ''
     let filename = fileHref
         ? fileHref.slice(
               fileHref.lastIndexOf('/'),

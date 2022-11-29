@@ -14,7 +14,9 @@ function setupShowInFolderEvents() {
                 f = f.replaceAll('/', '\\')
             }
         }
-        shell.showItemInFolder(f)
+        if (f.endsWith('/') || f.endsWith('\\')) {
+            shell.openPath(f)
+        } else shell.showItemInFolder(f)
     })
 }
 export { setupShowInFolderEvents }

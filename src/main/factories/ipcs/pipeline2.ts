@@ -6,18 +6,19 @@ import {
     PipelineState,
     ApplicationSettings,
 } from 'shared/types'
-import { IPC } from 'shared/constants'
+import { ENVIRONMENT, IPC } from 'shared/constants'
 import { setTimeout } from 'timers/promises'
 import { spawn, ChildProcessWithoutNullStreams } from 'child_process'
-import { existsSync } from 'fs'
+import { existsSync, mkdir, mkdirSync } from 'fs'
 
 import { getAvailablePort, Pipeline2Error, walk } from './utils'
 
 import { resolveUnpacked } from 'shared/utils'
 
-import { info } from 'electron-log'
+import { info, error } from 'electron-log'
 
 import { request as httpRequest } from 'http'
+import { pathToFileURL } from 'url'
 // NP : for future use if we want to use the app
 // to also manage a pipeline behind https
 //import { request as httpsRequest } from 'https'
@@ -114,9 +115,11 @@ export class Pipeline2IPC {
             },
             appDataFolder:
                 (props && props.appDataFolder) ?? app.getPath('userData'),
-            logsFolder: (props && props.logsFolder) ?? app.getPath('logs'),
-            onError: (props && props.onError) || null, //console.error,
-            onMessage: (props && props.onMessage) || null, // console.debug,
+            logsFolder:
+                (props && props.logsFolder) ??
+                resolve(app.getPath('userData'), 'pipeline-logs'),
+            onError: (props && props.onError) || error,
+            onMessage: (props && props.onMessage) || info,
         }
         this.instance = null
         this.errors = []
@@ -331,20 +334,22 @@ export class Pipeline2IPC {
                     ) +
                     '"',
                 // Logback configuration file
-                '-Dlogback.configurationFile="file:' +
-                    resolve(
-                        this.props.localPipelineHome,
-                        'etc',
-                        'config-logback.xml'
-                    ).replace('\\', '/') +
-                    '"',
+                '-Dlogback.configurationFile=' +
+                    pathToFileURL(
+                        resolve(
+                            this.props.localPipelineHome,
+                            'etc',
+                            'config-logback.xml'
+                        )
+                    ).href +
+                    '',
                 // XMLCalabash base configuration file
                 '-Dorg.daisy.pipeline.xproc.configuration="' +
                     resolve(
                         this.props.localPipelineHome,
                         'etc',
                         'config-calabash.xml'
-                    ).replace('\\', '/') +
+                    ).replaceAll('\\', '/') +
                     '"',
                 // Updater configuration
                 '-Dorg.daisy.pipeline.updater.bin="' +
@@ -352,17 +357,17 @@ export class Pipeline2IPC {
                         this.props.localPipelineHome,
                         'updater',
                         'pipeline-updater'
-                    ).replace('\\', '/') +
+                    ).replaceAll('\\', '/') +
                     '"',
                 '-Dorg.daisy.pipeline.updater.deployPath="' +
-                    this.props.localPipelineHome.replace('\\', '/') +
+                    this.props.localPipelineHome.replaceAll('\\', '/') +
                     '/"',
                 '-Dorg.daisy.pipeline.updater.releaseDescriptor="' +
                     resolve(
                         this.props.localPipelineHome,
                         'etc',
                         'releaseDescriptor.xml'
-                    ).replace('\\', '/') +
+                    ).replaceAll('\\', '/') +
                     '"',
                 // Workaround for encoding bugs on Windows
                 '-Dfile.encoding=UTF8',
@@ -370,7 +375,7 @@ export class Pipeline2IPC {
                 // available in config-logback.xml and felix.properties
                 // note that config-logback.xml is the only place where ${org.daisy.pipeline.mode} is used
                 '-Dorg.daisy.pipeline.data=' + this.props.appDataFolder + '',
-                '-Dorg.daisy.pipeline.logdir="' + this.props.logsFolder + '"',
+                '-Dorg.daisy.pipeline.logdir=' + this.props.logsFolder + '',
                 '-Dorg.daisy.pipeline.mode=webservice',
                 '-Dorg.daisy.pipeline.ws.localfs=true',
                 '-Dorg.daisy.pipeline.ws.authentication=false',
@@ -388,6 +393,27 @@ export class Pipeline2IPC {
                 )
             }
 
+            if (
+                !existsSync(this.props.appDataFolder) &&
+                mkdirSync(this.props.appDataFolder, { recursive: true })
+            ) {
+                this.pushMessage(`${this.props.appDataFolder} created`)
+            } else {
+                this.pushMessage(
+                    `Using existing ${this.props.appDataFolder} as pipeline data folder`
+                )
+            }
+
+            if (
+                !existsSync(this.props.logsFolder) &&
+                mkdirSync(this.props.logsFolder, { recursive: true })
+            ) {
+                this.pushMessage(`${this.props.logsFolder} created`)
+            } else {
+                this.pushMessage(
+                    `Using existing ${this.props.logsFolder} for pipeline logs`
+                )
+            }
             // avoid using bat to control the runner ?
             // Spawn pipeline process
             let command = resolve(this.props.jrePath, 'bin', 'java')
@@ -398,38 +424,25 @@ export class Pipeline2IPC {
                 `"${delimiter}${relativeJarFiles.join(delimiter)}${delimiter}"`,
                 'org.daisy.pipeline.webservice.impl.PipelineWebService',
             ]
+            this.pushMessage(
+                `Launching the local pipeline with the following command :
+${command} ${args.join(' ')}`
+            )
             this.instance = spawn(command, args, {
                 cwd: this.props.localPipelineHome,
             })
             // NP Replace stdout analysis by webservice monitoring
             this.instance.stdout.on('data', (data) => {
-                // marisa experiment: don't analyze stdout data if the pipeline is already up and running
-                // checking each stdout message slows the UI to a crawl when the pipeline is outputting a lot of messages
-                // (e.g. when it's running a job)
-                // if (this.state.status == PipelineStatus.RUNNING) {
-                //     return
-                // }
-                //let message: string = data.toString()
-                // Webservice is started and pipeline is ready to run
-                // Both formats of messages have been observed from the Pipeline
-                // TODO: find out which one(s) to use
-                // if (
-                //     message.includes(
-                //         'PipelineWebService - component started'
-                //     ) ||
-                //     message.includes('WebService] component started')
-                // ) {
-                //     this.setState({
-                //         status: PipelineStatus.RUNNING,
-                //         runningWebservice: this.props.webservice,
-                //     })
-                // }
-                //this.pushMessage(message)
+                // Removing logging on nodejs side,
+                // as logging is already done in the pipeline side
+                //
+                // we might read the pipeline logs
+                // or check in the API if there is some logs entry point
             })
             this.instance.stderr.on('data', (data) => {
-                // marisa experiment: don't analyze stdout, see above for explanation
-                // let error = data.toString()
-                // this.pushError(error)
+                // keep error logging in case of error raised by the pipeline instance
+                // NP : problem found on the pipeline, the webservice messages are also outputed to the err stream
+                // this.pushError(`${data.toString()}`)
             })
             this.instance.on('exit', (code, signal) => {
                 let message = `Pipeline exiting with code ${code} and signal ${signal}`
@@ -560,16 +573,16 @@ export function registerPipeline2ToIPC(
             ) {
                 pipeline2instance.stop()
             } else {
-                // FIXME: change the always restart on update by only restart if settings have changed
-                pipeline2instance.stop().then(() => {
-                    if (newSettings.localPipelineProps) {
-                        pipeline2instance.props = {
-                            ...pipeline2instance.props,
-                            ...newSettings.localPipelineProps,
-                        }
-                    }
-                    pipeline2instance.launch()
-                })
+                // TODO: restart the pipeline with updated settings if those have changed
+                // pipeline2instance.stop().then(() => {
+                //     if (newSettings.localPipelineProps) {
+                //         pipeline2instance.props = {
+                //             ...pipeline2instance.props,
+                //             ...newSettings.localPipelineProps,
+                //         }
+                //     }
+                //     pipeline2instance.launch()
+                // })
             }
         }
     )

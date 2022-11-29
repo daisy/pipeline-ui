@@ -9,7 +9,7 @@ const { App } = window
 // and we can't reuse <input type="file" ...> even as a control to trigger electron's native file picker
 // because you can't set the value on the input field programmatically (yes we could use loads of react code to work around this but let's not)
 // so this function provides a button to browse and a text display of the path
-export function FileOrFolderField({
+export function FileOrFolderInput({
     dialogProperties,
     elemId,
     mediaType,

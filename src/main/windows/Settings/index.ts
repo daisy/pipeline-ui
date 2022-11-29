@@ -1,5 +1,6 @@
 import { createWindow } from 'main/factories'
 import { join } from 'path'
+import { ENVIRONMENT } from 'shared/constants'
 import { APP_CONFIG } from '~/app.config'
 
 export * from './ipcs'
@@ -8,8 +9,8 @@ export function SettingsWindow() {
     const window = createWindow({
         id: 'settings',
         title: `${APP_CONFIG.TITLE} - Settings`,
-        width: 450,
-        height: 350,
+        width: 800,
+        height: 450,
         resizable: true,
         alwaysOnTop: true,
 
@@ -21,6 +22,8 @@ export function SettingsWindow() {
             sandbox: false,
         },
     })
+
+    ENVIRONMENT.IS_DEV && window.webContents.openDevTools({ mode: 'detach' })
 
     return window
 }

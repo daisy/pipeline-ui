@@ -48,9 +48,9 @@ export function SettingsForm() {
                         elemId="resultsFolder"
                         mediaType={['']}
                         name={'Results folder'}
-                        onSelect={resultsFolderChanged}
+                        onChange={resultsFolderChanged}
                         useSystemPath={false}
-                        defaultValue={newSettings.downloadFolder}
+                        initialValue={newSettings.downloadFolder}
                         buttonLabel="Browse"
                     />
                 </div>
@@ -63,6 +63,7 @@ export function SettingsForm() {
                     id="save-settings"
                     onClick={handleSave}
                     className="save-button"
+                    type="submit"
                     // disabled={
                     //     JSON.stringify({ ...settings }) !=
                     //     JSON.stringify({ ...newSettings })

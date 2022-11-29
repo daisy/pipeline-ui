@@ -295,7 +295,7 @@ function FormField({
                     type={inputType}
                     required={item.required}
                     // @ts-ignore
-                    value={initialValue}
+                    value={initialValue ?? ''}
                     id={controlId}
                     onChange={(e) => onInputChange(e, item)}
                 ></input>

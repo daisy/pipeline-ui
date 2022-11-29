@@ -7,7 +7,6 @@ export function SettingsScreen() {
                 <h1>Settings</h1>
             </header>
             <main>
-                <h1>Settings</h1>
                 <SettingsForm />
             </main>
         </>

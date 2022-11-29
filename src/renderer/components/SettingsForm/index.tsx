@@ -35,7 +35,7 @@ export function SettingsForm() {
     return (
         <form className="settings-form">
             <div>
-                <div className="settings-field">
+                <div className="form-field">
                     <label htmlFor="resultsFolder">
                         Default results folder
                     </label>
@@ -64,7 +64,6 @@ export function SettingsForm() {
                     type="submit"
                     onClick={handleSave}
                     className="save-button"
-                    type="submit"
                     // disabled={
                     //     JSON.stringify({ ...settings }) !=
                     //     JSON.stringify({ ...newSettings })

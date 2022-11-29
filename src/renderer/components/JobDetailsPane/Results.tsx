@@ -1,5 +1,4 @@
 export function Results({ job }) {
-    
     let handleWebLink = (e) => {
         e.preventDefault()
         App.openInBrowser(e.target.href)
@@ -29,7 +28,9 @@ export function Results({ job }) {
             ))}
             {job?.jobData?.log ? (
                 <li>
-                    <a href={job.jobData.log} onClick={handleWebLink}>Log</a>
+                    <a href={job.jobData.log} onClick={handleWebLink}>
+                        Log
+                    </a>
                 </li>
             ) : (
                 ''

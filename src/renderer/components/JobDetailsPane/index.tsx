@@ -80,7 +80,6 @@ export function JobDetailsPane({ job }) {
 function JobResults({ jobId, results }) {
     // this is a hack!
     // get the first file and use its path to figure out what is probably the output folder for the job
-
     let file = ''
     if (results?.namedResults.length > 0) {
         if (results.namedResults[0].files.length > 0) {
@@ -88,7 +87,7 @@ function JobResults({ jobId, results }) {
             let idx = file.indexOf(jobId)
             if (idx != -1) {
                 file = file.slice(0, idx + jobId.length) + '/'
-                file = file.replace('file:', '')
+                file = file.replace('file:', '').replace('///', '/')
                 file = decodeURI(file)
             }
         }

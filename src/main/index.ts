@@ -27,6 +27,7 @@ import {
 import { setupFileDialogEvents } from './fileDialogs'
 import { IPC } from 'shared/constants'
 import { setupShowInFolderEvents } from './folder'
+import { registerFileIPC } from './factories/ipcs/file'
 import { setupFileSystemEvents } from './fileSystem'
 import { setupOpenInBrowserEvents } from './browser'
 
@@ -36,7 +37,8 @@ makeAppWithSingleInstanceLock(async () => {
     const mainWindow = await makeAppSetup(MainWindow)
     registerSettingsWindowCreationByIPC()
     registerAboutWindowCreationByIPC()
-
+    // File interaction
+    registerFileIPC()
     // Settings
     let settings = registerApplicationSettingsIPC()
 

@@ -1,4 +1,10 @@
 export function Results({ job }) {
+    
+    let handleWebLink = (e) => {
+        e.preventDefault()
+        App.openInBrowser(e.target.href)
+    }
+
     return (
         <ul aria-live="polite">
             {job.jobData.results?.namedResults.map((item, idx) => (
@@ -21,6 +27,13 @@ export function Results({ job }) {
                     )}
                 </li>
             ))}
+            {job?.jobData?.log ? (
+                <li>
+                    <a href={job.jobData.log} onClick={handleWebLink}>Log</a>
+                </li>
+            ) : (
+                ''
+            )}
         </ul>
     )
 }
@@ -33,15 +46,19 @@ interface FileLinkProps {
 }
 
 function FileLink({ fileHref, children }: FileLinkProps) {
-    let localPath = decodeURI(fileHref.replace('file:', ''))
-    let filename = fileHref.slice(
-        fileHref.lastIndexOf('/'),
-        fileHref.length - fileHref.lastIndexOf('/')
-    )
+    // console.log('filehref', fileHref)
+    let localPath = fileHref ? decodeURI(fileHref.replace('file:', '')) : ''
+    let filename = fileHref
+        ? fileHref.slice(
+              fileHref.lastIndexOf('/'),
+              fileHref.length - fileHref.lastIndexOf('/')
+          )
+        : ''
 
     let onClick = (e) => {
         e.preventDefault()
-        App.showItemInFolder(localPath)
+        if (localPath) App.showItemInFolder(localPath)
+        else App.openInBrowser(fileHref)
     }
 
     return (

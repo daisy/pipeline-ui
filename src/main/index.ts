@@ -69,8 +69,8 @@ makeAppWithSingleInstanceLock(async () => {
                   {
                       label: app.name,
                       submenu: [
-                          { label: 'Create a new job' },
-                          { type: 'separator' },
+                          //   { label: 'Create a new job' },
+                          //   { type: 'separator' },
                           { role: 'services' },
                           { type: 'separator' },
                           { role: 'hide' },

@@ -84,13 +84,6 @@ makeAppWithSingleInstanceLock(async () => {
                                           pipelineInstance
                                       )
                                   }
-                                  ENVIRONMENT.IS_DEV
-                                      ? mainWindow.loadURL(
-                                            `${APP_CONFIG.RENDERER.DEV_SERVER.URL}#/main`
-                                        )
-                                      : mainWindow.loadFile('index.html', {
-                                            hash: `/main`,
-                                        })
                               },
                           },
                           {
@@ -125,13 +118,6 @@ makeAppWithSingleInstanceLock(async () => {
                             mainWindow = await MainWindow()
                             bindWindowToPipeline(mainWindow, pipelineInstance)
                         }
-                        ENVIRONMENT.IS_DEV
-                            ? mainWindow.loadURL(
-                                  `${APP_CONFIG.RENDERER.DEV_SERVER.URL}#/main`
-                              )
-                            : mainWindow.loadFile('index.html', {
-                                  hash: `/main`,
-                              })
                     },
                 },
                 {

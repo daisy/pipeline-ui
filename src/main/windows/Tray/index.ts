@@ -118,13 +118,14 @@ export class PipelineTray {
                         this.mainWindow = await MainWindow()
                         bindWindowToPipeline(this.mainWindow, pipeline)
                     }
-                    ENVIRONMENT.IS_DEV
-                        ? this.mainWindow.loadURL(
-                              `${APP_CONFIG.RENDERER.DEV_SERVER.URL}#/main`
-                          )
-                        : this.mainWindow.loadFile('index.html', {
-                              hash: `/main`,
-                          })
+                    // Note : this triggers a refresh
+                    // ENVIRONMENT.IS_DEV
+                    //     ? this.mainWindow.loadURL(
+                    //           `${APP_CONFIG.RENDERER.DEV_SERVER.URL}#/main`
+                    //       )
+                    //     : this.mainWindow.loadFile('index.html', {
+                    //           hash: `/main`,
+                    //       })
                 },
             },
         ]

@@ -39,6 +39,10 @@ endif
 src/resources/daisy-pipeline : engine/target/assembly-$(ENGINE_VERSION)-$(zip_classifier).zip
 	rm("$@");
 	unzip(new File("$<"), new File("$(dir $@)"));
+ifeq ($(OS), MACOSX)
+	// FIXME: unzip() currently does not preserve file permissions \
+	exec("chmod", "+x", "$@/jre/bin/java");
+endif
 
 engine/target/assembly-$(ENGINE_VERSION)-$(zip_classifier).zip : \
 		engine/pom.xml \

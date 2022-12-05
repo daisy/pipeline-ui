@@ -1,0 +1,68 @@
+name: macOS build
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - '*'
+
+jobs:
+  build:
+    name: build DMG
+
+    runs-on: macos-latest
+
+    steps:
+      - name: Check out Git repository
+        uses: actions/checkout@v1
+
+      - name: Install Node.js, NPM and Yarn
+        uses: actions/setup-node@v1
+        with:
+          node-version: 16
+
+      - name: Install Java and Maven
+        uses: actions/setup-java@v2
+        with:
+          distribution: 'adopt'
+          java-version: '11'
+
+      - name: Check out submodule
+        run: git submodule update --init --recursive
+
+      - name: Get yarn cache directory path
+        id: yarn-cache-dir-path
+        run: echo "::set-output name=dir::$(yarn cache dir)"
+      - name: Cache yarn
+        uses: actions/cache@v3
+        with:
+          path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
+          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-yarn-
+
+      - name: Cache downloaded Maven dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-
+
+      - name: Cache downloaded JRE
+        uses: actions/cache@v3
+        with:
+          path: engine/src/main/jre
+          # always update cache using this trick:
+          # https://github.com/actions/cache/blob/main/tips-and-workarounds.md#update-a-cache
+          key: ${{ runner.os }}-jre-${{ github.run_id }}
+          restore-keys: |
+            ${{ runner.os }}-jre-
+
+      - name: Install GNU Make
+        run: |
+          brew update
+          brew install make
+
+      - name: Build
+        run: gmake dmg

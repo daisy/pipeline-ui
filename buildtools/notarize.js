@@ -10,6 +10,12 @@ exports.default = async function notarizing(context) {
     if (electronPlatformName !== 'darwin') {
         return
     }
+    if (process.env.GITHUB_BASE_REF) {
+        console.log(
+            'skipped notarizing: current build is a part of pull request'
+        )
+        return
+    }
 
     const appName = context.packager.appInfo.productFilename
 

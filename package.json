@@ -18,13 +18,17 @@
     {
       "name": "Nicolas Pavie",
       "email": "pavie.nicolas@gmail.com"
+    },
+    {
+      "name": "Bert Frees",
+      "email": "bertfrees@gmail.com"
     }
   ],
   "license": "MIT",
   "scripts": {
     "start": "electron .",
     "build": "cross-env NODE_ENV=production yarn r clean webpack:main webpack:renderer",
-    "postbuild": "node ./bin/modules/postbuild/index.js permissions",
+    "postbuild": "node ./bin/modules/postbuild/index.js",
     "predev": "cross-var \"rimraf $npm_package_devTempBuildFolder\"",
     "dev": "concurrently \"cross-env BROWSER=none yarn dev:renderer\" \"yarn r server:wait permissions nodemon:start\"",
     "dev:main": "cross-env NODE_ENV=development yarn r webpack:main start",
@@ -43,7 +47,7 @@
     "clean": "rimraf dist",
     "prepare": "husky install",
     "r": "yarn run-s",
-    "permissions": "chmod -R +x ./node_modules/.dev-temp-build/resources"
+    "permissions": "node ./bin/utils/fixPermissions.js"
   },
   "dependencies": {
     "@tanstack/react-query": "^4.2.1",

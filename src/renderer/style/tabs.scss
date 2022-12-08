@@ -32,7 +32,6 @@
         background-color: var(--primary-color-3);
         color: var(--primary-color-1);
     }
-    // TODO reinstate :has after upgrading electron
     &:has([aria-selected=false]):hover {
         background-color: var(--secondary-color-2);
         color: var(--secondary-2-contrast);
@@ -49,6 +48,7 @@
 [role=tablist] {
     display: flex;
     flex-direction: row;
+    flex-wrap: wrap;
 }
 
 [role=tabpanel] {

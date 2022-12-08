@@ -19,6 +19,7 @@
     display: flex;
     gap: calc(var(--pad)/2);
     font-size: large;
+    transition: all .2s ease-in-out;
 
     button {
         padding: 0;
@@ -27,7 +28,11 @@
         color: inherit;
         font-size: inherit;
     }
-    
+    button.close-tab {
+        margin-bottom: 0;
+        height: 20px;
+        width: 20px;
+    }
     button.close-tab:hover {
         background-color: var(--primary-color-3);
         color: var(--primary-color-1);

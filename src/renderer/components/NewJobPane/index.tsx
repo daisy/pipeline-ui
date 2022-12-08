@@ -24,11 +24,14 @@ export function NewJobPane({ job, updateJob }) {
             >
                 <label
                     id={`${ID(job.internalId)}-select-script}`}
-                    htmlFor="script"
+                    htmlFor={`${ID(job.internalId)}-script`}
                 >
                     Select a script:
                 </label>
-                <select id="script" onChange={(e) => onSelectChange(e)}>
+                <select
+                    id={`${ID(job.internalId)}-script`}
+                    onChange={(e) => onSelectChange(e)}
+                >
                     <option value={null}>None</option>
                     {scripts
                         .sort((a, b) => (a.nicename > b.nicename ? 1 : -1))

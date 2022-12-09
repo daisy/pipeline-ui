@@ -75,3 +75,17 @@ jobs:
         if: ${{ matrix.os == 'windows-latest' }}
         shell: cmd
         run: engine\\make.exe exe
+
+      - name: Upload the DMG
+        if: ${{ matrix.os == 'macos-latest' }}
+        uses: actions/upload-artifact@v3
+        with:
+          name: "daisy-pipeline.dmg"
+          path: dist/*.dmg
+
+      - name: Upload the EXE
+        if: ${{ matrix.os == 'windows-latest' }}
+        uses: actions/upload-artifact@v3
+        with:
+          name: "daisy-pipeline.exe"
+          path: dist/*.exe

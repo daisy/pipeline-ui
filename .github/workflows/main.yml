@@ -1,4 +1,4 @@
-name: macOS build
+name: Build macOS/Windows distributions
 
 on:
   workflow_dispatch:
@@ -8,9 +8,11 @@ on:
 
 jobs:
   build:
-    name: build DMG
+    runs-on: ${{ matrix.os }}
 
-    runs-on: macos-latest
+    strategy:
+      matrix:
+        os: [macos-latest, windows-latest]
 
     steps:
       - name: Check out Git repository
@@ -59,10 +61,17 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-jre-
 
-      - name: Install GNU Make
+      - name: Install GNU Make on macOS
+        if: ${{ matrix.os == 'macos-latest' }}
         run: |
           brew update
           brew install make
 
-      - name: Build
+      - name: Build DMG if on macOS
+        if: ${{ matrix.os == 'macos-latest' }}
         run: gmake dmg
+
+      - name: Build EXE if on Windows
+        if: ${{ matrix.os == 'windows-latest' }}
+        shell: cmd
+        run: engine\\make.exe exe

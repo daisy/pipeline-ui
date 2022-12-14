@@ -7,17 +7,25 @@ function jobRequestToXml(jobRequest: JobRequest): string {
     <priority>medium</priority>
     <script href="${jobRequest.scriptHref}"/>
     ${jobRequest.inputs
+        .filter((input) => input.value != null && input.value.trim() != '')
         .map(
             (input) =>
-                `<input name="${input.name}"><item value="${input.value}"/></input>`
+                `<input name="${input.name}"><item value="${
+                    input.value.trim() ?? ''
+                }"/></input>`
         )
         .join('')}
     ${jobRequest.options
+        .filter((option) => option.value != null && option.value.trim() != '')
         .map(
-            (option) => `<option name="${option.name}">${option.value}</option>`
+            (option) =>
+                `<option name="${option.name}">${
+                    option.value.trim() ?? ''
+                }</option>`
         )
         .join('')}
   </jobRequest>`
+    console.log(xmlString)
     return xmlString
 }
 

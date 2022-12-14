@@ -42,6 +42,7 @@ export function ScriptForm({ job, script, updateJob }) {
             })),
         })
     }, [script])
+
     let required = getAllRequired(script)
     let optional = getAllOptional(script)
 

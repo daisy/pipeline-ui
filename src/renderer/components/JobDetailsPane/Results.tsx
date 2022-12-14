@@ -52,12 +52,7 @@ function FileLink({ fileHref, children }: FileLinkProps) {
     let localPath = fileHref
         ? decodeURI(fileHref.replace('file:', '').replace('///', '/'))
         : ''
-    let filename = fileHref
-        ? fileHref.slice(
-              fileHref.lastIndexOf('/'),
-              fileHref.length - fileHref.lastIndexOf('/')
-          )
-        : ''
+    let filename = fileHref ? fileHref.slice(fileHref.lastIndexOf('/') + 1) : ''
 
     let onClick = (e) => {
         e.preventDefault()

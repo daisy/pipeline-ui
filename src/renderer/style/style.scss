@@ -1,7 +1,7 @@
 @use 'vars.scss' as *;
 @use 'tabs.scss' as *;
 @use 'settings.scss' as *;
-@use 'scrollshadow.scss' as *;
+// @use 'scrollshadow.scss' as *;
 
 body {
     margin: calc(.25 * var(--pad));
@@ -57,7 +57,6 @@ input[type=checkbox] {
 }
 .filelink {
     color: var(--primary-color-1);
-    // text-decoration: underline;
 }
 
 [role=tabpanel] {
@@ -78,6 +77,14 @@ input[type=checkbox] {
     a:hover {
         text-decoration-thickness: 2px;
     }
+
+    ul {
+        list-style-type: none;
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+        gap: calc(var(--pad)/2);
+    }
 }
 
 .fixed-height-layout {
@@ -86,6 +93,7 @@ input[type=checkbox] {
     gap: var(--pad);
     max-height: var(--tab-panel-height);
     min-height: var(--tab-panel-height);
+    overflow: scroll;
 }
 
 // the tab panel "header" 
@@ -93,8 +101,6 @@ input[type=checkbox] {
     line-height: .8;
     display: grid;
     grid-template-columns: 60% auto;
-    padding-bottom: var(--pad);
-    // border-bottom: thin solid var(--primary-color-2);
     font-size: large;
 
     h1 span {
@@ -109,37 +115,8 @@ input[type=checkbox] {
         cursor: pointer;
     }
 }
-// show sections as columns and make each one scroll independently
-.details {
-    display: grid;
-    grid-template-columns: repeat(auto-fit,25rem);
-    gap: calc(2 * var(--pad));
-    overflow-y: scroll;
-
-    > * {
-        overflow-y: scroll;
-        min-width: 25rem;
-    }
-
-    section {
-        h2 {
-            position: sticky;
-            top: 0;
-            background-color: var(--background-color);
-            color: var(--primary-color-1);
-        }
-        ul {
-            list-style-type: none;
-            padding: 0;
-            display: flex;
-            flex-direction: column;
-            gap: calc(var(--pad)/2);
-        }
-    }
-}
 
 .job {
-    
     .status {
         font-size: large;
         font-weight: bold;
@@ -210,7 +187,7 @@ input[type=checkbox] {
     }
 }
 
-.script {
+.new-job {
     .select-script {
         display: flex;
         flex-direction: row;
@@ -228,34 +205,47 @@ input[type=checkbox] {
         padding-left: 2px;
     }
 
-    .details {
-        height: 100%;
-        grid-template-columns: 100%;
-        gap: var(--pad);
-        
-        ul.fields {
-            padding: revert;
+    form {
+        display: flex;
+        flex-direction: column;
+        gap: calc(var(--pad) * 2);
+        overflow-y: scroll;
+
+        .form-sections {
             display: flex;
-            flex-direction: column;
-            gap: var(--pad);
-        
-            li {
-                padding-bottom: var(--pad);
-                display: flex;
+            flex-direction: row;
+            gap: 8%;
+            flex-wrap: wrap;
+            section {
+                width: 30rem;
+            }
+            overflow-y: scroll;
+
+            h2 {
+                position: sticky;
+                top: 0;
+                background-color: var(--background-color);
+                color: var(--primary-color-1);
+                padding-bottom: 5px;
+            }
+
+            ul.fields {
                 gap: var(--pad);
-                align-items: center;        
-                > * {
-                    flex-basis: 20rem;
-                }
-                > input[type=checkbox] {
-                    flex-basis: 2rem;
-                    accent-color: var(--secondary-color-2);
-                }
-                &:not(:last-child) {
-                    border-bottom: thin var(--primary-color-1) solid;
+            
+                li {
+                    > input[type=checkbox] {
+                        flex-basis: 2rem;
+                        accent-color: var(--secondary-color-2);
+                    }
                 }
             }
-        }
+
+            button.run {
+                font-size: larger;
+                margin-bottom: calc(var(--pad)/2);
+                margin-left: calc(var(--pad)/2);
+            }
+        }        
     }
 }
 

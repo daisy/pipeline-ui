@@ -14,11 +14,11 @@ export function JobTabPanel({
     updateItem,
 }: ItemTabPanelProps<Job>) {
     let job = item // item is a Job
-    let type = job.state == JobState.NEW ? 'script' : 'job'
+    let type = job.state == JobState.NEW ? 'new-job' : 'job'
 
     return (
         <div
-            className="tabPanel"
+            className={`"tabPanel" ${type}`}
             id={id}
             role="tabpanel"
             hidden={!isSelected}

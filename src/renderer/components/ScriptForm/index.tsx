@@ -121,63 +121,26 @@ export function ScriptForm({ job, script, updateJob }) {
                     </h1>
                     <p>{script?.description}</p>
                 </div>
-                <button
-                    className="run"
-                    type="submit"
-                    form={`${ID(job.internalId)}-form`}
-                    accessKey="r"
-                >
-                    Run
-                </button>
                 {error ? <p>Error</p> : ''}
             </section>
 
             {!submitInProgress ? (
-                <form
-                    className="details"
-                    onSubmit={onSubmit}
-                    id={`${ID(job.internalId)}-form`}
-                >
-                    <Section
-                        className="required-fields"
-                        id={`${ID(job.internalId)}-required`}
-                        label="Required information"
-                    >
-                        <ul className="fields">
-                            {required.map((item, idx) => (
-                                <li key={idx}>
-                                    <FormField
-                                        item={item}
-                                        key={idx}
-                                        idprefix={`${ID(
-                                            job.internalId
-                                        )}-required`}
-                                        onChange={saveValueInJobRequest}
-                                        initialValue={findValue(
-                                            item.name,
-                                            item.kind,
-                                            jobRequest
-                                        )}
-                                    />
-                                </li>
-                            ))}
-                        </ul>
-                    </Section>
-                    {optional.length > 0 ? (
+                <form onSubmit={onSubmit} id={`${ID(job.internalId)}-form`}>
+                    <div className="form-sections">
                         <Section
-                            className="optional-fields"
-                            id={`${ID(job.internalId)}-optional`}
-                            label="Options"
+                            className="required-fields"
+                            id={`${ID(job.internalId)}-required`}
+                            label="Required information"
                         >
                             <ul className="fields">
-                                {optional.map((item, idx) => (
+                                {required.map((item, idx) => (
                                     <li key={idx}>
                                         <FormField
                                             item={item}
                                             key={idx}
                                             idprefix={`${ID(
                                                 job.internalId
-                                            )}-optional`}
+                                            )}-required`}
                                             onChange={saveValueInJobRequest}
                                             initialValue={findValue(
                                                 item.name,
@@ -189,9 +152,44 @@ export function ScriptForm({ job, script, updateJob }) {
                                 ))}
                             </ul>
                         </Section>
-                    ) : (
-                        ''
-                    )}
+                        {optional.length > 0 ? (
+                            <Section
+                                className="optional-fields"
+                                id={`${ID(job.internalId)}-optional`}
+                                label="Options"
+                            >
+                                <ul className="fields">
+                                    {optional.map((item, idx) => (
+                                        <li key={idx}>
+                                            <FormField
+                                                item={item}
+                                                key={idx}
+                                                idprefix={`${ID(
+                                                    job.internalId
+                                                )}-optional`}
+                                                onChange={saveValueInJobRequest}
+                                                initialValue={findValue(
+                                                    item.name,
+                                                    item.kind,
+                                                    jobRequest
+                                                )}
+                                            />
+                                        </li>
+                                    ))}
+                                </ul>
+                            </Section>
+                        ) : (
+                            ''
+                        )}
+                    </div>
+                    <button
+                        className="run"
+                        type="submit"
+                        // form={`${ID(job.internalId)}-form`}
+                        accessKey="r"
+                    >
+                        Run
+                    </button>
                 </form>
             ) : (
                 <>
@@ -248,26 +246,31 @@ function FormField({
 
     return (
         <div className="form-field">
-            <label htmlFor={controlId}>{item.nicename}</label>
-            <span className="description">
-                <Markdown
-                    remarkPlugins={[remarkGfm]}
-                    components={{
-                        a: (props) => {
-                            return (
-                                <a
-                                    href={props.href}
-                                    onClick={externalLinkClick}
-                                >
-                                    {props.children}
-                                </a>
-                            )
-                        },
-                    }}
-                >
-                    {item.desc}
-                </Markdown>
-            </span>
+            <details>
+                <summary>
+                    <label htmlFor={controlId}>{item.nicename}</label>
+                </summary>
+
+                <span className="description">
+                    <Markdown
+                        remarkPlugins={[remarkGfm]}
+                        components={{
+                            a: (props) => {
+                                return (
+                                    <a
+                                        href={props.href}
+                                        onClick={externalLinkClick}
+                                    >
+                                        {props.children}
+                                    </a>
+                                )
+                            },
+                        }}
+                    >
+                        {item.desc}
+                    </Markdown>
+                </span>
+            </details>
 
             {inputType == 'file' ? ( // 'item' may be an input or an option
                 <FileOrFolderInput

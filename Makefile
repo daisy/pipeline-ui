@@ -53,3 +53,9 @@ engine/target/assembly-$(ENGINE_VERSION)-$(zip_classifier).zip : \
 			                        "--without-cli",                 \
 			                        "--without-updater",             \
 			                        "--without-persistence");
+
+clean :
+	exec("yarn", "clean");
+	rm("src/resources/daisy-pipeline");
+	rm("node_modules/.dev-temp-build");
+	exec("$(MAKE)", "-C", "engine", "clean");

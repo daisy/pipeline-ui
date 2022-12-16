@@ -37,7 +37,10 @@ export function JobDetailsPane({ job }) {
                             job.jobData.status
                         ].toLowerCase()}`}
                     >
-                        Job status: {readableStatus[job.jobData.status]} {job.jobData.progress ? `(${job.jobData.progress * 100}%)` : '' }
+                        Job status: {readableStatus[job.jobData.status]}{' '}
+                        {job.jobData.progress
+                            ? `(${job.jobData.progress * 100}%)`
+                            : ''}
                     </p>
                 </div>
                 {job.jobData.status == JobStatus.SUCCESS ||

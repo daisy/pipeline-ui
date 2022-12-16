@@ -5,7 +5,7 @@ import { parseXml } from './parser'
 function scriptsXmlToJson(xmlString: string): Array<Script> {
     let scriptsElm = parseXml(xmlString, 'scripts')
     let scripts = Array.from(scriptsElm.getElementsByTagName('script')).map(
-        (scriptElm) => {
+        (scriptElm: Element) => {
             return scriptElementToJson(scriptElm)
         }
     )

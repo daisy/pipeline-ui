@@ -12,6 +12,7 @@ import { useWindowStore } from 'renderer/store'
 import { ipcRenderer } from 'electron'
 import { IPC } from 'shared/constants'
 import { join } from 'path'
+import { ReduxTest } from '../ReduxTest'
 
 const NEW_JOB = (id) => ({
     internalId: id,
@@ -55,7 +56,7 @@ export function MainView() {
                                         jobData.results.namedResults
                                     )
                                     // const result of jobData.results.namedResults
-                                    // Note : the data used is the files field and not the 
+                                    // Note : the data used is the files field and not the
                                     for (
                                         let i =
                                             jobData.results.namedResults
@@ -84,7 +85,10 @@ export function MainView() {
                                                 --j
                                             ) {
                                                 let resultFile =
-                                                    jobData.results.namedResults[i].files[j]
+                                                    jobData.results
+                                                        .namedResults[i].files[
+                                                        j
+                                                    ]
                                                 // Change the file url and keep the original href
                                                 const newFileURL = new URL(
                                                     `${
@@ -128,7 +132,9 @@ export function MainView() {
                                                     })
                                                     .catch((e) => resultFile) // if a problem occured, return the original result
                                                     .finally()
-                                                jobData.results.namedResults[i].files[j].file = 
+                                                jobData.results.namedResults[
+                                                    i
+                                                ].files[j].file =
                                                     fetchedResult.file
                                             }
                                         }
@@ -190,14 +196,17 @@ export function MainView() {
     }
 
     return (
-        <TabView<Job>
-            items={jobs}
-            onTabCreate={addJob}
-            onTabClose={removeJob}
-            ItemTab={JobTab}
-            AddItemTab={AddJobTab}
-            ItemTabPanel={JobTabPanel}
-            updateItem={updateJob}
-        />
+        <>
+            <ReduxTest />
+            <TabView<Job>
+                items={jobs}
+                onTabCreate={addJob}
+                onTabClose={removeJob}
+                ItemTab={JobTab}
+                AddItemTab={AddJobTab}
+                ItemTabPanel={JobTabPanel}
+                updateItem={updateJob}
+            />
+        </>
     )
 }

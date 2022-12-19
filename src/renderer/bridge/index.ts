@@ -17,6 +17,12 @@ const API = {
     openInBrowser: ipcs.openInBrowser,
     pathExists: ipcs.pathExists,
     whenAboutWindowClosed: ipcs.whenAboutWindowClose,
+
+    // we can add on to this API and restructure it as we move more commands to the redux side
+    reduxTest: {
+        increment: ipcs.increment,
+        decrement: ipcs.decrement,
+    },
 }
 
 contextBridge.exposeInMainWorld('App', API)

@@ -17,3 +17,5 @@ export * from './browser'
 
 export * from './file/save'
 export * from './file/unzip'
+
+export * from './reduxTest'

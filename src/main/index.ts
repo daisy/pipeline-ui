@@ -25,6 +25,8 @@ import {
     registerSettingsWindowCreationByIPC,
 } from './windows'
 
+import { store } from './data/store'
+import { counter } from './data/slices/counter'
 import { setupFileDialogEvents } from './fileDialogs'
 import { ENVIRONMENT, IPC } from 'shared/constants'
 import { setupShowInFolderEvents } from './folder'
@@ -32,6 +34,7 @@ import { registerFileIPC } from './factories/ipcs/file'
 import { setupFileSystemEvents } from './fileSystem'
 import { setupOpenInBrowserEvents } from './browser'
 import { APP_CONFIG } from '~/app.config'
+import { registerReduxTestIPC } from './factories/ipcs/reduxTest'
 
 makeAppWithSingleInstanceLock(async () => {
     await app.whenReady()
@@ -42,6 +45,8 @@ makeAppWithSingleInstanceLock(async () => {
     registerFileIPC()
     // Settings
     let settings = registerApplicationSettingsIPC()
+
+    registerReduxTestIPC()
 
     // Pipeline instance creation with IPC communication registering
     const pipelineInstance = registerPipeline2ToIPC(settings)
@@ -112,6 +117,29 @@ makeAppWithSingleInstanceLock(async () => {
         {
             label: 'Edit',
             submenu: [{ role: 'copy' }, { role: 'paste' }],
+        },
+        {
+            label: 'Test',
+            submenu: [
+                {
+                    label: 'Value is',
+                    click: async () => {
+                        await alert('Value is')
+                    },
+                },
+                {
+                    label: 'Increment',
+                    click: async () => {
+                        store.dispatch(counter.actions.increment())
+                    },
+                },
+                {
+                    label: 'Decrement',
+                    click: async () => {
+                        store.dispatch(counter.actions.decrement())
+                    },
+                },
+            ],
         },
         {
             label: 'View',

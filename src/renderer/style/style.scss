@@ -1,7 +1,6 @@
 @use 'vars.scss' as *;
 @use 'tabs.scss' as *;
 @use 'settings.scss' as *;
-// @use 'scrollshadow.scss' as *;
 
 body {
     margin: calc(.25 * var(--pad));
@@ -131,6 +130,33 @@ input[type=checkbox] {
         }
     }
 
+    .job-settings {
+        ul {
+            background-color: var(--primary-color-3);
+            padding: calc(var(--pad)/2);
+            border-radius: var(--border-radius);
+            gap: calc(var(--pad)/2);
+        }
+
+        li {
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
+            border-bottom: thin solid var(--primary-color-3);
+            gap: calc(var(--pad)/2);
+
+            span:first-of-type {
+                max-width: 50%;
+            }
+            span:last-of-type {
+                font-family: var(--fw-font-family);
+            }
+        }
+        li:nth-of-type(even) {
+            background-color: var(--secondary-color-3);
+        }
+    }
+
     .details {
         flex-grow: 2;
         > * {
@@ -157,26 +183,6 @@ input[type=checkbox] {
                 .trace {
                     color: var(--trace-message-color);
                 }
-            }
-        }
-
-        .job-settings {
-            li {
-                display: flex;
-                flex-direction: row;
-                justify-content: space-between;
-                border-bottom: thin solid var(--primary-color-3);
-                gap: calc(var(--pad)/2);
-
-                span:first-of-type {
-                    max-width: 50%;
-                }
-                span:last-of-type {
-                    font-family: var(--fw-font-family);
-                }
-            }
-            li:nth-of-type(even) {
-                background-color: var(--secondary-color-3);
             }
         }
 

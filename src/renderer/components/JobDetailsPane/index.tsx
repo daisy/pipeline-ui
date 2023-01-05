@@ -30,33 +30,42 @@ export function JobDetailsPane({ job }) {
                     <h1 id={`${ID(job.internalId)}-hd`}>
                         {job.jobData.nicename}
                     </h1>
-                    <p>{job.script.description}</p>
-                    <p
-                        aria-live="polite"
-                        className={`status ${readableStatus[
-                            job.jobData.status
-                        ].toLowerCase()}`}
-                    >
-                        Job status: {readableStatus[job.jobData.status]} {job.jobData.progress ? `(${job.jobData.progress * 100}%)` : '' }
+                    {/* <p>{job.script.description}</p> */}
+                    <p aria-live="polite">
+                        Status:&nbsp;
+                        <span
+                            className={`status ${readableStatus[
+                                job.jobData.status
+                            ].toLowerCase()}`}
+                        >
+                            {readableStatus[job.jobData.status]}{' '}
+                        </span>
                     </p>
+                    {job.jobData.progress ? (
+                        <p aria-live="polite">
+                            Progress:&nbsp;
+                            <span>{job.jobData.progress * 100}%</span>
+                        </p>
+                    ) : (
+                        ''
+                    )}
+                    <details
+                        id={`${ID(job.internalId)}-job-settings`}
+                        className="job-settings"
+                    >
+                        <summary>Settings</summary>
+                        <Settings job={job} />
+                    </details>
                 </div>
-                {job.jobData.status == JobStatus.SUCCESS ||
-                job.jobData.status == JobStatus.FAIL ? (
-                    <JobResults
-                        jobId={job.jobData.jobId}
-                        results={job.jobData.results}
-                    />
-                ) : (
-                    ''
-                )}
             </section>
+
             <div className="details">
                 <Section
-                    label="Settings"
-                    className="job-settings"
-                    id={`${ID(job.internalId)}-job-settings`}
+                    label="Results"
+                    className="job-results"
+                    id={`${ID(job.internalId)}-job-results`}
                 >
-                    <Settings job={job} />
+                    <Results job={job} />
                 </Section>
                 <Section
                     label="Messages"
@@ -65,44 +74,8 @@ export function JobDetailsPane({ job }) {
                 >
                     <Messages job={job} />
                 </Section>
-                <Section
-                    label="Results"
-                    className="job-results"
-                    id={`${ID(job.internalId)}-job-results`}
-                >
-                    <Results job={job} />
-                </Section>
+                <button>Delete job</button>
             </div>
         </>
     )
-}
-
-function JobResults({ jobId, results }) {
-    // this is a hack!
-    // get the first file and use its path to figure out what is probably the output folder for the job
-    let file = ''
-    if (results?.namedResults.length > 0) {
-        if (results.namedResults[0].files.length > 0) {
-            file = results.namedResults[0].files[0].file
-            let idx = file.indexOf(jobId)
-            if (idx != -1) {
-                file = file.slice(0, idx + jobId.length) + '/'
-                file = file.replace('file:', '').replace('///', '/')
-                file = decodeURI(file)
-            }
-        }
-    }
-
-    if (file != '') {
-        return (
-            <button
-                className="jobResults"
-                onClick={(e) => App.showItemInFolder(file)}
-            >
-                Show results folder
-            </button>
-        )
-    } else {
-        return <p className="jobResults">Results unavailable</p>
-    }
 }

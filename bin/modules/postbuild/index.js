@@ -18,6 +18,7 @@ async function createPackageJSONDistVersion() {
     }
 
     try {
+        console.log('Export the package.json for the dist version...')
         await writeFile(
             resolve(devTempBuildFolder, 'package.json'),
             JSON.stringify(packageJSONDistVersion, null, 2)
@@ -32,3 +33,6 @@ async function createPackageJSONDistVersion() {
 }
 
 createPackageJSONDistVersion()
+
+// Also fix permissions of the app resources after building the app for distribution
+require('../../utils/fixPermissions')

@@ -5,7 +5,6 @@ import {
     PipelineStatus,
     PipelineState,
     ApplicationSettings,
-    baseurl,
 } from 'shared/types'
 import { ENVIRONMENT, IPC } from 'shared/constants'
 import { setTimeout } from 'timers/promises'
@@ -20,9 +19,6 @@ import { info, error } from 'electron-log'
 
 import { request as httpRequest } from 'http'
 import { pathToFileURL } from 'url'
-
-import fetch from 'node-fetch'
-
 // NP : for future use if we want to use the app
 // to also manage a pipeline behind https
 //import { request as httpsRequest } from 'https'
@@ -84,7 +80,6 @@ export class Pipeline2IPC {
         (data: PipelineState) => void
     >()
     runStateMonitor: boolean = true
-    stateMonitorInterval: NodeJS.Timer = null
 
     messages: Array<string>
     messagesListeners: Map<string, (data: string) => void> = new Map<
@@ -132,6 +127,53 @@ export class Pipeline2IPC {
         this.setState({
             status: PipelineStatus.STOPPED,
         })
+        this.stateMonitor = this.stateMonitor.bind(this)
+    }
+
+    /**
+     * Monitor function to watch the webservice state
+     */
+    async stateMonitor(refreshTimerInMillisecondes = 1000) {
+        while (this.runStateMonitor) {
+            await setTimeout(refreshTimerInMillisecondes).then(async () => {
+                return new Promise<string>((resolve, reject) => {
+                    const options = {
+                        host: this.props.webservice.host,
+                        port: this.props.webservice.port,
+                        path: this.props.webservice.path + '/alive',
+                    }
+                    const callback = (response) => {
+                        var data = ''
+                        response.on('data', (chunk) => {
+                            data += chunk
+                        })
+                        response.on('end', () => {
+                            resolve(data)
+                        })
+                    }
+                    const req = httpRequest(options, callback)
+                    req.on('error', (errorVal) => {
+                        reject(errorVal)
+                    })
+                    req.end()
+                })
+                    .then((value) => {
+                        if (this.state.status != PipelineStatus.RUNNING) {
+                            this.setState({
+                                status: PipelineStatus.RUNNING,
+                            })
+                        }
+                    })
+                    .catch(() => {
+                        // if pipeline went from running to offline
+                        if (this.state.status === PipelineStatus.RUNNING) {
+                            this.setState({
+                                status: PipelineStatus.STOPPED,
+                            })
+                        }
+                    })
+            })
+        }
     }
 
     /**
@@ -420,30 +462,6 @@ ${command} ${args.join(' ')}`
                 status: PipelineStatus.STARTING,
                 runningWebservice: this.props.webservice,
             })
-            this.stateMonitorInterval = setInterval(() => {
-                if (this.state.runningWebservice) {
-                    fetch(`${baseurl(this.state.runningWebservice)}/alive`)
-                        .then((value: Response) => {
-                            if (this.state.status != PipelineStatus.RUNNING) {
-                                this.setState({
-                                    status: PipelineStatus.RUNNING,
-                                })
-                                clearInterval(this.stateMonitorInterval)
-                            }
-                        })
-                        .catch((reason) => {
-                            console.log(reason)
-                            // Change the status to error only if the previous one was the running status
-                            // (because the previous could be the starting one, and in this cas i don't want changes
-                            // as it may be only the delay of booting up returning an error)
-                            if (this.state.status == PipelineStatus.RUNNING) {
-                                this.setState({
-                                    status: PipelineStatus.STOPPED,
-                                })
-                            }
-                        })
-                }
-            }, 1000)
         }
         // Launch the async state monitoring loop
         // this.stateMonitor()
@@ -454,9 +472,7 @@ ${command} ${args.join(' ')}`
      * Stopping the pipeline
      */
     async stop(appIsClosing = false) {
-        if (this.stateMonitorInterval != null) {
-            clearInterval(this.stateMonitorInterval)
-        }
+        this.runStateMonitor = false
         if (appIsClosing) {
             this.stateListeners.clear()
             this.messagesListeners.clear()

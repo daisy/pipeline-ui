@@ -98,16 +98,19 @@ export class PipelineTray {
     updateElectronTray(newState: PipelineState, pipeline: Pipeline2IPC) {
         this.pipelineMenu = [
             {
-                label:
-                    newState.status == PipelineStatus.STOPPED
-                        ? 'Start the engine'
-                        : `Engine is ${newState.status}`,
-                enabled: newState.status == PipelineStatus.STOPPED,
-                click: async (item, window, event) => pipeline.launch(),
+                label: `Pipeline is ${
+                    newState.status == PipelineStatus.STARTING ||
+                    newState.status == PipelineStatus.RUNNING
+                        ? 'running'
+                        : 'stopped'
+                }`,
+                enabled: false,
             },
             {
                 label: 'Create a job',
-                enabled: newState.status == PipelineStatus.RUNNING,
+                enabled:
+                    newState.status == PipelineStatus.STARTING ||
+                    newState.status == PipelineStatus.RUNNING,
                 click: async (item, window, event) => {
                     try {
                         this.mainWindow.show()
@@ -126,7 +129,13 @@ export class PipelineTray {
                 },
             },
         ]
-        this.tray.setToolTip(`DAISY Pipeline 2`)
+        this.tray.setToolTip(
+            'DAISY Pipeline 2 is ' +
+                (newState.status == PipelineStatus.STARTING ||
+                newState.status == PipelineStatus.RUNNING
+                    ? 'running'
+                    : 'stopped')
+        )
         // Update tray
         this.tray.setContextMenu(
             Menu.buildFromTemplate([

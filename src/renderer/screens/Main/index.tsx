@@ -5,8 +5,6 @@ import { PipelineStatus } from 'shared/types/pipeline'
 
 const queryClient = new QueryClient()
 
-const { App } = window
-
 export function MainScreen() {
     const { pipeline } = useWindowStore()
     return (
@@ -15,18 +13,8 @@ export function MainScreen() {
                 <main>
                     {pipeline.status == PipelineStatus.RUNNING ? (
                         <MainView />
-                    ) : pipeline.status == PipelineStatus.STARTING ? (
-                        <p>Starting the engine...</p>
                     ) : (
-                        <>
-                            <p>Engine is stopped</p>
-                            <button
-                                id="launch-engine"
-                                onClick={() => App.launchPipeline()}
-                            >
-                                Start the engine
-                            </button>
-                        </>
+                        <p>Starting the DAISY Pipeline...</p>
                     )}
                 </main>
             </>

@@ -21,7 +21,7 @@ import { info, error } from 'electron-log'
 import { request as httpRequest } from 'http'
 import { pathToFileURL } from 'url'
 
-import fetch, { Response } from 'node-fetch'
+import fetch from 'node-fetch'
 
 // NP : for future use if we want to use the app
 // to also manage a pipeline behind https

@@ -12,6 +12,7 @@ export function JobTabPanel({
     id,
     tabId,
     updateItem,
+    onClose,
 }: ItemTabPanelProps<Job>) {
     let job = item // item is a Job
     let type = job.state == JobState.NEW ? 'new-job' : 'job'
@@ -27,9 +28,13 @@ export function JobTabPanel({
         >
             <div className={`fixed-height-layout ${type}`}>
                 {job.state == JobState.NEW ? (
-                    <NewJobPane job={job} updateJob={updateItem} />
+                    <NewJobPane
+                        job={job}
+                        updateJob={updateItem}
+                        onClose={onClose}
+                    />
                 ) : (
-                    <JobDetailsPane job={job} />
+                    <JobDetailsPane job={job} onClose={onClose} />
                 )}
             </div>
         </div>

@@ -19,7 +19,7 @@ const readableStatus = {
     FAIL: 'Error',
 }
 
-export function JobDetailsPane({ job }) {
+export function JobDetailsPane({ job, onClose }) {
     return (
         <>
             <section
@@ -74,7 +74,12 @@ export function JobDetailsPane({ job }) {
                 >
                     <Messages job={job} />
                 </Section>
-                <button>Delete job</button>
+                {job.jobData.status != JobStatus.RUNNING &&
+                job.jobData.status != JobStatus.IDLE ? (
+                    <button onClick={(e) => onClose(job, e)}>Delete job</button>
+                ) : (
+                    ''
+                )}
             </div>
         </>
     )

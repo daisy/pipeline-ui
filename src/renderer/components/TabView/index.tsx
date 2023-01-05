@@ -22,7 +22,6 @@ export interface ItemTabProps<T> {
     tabpanelId: string
     isSelected: boolean
     onSelect: Function
-    onClose: Function
     index: number
 }
 
@@ -37,6 +36,7 @@ export interface ItemTabPanelProps<T> {
     item: T
     isSelected: boolean
     updateItem: Function
+    onClose: Function
 }
 
 export function TabView<T extends { internalId: string }>(
@@ -105,7 +105,6 @@ export function TabView<T extends { internalId: string }>(
                         tabpanelId={`${ID(item.internalId)}-tabpanel`}
                         isSelected={selectedItemId == item.internalId}
                         onSelect={onTabSelect}
-                        onClose={(e) => onTabClose_(item.internalId)}
                     />
                 ))}
                 <AddItemTab
@@ -122,6 +121,7 @@ export function TabView<T extends { internalId: string }>(
                         tabId={`${ID(item.internalId)}-tab`}
                         isSelected={selectedItemId == item.internalId}
                         updateItem={updateItem}
+                        onClose={(e) => onTabClose_(item.internalId)}
                     />
                 )
             })}

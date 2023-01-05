@@ -4,7 +4,7 @@
 // and an empty space for the tab panel, of a fixed height (defined in vars)
 // otherwise no influence on the contents of the tab panel
 
-.tab {
+[role=tab] {
     padding: var(--pad);
     border-radius: var(--border-radius);
     border-bottom-left-radius: 0;
@@ -21,27 +21,12 @@
     font-size: large;
     transition: all .2s ease-in-out;
 
-    button {
-        padding: 0;
-        border: none;
-        background-color: inherit;
-        color: inherit;
-        font-size: inherit;
-    }
-    button.close-tab {
-        margin-bottom: 0;
-        height: 20px;
-        width: 20px;
-    }
-    button.close-tab:hover {
-        background-color: var(--primary-color-3);
-        color: var(--primary-color-1);
-    }
-    &:has([aria-selected=false]):hover {
+    
+    &[aria-selected=false]:hover {
         background-color: var(--secondary-color-2);
         color: var(--secondary-2-contrast);
     }
-    &:has([aria-selected=true]) {
+    &[aria-selected=true] {
         background-color: var(--secondary-color-2);
         color: var(--secondary-2-contrast);
         border-bottom-color: var(--background-color);

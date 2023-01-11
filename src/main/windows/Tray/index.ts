@@ -101,7 +101,12 @@ export class PipelineTray {
                 label:
                     newState.status == PipelineStatus.STOPPED
                         ? 'Start the engine'
-                        : `Engine is ${newState.status}`,
+                        : `Engine is ${newState.status}${
+                              newState.runningWebservice
+                                  ? ' on port ' +
+                                    newState.runningWebservice.port
+                                  : ''
+                          }`,
                 enabled: newState.status == PipelineStatus.STOPPED,
                 click: async (item, window, event) => pipeline.launch(),
             },

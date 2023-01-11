@@ -1,4 +1,4 @@
-import { app, ipcMain } from 'electron'
+import { app, ipcMain, dialog } from 'electron'
 import { resolve, delimiter, relative } from 'path'
 import {
     Webservice,
@@ -7,10 +7,9 @@ import {
     ApplicationSettings,
     baseurl,
 } from 'shared/types'
-import { ENVIRONMENT, IPC } from 'shared/constants'
-import { setTimeout } from 'timers/promises'
+import { IPC } from 'shared/constants'
 import { spawn, ChildProcessWithoutNullStreams } from 'child_process'
-import { existsSync, mkdir, mkdirSync } from 'fs'
+import { existsSync, mkdirSync } from 'fs'
 
 import { getAvailablePort, Pipeline2Error, walk } from './utils'
 
@@ -18,7 +17,6 @@ import { resolveUnpacked } from 'shared/utils'
 
 import { info, error } from 'electron-log'
 
-import { request as httpRequest } from 'http'
 import { pathToFileURL } from 'url'
 
 import fetch, { Response } from 'node-fetch'
@@ -181,6 +179,34 @@ export class Pipeline2IPC {
     }
 
     /**
+     * Validating pipeline props after finding an opened port
+     * @param port to be used to launch the pipeline
+     */
+    private validatedProps() {
+        if (!this.props.webservice.port || this.props.webservice.port === 0) {
+            throw new Pipeline2Error(
+                'NO_PORT',
+                'No valid port provided to launch the pipeline'
+            )
+        }
+        if (this.props.jrePath === null || !existsSync(this.props.jrePath)) {
+            throw new Pipeline2Error(
+                'NO_JRE',
+                'No jre found to launch the pipeline'
+            )
+        }
+
+        if (
+            this.props.localPipelineHome === null ||
+            !existsSync(this.props.jrePath)
+        ) {
+            throw new Pipeline2Error(
+                'NO_PIPELINE',
+                'No pipeline installation found'
+            )
+        }
+    }
+    /**
      * Launch a local instance of the pipeline using the current webservice settings
      */
     async launch(): Promise<PipelineState> {
@@ -188,52 +214,76 @@ export class Pipeline2IPC {
             this.setState({
                 status: PipelineStatus.STARTING,
             })
+            // Search for port to launch the pipeline
             if (
-                this.props.webservice.port !== undefined &&
+                this.props.webservice.port &&
+                this.props.webservice.port !== 0
+            ) {
+                const savedPort = this.props.webservice.port
+                info(
+                    'Port',
+                    this.props.webservice.port,
+                    'requested, check for availability'
+                )
+                try {
+                    await getAvailablePort(
+                        this.props.webservice.port,
+                        this.props.webservice.port,
+                        this.props.webservice.host
+                    )
+                        .then((port) => {
+                            this.props.webservice.port = port
+                        })
+                        .catch((err) => {
+                            // propagate exception for now
+                            throw err
+                        })
+                } catch (exception) {
+                    this.pushError(exception)
+                    // Reset to port 0 to auto scan
+                    this.props.webservice.port = 0
+                }
+                if (this.props.webservice.port === 0) {
+                    dialog.showMessageBox(null, {
+                        message: `Port ${savedPort} requested in settings is not available.
+
+The program will seek and use an available port instead.
+
+If you need the port ${savedPort} to be used, please check if
+- another DAISY Pipeline 2 server is running on this port
+- another program is running and is using this port
+Then close the program using the port and restart this application.`,
+                        title: 'Requested port is not available',
+                        type: 'warning',
+                    })
+                }
+            }
+            // If no port or port 0 is provided
+            if (
+                !this.props.webservice.port ||
                 this.props.webservice.port === 0
             ) {
-                info('Searching for an valid port')
+                info('No valid port provided, searching for a valid port')
                 try {
                     await getAvailablePort(
                         49152,
                         65535,
                         this.props.webservice.host
                     )
-                        .then(
-                            ((port) => {
-                                this.props.webservice.port = port
-                                //
-                                if (
-                                    this.props.jrePath === null ||
-                                    !existsSync(this.props.jrePath)
-                                ) {
-                                    throw new Pipeline2Error(
-                                        'NO_JRE',
-                                        'No jre found to launch the pipeline'
-                                    )
-                                }
-
-                                if (
-                                    this.props.localPipelineHome === null ||
-                                    !existsSync(this.props.jrePath)
-                                ) {
-                                    throw new Pipeline2Error(
-                                        'NO_PIPELINE',
-                                        'No pipeline installation found'
-                                    )
-                                }
-                            }).bind(this)
-                        )
+                        .then((port) => {
+                            this.props.webservice.port = port
+                        })
                         .catch((err) => {
                             // propagate exception for now
                             throw err
                         })
-                } catch (error) {
-                    this.pushError(error)
+                } catch (exception) {
+                    this.pushError(exception)
                     // no port available, try to use the usual 8181
                     this.props.webservice.port = 8181
                 }
             }
+            this.validatedProps()
             info(
                 `Launching pipeline on ${this.props.webservice.host}:${this.props.webservice.port}`
             )
@@ -396,11 +446,12 @@ ${command} ${args.join(' ')}`
                 //
                 // we might read the pipeline logs
                 // or check in the API if there is some logs entry point
+                //this.pushMessage(`${data.toString()}`)
             })
             this.instance.stderr.on('data', (data) => {
                 // keep error logging in case of error raised by the pipeline instance
                 // NP : problem found on the pipeline, the webservice messages are also outputed to the err stream
-                // this.pushError(`${data.toString()}`)
+                //this.pushError(`${data.toString()}`)
             })
             this.instance.on('exit', (code, signal) => {
                 let message = `Pipeline exiting with code ${code} and signal ${signal}`

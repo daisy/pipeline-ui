@@ -30,17 +30,16 @@ export function JobDetailsPane({ job }) {
                     <h1 id={`${ID(job.internalId)}-hd`}>
                         {job.jobData.nicename}
                     </h1>
-                    <p>{job.script.description}</p>
-                    <p
-                        aria-live="polite"
-                        className={`status ${readableStatus[
-                            job.jobData.status
-                        ].toLowerCase()}`}
-                    >
-                        Job status: {readableStatus[job.jobData.status]}{' '}
-                        {job.jobData.progress
-                            ? `(${job.jobData.progress * 100}%)`
-                            : ''}
+                    {/* <p>{job.script.description}</p> */}
+                    <p aria-live="polite">
+                        Status:&nbsp;
+                        <span
+                            className={`status ${readableStatus[
+                                job.jobData.status
+                            ].toLowerCase()}`}
+                        >
+                            {readableStatus[job.jobData.status]}{' '}
+                        </span>
                     </p>
                 </div>
                 {job.jobData.status == JobStatus.SUCCESS ||

@@ -1,15 +1,15 @@
-import { app, ipcMain } from 'electron'
+import { app, ipcMain, dialog } from 'electron'
 import { resolve, delimiter, relative } from 'path'
 import {
     Webservice,
     PipelineStatus,
     PipelineState,
     ApplicationSettings,
+    baseurl,
 } from 'shared/types'
-import { ENVIRONMENT, IPC } from 'shared/constants'
-import { setTimeout } from 'timers/promises'
+import { IPC } from 'shared/constants'
 import { spawn, ChildProcessWithoutNullStreams } from 'child_process'
-import { existsSync, mkdir, mkdirSync } from 'fs'
+import { existsSync, mkdirSync } from 'fs'
 
 import { getAvailablePort, Pipeline2Error, walk } from './utils'
 
@@ -17,8 +17,10 @@ import { resolveUnpacked } from 'shared/utils'
 
 import { info, error } from 'electron-log'
 
-import { request as httpRequest } from 'http'
 import { pathToFileURL } from 'url'
+
+import fetch, { Response } from 'node-fetch'
+
 // NP : for future use if we want to use the app
 // to also manage a pipeline behind https
 //import { request as httpsRequest } from 'https'
@@ -80,6 +82,7 @@ export class Pipeline2IPC {
         (data: PipelineState) => void
     >()
     runStateMonitor: boolean = true
+    stateMonitorInterval: NodeJS.Timer = null
 
     messages: Array<string>
     messagesListeners: Map<string, (data: string) => void> = new Map<
@@ -127,53 +130,6 @@ export class Pipeline2IPC {
         this.setState({
             status: PipelineStatus.STOPPED,
         })
-        this.stateMonitor = this.stateMonitor.bind(this)
-    }
-
-    /**
-     * Monitor function to watch the webservice state
-     */
-    async stateMonitor(refreshTimerInMillisecondes = 1000) {
-        while (this.runStateMonitor) {
-            await setTimeout(refreshTimerInMillisecondes).then(async () => {
-                return new Promise<string>((resolve, reject) => {
-                    const options = {
-                        host: this.props.webservice.host,
-                        port: this.props.webservice.port,
-                        path: this.props.webservice.path + '/alive',
-                    }
-                    const callback = (response) => {
-                        var data = ''
-                        response.on('data', (chunk) => {
-                            data += chunk
-                        })
-                        response.on('end', () => {
-                            resolve(data)
-                        })
-                    }
-                    const req = httpRequest(options, callback)
-                    req.on('error', (errorVal) => {
-                        reject(errorVal)
-                    })
-                    req.end()
-                })
-                    .then((value) => {
-                        if (this.state.status != PipelineStatus.RUNNING) {
-                            this.setState({
-                                status: PipelineStatus.RUNNING,
-                            })
-                        }
-                    })
-                    .catch(() => {
-                        // if pipeline went from running to offline
-                        if (this.state.status === PipelineStatus.RUNNING) {
-                            this.setState({
-                                status: PipelineStatus.STOPPED,
-                            })
-                        }
-                    })
-            })
-        }
     }
 
     /**
@@ -223,6 +179,34 @@ export class Pipeline2IPC {
     }
 
     /**
+     * Validating pipeline props after finding an opened port
+     * @param port to be used to launch the pipeline
+     */
+    private validatedProps() {
+        if (!this.props.webservice.port || this.props.webservice.port === 0) {
+            throw new Pipeline2Error(
+                'NO_PORT',
+                'No valid port provided to launch the pipeline'
+            )
+        }
+        if (this.props.jrePath === null || !existsSync(this.props.jrePath)) {
+            throw new Pipeline2Error(
+                'NO_JRE',
+                'No jre found to launch the pipeline'
+            )
+        }
+
+        if (
+            this.props.localPipelineHome === null ||
+            !existsSync(this.props.jrePath)
+        ) {
+            throw new Pipeline2Error(
+                'NO_PIPELINE',
+                'No pipeline installation found'
+            )
+        }
+    }
+    /**
      * Launch a local instance of the pipeline using the current webservice settings
      */
     async launch(): Promise<PipelineState> {
@@ -230,52 +214,76 @@ export class Pipeline2IPC {
             this.setState({
                 status: PipelineStatus.STARTING,
             })
+            // Search for port to launch the pipeline
             if (
-                this.props.webservice.port !== undefined &&
+                this.props.webservice.port &&
+                this.props.webservice.port !== 0
+            ) {
+                const savedPort = this.props.webservice.port
+                info(
+                    'Port',
+                    this.props.webservice.port,
+                    'requested, check for availability'
+                )
+                try {
+                    await getAvailablePort(
+                        this.props.webservice.port,
+                        this.props.webservice.port,
+                        this.props.webservice.host
+                    )
+                        .then((port) => {
+                            this.props.webservice.port = port
+                        })
+                        .catch((err) => {
+                            // propagate exception for now
+                            throw err
+                        })
+                } catch (exception) {
+                    this.pushError(exception)
+                    // Reset to port 0 to auto scan
+                    this.props.webservice.port = 0
+                }
+                if (this.props.webservice.port === 0) {
+                    dialog.showMessageBox(null, {
+                        message: `Port ${savedPort} requested in settings is not available.
+
+The program will seek and use an available port instead.
+
+If you need the port ${savedPort} to be used, please check if
+- another DAISY Pipeline 2 server is running on this port
+- another program is running and is using this port
+Then close the program using the port and restart this application.`,
+                        title: 'Requested port is not available',
+                        type: 'warning',
+                    })
+                }
+            }
+            // If no port or port 0 is provided
+            if (
+                !this.props.webservice.port ||
                 this.props.webservice.port === 0
             ) {
-                info('Searching for an valid port')
+                info('No valid port provided, searching for a valid port')
                 try {
                     await getAvailablePort(
                         49152,
                         65535,
                         this.props.webservice.host
                     )
-                        .then(
-                            ((port) => {
-                                this.props.webservice.port = port
-                                //
-                                if (
-                                    this.props.jrePath === null ||
-                                    !existsSync(this.props.jrePath)
-                                ) {
-                                    throw new Pipeline2Error(
-                                        'NO_JRE',
-                                        'No jre found to launch the pipeline'
-                                    )
-                                }
-
-                                if (
-                                    this.props.localPipelineHome === null ||
-                                    !existsSync(this.props.jrePath)
-                                ) {
-                                    throw new Pipeline2Error(
-                                        'NO_PIPELINE',
-                                        'No pipeline installation found'
-                                    )
-                                }
-                            }).bind(this)
-                        )
+                        .then((port) => {
+                            this.props.webservice.port = port
+                        })
                         .catch((err) => {
                             // propagate exception for now
                             throw err
                         })
-                } catch (error) {
-                    this.pushError(error)
+                } catch (exception) {
+                    this.pushError(exception)
                     // no port available, try to use the usual 8181
                     this.props.webservice.port = 8181
                 }
             }
+            this.validatedProps()
             info(
                 `Launching pipeline on ${this.props.webservice.host}:${this.props.webservice.port}`
             )
@@ -438,11 +446,12 @@ ${command} ${args.join(' ')}`
                 //
                 // we might read the pipeline logs
                 // or check in the API if there is some logs entry point
+                //this.pushMessage(`${data.toString()}`)
             })
             this.instance.stderr.on('data', (data) => {
                 // keep error logging in case of error raised by the pipeline instance
                 // NP : problem found on the pipeline, the webservice messages are also outputed to the err stream
-                // this.pushError(`${data.toString()}`)
+                //this.pushError(`${data.toString()}`)
             })
             this.instance.on('exit', (code, signal) => {
                 let message = `Pipeline exiting with code ${code} and signal ${signal}`
@@ -462,6 +471,30 @@ ${command} ${args.join(' ')}`
                 status: PipelineStatus.STARTING,
                 runningWebservice: this.props.webservice,
             })
+            this.stateMonitorInterval = setInterval(() => {
+                if (this.state.runningWebservice) {
+                    fetch(`${baseurl(this.state.runningWebservice)}/alive`)
+                        .then((value: Response) => {
+                            if (this.state.status != PipelineStatus.RUNNING) {
+                                this.setState({
+                                    status: PipelineStatus.RUNNING,
+                                })
+                                clearInterval(this.stateMonitorInterval)
+                            }
+                        })
+                        .catch((reason) => {
+                            console.log(reason)
+                            // Change the status to error only if the previous one was the running status
+                            // (because the previous could be the starting one, and in this cas i don't want changes
+                            // as it may be only the delay of booting up returning an error)
+                            if (this.state.status == PipelineStatus.RUNNING) {
+                                this.setState({
+                                    status: PipelineStatus.STOPPED,
+                                })
+                            }
+                        })
+                }
+            }, 1000)
         }
         // Launch the async state monitoring loop
         // this.stateMonitor()
@@ -472,7 +505,9 @@ ${command} ${args.join(' ')}`
      * Stopping the pipeline
      */
     async stop(appIsClosing = false) {
-        this.runStateMonitor = false
+        if (this.stateMonitorInterval != null) {
+            clearInterval(this.stateMonitorInterval)
+        }
         if (appIsClosing) {
             this.stateListeners.clear()
             this.messagesListeners.clear()

@@ -2,7 +2,7 @@
   "displayName": "DAISY Pipeline",
   "name": "pipeline-ui",
   "description": "User interface for the DAISY Pipeline",
-  "version": "0.2.0-alpha",
+  "version": "0.3.0-beta",
   "main": "./node_modules/.dev-temp-build/main.js",
   "devTempBuildFolder": "./node_modules/.dev-temp-build",
   "devServer": "http://localhost:4927",
@@ -18,13 +18,17 @@
     {
       "name": "Nicolas Pavie",
       "email": "pavie.nicolas@gmail.com"
+    },
+    {
+      "name": "Bert Frees",
+      "email": "bertfrees@gmail.com"
     }
   ],
   "license": "MIT",
   "scripts": {
     "start": "electron .",
     "build": "cross-env NODE_ENV=production yarn r clean webpack:main webpack:renderer",
-    "postbuild": "node ./bin/modules/postbuild/index.js permissions",
+    "postbuild": "node ./bin/modules/postbuild/index.js",
     "predev": "cross-var \"rimraf $npm_package_devTempBuildFolder\"",
     "dev": "concurrently \"cross-env BROWSER=none yarn dev:renderer\" \"yarn r server:wait permissions nodemon:start\"",
     "dev:main": "cross-env NODE_ENV=development yarn r webpack:main start",
@@ -43,7 +47,7 @@
     "clean": "rimraf dist",
     "prepare": "husky install",
     "r": "yarn run-s",
-    "permissions": "chmod -R +x ./node_modules/.dev-temp-build/resources"
+    "permissions": "node ./bin/utils/fixPermissions.js"
   },
   "dependencies": {
     "@reduxjs/toolkit": "^1.9.1",
@@ -51,6 +55,7 @@
     "@types/marked": "^4.0.7",
     "decompress": "^4.2.1",
     "electron-log": "^4.4.8",
+    "node-fetch": "^3.3.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-markdown": "^8.0.3",

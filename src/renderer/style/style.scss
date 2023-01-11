@@ -1,7 +1,6 @@
 @use 'vars.scss' as *;
 @use 'tabs.scss' as *;
 @use 'settings.scss' as *;
-// @use 'scrollshadow.scss' as *;
 
 body {
     margin: calc(.25 * var(--pad));
@@ -24,6 +23,7 @@ button {
     white-space: nowrap;
     height: min-content;
     color: var(--primary-color-1);
+    font-size: larger;
 }
 
 input {
@@ -90,7 +90,7 @@ input[type=checkbox] {
 .fixed-height-layout {
     display: flex;
     flex-direction: column;
-    gap: var(--pad);
+    gap: calc(var(--pad) * 2);
     max-height: var(--tab-panel-height);
     min-height: var(--tab-panel-height);
     overflow: scroll;
@@ -131,13 +131,35 @@ input[type=checkbox] {
         }
     }
 
+    .job-settings {
+        ul {
+            padding: calc(var(--pad)/2);
+            border-radius: var(--border-radius);
+            gap: calc(var(--pad)/2);
+        }
+
+        li {
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
+            border-bottom: thin solid var(--primary-color-3);
+            gap: calc(var(--pad)/2);
+
+            span:first-of-type {
+                max-width: 50%;
+            }
+            span:last-of-type {
+                font-family: var(--fw-font-family);
+            }
+        }
+    }
+
     .details {
         flex-grow: 2;
-        > * {
-            padding: 7px;
-            padding-top: 0;
+        gap: calc(var(--pad) * 2);
+        display: flex;
+        flex-direction: column;
         
-        }
         .job-messages {
             ul {
                 font-family: var(--fw-font-family);
@@ -157,26 +179,6 @@ input[type=checkbox] {
                 .trace {
                     color: var(--trace-message-color);
                 }
-            }
-        }
-
-        .job-settings {
-            li {
-                display: flex;
-                flex-direction: row;
-                justify-content: space-between;
-                border-bottom: thin solid var(--primary-color-3);
-                gap: calc(var(--pad)/2);
-
-                span:first-of-type {
-                    max-width: 50%;
-                }
-                span:last-of-type {
-                    font-family: var(--fw-font-family);
-                }
-            }
-            li:nth-of-type(even) {
-                background-color: var(--secondary-color-3);
             }
         }
 
@@ -239,13 +241,12 @@ input[type=checkbox] {
                     }
                 }
             }
-
-            button.run {
-                font-size: larger;
-                margin-bottom: calc(var(--pad)/2);
-                margin-left: calc(var(--pad)/2);
-            }
-        }        
+        }    
+        .form-buttons {
+            display: flex;
+            flex-direction: row;
+            gap: var(--pad);
+        }    
     }
 }
 

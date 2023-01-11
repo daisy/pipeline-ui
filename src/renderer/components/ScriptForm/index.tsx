@@ -20,7 +20,7 @@ import remarkGfm from 'remark-gfm'
 
 const { App } = window
 
-export function ScriptForm({ job, script, updateJob }) {
+export function ScriptForm({ job, script, updateJob, onClose }) {
     const [submitInProgress, setSubmitInProgress] = useState(false)
     const [error, setError] = useState(false)
     const { pipeline } = useWindowStore()
@@ -182,14 +182,18 @@ export function ScriptForm({ job, script, updateJob }) {
                             ''
                         )}
                     </div>
-                    <button
-                        className="run"
-                        type="submit"
-                        // form={`${ID(job.internalId)}-form`}
-                        accessKey="r"
-                    >
-                        Run
-                    </button>
+                    <div className="form-buttons">
+                        <button className="run" type="submit" accessKey="r">
+                            Run
+                        </button>
+                        <button
+                            className="cancel"
+                            type="reset"
+                            onClick={(e) => onClose(job, e)}
+                        >
+                            Cancel
+                        </button>
+                    </div>
                 </form>
             ) : (
                 <>

@@ -50,11 +50,12 @@ export function walk(
 // states that the resolution for 'localhost' defaults to ipv6, starting a version of nodejs i can't remember the number
 
 /**
- * seek for an opened port, or return null if none is available
+ * seek and return an opened port, or return 0 if none is available
  *
  * @param startPort
  * @param endPort
  * @param host optional hostname or ip adress (default to 127.0.0.1)
+ * @returns a port number, or 0 if no port is available
  */
 export async function getAvailablePort(
     startPort: number,
@@ -73,11 +74,6 @@ export async function getAvailablePort(
         if (portChecked <= endPort) {
             info(' -> Checking for ' + portChecked.toString())
             server.listen(portChecked, host)
-        } else {
-            throw new Pipeline2Error(
-                'NO_PORT',
-                'No port available to host the pipeline webservice'
-            )
         }
     })
     // Listening successfully on a port

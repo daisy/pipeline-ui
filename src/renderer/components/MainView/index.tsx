@@ -94,7 +94,7 @@ export function MainView() {
                                         let namedResult =
                                             jobData.results.namedResults[i]
                                         const newJobURL = new URL(
-                                            `${settings.downloadFolder}/${jobData.jobId}/${namedResult.name}`
+                                            `${settings.downloadFolder}/${newJobName}/${namedResult.name}`
                                         ).href
                                         // change the target jobData href
                                         jobData.results.namedResults[i].href =
@@ -120,7 +120,7 @@ export function MainView() {
                                                 const newFileURL = new URL(
                                                     `${
                                                         settings.downloadFolder
-                                                    }/${jobData.jobId}/${
+                                                    }/${newJobName}/${
                                                         namedResult.name
                                                     }/${resultFile.file
                                                         .split('/')

@@ -76,6 +76,12 @@ export function WindowStoreProvider({ children }) {
         App.getPipelineMessages().then((errors) => {
             setPipelineMessages(errors)
         })
+        App.onPipelineStateChanged(async (event, newState) => {
+            setPipelineState(newState)
+        })
+        App.onSettingsChanged(async (event, newSettings) => {
+            setSettings(newSettings)
+        })
     }, [])
 
     useEffect(() => {
@@ -86,12 +92,7 @@ export function WindowStoreProvider({ children }) {
             )
         }
     }, [pipeline])
-    App.onPipelineStateChanged(async (event, newState) => {
-        setPipelineState(newState)
-    })
-    App.onSettingsChanged(async (event, newSettings) => {
-        setSettings(newSettings)
-    })
+    
 
     const sharedStore = {
         about: about,

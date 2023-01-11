@@ -56,7 +56,34 @@ export function MainView() {
                                         jobData.results.namedResults
                                     )
                                     // const result of jobData.results.namedResults
-                                    // Note : the data used is the files field and not the
+                                    const currentTime = new Date(Date.now())
+                                    // NP : only way i found to build the date string without loosing user localization
+                                    // ISO string is not localized on my tests
+                                    const timestamp = `${currentTime.getFullYear()}-${(
+                                        currentTime.getMonth() + 1
+                                    )
+                                        .toString()
+                                        .padStart(2, '0')}-${(
+                                        currentTime.getDay() + 1
+                                    )
+                                        .toString()
+                                        .padStart(2, '0')}-${currentTime
+                                        .getHours()
+                                        .toString()
+                                        .padStart(2, '0')}${currentTime
+                                        .getMinutes()
+                                        .toString()
+                                        .padStart(2, '0')}${currentTime
+                                        .getSeconds()
+                                        .toString()
+                                        .padStart(
+                                            2,
+                                            '0'
+                                        )}.${currentTime.getMilliseconds()}`
+                                    const newJobName = `${
+                                        jobData.nicename ??
+                                        jobData.script.nicename
+                                    }_${timestamp}`
                                     for (
                                         let i =
                                             jobData.results.namedResults

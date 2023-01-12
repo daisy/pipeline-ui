@@ -13,7 +13,6 @@ import {
     bindWindowToPipeline,
     makeAppSetup,
     makeAppWithSingleInstanceLock,
-    Pipeline2IPC,
     registerApplicationSettingsIPC,
     registerPipeline2ToIPC,
 } from './factories'
@@ -25,8 +24,8 @@ import {
     registerSettingsWindowCreationByIPC,
 } from './windows'
 
-import { store } from './data/store'
-import { counter } from './data/slices/counter'
+import { registerStoreIPC, store } from './data/store'
+import { counter } from 'shared/data/slices/counter'
 import { setupFileDialogEvents } from './fileDialogs'
 import { ENVIRONMENT, IPC } from 'shared/constants'
 import { setupShowInFolderEvents } from './folder'
@@ -64,6 +63,7 @@ makeAppWithSingleInstanceLock(async () => {
     setupShowInFolderEvents()
     setupOpenInBrowserEvents()
     setupFileSystemEvents()
+    registerStoreIPC()
 
     const isMac = process.platform === 'darwin'
 

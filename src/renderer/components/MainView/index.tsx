@@ -2,16 +2,13 @@
 Data manager and owner of tab view
 */
 import { useState } from 'react'
-import { Job, JobStatus, JobState, NamedResult } from 'shared/types/pipeline'
+import { Job, JobStatus, JobState } from 'shared/types/pipeline'
 import { useQuery } from '@tanstack/react-query'
-import { jobXmlToJson } from 'renderer/pipelineXmlConverter'
+import { jobXmlToJson } from 'shared/parser/pipelineXmlConverter'
 import { TabView } from '../TabView'
 import { AddJobTab, JobTab } from '../JobTab'
 import { JobTabPanel } from '../JobTabPanel'
 import { useWindowStore } from 'renderer/store'
-import { ipcRenderer } from 'electron'
-import { IPC } from 'shared/constants'
-import { join } from 'path'
 import { ReduxTest } from '../ReduxTest'
 
 const NEW_JOB = (id) => ({

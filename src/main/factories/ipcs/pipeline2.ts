@@ -143,14 +143,10 @@ export class Pipeline2IPC {
         })
     }
 
-    setState(newState: {
-        runningWebservice?: Webservice
-        status?: PipelineStatus
-    }) {
+    setState(newState: { webservice?: Webservice; status?: PipelineStatus }) {
         this.state = {
-            runningWebservice:
-                newState.runningWebservice ??
-                (this.state && this.state.runningWebservice),
+            webservice:
+                newState.webservice ?? (this.state && this.state.webservice),
             status:
                 newState.status ??
                 ((this.state && this.state.status) || PipelineStatus.STOPPED),
@@ -469,11 +465,11 @@ ${command} ${args.join(' ')}`
             })
             this.setState({
                 status: PipelineStatus.STARTING,
-                runningWebservice: this.props.webservice,
+                webservice: this.props.webservice,
             })
             this.stateMonitorInterval = setInterval(() => {
-                if (this.state.runningWebservice) {
-                    fetch(`${baseurl(this.state.runningWebservice)}/alive`)
+                if (this.state.webservice) {
+                    fetch(`${baseurl(this.state.webservice)}/alive`)
                         .then((value: Response) => {
                             if (this.state.status != PipelineStatus.RUNNING) {
                                 this.setState({

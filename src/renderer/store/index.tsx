@@ -10,7 +10,7 @@ import {
 import {
     scriptsXmlToJson,
     scriptXmlToJson,
-} from 'renderer/pipelineXmlConverter'
+} from 'shared/parser/pipelineXmlConverter'
 
 export interface WindowStore {
     about: {
@@ -86,13 +86,9 @@ export function WindowStoreProvider({ children }) {
 
     useEffect(() => {
         if (pipeline.status == PipelineStatus.RUNNING && scripts.length == 0) {
-            getScripts(
-                `${baseurl(pipeline.runningWebservice)}/scripts`,
-                setScripts
-            )
+            getScripts(`${baseurl(pipeline.webservice)}/scripts`, setScripts)
         }
     }, [pipeline])
-    
 
     const sharedStore = {
         about: about,

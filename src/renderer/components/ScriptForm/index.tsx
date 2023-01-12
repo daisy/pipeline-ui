@@ -1,7 +1,10 @@
 /*
 Fill out fields for a new job and submit it
 */
-import { jobRequestToXml, jobXmlToJson } from 'renderer/pipelineXmlConverter'
+import {
+    jobRequestToXml,
+    jobXmlToJson,
+} from 'shared/parser/pipelineXmlConverter'
 import { JobRequest, JobState, baseurl, ScriptItemBase } from 'shared/types'
 import { useState, useEffect } from 'react'
 import { useWindowStore } from 'renderer/store'
@@ -83,7 +86,7 @@ export function ScriptForm({ job, script, updateJob, onClose }) {
         let xmlStr = jobRequestToXml(jobRequest)
 
         // this post request submits the job to the pipeline webservice
-        let res = await fetch(`${baseurl(pipeline.runningWebservice)}/jobs`, {
+        let res = await fetch(`${baseurl(pipeline.webservice)}/jobs`, {
             method: 'POST',
             body: xmlStr,
             mode: 'cors',

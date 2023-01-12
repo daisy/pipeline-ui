@@ -39,4 +39,8 @@ export const IPC = {
         UNZIP: 'file: unzip',
         OPEN: 'file: open',
     },
+    STORE: {
+        GET: 'store: get',
+        UPDATED: 'store: updated',
+    },
 }

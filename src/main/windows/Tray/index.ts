@@ -102,9 +102,8 @@ export class PipelineTray {
                     newState.status == PipelineStatus.STOPPED
                         ? 'Start the engine'
                         : `Engine is ${newState.status}${
-                              newState.runningWebservice
-                                  ? ' on port ' +
-                                    newState.runningWebservice.port
+                              newState.webservice
+                                  ? ' on port ' + newState.webservice.port
                                   : ''
                           }`,
                 enabled: newState.status == PipelineStatus.STOPPED,

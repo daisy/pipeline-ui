@@ -1,3 +1,5 @@
+import { DOMParser } from '@xmldom/xmldom'
+
 // parse a string of xml and return the first element with the given name
 export function parseXml(xmlString, elmName) {
     let doc = new DOMParser().parseFromString(xmlString, 'text/xml')

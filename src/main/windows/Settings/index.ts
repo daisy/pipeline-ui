@@ -1,6 +1,7 @@
+import { store } from 'main/data/store'
 import { createWindow } from 'main/factories'
 import { join } from 'path'
-import { ENVIRONMENT } from 'shared/constants'
+import { ENVIRONMENT, IPC } from 'shared/constants'
 import { APP_CONFIG } from '~/app.config'
 
 export * from './ipcs'
@@ -23,7 +24,16 @@ export function SettingsWindow() {
         },
     })
 
+    const unsubscribe = store.subscribe(() => {
+        const state = store.getState()
+        window.webContents.send(IPC.STORE.UPDATED, state)
+    })
+
     ENVIRONMENT.IS_DEV && window.webContents.openDevTools({ mode: 'detach' })
+
+    window.on('close', (event) => {
+        unsubscribe()
+    })
 
     return window
 }

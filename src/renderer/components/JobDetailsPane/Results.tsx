@@ -1,9 +1,4 @@
 export function Results({ job }) {
-    let handleWebLink = (e) => {
-        e.preventDefault()
-        App.openInBrowser(e.target.href)
-    }
-
     return (
         <ul aria-live="polite">
             <li>
@@ -34,15 +29,6 @@ export function Results({ job }) {
                     )}
                 </li>
             ))}
-            {job?.jobData?.log ? (
-                <li>
-                    <a href={job.jobData.log} onClick={handleWebLink}>
-                        Log
-                    </a>
-                </li>
-            ) : (
-                ''
-            )}
         </ul>
     )
 }

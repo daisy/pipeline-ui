@@ -8,31 +8,41 @@ import { RootState } from 'shared/types/store'
 export const slices = [counter, settings] // pipeline, navigation
 
 /**
- * A tree of actions handled by the store slices
+ * Slice actions map that should contain [action.key]:'action.type'
  */
-export const actionsTree = {
-    ...slices.reduce((slicesActions, slice) => {
-        slicesActions[slice.name] = Object.entries(slice.actions).reduce(
-            (acc: any, [key, action]: [string, PayloadAction]) => {
-                acc[key] = action.type
+export type SliceActionsObject<T> = {
+    [k in keyof T]: string
+}
+
+/**
+ * Slice actions register
+ */
+export type SliceActions = {
+    slice: string
+    actions: SliceActionsObject<unknown>
+}
+
+/**
+ * array of @see SliceActions `[ { slice:sliceName, actions:{actionName:actionType} }, ... ]`
+ */
+export const actions = slices.map((slice) => {
+    return {
+        slice: slice.name,
+        actions: Object.entries(slice.actions).reduce(
+            (
+                acc: SliceActionsObject<unknown>,
+                actionCreator: [string, { type }]
+            ) => {
+                acc[actionCreator[0]] = actionCreator[1].type
                 return acc
             },
             {}
-        )
-        return slicesActions
-    }, {}),
-}
+        ) as SliceActionsObject<unknown>,
+    } as SliceActions
+})
 
 export const selectors = {
     selectCounter: (s: RootState) => s.counter,
-    selectSettings: (s: RootState) => s.settings,
-    // selectPipeline: (s: RootState) => s.pipeline,
-    // selectNavigation: (s: RootState) => s.navigation,
 }
 
-export const {
-    selectCounter,
-    selectSettings,
-    // selectPipeline,
-    // selectNavigation,
-} = selectors
+export const { selectCounter } = selectors

@@ -1,10 +1,18 @@
 import { contextBridge, ipcRenderer } from 'electron'
 import * as ipcs from './ipcs'
 
-import { actionsTree } from 'shared/data/slices'
+import { actions, SliceActions } from 'shared/data/slices'
 import { IPC } from 'shared/constants'
 import { Slice } from '@reduxjs/toolkit'
 import { RootState } from 'shared/types/store'
+import { settings } from 'shared/data/slices/settings'
+
+export type SliceIPCs<T> = {
+    [K in keyof T]: () => void
+}
+
+export type SliceIPCsMap = Map<string, () => void>
+export type SliceActionsMap = Map<string, SliceIPCs<unknown>>
 
 declare global {
     interface Window {
@@ -13,29 +21,37 @@ declare global {
 }
 
 /**
- * Redux actions tree
+ * Proxy object to handle store state
  */
-const reduxActions = Object.entries(actionsTree).reduce(
-    (ipcs, [slice, actions]: [string, any]) => {
-        ipcs[slice] = Object.entries(actions).reduce(
-            (sliceIPCs, [name, type]: [string, string]) => {
-                sliceIPCs[name] = (...payload) =>
-                    ipcRenderer.send(type, payload)
-                return sliceIPCs
-            },
-            {}
-        )
-        return ipcs
-    },
-    {}
-)
+let proxyStore = ipcRenderer.sendSync(IPC.STORE.GET) as RootState
+console.log('bridge launch', proxyStore)
 
-let proxyStore = {} as RootState
-// Do a deep diff update here
-ipcRenderer.on(IPC.STORE.UPDATED, (event, newState) => {
-    proxyStore = newState
-    console.log(proxyStore)
-})
+/**
+ * Redux actions management for the proxy
+ */
+const sliceActions = new Map<string, SliceIPCs<unknown>>(
+    actions.map((sa: SliceActions) => {
+        // Create event listener for slice updates
+        const sliceUpdater = (newSliceState) =>
+            (proxyStore[sa.slice] = newSliceState)
+        return [
+            sa.slice,
+            Object.entries(sa.actions).reduce(
+                (acc: SliceIPCs<unknown>, [name, type]: [string, string]) => {
+                    // Make ipc action
+                    acc[name] = (...payload) => ipcRenderer.send(type, payload)
+                    // Create ipc listener on slice state update forwarding for an action
+                    ipcRenderer.on(type, (even, newState) => {
+                        console.log(type, newState)
+                        sliceUpdater(newState)
+                    })
+                    return acc
+                },
+                {}
+            ),
+        ]
+    })
+) as SliceActionsMap
 
 const API = {
     ...ipcs,
@@ -54,7 +70,7 @@ const API = {
         decrement: ipcs.decrement,
     },
     store: {
-        slice: (s: Slice) => reduxActions[s.name],
+        slice: (s: Slice): SliceIPCsMap => sliceActions[s.name],
         // Synchronously get redux store state (for )
         getStateSync: () => ipcRenderer.sendSync(IPC.STORE.GET),
         getState: () =>

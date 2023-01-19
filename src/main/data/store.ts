@@ -1,12 +1,11 @@
-import { configureStore } from '@reduxjs/toolkit'
-import { ipcMain } from 'electron'
-//import { PipelineStatus } from 'shared/types'
-
+import { configureStore, PayloadAction } from '@reduxjs/toolkit'
+import { ipcMain, BrowserWindow } from 'electron'
+import { PipelineStatus } from 'shared/types'
 import { slices } from 'shared/data/slices'
-
 import { RootState } from 'shared/types/store'
-import { readSettings, middlewares } from './middlewares'
 import { IPC } from 'shared/constants'
+
+import { readSettings, middlewares } from './middlewares'
 
 let preloadedState: RootState = {
     // pipeline: {
@@ -30,18 +29,40 @@ let preloadedState: RootState = {
 // }
 
 /**
+ * Electron slice state forwarding for partial updates
+ * @param param0
+ * @returns
+ */
+function forwardToFrontend({ getState, dispatch }) {
+    return (next) => (action: PayloadAction<any>) => {
+        const returnValue = next(action)
+        const state = getState()
+        // For a given action, send back the state update
+        // for each action, a slice state update must be managed on the frontend
+        BrowserWindow.getAllWindows().forEach((w) => {
+            const slicePath = action.type.split('/').slice(0, -1)
+            const sliceState = slicePath.reduce((s, v) => s[v], state)
+            w.webContents.send(action.type, sliceState)
+        })
+        return returnValue
+    }
+}
+
+/**
  * Redux store of the application
  */
 export const store = configureStore({
     preloadedState,
-    reducer: slices.reduce((acc, slice) => {
+    reducer: {
+        ...slices.reduce((acc, slice) => {
         acc[slice.name] = slice.reducer
         return acc
     }, {}),
+    },
     devTools: process.env.NODE_ENV !== 'production',
     // Note : apply the middleware to update the store file
     middleware: (getDefaultMiddleware) =>
-        getDefaultMiddleware().concat(...middlewares),
+        getDefaultMiddleware().concat(...middlewares, forwardToFrontend),
 })
 
 // Register every actions of the store as IPC channel

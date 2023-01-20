@@ -1,4 +1,4 @@
-import { counter } from 'shared/data/slices/counter'
+import { increment, decrement } from 'shared/data/slices/counter'
 
 const { App } = window
 
@@ -9,14 +9,14 @@ export function ReduxTest() {
             <button
                 type="button"
                 id="btnIncrement"
-                onClick={(e) => App.store.slice(counter).increment()}
+                onClick={(e) => App.store.dispatch(increment())}
             >
                 Increment
             </button>
             <button
                 type="button"
                 id="btnDecrement"
-                onClick={(e) => App.store.slice(counter).decrement()}
+                onClick={(e) => App.store.dispatch(decrement())}
             >
                 Decrement
             </button>

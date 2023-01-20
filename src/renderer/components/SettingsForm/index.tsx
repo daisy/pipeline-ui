@@ -2,22 +2,26 @@ import { useEffect, useState } from 'react'
 import { useWindowStore } from 'renderer/store'
 import { ApplicationSettings } from 'shared/types'
 import { FileOrFolderInput } from '../CustomFields/FileOrFolderInput'
-
+import { setSettings, save } from 'shared/data/slices/settings'
 const { App } = window // The "App" comes from the bridge
 
 export function SettingsForm() {
     // Current registered settings
     const { settings } = useWindowStore()
-    // Copy settings in new settings
+
+    // Copy settings in new settings for update
+    // (without affecting the rest of the app)
     const [newSettings, setNewSettings] = useState<ApplicationSettings>({
         ...settings,
     })
     const [saved, setSaved] = useState(true)
     useEffect(() => {
+        // Reload settings from store if it has changed
         setNewSettings({
             ...settings,
         })
     }, [settings])
+
     // Changed folder
     const resultsFolderChanged = (filename) => {
         setNewSettings({
@@ -27,9 +31,10 @@ export function SettingsForm() {
         setSaved(false)
     }
 
-    // send back the settings for being save on disk
+    // send back the settings and save them on disk
     const handleSave = () => {
-        App.saveSettings(newSettings)
+        App.store.dispatch(setSettings(newSettings))
+        App.store.dispatch(save())
         setSaved(true)
     }
     return (

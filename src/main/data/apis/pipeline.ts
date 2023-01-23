@@ -5,7 +5,7 @@ import {
     scriptsXmlToJson,
     scriptXmlToJson,
 } from 'shared/parser/pipelineXmlConverter'
-import { baseurl, Job, Webservice } from 'shared/types'
+import { baseurl, Job, ResultFile, Webservice } from 'shared/types'
 
 import fetch, { Response, RequestInit } from 'node-fetch'
 
@@ -50,7 +50,10 @@ export const pipelineAPI = {
     fetchJobData: (j: Job) =>
         createPipelineFetchFunction(
             () => j.jobData.href,
-            (text) => jobXmlToJson(text)
+            (text) => {
+                console.log('checked data', text, jobXmlToJson(text))
+                return jobXmlToJson(text)
+            }
         ),
     launchJob: (j: Job) =>
         createPipelineFetchFunction(
@@ -61,5 +64,8 @@ export const pipelineAPI = {
                 body: jobRequestToXml(j.jobRequest),
             }
         ),
+    fetchFile: (r: ResultFile) => () =>
+        fetch(r.href)
+            .then((response) => response.blob())
+            .then((blob) => blob.arrayBuffer()),
 }
-

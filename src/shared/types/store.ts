@@ -1,7 +1,7 @@
 import { CounterState } from 'shared/data/slices/counter'
 import { ApplicationSettings } from './settings'
 //import { NavigationState } from 'shared/data/slices/navigation'
-//import { PipelineState } from './pipeline'
+import { PipelineState } from './pipeline'
 
 /**
  * State managed by the store
@@ -9,6 +9,6 @@ import { ApplicationSettings } from './settings'
 export interface RootState {
     counter?: CounterState
     settings?: ApplicationSettings
-    // pipeline?: PipelineState
+    pipeline?: PipelineState
     // navigation?: NavigationState
 }

@@ -30,13 +30,7 @@ export async function MainWindow() {
 
     ENVIRONMENT.IS_DEV && window.webContents.openDevTools({ mode: 'detach' })
 
-    const unsubscribe = store.subscribe(() => {
-        const state = store.getState()
-        window.webContents.send(IPC.STORE.UPDATED, state)
-    })
-
     window.on('close', (event) => {
-        unsubscribe()
         BrowserWindow.getAllWindows().forEach((window) => window.destroy())
     })
 

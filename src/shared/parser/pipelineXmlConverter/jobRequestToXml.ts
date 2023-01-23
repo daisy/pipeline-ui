@@ -25,7 +25,6 @@ function jobRequestToXml(jobRequest: JobRequest): string {
         )
         .join('')}
   </jobRequest>`
-    console.log(xmlString)
     return xmlString
 }
 

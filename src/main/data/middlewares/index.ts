@@ -1,6 +1,6 @@
-//import { pipelineMiddleware } from './pipeline'
+import { pipelineMiddleware } from './pipeline'
 import { settingsMiddleware } from './settings'
 
 export { readSettings } from './settings'
 
-export const middlewares = [settingsMiddleware] //, pipelineMiddleware
+export const middlewares = [settingsMiddleware, pipelineMiddleware]

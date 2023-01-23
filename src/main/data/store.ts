@@ -1,4 +1,4 @@
-import { configureStore, PayloadAction } from '@reduxjs/toolkit'
+import { configureStore, createAction, PayloadAction } from '@reduxjs/toolkit'
 import { ipcMain, BrowserWindow } from 'electron'
 import { PipelineStatus } from 'shared/types'
 import { slices } from 'shared/data/slices'
@@ -8,11 +8,11 @@ import { IPC } from 'shared/constants'
 import { readSettings, middlewares } from './middlewares'
 
 let preloadedState: RootState = {
-    // pipeline: {
-    //     status: PipelineStatus.UNKNOWN,
-    //     scripts: [],
-    //     jobs: [],
-    // },
+    pipeline: {
+        status: PipelineStatus.UNKNOWN,
+        scripts: [],
+        jobs: [],
+    },
     settings: readSettings(),
 }
 
@@ -44,15 +44,15 @@ function forwardToFrontend({ getState, dispatch }) {
         const returnValue = next(action)
         if (action.type == forwardAction.type) {
             // forward request receive
-        const state = getState()
+            const state = getState()
             const lastAction = action.payload
-        // For a given action, send back the state update
-        // for each action, a slice state update must be managed on the frontend
-        BrowserWindow.getAllWindows().forEach((w) => {
+            // For a given action, send back the state update
+            // for each action, a slice state update must be managed on the frontend
+            BrowserWindow.getAllWindows().forEach((w) => {
                 const slicePath = lastAction.type.split('/').slice(0, -1)
-            const sliceState = slicePath.reduce((s, v) => s[v], state)
+                const sliceState = slicePath.reduce((s, v) => s[v], state)
                 w.webContents.send(lastAction.type, sliceState)
-        })
+            })
         } else {
             // Request forwarding after the action is finished
             // to ensure we have the latest store state available
@@ -69,9 +69,9 @@ export const store = configureStore({
     preloadedState,
     reducer: {
         ...slices.reduce((acc, slice) => {
-        acc[slice.name] = slice.reducer
-        return acc
-    }, {}),
+            acc[slice.name] = slice.reducer
+            return acc
+        }, {}),
     },
     devTools: process.env.NODE_ENV !== 'production',
     // Note : apply the middleware to update the store file

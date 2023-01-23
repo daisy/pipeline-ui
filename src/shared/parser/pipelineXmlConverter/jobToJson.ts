@@ -51,7 +51,7 @@ function jobElementToJson(jobElm: Element): JobData {
             resultsElms[0].getElementsByTagName('result')
         )
             // filter out non-direct children
-            .filter((resultElm) => resultElm.parentElement == resultsElms[0])
+            .filter((resultElm) => resultElm.parentNode == resultsElms.item(0))
             .map((resultElm): NamedResult => {
                 let namedResult: NamedResult = {
                     from: resultElm.getAttribute('from'),

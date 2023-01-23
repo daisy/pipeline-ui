@@ -6,7 +6,6 @@ import { IPC } from 'shared/constants'
 import { AnyAction } from '@reduxjs/toolkit'
 import { RootState } from 'shared/types/store'
 
-
 declare global {
     interface Window {
         App: typeof API

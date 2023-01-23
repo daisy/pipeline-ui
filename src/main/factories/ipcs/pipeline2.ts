@@ -20,6 +20,13 @@ import { info, error } from 'electron-log'
 import { pathToFileURL } from 'url'
 
 import fetch, { Response } from 'node-fetch'
+import { store } from 'main/data/store'
+import {
+    selectPipeline,
+    selectStatus,
+    setStatus,
+    useWebservice,
+} from 'shared/data/slices/pipeline'
 
 // NP : for future use if we want to use the app
 // to also manage a pipeline behind https
@@ -75,15 +82,6 @@ export interface Pipeline2IPCProps {
  */
 export class Pipeline2IPC {
     props: Pipeline2IPCProps
-    // Default state
-    state: PipelineState
-    stateListeners: Map<string, (data: PipelineState) => void> = new Map<
-        string,
-        (data: PipelineState) => void
-    >()
-    runStateMonitor: boolean = true
-    stateMonitorInterval: NodeJS.Timer = null
-
     messages: Array<string>
     messagesListeners: Map<string, (data: string) => void> = new Map<
         string,
@@ -127,9 +125,7 @@ export class Pipeline2IPC {
         this.instance = null
         this.errors = []
         this.messages = []
-        this.setState({
-            status: PipelineStatus.STOPPED,
-        })
+        store.dispatch(setStatus(PipelineStatus.STOPPED))
     }
 
     /**
@@ -143,18 +139,6 @@ export class Pipeline2IPC {
         })
     }
 
-    setState(newState: { webservice?: Webservice; status?: PipelineStatus }) {
-        this.state = {
-            webservice:
-                newState.webservice ?? (this.state && this.state.webservice),
-            status:
-                newState.status ??
-                ((this.state && this.state.status) || PipelineStatus.STOPPED),
-        }
-        for (const [callerID, callback] of this.stateListeners) {
-            callback(this.state)
-        }
-    }
     pushMessage(message: string) {
         this.messages.push(message)
         if (this.props.onMessage) {
@@ -206,10 +190,11 @@ export class Pipeline2IPC {
      * Launch a local instance of the pipeline using the current webservice settings
      */
     async launch(): Promise<PipelineState> {
-        if (!this.instance || this.state.status == PipelineStatus.STOPPED) {
-            this.setState({
-                status: PipelineStatus.STARTING,
-            })
+        if (
+            !this.instance ||
+            selectStatus(store.getState()) == PipelineStatus.STOPPED
+        ) {
+            store.dispatch(setStatus(PipelineStatus.STARTING))
             // Search for port to launch the pipeline
             if (
                 this.props.webservice.port &&
@@ -451,61 +436,24 @@ ${command} ${args.join(' ')}`
             })
             this.instance.on('exit', (code, signal) => {
                 let message = `Pipeline exiting with code ${code} and signal ${signal}`
-                this.setState({
-                    status: PipelineStatus.STOPPED,
-                })
+                store.dispatch(setStatus(PipelineStatus.STOPPED))
                 this.pushMessage(message)
             })
             this.instance.on('close', (code: number, args: any[]) => {
                 let message = `Pipeline closing with code: ${code} args: ${args}`
-                this.setState({
-                    status: PipelineStatus.STOPPED,
-                })
+                store.dispatch(setStatus(PipelineStatus.STOPPED))
                 this.pushMessage(message)
             })
-            this.setState({
-                status: PipelineStatus.STARTING,
-                webservice: this.props.webservice,
-            })
-            this.stateMonitorInterval = setInterval(() => {
-                if (this.state.webservice) {
-                    fetch(`${baseurl(this.state.webservice)}/alive`)
-                        .then((value: Response) => {
-                            if (this.state.status != PipelineStatus.RUNNING) {
-                                this.setState({
-                                    status: PipelineStatus.RUNNING,
-                                })
-                                clearInterval(this.stateMonitorInterval)
-                            }
-                        })
-                        .catch((reason) => {
-                            console.log(reason)
-                            // Change the status to error only if the previous one was the running status
-                            // (because the previous could be the starting one, and in this cas i don't want changes
-                            // as it may be only the delay of booting up returning an error)
-                            if (this.state.status == PipelineStatus.RUNNING) {
-                                this.setState({
-                                    status: PipelineStatus.STOPPED,
-                                })
-                            }
-                        })
-                }
-            }, 1000)
+            store.dispatch(useWebservice(this.props.webservice))
         }
-        // Launch the async state monitoring loop
-        // this.stateMonitor()
-        return this.state
+        return selectPipeline(store.getState())
     }
 
     /**
      * Stopping the pipeline
      */
     async stop(appIsClosing = false) {
-        if (this.stateMonitorInterval != null) {
-            clearInterval(this.stateMonitorInterval)
-        }
         if (appIsClosing) {
-            this.stateListeners.clear()
             this.messagesListeners.clear()
             this.errorsListeners.clear()
         }
@@ -516,31 +464,9 @@ ${command} ${args.join(' ')}`
             if (!finished) {
                 this.instance.kill('SIGKILL')
             }
-            this.setState({
-                status: PipelineStatus.STOPPED,
-            })
+            store.dispatch(setStatus(PipelineStatus.STOPPED))
             return
         }
-    }
-
-    /**
-     * Add a listener on state changes
-     * @param callerID an id to identify the caller
-     * @param callback function to run on new state
-     */
-    registerStateListener(
-        callerID: string,
-        callback: (data: PipelineState) => void
-    ) {
-        this.stateListeners.set(callerID, callback)
-    }
-
-    /**
-     * Remove a state listener
-     * @param callerID the id of the caller which had registered the listener
-     */
-    removeStateListener(callerID: string) {
-        this.stateListeners.delete(callerID)
     }
 
     /**
@@ -600,7 +526,7 @@ export function registerPipeline2ToIPC(
             // Check if pipeline should be deactivated
             if (
                 newSettings.runLocalPipeline == false &&
-                pipeline2instance.state.status != PipelineStatus.STOPPED
+                selectStatus(store.getState()) != PipelineStatus.STOPPED
             ) {
                 pipeline2instance.stop()
             } else {
@@ -632,7 +558,7 @@ export function registerPipeline2ToIPC(
 
     // get state from the instance
     ipcMain.handle(IPC.PIPELINE.STATE.GET, (event) => {
-        return pipeline2instance.state || null
+        return selectPipeline(store.getState())
     })
 
     // get properties of the instance

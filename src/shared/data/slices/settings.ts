@@ -7,6 +7,7 @@ import { pathToFileURL } from 'url'
 import { resolveUnpacked } from 'shared/utils'
 import { existsSync, readFileSync, writeFile } from 'fs'
 import { info } from 'electron-log'
+import { RootState } from 'shared/types/store'
 
 export const settings = createSlice({
     name: 'settings',
@@ -23,10 +24,23 @@ export const settings = createSlice({
             if (action.payload.useRemotePipeline)
                 state.useRemotePipeline = action.payload.useRemotePipeline
         },
+        save: (state) => {
+            // save action to trigger middleware save on disk
+        },
         changeDownloadPath: (state, action: PayloadAction<string>) => {
             state.downloadFolder = action.payload
         },
     },
 })
 
-export const { changeDownloadPath, setSettings } = settings.actions
+export const { save, changeDownloadPath, setSettings } = settings.actions
+
+export const selectors = {
+    selectSettings: (s: RootState) => s.settings,
+    selectDownloadPath: (state: RootState) => state.settings.downloadFolder,
+}
+// prettier-ignore
+export const {
+    selectSettings,
+    selectDownloadPath,
+} = selectors

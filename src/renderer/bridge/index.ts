@@ -1,9 +1,9 @@
 import { contextBridge, ipcRenderer } from 'electron'
 import * as ipcs from './ipcs'
 
-import { actionsTree } from 'shared/data/slices'
+import { slices } from 'shared/data/slices'
 import { IPC } from 'shared/constants'
-import { Slice } from '@reduxjs/toolkit'
+import { AnyAction } from '@reduxjs/toolkit'
 import { RootState } from 'shared/types/store'
 
 declare global {
@@ -13,29 +13,23 @@ declare global {
 }
 
 /**
- * Redux actions tree
+ * Proxy object to handle store state
  */
-const reduxActions = Object.entries(actionsTree).reduce(
-    (ipcs, [slice, actions]: [string, any]) => {
-        ipcs[slice] = Object.entries(actions).reduce(
-            (sliceIPCs, [name, type]: [string, string]) => {
-                sliceIPCs[name] = (...payload) =>
-                    ipcRenderer.send(type, payload)
-                return sliceIPCs
-            },
-            {}
-        )
-        return ipcs
-    },
-    {}
-)
+let proxyStore = ipcRenderer.sendSync(IPC.STORE.GET) as RootState
 
-let proxyStore = {} as RootState
-// Do a deep diff update here
-ipcRenderer.on(IPC.STORE.UPDATED, (event, newState) => {
-    proxyStore = newState
-    console.log(proxyStore)
+slices.forEach((slice) => {
+    const sliceUpdater = (newSliceState) =>
+        (proxyStore[slice.name] = newSliceState)
+    Object.entries(slice.actions).forEach(([name, { type }]) => {
+        ipcRenderer.on(type, (even, newState) => {
+            sliceUpdater(newState)
+        })
+    })
 })
+
+function dispatch<ReturnType, Action extends AnyAction>(action: Action) {
+    ipcRenderer.send(action.type, action.payload)
+}
 
 const API = {
     ...ipcs,
@@ -54,22 +48,12 @@ const API = {
         decrement: ipcs.decrement,
     },
     store: {
-        slice: (s: Slice) => reduxActions[s.name],
-        // Synchronously get redux store state (for )
+        dispatch,
         getStateSync: () => ipcRenderer.sendSync(IPC.STORE.GET),
-        getState: () =>
-            proxyStore ??
-            ipcRenderer.invoke(IPC.STORE.GET).then((value) => {
-                proxyStore = value
-                return proxyStore
-            }),
-        // Listener on store changes
-        // The window need to subscribe to the store and send back
-        // an IPC.STORE.UPDATED event with the new state on store changes
-        onUpdate: (callback) =>
-            ipcRenderer.on(IPC.STORE.UPDATED, (event, newState) =>
-                callback(newState)
-            ),
+        getState: () => proxyStore,
+        // Listener on store changes after a specific action
+        onSliceUpdate: (actionType, callback) =>
+            ipcRenderer.on(actionType, (event, data) => callback(data)),
     },
 }
 

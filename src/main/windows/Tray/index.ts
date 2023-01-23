@@ -19,6 +19,8 @@ import { MainWindow, AboutWindow } from '../../windows'
 import { ENVIRONMENT, IPC } from 'shared/constants'
 import { PipelineState, PipelineStatus } from 'shared/types'
 import { resolveUnpacked } from 'shared/utils'
+import { store } from 'main/data/store'
+import { selectPipeline } from 'shared/data/slices/pipeline'
 
 export class PipelineTray {
     tray: Tray
@@ -79,15 +81,26 @@ export class PipelineTray {
     }
 
     /**
-     * Bind a pipeline instance to the tray to allow interactions
+     * Bind a pipeline instance to the tray to allow interactions.
+     *
+     * We use the usual store subscribtion instead of the middleware forwarding
+     * to find changes in the store.
      * @param pipeline
      */
     bindToPipeline(pipeline: Pipeline2IPC) {
         // setup listeners to update tray based on states
-        pipeline.registerStateListener('tray', (newState) => {
-            this.updateElectronTray(newState, pipeline)
+        let currentState = selectPipeline(store.getState())
+        const unsubscibe = store.subscribe(() => {
+            let newState = selectPipeline(store.getState())
+            if (newState != currentState) {
+                currentState = newState
+                this.updateElectronTray(newState, pipeline)
+            }
         })
-        this.updateElectronTray(pipeline.state, pipeline)
+        this.updateElectronTray(currentState, pipeline)
+        app.on('before-quit', (event) => {
+            unsubscibe()
+        })
     }
 
     /**

@@ -4,7 +4,7 @@ import { IPC } from 'shared/constants'
 
 import { store } from 'main/data/store'
 import { setSettings } from 'shared/data/slices/settings'
-import { selectSettings } from 'shared/data/slices'
+import { selectSettings } from 'shared/data/slices/settings'
 
 export function registerApplicationSettingsIPC(): ApplicationSettings {
     // get state from the instance

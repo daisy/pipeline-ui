@@ -1,6 +1,8 @@
 import { app, BrowserWindow, Event, ipcMain } from 'electron'
+import { store } from 'main/data/store'
 
 import { ENVIRONMENT, IPC, PLATFORM } from 'shared/constants'
+import { selectPipeline } from 'shared/data/slices/pipeline'
 import { WindowProps } from 'shared/types'
 import { APP_CONFIG } from '~/app.config'
 import { Pipeline2IPC } from '../ipcs/pipeline2'
@@ -18,9 +20,6 @@ export function bindWindowToPipeline(
 ) {
     // Keep the window id here as it is removed before the close event
     const windowID = binding.id
-    pipeline.registerStateListener(`${windowID}`, (state) => {
-        binding.webContents.send(IPC.PIPELINE.STATE.CHANGED, state)
-    })
 
     pipeline.registerMessagesListener(`${windowID}`, (message) => {
         binding.webContents.send(IPC.PIPELINE.MESSAGES.UPDATE, message)
@@ -31,12 +30,13 @@ export function bindWindowToPipeline(
     })
 
     ipcMain.on(IPC.PIPELINE.STATE.SEND, (event) => {
-        binding.webContents.send(IPC.PIPELINE.STATE.CHANGED, pipeline.state)
+        binding.webContents.send(
+            IPC.PIPELINE.STATE.CHANGED,
+            selectPipeline(store.getState())
+        )
     })
 
     binding.on('close', (event) => {
-        // Remove listeners on closing
-        pipeline.removeStateListener(`${windowID}`)
         pipeline.removeMessageListener(`${windowID}`)
         pipeline.removeErrorsListener(`${windowID}`)
     })

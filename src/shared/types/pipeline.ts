@@ -155,6 +155,10 @@ export type Job = {
     jobData?: JobData
     jobRequest?: JobRequest
     script?: Script
+    errors?: Array<{
+        fieldName?: string
+        error: string
+    }>
     // jobRequest.script also has script info (returned from ws);
     // however, storing it separately gives us access to more details
 }

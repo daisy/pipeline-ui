@@ -22,3 +22,5 @@ export const counter = createSlice({
         },
     },
 })
+
+export const { increment, decrement } = counter.actions

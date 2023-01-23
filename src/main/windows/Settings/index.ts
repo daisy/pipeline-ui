@@ -24,16 +24,7 @@ export function SettingsWindow() {
         },
     })
 
-    const unsubscribe = store.subscribe(() => {
-        const state = store.getState()
-        window.webContents.send(IPC.STORE.UPDATED, state)
-    })
-
     ENVIRONMENT.IS_DEV && window.webContents.openDevTools({ mode: 'detach' })
-
-    window.on('close', (event) => {
-        unsubscribe()
-    })
 
     return window
 }

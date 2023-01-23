@@ -1,7 +1,9 @@
+import { PayloadAction } from '@reduxjs/toolkit'
 import { app } from 'electron'
 import { info } from 'electron-log'
 import { existsSync, readFileSync, writeFile } from 'fs'
 import { resolve } from 'path'
+import { save } from 'shared/data/slices/settings'
 import { ApplicationSettings } from 'shared/types'
 import { resolveUnpacked } from 'shared/utils'
 import { pathToFileURL } from 'url'
@@ -51,16 +53,15 @@ export function readSettings() {
 }
 
 /**
- * Middleware to save store and settings on disks
+ * Middleware to save settings on disks on save request
  * @param param0
  * @returns
  */
 export function settingsMiddleware({ getState }) {
-    return (next) => (action) => {
+    return (next) => (action: PayloadAction<any>) => {
         const returnValue = next(action)
         const { settings } = getState()
-        // Dedicated settings file
-        if ((action.type as string).startsWith('settings')) {
+        if (action.type == save.type) {
             writeFile(settingsFile, JSON.stringify(settings, null, 4), () => {})
         }
         return returnValue

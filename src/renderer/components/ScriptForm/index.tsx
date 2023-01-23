@@ -20,6 +20,7 @@ import { marked } from 'marked'
 import { FileOrFolderInput } from '../CustomFields/FileOrFolderInput'
 import Markdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
+import { runJob } from 'shared/data/slices/pipeline'
 
 const { App } = window
 
@@ -27,7 +28,9 @@ export function ScriptForm({ job, script, updateJob, onClose }) {
     const [submitInProgress, setSubmitInProgress] = useState(false)
     const [error, setError] = useState(false)
     const { pipeline } = useWindowStore()
-
+    // TODO : not sure if we should switch to store here
+    // or keep the react state approach
+    // Keeping the jobRequest definition using state for now
     const [jobRequest, setJobRequest] = useState<JobRequest>(null)
     useEffect(() => {
         setJobRequest({
@@ -79,37 +82,17 @@ export function ScriptForm({ job, script, updateJob, onClose }) {
     }
 
     // submit a job
-    let onSubmit = async (e) => {
+    let onSubmit = (e) => {
         e.preventDefault()
         setSubmitInProgress(true)
-
-        let xmlStr = jobRequestToXml(jobRequest)
-
-        // this post request submits the job to the pipeline webservice
-        let res = await fetch(`${baseurl(pipeline.webservice)}/jobs`, {
-            method: 'POST',
-            body: xmlStr,
-            mode: 'cors',
-        })
+        App.store.dispatch(
+            runJob({
+                ...job,
+                jobRequest: jobRequest,
+                script,
+            })
+        )
         setSubmitInProgress(false)
-        if (res.status != 201) {
-            setError(true)
-        } else {
-            let newJobXml = await res.text()
-            try {
-                let newJobJson = jobXmlToJson(newJobXml)
-                let job_ = {
-                    ...job,
-                    state: JobState.SUBMITTED,
-                    jobData: newJobJson,
-                    jobRequest,
-                    script,
-                }
-                updateJob(job_)
-            } catch (err) {
-                setError(true)
-            }
-        }
     }
 
     return (

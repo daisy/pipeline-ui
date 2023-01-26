@@ -5,11 +5,10 @@ import {
     PipelineStatus,
     PipelineState,
     ApplicationSettings,
-    baseurl,
 } from 'shared/types'
 import { IPC } from 'shared/constants'
 import { spawn, ChildProcessWithoutNullStreams } from 'child_process'
-import { existsSync, mkdirSync } from 'fs'
+import { existsSync, mkdirSync, rmSync } from 'fs'
 
 import { getAvailablePort, Pipeline2Error, walk } from './utils'
 
@@ -19,7 +18,6 @@ import { info, error } from 'electron-log'
 
 import { pathToFileURL } from 'url'
 
-import fetch, { Response } from 'node-fetch'
 import { store } from 'main/data/store'
 import {
     selectPipeline,
@@ -194,6 +192,13 @@ export class Pipeline2IPC {
             !this.instance ||
             selectStatus(store.getState()) == PipelineStatus.STOPPED
         ) {
+            // FIXME: Prune any existing jobs data on the server
+            if (existsSync(resolve(this.props.appDataFolder, 'jobs'))) {
+                rmSync(resolve(this.props.appDataFolder, 'jobs'), {
+                    recursive: true,
+                    force: true,
+                })
+            }
             store.dispatch(setStatus(PipelineStatus.STARTING))
             // Search for port to launch the pipeline
             if (
@@ -438,11 +443,23 @@ ${command} ${args.join(' ')}`
                 let message = `Pipeline exiting with code ${code} and signal ${signal}`
                 store.dispatch(setStatus(PipelineStatus.STOPPED))
                 this.pushMessage(message)
+                if (existsSync(resolve(this.props.appDataFolder, 'jobs'))) {
+                    rmSync(resolve(this.props.appDataFolder, 'jobs'), {
+                        recursive: true,
+                        force: true,
+                    })
+                }
             })
             this.instance.on('close', (code: number, args: any[]) => {
                 let message = `Pipeline closing with code: ${code} args: ${args}`
                 store.dispatch(setStatus(PipelineStatus.STOPPED))
                 this.pushMessage(message)
+                if (existsSync(resolve(this.props.appDataFolder, 'jobs'))) {
+                    rmSync(resolve(this.props.appDataFolder, 'jobs'), {
+                        recursive: true,
+                        force: true,
+                    })
+                }
             })
             store.dispatch(useWebservice(this.props.webservice))
         }
@@ -459,12 +476,16 @@ ${command} ${args.join(' ')}`
         }
         if (this.instance) {
             info('closing pipeline')
-            let finished = false
-            finished = this.instance.kill()
-            if (!finished) {
+            if (!this.instance.kill()) {
                 this.instance.kill('SIGKILL')
             }
             store.dispatch(setStatus(PipelineStatus.STOPPED))
+            if (existsSync(resolve(this.props.appDataFolder, 'jobs'))) {
+                rmSync(resolve(this.props.appDataFolder, 'jobs'), {
+                    recursive: true,
+                    force: true,
+                })
+            }
             return
         }
     }
@@ -578,6 +599,8 @@ export function registerPipeline2ToIPC(
     // Launch the pipeline if requested in the settings
     if (!settings || (settings && settings.runLocalPipeline)) {
         pipeline2instance.launch()
+    } else {
+        console.log('not launching ??', settings)
     }
 
     return pipeline2instance

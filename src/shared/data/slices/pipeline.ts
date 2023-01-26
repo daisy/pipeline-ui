@@ -20,6 +20,7 @@ const initialState = {
     webservice: null,
     scripts: [],
     jobs: [],
+    internalJobCounter: 0,
 } as PipelineState
 
 export const pipeline = createSlice({
@@ -66,10 +67,11 @@ export const pipeline = createSlice({
                 ).length == 0
             ) {
                 state.jobs.push(param.payload)
+                state.internalJobCounter += 1
             }
         },
         updateJob: (state: PipelineState, param: PayloadAction<Job>) => {
-            state.jobs = state.jobs = state.jobs.map((job) => {
+            state.jobs = state.jobs.map((job) => {
                 return job.internalId === param.payload.internalId
                     ? param.payload
                     : job
@@ -126,6 +128,11 @@ export const selectors = {
     selectWebservice: (state: RootState) => state.pipeline.webservice,
     selectJobs: (state: RootState) => state.pipeline.jobs,
     selectScripts: (state: RootState) => state.pipeline.scripts,
+    newJob: (pipeline: PipelineState) =>
+        ({
+            internalId: `job-${pipeline.internalJobCounter}`,
+            state: JobState.NEW,
+        } as Job),
 }
 
 export const {
@@ -134,4 +141,5 @@ export const {
     selectWebservice,
     selectJobs,
     selectScripts,
+    newJob,
 } = selectors

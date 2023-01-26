@@ -20,7 +20,7 @@ import { ENVIRONMENT, IPC } from 'shared/constants'
 import { PipelineState, PipelineStatus } from 'shared/types'
 import { resolveUnpacked } from 'shared/utils'
 import { store } from 'main/data/store'
-import { selectPipeline } from 'shared/data/slices/pipeline'
+import { addJob, newJob, selectPipeline } from 'shared/data/slices/pipeline'
 
 export class PipelineTray {
     tray: Tray
@@ -126,6 +126,8 @@ export class PipelineTray {
                 label: 'Create a job',
                 enabled: newState.status == PipelineStatus.RUNNING,
                 click: async (item, window, event) => {
+                    const job = newJob(selectPipeline(store.getState()))
+                    store.dispatch(addJob(job))
                     try {
                         this.mainWindow.show()
                     } catch (error) {

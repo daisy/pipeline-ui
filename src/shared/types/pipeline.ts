@@ -38,11 +38,12 @@ export enum PipelineStatus {
 /**
  * Local instance state to be used by front
  */
-export interface PipelineState {
+export type PipelineState = {
     webservice?: Webservice
     status: PipelineStatus
     jobs?: Job[]
     scripts?: Script[]
+    internalJobCounter?: number
     // messages: Array<string>
     // errors: Array<string>
 }

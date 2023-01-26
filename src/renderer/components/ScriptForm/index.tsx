@@ -27,25 +27,25 @@ const { App } = window
 export function ScriptForm({ job, script, updateJob, onClose }) {
     const [submitInProgress, setSubmitInProgress] = useState(false)
     const [error, setError] = useState(false)
-    const { pipeline } = useWindowStore()
-    // TODO : not sure if we should switch to store here
-    // or keep the react state approach
-    // Keeping the jobRequest definition using state for now
-    const [jobRequest, setJobRequest] = useState<JobRequest>(null)
     useEffect(() => {
-        setJobRequest({
-            scriptHref: script.href,
-            nicename: script.nicename,
-            inputs: script.inputs.map((item) => ({
-                name: item.name,
-                value: null,
-                isFile: item.type == 'anyFileURI' || item.type == 'anyDirURI',
-            })),
-            options: script.options.map((item) => ({
-                name: item.name,
-                value: item.default ? item.default : null,
-                isFile: item.type == 'anyFileURI' || item.type == 'anyDirURI',
-            })),
+        updateJob({
+            ...job,
+            jobRequest: {
+                scriptHref: script.href,
+                nicename: script.nicename,
+                inputs: script.inputs.map((item) => ({
+                    name: item.name,
+                    value: null,
+                    isFile:
+                        item.type == 'anyFileURI' || item.type == 'anyDirURI',
+                })),
+                options: script.options.map((item) => ({
+                    name: item.name,
+                    value: item.default ? item.default : null,
+                    isFile:
+                        item.type == 'anyFileURI' || item.type == 'anyDirURI',
+                })),
+            },
         })
     }, [script])
 
@@ -54,11 +54,11 @@ export function ScriptForm({ job, script, updateJob, onClose }) {
 
     // take input from the form and add it to the job request
     let saveValueInJobRequest = (value, data) => {
-        if (!jobRequest) {
+        if (!job.jobRequest) {
             return
         }
-        let inputs = [...jobRequest.inputs]
-        let options = [...jobRequest.options]
+        let inputs = [...job.jobRequest.inputs]
+        let options = [...job.jobRequest.options]
 
         // update the array and return a new copy of it
         let updateValue = (value, data, arr) => {
@@ -72,13 +72,14 @@ export function ScriptForm({ job, script, updateJob, onClose }) {
         } else {
             options = updateValue(value, data, options)
         }
-        let newJobRequest = {
-            ...jobRequest,
-            inputs: [...inputs],
-            options: [...options],
-        }
-
-        setJobRequest(newJobRequest)
+        updateJob({
+            ...job,
+            jobRequest: {
+                ...job.jobRequest,
+                inputs: [...inputs],
+                options: [...options],
+            },
+        })
     }
 
     // submit a job
@@ -88,8 +89,6 @@ export function ScriptForm({ job, script, updateJob, onClose }) {
         App.store.dispatch(
             runJob({
                 ...job,
-                jobRequest: jobRequest,
-                script,
             })
         )
         setSubmitInProgress(false)
@@ -131,7 +130,7 @@ export function ScriptForm({ job, script, updateJob, onClose }) {
                                             initialValue={findValue(
                                                 item.name,
                                                 item.kind,
-                                                jobRequest
+                                                job.jobRequest
                                             )}
                                         />
                                     </li>
@@ -157,7 +156,7 @@ export function ScriptForm({ job, script, updateJob, onClose }) {
                                                 initialValue={findValue(
                                                     item.name,
                                                     item.kind,
-                                                    jobRequest
+                                                    job.jobRequest
                                                 )}
                                             />
                                         </li>

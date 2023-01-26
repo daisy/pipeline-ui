@@ -6,15 +6,11 @@ import { RootState } from 'shared/types/store'
 import { IPC } from 'shared/constants'
 
 import { readSettings, middlewares } from './middlewares'
+import { getInitialState } from 'shared/data/store'
 
-let preloadedState: RootState = {
-    pipeline: {
-        status: PipelineStatus.UNKNOWN,
-        scripts: [],
-        jobs: [],
-    },
-    settings: readSettings(),
-}
+let preloadedState: RootState = getInitialState()
+
+preloadedState.settings = readSettings()
 
 // Code to preload store if we want the store to be saved accross application launches
 // const storeFile = resolve(app.getPath('userData'), 'store.json')

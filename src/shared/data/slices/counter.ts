@@ -1,4 +1,5 @@
 import { createSlice } from '@reduxjs/toolkit'
+import { RootState } from 'shared/types/store'
 
 export interface CounterState {
     count: number
@@ -24,3 +25,9 @@ export const counter = createSlice({
 })
 
 export const { increment, decrement } = counter.actions
+
+export const selectors = {
+    selectCounter: (s: RootState) => s.counter,
+}
+
+export const { selectCounter } = selectors

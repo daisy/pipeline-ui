@@ -5,6 +5,7 @@ import {
     Menu,
     MenuItemConstructorOptions,
     shell,
+    nativeTheme,
 } from 'electron'
 
 import { error } from 'electron-log'
@@ -34,12 +35,12 @@ import { setupFileSystemEvents } from './fileSystem'
 import { setupOpenInBrowserEvents } from './browser'
 import { APP_CONFIG } from '~/app.config'
 import { registerReduxTestIPC } from './factories/ipcs/reduxTest'
+import { getPipelineInstance } from './data/middlewares/pipeline'
 import { selectColorScheme, selectSettings } from 'shared/data/slices/settings'
 
 makeAppWithSingleInstanceLock(async () => {
     await app.whenReady()
     registerStoreIPC()
-    const settings = selectSettings(store.getState())
     // load theme from settings
     nativeTheme.themeSource = selectColorScheme(store.getState())
 
@@ -52,13 +53,16 @@ makeAppWithSingleInstanceLock(async () => {
 
     registerReduxTestIPC()
 
-    // Pipeline instance creation with IPC communication registering
-    const pipelineInstance = registerPipeline2ToIPC(settings)
+    // Pipeline instance creation
+    // IPC is managed by the store
+    const pipelineInstance = getPipelineInstance(store.getState())
+    pipelineInstance.launch()
+
     bindWindowToPipeline(mainWindow, pipelineInstance)
 
     let tray: PipelineTray = null
     try {
-        tray = new PipelineTray(mainWindow, pipelineInstance)
+        tray = new PipelineTray(mainWindow)
     } catch (err) {
         error(err)
         // quit app for now but we might need to think for a better handling for the user

@@ -1,11 +1,12 @@
-import { app, BrowserWindow, Event, ipcMain } from 'electron'
+import { app, BrowserWindow, Event, ipcMain, nativeTheme } from 'electron'
 import { store } from 'main/data/store'
 
 import { ENVIRONMENT, IPC, PLATFORM } from 'shared/constants'
 import { selectPipeline } from 'shared/data/slices/pipeline'
+import { selectSettings } from 'shared/data/slices/settings'
 import { WindowProps } from 'shared/types'
 import { APP_CONFIG } from '~/app.config'
-import { Pipeline2IPC } from '../ipcs/pipeline2'
+import { PipelineInstance } from '../ipcs/pipeline'
 
 /**
  * Bind a window to a pipeline instance.
@@ -16,7 +17,7 @@ import { Pipeline2IPC } from '../ipcs/pipeline2'
  */
 export function bindWindowToPipeline(
     binding: BrowserWindow,
-    pipeline: Pipeline2IPC
+    pipeline: PipelineInstance
 ) {
     // Keep the window id here as it is removed before the close event
     const windowID = binding.id
@@ -27,13 +28,6 @@ export function bindWindowToPipeline(
 
     pipeline.registerErrorsListener(`${windowID}`, (message) => {
         binding.webContents.send(IPC.PIPELINE.ERRORS.UPDATE, message)
-    })
-
-    ipcMain.on(IPC.PIPELINE.STATE.SEND, (event) => {
-        binding.webContents.send(
-            IPC.PIPELINE.STATE.CHANGED,
-            selectPipeline(store.getState())
-        )
     })
 
     binding.on('close', (event) => {
@@ -77,6 +71,5 @@ export function createWindow({ id, ...settings }: WindowProps) {
     if (PLATFORM.IS_MAC) {
         app.dock.show()
     }
-
     return window
 }

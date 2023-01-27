@@ -5,6 +5,7 @@ import {
     PipelineStatus,
     PipelineState,
     ApplicationSettings,
+    PipelineInstanceProperties,
 } from 'shared/types'
 import { IPC } from 'shared/constants'
 import { spawn, ChildProcessWithoutNullStreams } from 'child_process'
@@ -26,60 +27,11 @@ import {
     useWebservice,
 } from 'shared/data/slices/pipeline'
 
-// NP : for future use if we want to use the app
-// to also manage a pipeline behind https
-//import { request as httpsRequest } from 'https'
-
-/**
- * Properties for initializing ipc with the daisy pipeline 2
- *
- */
-export interface Pipeline2IPCProps {
-    /**
-     * optional path of the local installation of the pipeline,
-     *
-     * defaults to the application resources/daisy-pipeline
-     */
-    localPipelineHome?: string
-
-    appDataFolder?: string
-
-    logsFolder?: string
-    /**
-     * optional path to the java runtime
-     *
-     * defaults to the application resource/jre folder
-     */
-    jrePath?: string
-
-    /**
-     * Webservice configuration to use for embedded pipeline,
-     *
-     * defaults to a localhost managed configuration :
-     * ```js
-     * {
-     *      host: "localhost"
-     *      port: 0, // will search for an available port on the current host when calling launch() the first time
-     *      path: "/ws"
-     * }
-     * ```
-     *
-     */
-    webservice?: Webservice
-
-    /**
-     *
-     */
-    onError?: (error: string) => void
-
-    onMessage?: (message: string) => void
-}
-
 /**
  * Local DAISY Pipeline 2 management class
  */
-export class Pipeline2IPC {
-    props: Pipeline2IPCProps
+export class PipelineInstance {
+    props: PipelineInstanceProperties
     messages: Array<string>
     messagesListeners: Map<string, (data: string) => void> = new Map<
         string,
@@ -97,7 +49,7 @@ export class Pipeline2IPC {
      *
      * @param parameters
      */
-    constructor(props?: Pipeline2IPCProps) {
+    constructor(props?: PipelineInstanceProperties) {
         const osAppDataFolder = app.getPath('userData')
         this.props = {
             localPipelineHome:
@@ -534,9 +486,9 @@ ${command} ${args.join(' ')}`
  */
 export function registerPipeline2ToIPC(
     settings?: ApplicationSettings
-): Pipeline2IPC {
+): PipelineInstance {
     // Instance managed through IPC calls within the app
-    let pipeline2instance = new Pipeline2IPC(
+    let pipeline2instance = new PipelineInstance(
         settings ? settings.localPipelineProps : undefined
     )
     // Update the instance if the settings are being updated

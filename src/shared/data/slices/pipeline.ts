@@ -37,6 +37,33 @@ export const pipeline = createSlice({
             if (param.payload.jobs) state.jobs = param.payload.jobs
             if (param.payload.scripts) state.scripts = param.payload.scripts
         },
+        /**
+         * Start the pipeline.
+         *
+         * (Middleware handled action, that will create an instance from settings if necessary and then start it)
+         * @param state
+         */
+        start: (state: PipelineState, action?: PayloadAction<Webservice>) => {
+            if (action.payload) {
+                state.webservice = action.payload
+            }
+        },
+
+        /**
+         * Stop the pipeline instance
+         *
+         * (Middleware handled action )
+         * @param state current pipeline state
+         * @param action payload with a boolean : if true, then app is closing
+         */
+        stop: (state: PipelineState, action?: PayloadAction<boolean>) => {},
+        /**
+         * Set a new webservice to use
+         *
+         * (Middleware handled action )
+         * @param state
+         * @param param
+         */
         useWebservice: (
             state: PipelineState,
             param: PayloadAction<Webservice>
@@ -112,6 +139,8 @@ export default pipeline.reducer
 
 export const {
     setState,
+    start,
+    stop,
     useWebservice,
     setStatus,
     setJobs,

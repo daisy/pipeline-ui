@@ -49,6 +49,51 @@ export type PipelineState = {
 }
 
 /**
+ * Properties for initializing ipc with the daisy pipeline 2
+ *
+ */
+export type PipelineInstanceProperties = {
+    /**
+     * optional path of the local installation of the pipeline,
+     *
+     * defaults to the application resources/daisy-pipeline
+     */
+    localPipelineHome?: string
+
+    appDataFolder?: string
+
+    logsFolder?: string
+    /**
+     * optional path to the java runtime
+     *
+     * defaults to the application resource/jre folder
+     */
+    jrePath?: string
+
+    /**
+     * Webservice configuration to use for embedded pipeline,
+     *
+     * defaults to a localhost managed configuration :
+     * ```js
+     * {
+     *      host: "localhost"
+     *      port: 0, // will search for an available port on the current host when calling launch() the first time
+     *      path: "/ws"
+     * }
+     * ```
+     *
+     */
+    webservice?: Webservice
+
+    /**
+     *
+     */
+    onError?: (error: string) => void
+
+    onMessage?: (message: string) => void
+}
+
+/**
  * Properties for running a DAISY pipeline instance.
  */
 export interface PipelineInstanceProps {

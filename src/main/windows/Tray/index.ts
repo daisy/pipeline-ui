@@ -13,28 +13,37 @@ import {
     bindWindowToPipeline,
     makeAppSetup,
     makeAppWithSingleInstanceLock,
-    Pipeline2IPC,
+    PipelineInstance,
 } from '../../factories'
 import { MainWindow, AboutWindow } from '../../windows'
 import { ENVIRONMENT, IPC } from 'shared/constants'
 import { PipelineState, PipelineStatus } from 'shared/types'
 import { resolveUnpacked } from 'shared/utils'
 import { store } from 'main/data/store'
-import { addJob, newJob, selectPipeline } from 'shared/data/slices/pipeline'
+import {
+    addJob,
+    newJob,
+    selectPipeline,
+    start,
+    stop,
+} from 'shared/data/slices/pipeline'
+import { getPipelineInstance } from 'main/data/middlewares/pipeline'
 
 export class PipelineTray {
     tray: Tray
     mainWindow: BrowserWindow
-    pipeline?: Pipeline2IPC = null
     menuBaseTemplate: Array<Electron.MenuItemConstructorOptions> = []
     pipelineMenu: Array<Electron.MenuItemConstructorOptions> = []
+    state: PipelineState
 
-    constructor(mainWindow: BrowserWindow, pipeline?: Pipeline2IPC) {
+    constructor(mainWindow: BrowserWindow) {
         const icon = nativeImage.createFromPath(
             resolveUnpacked('resources', 'icons', 'logo_32x32.png')
         )
         this.tray = new Tray(icon)
         this.mainWindow = mainWindow
+
+        const instance = getPipelineInstance(store.getState())
         this.menuBaseTemplate = [
             // Note : uncomment if we want those window
             // {
@@ -55,14 +64,25 @@ export class PipelineTray {
                     BrowserWindow.getAllWindows().forEach((window) =>
                         window.destroy()
                     )
-                    pipeline && pipeline.stop(true)
+                    store.dispatch(stop(true))
                     app.quit()
                 },
             },
         ]
 
-        if (pipeline) {
-            this.bindToPipeline(pipeline)
+        if (instance) {
+            this.state = selectPipeline(store.getState())
+            const unsubscibe = store.subscribe(() => {
+                let newState = selectPipeline(store.getState())
+                if (newState != this.state) {
+                    this.state = newState
+                    this.refreshElectronTray()
+                }
+            })
+            this.refreshElectronTray()
+            app.on('before-quit', (event) => {
+                unsubscibe()
+            })
         } else {
             this.pipelineMenu = [
                 {
@@ -81,50 +101,28 @@ export class PipelineTray {
     }
 
     /**
-     * Bind a pipeline instance to the tray to allow interactions.
-     *
-     * We use the usual store subscribtion instead of the middleware forwarding
-     * to find changes in the store.
-     * @param pipeline
+     * refresh the tray
      */
-    bindToPipeline(pipeline: Pipeline2IPC) {
-        // setup listeners to update tray based on states
-        let currentState = selectPipeline(store.getState())
-        const unsubscibe = store.subscribe(() => {
-            let newState = selectPipeline(store.getState())
-            if (newState != currentState) {
-                currentState = newState
-                this.updateElectronTray(newState, pipeline)
-            }
-        })
-        this.updateElectronTray(currentState, pipeline)
-        app.on('before-quit', (event) => {
-            unsubscibe()
-        })
-    }
-
-    /**
-     * Update the tray based on a given pipeline state
-     * @param newState State to use for tray configuration
-     * @param pipeline pipeline instance to be controled by the tray actions
-     */
-    updateElectronTray(newState: PipelineState, pipeline: Pipeline2IPC) {
+    refreshElectronTray() {
+        const state = store.getState()
+        const pipeline = getPipelineInstance(state)
+        const pipelineState = selectPipeline(state)
         this.pipelineMenu = [
             {
                 label:
-                    newState.status == PipelineStatus.STOPPED
+                    pipelineState.status == PipelineStatus.STOPPED
                         ? 'Start the engine'
-                        : `Engine is ${newState.status}${
-                              newState.webservice
-                                  ? ' on port ' + newState.webservice.port
+                        : `Engine is ${pipelineState.status}${
+                              pipelineState.webservice
+                                  ? ' on port ' + pipelineState.webservice.port
                                   : ''
                           }`,
-                enabled: newState.status == PipelineStatus.STOPPED,
-                click: async (item, window, event) => pipeline.launch(),
+                enabled: pipelineState.status == PipelineStatus.STOPPED,
+                click: async (item, window, event) => store.dispatch(start()),
             },
             {
                 label: 'Create a job',
-                enabled: newState.status == PipelineStatus.RUNNING,
+                enabled: pipelineState.status == PipelineStatus.RUNNING,
                 click: async (item, window, event) => {
                     const job = newJob(selectPipeline(store.getState()))
                     store.dispatch(addJob(job))

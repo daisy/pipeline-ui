@@ -7,6 +7,8 @@ import {
     updateJob,
     selectWebservice,
     selectStatus,
+    start,
+    stop,
 } from 'shared/data/slices/pipeline'
 
 import {
@@ -25,8 +27,15 @@ import {
 import { pipelineAPI } from '../apis/pipeline'
 import { PayloadAction } from '@reduxjs/toolkit'
 import { saveFile, unzipFile } from 'main/factories/ipcs/file'
-import { selectDownloadPath, selectSettings } from 'shared/data/slices/settings'
+import {
+    selectDownloadPath,
+    selectPipelineProperties,
+    selectSettings,
+} from 'shared/data/slices/settings'
 import { ParserException } from 'shared/parser/pipelineXmlConverter/parser'
+import { PipelineInstance } from 'main/factories'
+import { RootState } from 'shared/types/store'
+import ElectronLog from 'electron-log'
 
 // prettier-ignore
 /**
@@ -164,8 +173,32 @@ function startMonitor(j: Job, ws: Webservice, getState, dispatch) {
     }, 1000)
 }
 
+// Store managed pipeline instance
+let _pipeline_instance: PipelineInstance = null
+
+/**
+ * Get the store managed pipeline instance
+ * (to use only on the backend and after the store is initialized )
+ * @param state the current store state, required to initialize the instance
+ * @returns the initialized pipeline instance
+ */
+export const getPipelineInstance = (state: RootState): PipelineInstance => {
+    try {
+        if (_pipeline_instance == null) {
+            _pipeline_instance = new PipelineInstance(
+                selectPipelineProperties(state)
+            )
+        }
+        return _pipeline_instance
+    } catch (e) {
+        ElectronLog.error(e)
+        return null
+    }
+}
+
 /**
  * Middleware to fetch data from the pipeline
+ * and manage a local pipeline instance
  * @param param0
  * @returns
  */
@@ -176,6 +209,12 @@ export function pipelineMiddleware({ getState, dispatch }) {
         // Note NP : instead of doing the alive check, testing to directly check for scripts
         // and consider the pipeline alive as soon as we have the scripts list
         switch (action.type) {
+            case start.type:
+                getPipelineInstance(state)?.launch()
+                break
+            case stop.type:
+                getPipelineInstance(state)?.stop(action.payload)
+                break
             case useWebservice.type:
                 let fetchScriptsInterval = null
                 const fetchScripts = pipelineAPI.fetchScripts()
@@ -234,6 +273,12 @@ export function pipelineMiddleware({ getState, dispatch }) {
                             })
                     }
                 }, 1000)
+                break
+            default:
+                if (action.type.startsWith('settings/')) {
+                    // FIXME : check if local pipeline props have changed and
+                    // if so, recreate a new pipeline instance from it using stop and start
+                }
                 break
         }
         return next(action)

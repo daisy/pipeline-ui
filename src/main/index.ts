@@ -34,16 +34,21 @@ import { setupFileSystemEvents } from './fileSystem'
 import { setupOpenInBrowserEvents } from './browser'
 import { APP_CONFIG } from '~/app.config'
 import { registerReduxTestIPC } from './factories/ipcs/reduxTest'
+import { selectColorScheme, selectSettings } from 'shared/data/slices/settings'
 
 makeAppWithSingleInstanceLock(async () => {
     await app.whenReady()
+    registerStoreIPC()
+    const settings = selectSettings(store.getState())
+    // load theme from settings
+    nativeTheme.themeSource = selectColorScheme(store.getState())
+
     // Windows
     let mainWindow = await makeAppSetup(MainWindow)
+
     registerSettingsWindowCreationByIPC()
     registerAboutWindowCreationByIPC()
     registerFileIPC()
-    // Settings
-    let settings = registerApplicationSettingsIPC()
 
     registerReduxTestIPC()
 
@@ -63,7 +68,6 @@ makeAppWithSingleInstanceLock(async () => {
     setupShowInFolderEvents()
     setupOpenInBrowserEvents()
     setupFileSystemEvents()
-    registerStoreIPC()
 
     const isMac = process.platform === 'darwin'
 

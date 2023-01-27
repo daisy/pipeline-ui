@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useWindowStore } from 'renderer/store'
-import { ApplicationSettings } from 'shared/types'
+import { ApplicationSettings, ColorScheme } from 'shared/types'
 import { FileOrFolderInput } from '../CustomFields/FileOrFolderInput'
 import { setSettings, save } from 'shared/data/slices/settings'
 const { App } = window // The "App" comes from the bridge
@@ -27,6 +27,15 @@ export function SettingsForm() {
         setNewSettings({
             ...newSettings,
             downloadFolder: filename,
+        })
+        setSaved(false)
+    }
+    const colorModeChanged = (e) => {
+        setNewSettings({
+            ...newSettings,
+            colorScheme: Object.keys(ColorScheme)[
+                e.target.selectedIndex
+            ] as keyof typeof ColorScheme,
         })
         setSaved(false)
     }
@@ -58,6 +67,29 @@ export function SettingsForm() {
                         initialValue={newSettings.downloadFolder}
                         buttonLabel="Browse"
                     />
+                </div>
+                <div className="form-field">
+                    <label htmlFor="colorMode">Interface color mode</label>
+                    <span className="description">
+                        Select the interface color scheme to use
+                    </span>
+                    <select
+                        id="colorMode"
+                        onChange={(e) => colorModeChanged(e)}
+                    >
+                        {Object.entries(ColorScheme).map(
+                            ([k, v]: [string, string]) => {
+                                return (
+                                    <option
+                                        key={k}
+                                        selected={settings.colorScheme == k}
+                                    >
+                                        {v}
+                                    </option>
+                                )
+                            }
+                        )}
+                    </select>
                 </div>
                 {/* insert local pipeline settings form part here */}
                 {/* insert remote pipeline settings form part here */}

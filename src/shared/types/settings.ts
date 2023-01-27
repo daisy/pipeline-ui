@@ -1,6 +1,12 @@
 import { PipelineInstanceProps, Webservice } from './pipeline'
 
-export interface ApplicationSettings {
+export enum ColorScheme {
+    system = 'System default mode',
+    light = 'Light mode',
+    dark = 'Dark mode',
+}
+
+export type ApplicationSettings = {
     // Default folder to download the results on the user disk
     downloadFolder?: string
     // Local pipeline server
@@ -13,4 +19,6 @@ export interface ApplicationSettings {
     useRemotePipeline?: boolean
     // - Remote pipeline connection settings
     remotePipelineWebservice?: Webservice
+    // Dark mode selector
+    colorScheme: keyof typeof ColorScheme
 }

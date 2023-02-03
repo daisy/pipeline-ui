@@ -59,7 +59,7 @@ export class PipelineInstance {
                 (props && props.jrePath) ??
                 resolveUnpacked('resources', 'daisy-pipeline', 'jre'),
             // Note : [49152 ; 65535] is the range of dynamic port,  0 is reserved for error case
-            webservice: (props && props.webservice) ?? {
+            webservice: (props && props.webservice && { ...props.webservice} ) ?? {
                 host: '127.0.0.1', // Note : localhost resolve as ipv6 ':::' in nodejs, but we need ipv4 for the pipeline
                 port: 0,
                 path: '/ws',

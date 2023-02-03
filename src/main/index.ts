@@ -25,8 +25,9 @@ import {
     registerSettingsWindowCreationByIPC,
 } from './windows'
 
+import { buildMenuTemplate } from './menu'
+
 import { registerStoreIPC, store } from './data/store'
-import { counter } from 'shared/data/slices/counter'
 import { setupFileDialogEvents } from './fileDialogs'
 import { ENVIRONMENT, IPC } from 'shared/constants'
 import { setupShowInFolderEvents } from './folder'
@@ -34,7 +35,6 @@ import { registerFileIPC } from './factories/ipcs/file'
 import { setupFileSystemEvents } from './fileSystem'
 import { setupOpenInBrowserEvents } from './browser'
 import { APP_CONFIG } from '~/app.config'
-import { registerReduxTestIPC } from './factories/ipcs/reduxTest'
 import { getPipelineInstance } from './data/middlewares/pipeline'
 import { selectColorScheme, selectSettings } from 'shared/data/slices/settings'
 
@@ -50,8 +50,6 @@ makeAppWithSingleInstanceLock(async () => {
     registerSettingsWindowCreationByIPC()
     registerAboutWindowCreationByIPC()
     registerFileIPC()
-
-    registerReduxTestIPC()
 
     // Pipeline instance creation
     // IPC is managed by the store
@@ -73,113 +71,31 @@ makeAppWithSingleInstanceLock(async () => {
     setupOpenInBrowserEvents()
     setupFileSystemEvents()
 
-    const isMac = process.platform === 'darwin'
-
-    // Template taken from electron documentation
-    // To be completed
-    // @ts-ignore
-    const template: MenuItemConstructorOptions = [
-        // { role: 'appMenu' }
-        ...(isMac
-            ? [
-                  {
-                      label: app.name,
-                      submenu: [
-                          { role: 'services' },
-                          { type: 'separator' },
-                          { role: 'hide' },
-                          { role: 'hideOthers' },
-                          { role: 'unhide' },
-                          { type: 'separator' },
-                          { role: 'quit' },
-                      ],
-                  },
-              ]
-            : []),
-        // { role: 'fileMenu' }
-        {
-            label: 'File',
-            submenu: [
-                {
-                    label: 'Create a new job',
-                    click: async () => {
-                        try {
-                            mainWindow.show()
-                        } catch (error) {
-                            mainWindow = await MainWindow()
-                            bindWindowToPipeline(mainWindow, pipelineInstance)
-                        }
-                    },
-                },
-                {
-                    label: 'Settings',
-                    click: async () => {
-                        // Open the settings window
-                        ipcMain.emit(IPC.WINDOWS.SETTINGS.CREATE)
-                    },
-                },
-                { type: 'separator' },
-                isMac ? { role: 'close' } : { role: 'quit' },
-            ],
+    // TODO recreate the menu on store changes
+    //@ts-ignore
+    let template = buildMenuTemplate({
+        appName: app.name,
+        onCreateJob: async () => {
+            try {
+                mainWindow.show()
+            } catch (error) {
+                mainWindow = await MainWindow()
+                bindWindowToPipeline(mainWindow, pipelineInstance)
+            }
         },
-        {
-            label: 'Edit',
-            submenu: [{ role: 'copy' }, { role: 'paste' }],
+        onShowSettings: async () => {
+            // Open the settings window
+            ipcMain.emit(IPC.WINDOWS.SETTINGS.CREATE)
         },
-        {
-            label: 'Test',
-            submenu: [
-                {
-                    label: 'Value is',
-                    click: async () => {
-                        await alert('Value is')
-                    },
-                },
-                {
-                    label: 'Increment',
-                    click: async () => {
-                        store.dispatch(counter.actions.increment())
-                    },
-                },
-                {
-                    label: 'Decrement',
-                    click: async () => {
-                        store.dispatch(counter.actions.decrement())
-                    },
-                },
-            ],
+        onLearnMore: async () => {
+            await shell.openExternal('https://daisy.github.io/pipeline/')
         },
-        {
-            label: 'View',
-            submenu: [
-                { role: 'resetZoom' },
-                { role: 'zoomIn' },
-                { role: 'zoomOut' },
-            ],
+        onUserGuide: async () => {
+            await shell.openExternal(
+                'https://daisy.github.io/pipeline/Get-Help/'
+            )
         },
-        {
-            role: 'help',
-            submenu: [
-                {
-                    label: 'Learn more',
-                    click: async () => {
-                        await shell.openExternal(
-                            'https://daisy.github.io/pipeline/'
-                        )
-                    },
-                },
-                {
-                    label: 'User guide',
-                    click: async () => {
-                        await shell.openExternal(
-                            'https://daisy.github.io/pipeline/Get-Help/'
-                        )
-                    },
-                },
-            ],
-        },
-    ]
-
+    })
     // @ts-ignore
     const menu = Menu.buildFromTemplate(template)
     Menu.setApplicationMenu(menu)

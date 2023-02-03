@@ -7,7 +7,6 @@ import { TabView } from '../TabView'
 import { AddJobTab, JobTab } from '../JobTab'
 import { JobTabPanel } from '../JobTabPanel'
 import { useWindowStore } from 'renderer/store'
-import { ReduxTest } from '../ReduxTest'
 import {
     addJob,
     removeJob,
@@ -46,7 +45,6 @@ export function MainView() {
 
     return (
         <>
-            <ReduxTest />
             <TabView<Job>
                 items={pipeline.jobs}
                 onTabCreate={addJobHandle}

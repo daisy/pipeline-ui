@@ -43,10 +43,6 @@ const API = {
     whenAboutWindowClosed: ipcs.whenAboutWindowClose,
 
     // we can add on to this API and restructure it as we move more commands to the redux side
-    reduxTest: {
-        increment: ipcs.increment,
-        decrement: ipcs.decrement,
-    },
     store: {
         dispatch,
         getStateSync: () => ipcRenderer.sendSync(IPC.STORE.GET),

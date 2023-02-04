@@ -12,13 +12,9 @@ import {
 } from 'shared/data/slices/pipeline'
 
 import {
-    ApplicationSettings,
-    baseurl,
     Job,
-    JobData,
     JobState,
     JobStatus,
-    NamedResult,
     PipelineStatus,
     ResultFile,
     Webservice,

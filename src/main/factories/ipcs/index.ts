@@ -1,5 +1,4 @@
 export * from './register-window-creation'
-export * from './pipeline2'
 export * from './settings'
 export * from '../windows/create'
 export * from '../app'

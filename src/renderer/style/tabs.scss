@@ -10,7 +10,6 @@
     border-bottom-left-radius: 0;
     border-bottom-right-radius: 0;
     border: thin solid;
-    border-bottom: none;
     
     font-weight: normal;
     font-size: larger;
@@ -19,11 +18,11 @@
     display: flex;
     gap: calc(var(--pad)/2);
     font-size: large;
-    transition: all .2s ease-in-out;
-
+    transition: all .1s ease-in-out;
+    border-bottom: none;
     
     &[aria-selected=false]:hover {
-        background-color: var(--secondary-color-2);
+        background-color: var(--secondary-color-2hov);
         color: var(--secondary-2-contrast);
     }
     &[aria-selected=true] {
@@ -44,6 +43,7 @@
 [role=tabpanel] {
     padding: calc(var(--pad)/2);
     border: thin solid;
+    // border-top: none;
     border-top-left-radius: 0;
     height: var(--tab-panel-height);
 }

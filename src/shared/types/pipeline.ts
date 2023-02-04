@@ -44,6 +44,7 @@ export type PipelineState = {
     jobs?: Job[]
     scripts?: Script[]
     internalJobCounter?: number
+    selectedJobId: string
     // messages: Array<string>
     // errors: Array<string>
 }

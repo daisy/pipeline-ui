@@ -1,5 +1,8 @@
+import { calculateJobName } from 'shared/jobName'
+
 export function buildMenuTemplate({
     appName,
+    jobs,
     onCreateJob,
     onShowSettings,
     onLearnMore,
@@ -9,12 +12,9 @@ export function buildMenuTemplate({
     onNextTab,
     onPrevTab,
     onGotoTab,
-    onFocusCurrentTab, // this could put the cursor on the current tab contents
 }) {
     const isMac = process.platform === 'darwin'
 
-    // Template taken from electron documentation
-    // To be completed
     // @ts-ignore
     const template: MenuItemConstructorOptions = [
         // { role: 'appMenu' }
@@ -39,8 +39,9 @@ export function buildMenuTemplate({
             label: 'File',
             submenu: [
                 {
-                    label: 'Create a new job',
+                    label: 'New job',
                     click: onCreateJob,
+                    accelerator: 'CommandOrControl+N',
                 },
                 {
                     label: 'Settings',
@@ -55,25 +56,6 @@ export function buildMenuTemplate({
             submenu: [{ role: 'copy' }, { role: 'paste' }],
         },
         {
-            label: 'Test',
-            submenu: [
-                {
-                    label: 'Value is',
-                    click: async () => {
-                        await alert('Value is')
-                    },
-                },
-                {
-                    label: 'Increment',
-                    click: onTestIncrement,
-                },
-                {
-                    label: 'Decrement',
-                    click: onTestDecrement,
-                },
-            ],
-        },
-        {
             label: 'View',
             submenu: [
                 { role: 'resetZoom' },
@@ -85,23 +67,23 @@ export function buildMenuTemplate({
             label: 'Goto',
             submenu: [
                 {
-                    label: 'Next tab',
+                    label: 'Next job',
                     click: onNextTab,
+                    accelerator: 'Control+Tab',
                 },
                 {
-                    label: 'Previous tab',
+                    label: 'Previous job',
                     click: onPrevTab,
+                    accelerator: 'Control+Shift+Tab',
                 },
-                { type: 'separator' },
-                {
-                    label: '1. New Job (idle)',
-                },
-                {
-                    label: '2. New Job (running)',
-                },
-                {
-                    label: '3. DTBook to EPUB 3 (complete)',
-                },
+                ...(jobs.length > 0 ? [{ type: 'separator' }] : []),
+                ...(jobs.length > 0
+                    ? jobs.map((j, idx) => ({
+                          label: `${idx + 1}. ${calculateJobName(j)}`,
+                        //   click: onGotoTab(j),
+                      }))
+                    : []),
+                ,
             ],
         },
         {

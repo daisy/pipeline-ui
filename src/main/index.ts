@@ -37,6 +37,16 @@ import { setupOpenInBrowserEvents } from './browser'
 import { APP_CONFIG } from '~/app.config'
 import { getPipelineInstance } from './data/middlewares/pipeline'
 import { selectColorScheme, selectSettings } from 'shared/data/slices/settings'
+import {
+    addJob,
+    newJob,
+    pipeline,
+    selectJob,
+    selectPipeline,
+    selectJobs,
+    selectNextJob,
+    selectPrevJob,
+} from 'shared/data/slices/pipeline'
 
 makeAppWithSingleInstanceLock(async () => {
     await app.whenReady()
@@ -70,12 +80,26 @@ makeAppWithSingleInstanceLock(async () => {
     setupShowInFolderEvents()
     setupOpenInBrowserEvents()
     setupFileSystemEvents()
+    
+    buildMenu(mainWindow, pipelineInstance)
 
-    // TODO recreate the menu on store changes
+    store.subscribe(() => {
+        console.log('store update')
+        buildMenu(mainWindow, pipelineInstance)
+    })
+})
+
+function buildMenu(mainWindow, pipelineInstance) {
+    let jobs = selectPipeline(store.getState()).jobs
+
     //@ts-ignore
     let template = buildMenuTemplate({
         appName: app.name,
+        jobs,
         onCreateJob: async () => {
+            const job = newJob(selectPipeline(store.getState()))
+            store.dispatch(addJob(job))
+            store.dispatch(selectJob(job))
             try {
                 mainWindow.show()
             } catch (error) {
@@ -95,8 +119,18 @@ makeAppWithSingleInstanceLock(async () => {
                 'https://daisy.github.io/pipeline/Get-Help/'
             )
         },
+        onNextTab: async () => {
+            store.dispatch(selectNextJob())
+        },
+        onPrevTab: async () => {
+            store.dispatch(selectPrevJob())
+        },
+        onGotoTab: async (job) => {
+            console.log('goto tab', job)
+            store.dispatch(selectJob(job))
+        },
     })
     // @ts-ignore
     const menu = Menu.buildFromTemplate(template)
     Menu.setApplicationMenu(menu)
-})
+}

@@ -21,6 +21,7 @@ const initialState = {
     scripts: [],
     jobs: [],
     internalJobCounter: 0,
+    selectedJobId: '',
 } as PipelineState
 
 export const pipeline = createSlice({
@@ -96,6 +97,8 @@ export const pipeline = createSlice({
                 state.jobs.push(param.payload)
                 state.internalJobCounter += 1
             }
+            // select the newly-added job
+            selectJob(param.payload)
         },
         updateJob: (state: PipelineState, param: PayloadAction<Job>) => {
             state.jobs = state.jobs.map((job) => {
@@ -113,6 +116,19 @@ export const pipeline = createSlice({
                     ? param.payload
                     : param.payload.internalId
 
+            // reassign the selection if we are removing the selected job
+            if (searchedId == state.selectedJobId) {
+                let selectedJobIndex = state.jobs.findIndex(
+                    (j) => j.internalId == state.selectedJobId
+                )
+                if (selectedJobIndex - 1 >= 0) {
+                    selectedJobIndex--
+                } else {
+                    selectedJobIndex = state.jobs.length - 1
+                }
+                console.log(selectedJobIndex)
+                state.selectedJobId = state.jobs[selectedJobIndex].internalId
+            }
             state.jobs = state.jobs.filter(
                 (job) => job.internalId !== searchedId
             )
@@ -132,6 +148,41 @@ export const pipeline = createSlice({
                 })
             }
         },
+        // for the tabbed view and menu list
+        // this could have gone in its own state slice but it depends on pipeline.jobs anyway
+        // and i'm not sure how redux handles dependent states across slices
+        selectJob: (state: PipelineState, param: PayloadAction<Job>) => {
+            let job = state.jobs.find(
+                (j) => j.internalId == param.payload.internalId
+            )
+            if (job) {
+                state.selectedJobId = job.internalId
+            }
+        },
+        selectNextJob: (state: PipelineState) => {
+            let selectedJobIndex = state.jobs.findIndex(
+                (j) => j.internalId == state.selectedJobId
+            )
+            if (selectedJobIndex + 1 <= state.jobs.length - 1) {
+                selectedJobIndex++
+            } else {
+                selectedJobIndex = 0
+            }
+            state.selectedJobId = state.jobs[selectedJobIndex].internalId
+        },
+        selectPrevJob: (state: PipelineState) => {
+            console.log("select prev job")
+            let selectedJobIndex = state.jobs.findIndex(
+                (j) => j.internalId == state.selectedJobId
+            )
+            if (selectedJobIndex - 1 >= 0) {
+                selectedJobIndex--
+            } else {
+                selectedJobIndex = state.jobs.length - 1
+            }
+            console.log(selectedJobIndex)
+            state.selectedJobId = state.jobs[selectedJobIndex].internalId
+        },
     },
 })
 
@@ -149,6 +200,9 @@ export const {
     updateJob,
     runJob,
     removeJob,
+    selectJob,
+    selectNextJob,
+    selectPrevJob,
 } = pipeline.actions
 
 export const selectors = {

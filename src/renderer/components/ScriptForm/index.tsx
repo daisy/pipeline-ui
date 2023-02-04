@@ -21,14 +21,20 @@ import { FileOrFolderInput } from '../CustomFields/FileOrFolderInput'
 import Markdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import { runJob } from 'shared/data/slices/pipeline'
+import {
+    addJob,
+    removeJob,
+    updateJob,
+    newJob,
+} from 'shared/data/slices/pipeline'
 
 const { App } = window
 
-export function ScriptForm({ job, script, updateJob, onClose }) {
+export function ScriptForm({ job, script }) {
     const [submitInProgress, setSubmitInProgress] = useState(false)
     const [error, setError] = useState(false)
     useEffect(() => {
-        updateJob({
+        let updatedJob = {
             ...job,
             jobRequest: {
                 scriptHref: script.href,
@@ -46,7 +52,8 @@ export function ScriptForm({ job, script, updateJob, onClose }) {
                         item.type == 'anyFileURI' || item.type == 'anyDirURI',
                 })),
             },
-        })
+        }
+        App.store.dispatch(updateJob(updatedJob))
     }, [script])
 
     let required = getAllRequired(script)
@@ -174,7 +181,9 @@ export function ScriptForm({ job, script, updateJob, onClose }) {
                         <button
                             className="cancel"
                             type="reset"
-                            onClick={(e) => onClose(job, e)}
+                            onClick={(e) => {
+                                App.store.dispatch(removeJob(job))
+                            }}
                         >
                             Cancel
                         </button>

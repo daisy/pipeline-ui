@@ -6,7 +6,7 @@ import { ScriptForm } from '../ScriptForm'
 import { useWindowStore } from 'renderer/store'
 import { ID } from 'renderer/utils/utils'
 
-export function NewJobPane({ job, updateJob, onClose }) {
+export function NewJobPane({ job }) {
     const [selectedScript, setSelectedScript] = useState(null)
     const { pipeline } = useWindowStore()
 
@@ -48,8 +48,6 @@ export function NewJobPane({ job, updateJob, onClose }) {
                 <ScriptForm
                     job={job_}
                     script={selectedScript}
-                    updateJob={updateJob}
-                    onClose={onClose}
                 />
             ) : (
                 ''

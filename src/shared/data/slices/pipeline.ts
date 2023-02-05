@@ -215,6 +215,7 @@ export const selectors = {
         ({
             internalId: `job-${pipeline.internalJobCounter}`,
             state: JobState.NEW,
+            jobRequest: null,
         } as Job),
 }
 

@@ -1,19 +1,25 @@
 import { calculateJobName } from 'shared/jobName'
+import { JobState, JobStatus } from 'shared/types'
 
 export function buildMenuTemplate({
     appName,
     jobs,
+    selectedJobId,
     onCreateJob,
     onShowSettings,
     onLearnMore,
     onUserGuide,
-    onTestIncrement,
-    onTestDecrement,
     onNextTab,
     onPrevTab,
     onGotoTab,
+    onRunJob,
+    onRemoveJob,
 }) {
     const isMac = process.platform === 'darwin'
+
+    let multipleJobs = jobs.length > 1
+
+    let currentJob = jobs.find((j) => j.internalId == selectedJobId)
 
     // @ts-ignore
     const template: MenuItemConstructorOptions = [
@@ -48,6 +54,46 @@ export function buildMenuTemplate({
                     click: onShowSettings,
                 },
                 { type: 'separator' },
+                {
+                    label: 'Run job',
+                    click: () => {
+                        onRunJob(currentJob)
+                    },
+                    accelerator: 'CommandOrControl+R',
+                    enabled:
+                        currentJob &&
+                        currentJob.state == JobState.NEW &&
+                        currentJob.jobRequest != null,
+                },
+                ...(currentJob && currentJob.state == JobState.SUBMITTED
+                    ? [
+                          {
+                              label: 'Delete job',
+                              click: () => {
+                                  onRemoveJob(currentJob)
+                              },
+                              accelerator: 'CommandOrControl+Delete',
+                              enabled:
+                                  currentJob?.state == JobState.SUBMITTED &&
+                                  currentJob.status != JobStatus.RUNNING &&
+                                  currentJob.status != JobStatus.IDLE,
+                          },
+                      ]
+                    : [
+                          {
+                              label: 'Cancel job',
+                              click: () => {
+                                  onRemoveJob(currentJob)
+                              },
+                              accelerator: 'CommandOrControl+Delete',
+                              enabled:
+                                  currentJob &&
+                                  currentJob.state == JobState.NEW &&
+                                  currentJob.jobRequest != null,
+                          },
+                      ]),
+
+                { type: 'separator' },
                 isMac ? { role: 'close' } : { role: 'quit' },
             ],
         },
@@ -72,6 +118,7 @@ export function buildMenuTemplate({
                         onNextTab()
                     },
                     accelerator: 'Control+Tab',
+                    enabled: multipleJobs,
                 },
                 {
                     label: 'Previous job',
@@ -79,6 +126,7 @@ export function buildMenuTemplate({
                         onPrevTab()
                     },
                     accelerator: 'Control+Shift+Tab',
+                    enabled: multipleJobs,
                 },
                 ...(jobs.length > 0 ? [{ type: 'separator' }] : []),
                 ...(jobs.length > 0
@@ -103,11 +151,15 @@ export function buildMenuTemplate({
             submenu: [
                 {
                     label: 'Learn more',
-                    click: onLearnMore,
+                    click: () => {
+                        onLearnMore()
+                    },
                 },
                 {
                     label: 'User guide',
-                    click: onUserGuide,
+                    click: () => {
+                        onUserGuide()
+                    },
                 },
             ],
         },

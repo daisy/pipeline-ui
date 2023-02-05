@@ -40,6 +40,8 @@ import { selectColorScheme, selectSettings } from 'shared/data/slices/settings'
 import {
     addJob,
     newJob,
+    runJob,
+    removeJob,
     pipeline,
     selectJob,
     selectPipeline,
@@ -83,7 +85,6 @@ makeAppWithSingleInstanceLock(async () => {
     buildMenu(mainWindow, pipelineInstance)
 
     store.subscribe(() => {
-        console.log('store update')
         buildMenu(mainWindow, pipelineInstance)
     })
 })
@@ -95,6 +96,7 @@ function buildMenu(mainWindow, pipelineInstance) {
     let template = buildMenuTemplate({
         appName: app.name,
         jobs,
+        selectedJobId: selectPipeline(store.getState()).selectedJobId,
         onCreateJob: async () => {
             const job = newJob(selectPipeline(store.getState()))
             store.dispatch(addJob(job))
@@ -125,8 +127,16 @@ function buildMenu(mainWindow, pipelineInstance) {
             store.dispatch(selectPrevJob())
         },
         onGotoTab: async (job) => {
-            console.log('goto tab', job)
             store.dispatch(selectJob(job))
+        },
+        onRunJob: async (job) => {
+            store.dispatch(
+                runJob({
+                    ...job,
+                }))
+        },
+        onRemoveJob: async (job) => {
+            store.dispatch(removeJob(job))
         },
     })
     // @ts-ignore

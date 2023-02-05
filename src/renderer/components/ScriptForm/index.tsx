@@ -79,14 +79,16 @@ export function ScriptForm({ job, script }) {
         } else {
             options = updateValue(value, data, options)
         }
-        updateJob({
-            ...job,
-            jobRequest: {
-                ...job.jobRequest,
-                inputs: [...inputs],
-                options: [...options],
-            },
-        })
+        App.store.dispatch(
+            updateJob({
+                ...job,
+                jobRequest: {
+                    ...job.jobRequest,
+                    inputs: [...inputs],
+                    options: [...options],
+                },
+            })
+        )
     }
 
     // submit a job
@@ -175,7 +177,7 @@ export function ScriptForm({ job, script }) {
                         )}
                     </div>
                     <div className="form-buttons">
-                        <button className="run" type="submit" accessKey="r">
+                        <button className="run" type="submit">
                             Run
                         </button>
                         <button

@@ -80,7 +80,6 @@ makeAppWithSingleInstanceLock(async () => {
     setupShowInFolderEvents()
     setupOpenInBrowserEvents()
     setupFileSystemEvents()
-    
     buildMenu(mainWindow, pipelineInstance)
 
     store.subscribe(() => {

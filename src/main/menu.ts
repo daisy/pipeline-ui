@@ -68,20 +68,32 @@ export function buildMenuTemplate({
             submenu: [
                 {
                     label: 'Next job',
-                    click: onNextTab,
+                    click: () => {
+                        onNextTab()
+                    },
                     accelerator: 'Control+Tab',
                 },
                 {
                     label: 'Previous job',
-                    click: onPrevTab,
+                    click: () => {
+                        onPrevTab()
+                    },
                     accelerator: 'Control+Shift+Tab',
                 },
                 ...(jobs.length > 0 ? [{ type: 'separator' }] : []),
                 ...(jobs.length > 0
-                    ? jobs.map((j, idx) => ({
-                          label: `${idx + 1}. ${calculateJobName(j)}`,
-                        //   click: onGotoTab(j),
-                      }))
+                    ? jobs.map((j, idx) => {
+                          let menuItem = {
+                              label: `${idx + 1}. ${calculateJobName(j)}`,
+                              click: () => onGotoTab(j),
+                          }
+                          if (idx < 10) {
+                              menuItem['accelerator'] = `CommandOrControl+${
+                                  (idx % 10) + 1 != 10 ? (idx % 10) + 1 : 0
+                              }`
+                          }
+                          return menuItem
+                      })
                     : []),
                 ,
             ],

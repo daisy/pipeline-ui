@@ -171,7 +171,7 @@ export const pipeline = createSlice({
             state.selectedJobId = state.jobs[selectedJobIndex].internalId
         },
         selectPrevJob: (state: PipelineState) => {
-            console.log("select prev job")
+            console.log('select prev job')
             let selectedJobIndex = state.jobs.findIndex(
                 (j) => j.internalId == state.selectedJobId
             )

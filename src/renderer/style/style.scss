@@ -215,11 +215,11 @@ input[type=checkbox] {
 
         .form-sections {
             display: flex;
-            flex-direction: row;
+            flex-direction: column;
             gap: 8%;
-            flex-wrap: wrap;
+            // flex-wrap: wrap;
             section {
-                width: 30rem;
+                width: 70%;
             }
             overflow-y: scroll;
 

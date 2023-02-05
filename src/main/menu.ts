@@ -1,4 +1,5 @@
-import { calculateJobName } from 'shared/jobName'
+import { dialog } from 'electron'
+import { calculateJobName, readableStatus } from 'shared/jobName'
 import { JobState, JobStatus } from 'shared/types'
 
 export function buildMenuTemplate({
@@ -65,6 +66,25 @@ export function buildMenuTemplate({
                         currentJob.state == JobState.NEW &&
                         currentJob.jobRequest != null,
                 },
+                ...(currentJob && currentJob.state == JobState.SUBMITTED
+                    ? [
+                          {
+                              label: `Status: ${
+                                  readableStatus[currentJob.jobData.status]
+                              }`,
+                              accelerator: 'CommandOrControl+Shift+I',
+                              click: async () => {
+                                  await dialog.showMessageBox({
+                                      message: `Status: ${
+                                          readableStatus[
+                                              currentJob.jobData.status
+                                          ]
+                                      }`,
+                                  })
+                              },
+                          },
+                      ]
+                    : []),
                 ...(currentJob && currentJob.state == JobState.SUBMITTED
                     ? [
                           {

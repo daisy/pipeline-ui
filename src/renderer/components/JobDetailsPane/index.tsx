@@ -9,16 +9,9 @@ import { Section } from '../Section'
 
 import { ID } from '../../utils/utils'
 import { removeJob } from 'shared/data/slices/pipeline'
+import { readableStatus } from 'shared/jobName'
 
 const { App } = window
-
-const readableStatus = {
-    IDLE: 'Waiting',
-    RUNNING: 'Running',
-    ERROR: 'Error',
-    SUCCESS: 'Completed',
-    FAIL: 'Error',
-}
 
 export function JobDetailsPane({ job }) {
     return (

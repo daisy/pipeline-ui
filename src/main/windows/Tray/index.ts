@@ -7,6 +7,7 @@ import { store } from 'main/data/store'
 import {
     addJob,
     newJob,
+    selectJob,
     selectPipeline,
     start,
     stop,
@@ -82,6 +83,13 @@ export class PipelineTray {
                 ])
             )
         }
+        this.tray.on('click', async (e) => {
+            try {
+                this.mainWindow.show()
+            } catch (error) {
+                this.mainWindow = await MainWindow()
+            }
+        })
     }
 
     /**
@@ -104,7 +112,7 @@ export class PipelineTray {
                 click: async (item, window, event) => store.dispatch(start()),
             },
             {
-                label: 'Create a job',
+                label: 'New job',
                 enabled: pipelineState.status == PipelineStatus.RUNNING,
                 click: async (item, window, event) => {
                     const job = newJob(selectPipeline(store.getState()))
@@ -114,6 +122,7 @@ export class PipelineTray {
                     } catch (error) {
                         this.mainWindow = await MainWindow()
                     }
+                    store.dispatch(selectJob(job))
                     // Note : this triggers a refresh
                     // ENVIRONMENT.IS_DEV
                     //     ? this.mainWindow.loadURL(

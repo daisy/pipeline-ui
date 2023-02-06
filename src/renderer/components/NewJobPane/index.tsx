@@ -45,10 +45,7 @@ export function NewJobPane({ job }) {
                 </select>
             </section>
             {selectedScript != null ? (
-                <ScriptForm
-                    job={job_}
-                    script={selectedScript}
-                />
+                <ScriptForm job={job_} script={selectedScript} />
             ) : (
                 ''
             )}

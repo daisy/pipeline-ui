@@ -10,7 +10,10 @@ export const IPC = {
         },
     },
     // IPCS kept for pipeline logs outside of the store for now
+    // Not used at the moment but kept as historical if a
+    // debug/management panel is required later
     PIPELINE: {
+        PROPS: 'pipeline: props-get',
         MESSAGES: {
             SEND: 'pipeline: messages-send',
             UPDATE: 'pipeline: messages-update',

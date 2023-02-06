@@ -59,7 +59,8 @@ export class PipelineInstance {
                 (props && props.jrePath) ??
                 resolveUnpacked('resources', 'daisy-pipeline', 'jre'),
             // Note : [49152 ; 65535] is the range of dynamic port,  0 is reserved for error case
-            webservice: (props && props.webservice && { ...props.webservice} ) ?? {
+            webservice: (props &&
+                props.webservice && { ...props.webservice }) ?? {
                 host: '127.0.0.1', // Note : localhost resolve as ipv6 ':::' in nodejs, but we need ipv4 for the pipeline
                 port: 0,
                 path: '/ws',
@@ -478,82 +479,4 @@ ${command} ${args.join(' ')}`
     removeErrorsListener(callerID: string) {
         this.errorsListeners.delete(callerID)
     }
-}
-
-/**
- * Register the management of a local pipeline instance to IPC for communication with selected windows
- * @returns the managed instance for supplemental bindings
- */
-export function registerPipeline2ToIPC(
-    settings?: ApplicationSettings
-): PipelineInstance {
-    // Instance managed through IPC calls within the app
-    let pipeline2instance = new PipelineInstance(
-        settings ? settings.localPipelineProps : undefined
-    )
-    // Update the instance if the settings are being updated
-    ipcMain.on(
-        IPC.WINDOWS.SETTINGS.UPDATE,
-        (event, newSettings: ApplicationSettings) => {
-            info('pipeline has received settings update')
-            // Check if pipeline should be deactivated
-            if (
-                newSettings.runLocalPipeline == false &&
-                selectStatus(store.getState()) != PipelineStatus.STOPPED
-            ) {
-                pipeline2instance.stop()
-            } else {
-                // TODO: restart the pipeline with updated settings if those have changed
-                // pipeline2instance.stop().then(() => {
-                //     if (newSettings.localPipelineProps) {
-                //         pipeline2instance.props = {
-                //             ...pipeline2instance.props,
-                //             ...newSettings.localPipelineProps,
-                //         }
-                //     }
-                //     pipeline2instance.launch()
-                // })
-            }
-        }
-    )
-    // start the pipeline runner.
-    ipcMain.on(IPC.PIPELINE.START, async (event, webserviceProps) => {
-        // New settings requested with an existing instance :
-        // Destroy the instance if new settings are requested
-        if (webserviceProps) {
-            pipeline2instance.updateWebservice(webserviceProps)
-        }
-        pipeline2instance.launch()
-    })
-
-    // Stop the pipeline instance
-    ipcMain.on(IPC.PIPELINE.STOP, (event) => pipeline2instance.stop())
-
-    // get state from the instance
-    ipcMain.handle(IPC.PIPELINE.STATE.GET, (event) => {
-        return selectPipeline(store.getState())
-    })
-
-    // get properties of the instance
-    ipcMain.handle(IPC.PIPELINE.PROPS.GET, (event) => {
-        return pipeline2instance.props || null
-    })
-
-    // get messages from the instance
-    ipcMain.handle(IPC.PIPELINE.MESSAGES.GET, (event) => {
-        return pipeline2instance.messages || null
-    })
-    // get errors from the instance
-    ipcMain.handle(IPC.PIPELINE.ERRORS.GET, (event) => {
-        return pipeline2instance.errors || null
-    })
-
-    // Launch the pipeline if requested in the settings
-    if (!settings || (settings && settings.runLocalPipeline)) {
-        pipeline2instance.launch()
-    } else {
-        console.log('not launching ??', settings)
-    }
-
-    return pipeline2instance
 }

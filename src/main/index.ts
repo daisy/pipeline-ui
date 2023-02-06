@@ -14,8 +14,6 @@ import {
     bindWindowToPipeline,
     makeAppSetup,
     makeAppWithSingleInstanceLock,
-    registerApplicationSettingsIPC,
-    registerPipeline2ToIPC,
 } from './factories'
 
 import {
@@ -67,8 +65,6 @@ makeAppWithSingleInstanceLock(async () => {
     // IPC is managed by the store
     const pipelineInstance = getPipelineInstance(store.getState())
     pipelineInstance.launch()
-
-    bindWindowToPipeline(mainWindow, pipelineInstance)
 
     let tray: PipelineTray = null
     try {
@@ -133,7 +129,8 @@ function buildMenu(mainWindow, pipelineInstance) {
             store.dispatch(
                 runJob({
                     ...job,
-                }))
+                })
+            )
         },
         onRemoveJob: async (job) => {
             store.dispatch(removeJob(job))

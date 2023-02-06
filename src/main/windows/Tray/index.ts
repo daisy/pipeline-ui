@@ -1,22 +1,6 @@
-import {
-    app,
-    Menu,
-    Tray,
-    BrowserWindow,
-    ipcMain,
-    ipcRenderer,
-    nativeImage,
-} from 'electron'
-import { APP_CONFIG } from '~/app.config'
-import { resolve } from 'path'
-import {
-    bindWindowToPipeline,
-    makeAppSetup,
-    makeAppWithSingleInstanceLock,
-    PipelineInstance,
-} from '../../factories'
-import { MainWindow, AboutWindow } from '../../windows'
-import { ENVIRONMENT, IPC } from 'shared/constants'
+import { app, Menu, Tray, BrowserWindow, ipcMain, nativeImage } from 'electron'
+import { MainWindow } from '../../windows'
+import { IPC } from 'shared/constants'
 import { PipelineState, PipelineStatus } from 'shared/types'
 import { resolveUnpacked } from 'shared/utils'
 import { store } from 'main/data/store'
@@ -105,7 +89,6 @@ export class PipelineTray {
      */
     refreshElectronTray() {
         const state = store.getState()
-        const pipeline = getPipelineInstance(state)
         const pipelineState = selectPipeline(state)
         this.pipelineMenu = [
             {
@@ -130,7 +113,6 @@ export class PipelineTray {
                         this.mainWindow.show()
                     } catch (error) {
                         this.mainWindow = await MainWindow()
-                        bindWindowToPipeline(this.mainWindow, pipeline)
                     }
                     // Note : this triggers a refresh
                     // ENVIRONMENT.IS_DEV

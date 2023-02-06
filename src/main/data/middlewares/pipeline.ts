@@ -34,6 +34,8 @@ import { ParserException } from 'shared/parser/pipelineXmlConverter/parser'
 import { PipelineInstance } from 'main/factories'
 import { RootState } from 'shared/types/store'
 import ElectronLog from 'electron-log'
+import { ipcMain } from 'electron'
+import { IPC } from 'shared/constants/ipc'
 
 // prettier-ignore
 /**
@@ -202,6 +204,22 @@ export const getPipelineInstance = (state: RootState): PipelineInstance => {
         ElectronLog.error(e)
         return null
     }
+}
+
+export function registerInstanceManagementIPCs() {
+    // get properties of the instance
+    ipcMain.handle(IPC.PIPELINE.PROPS, (event) => {
+        return (_pipeline_instance && _pipeline_instance.props) || null
+    })
+
+    // get messages from the instance
+    ipcMain.handle(IPC.PIPELINE.MESSAGES.GET, (event) => {
+        return (_pipeline_instance && _pipeline_instance.messages) || null
+    })
+    // get errors from the instance
+    ipcMain.handle(IPC.PIPELINE.ERRORS.GET, (event) => {
+        return (_pipeline_instance && _pipeline_instance.errors) || null
+    })
 }
 
 /**

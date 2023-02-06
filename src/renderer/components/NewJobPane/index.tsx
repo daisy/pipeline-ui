@@ -22,10 +22,10 @@ export function NewJobPane({ job }) {
         <>
             <section
                 className="select-script"
-                aria-labelledby={`${ID(job.internalId)}-select-script}`}
+                aria-labelledby={`${ID(job.internalId)}-select-script`}
             >
                 <label
-                    id={`${ID(job.internalId)}-select-script}`}
+                    id={`${ID(job.internalId)}-select-script`}
                     htmlFor={`${ID(job.internalId)}-script`}
                 >
                     Select a script:

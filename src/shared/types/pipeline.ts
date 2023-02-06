@@ -265,6 +265,7 @@ export type Script = {
     version?: string
     inputs?: Array<ScriptInput>
     options?: Array<ScriptOption>
+    homepage?: string
 }
 
 export type NameValue = {

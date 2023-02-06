@@ -10,13 +10,15 @@ function scriptElementToJson(scriptElm: Element): Script {
     let nicenameElm = scriptElm.getElementsByTagName('nicename')
     let descriptionElm = scriptElm.getElementsByTagName('description')
     let versionElm = scriptElm.getElementsByTagName('version')
+    let homepageElm = scriptElm.getElementsByTagName('homepage')
 
     let script: Script = {
         id: scriptElm.getAttribute('id'),
         href: scriptElm.getAttribute('href'),
-        nicename: (nicenameElm[0] as Element).textContent,
-        description: (descriptionElm[0] as Element).textContent,
-        version: (versionElm[0] as Element).textContent,
+        nicename: (nicenameElm[0] as Element)?.textContent.trim() ?? '',
+        description: (descriptionElm[0] as Element)?.textContent.trim() ?? '',
+        version: (versionElm[0] as Element)?.textContent.trim() ?? '',
+        homepage: (homepageElm[0] as Element)?.textContent.trim() ?? '',
     }
 
     script.inputs = Array.from(scriptElm.getElementsByTagName('input')).map(

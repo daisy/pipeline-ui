@@ -66,3 +66,8 @@ export function findInputType(type) {
     }
     return inputType
 }
+
+export function externalLinkClick(e, app) {
+    e.preventDefault()
+    app.openInBrowser(e.target.href)
+}

@@ -28,6 +28,7 @@ import {
     newJob,
 } from 'shared/data/slices/pipeline'
 
+import { externalLinkClick } from 'renderer/utils/utils'
 const { App } = window
 
 export function ScriptForm({ job, script }) {
@@ -113,7 +114,19 @@ export function ScriptForm({ job, script }) {
                     <h1 id={`${ID(job.internalId)}-script-hd`}>
                         {script?.nicename}
                     </h1>
-                    <p>{script?.description}</p>
+                    <p>
+                        {script?.description}{' '}
+                        {script?.homepage ? (
+                            <a
+                                href={script.homepage}
+                                onClick={(e) => externalLinkClick(e, App)}
+                            >
+                                Read documentation.
+                            </a>
+                        ) : (
+                            ''
+                        )}
+                    </p>
                 </div>
                 {error ? <p>Error</p> : ''}
             </section>
@@ -239,11 +252,6 @@ function FormField({
             ? ['openDirectory']
             : ['openFile', 'openDirectory']
 
-    let externalLinkClick = (e) => {
-        e.preventDefault()
-        App.openInBrowser(e.target.href)
-    }
-
     return (
         <div className="form-field">
             <details>
@@ -259,7 +267,9 @@ function FormField({
                                 return (
                                     <a
                                         href={props.href}
-                                        onClick={externalLinkClick}
+                                        onClick={(e) =>
+                                            externalLinkClick(e, App)
+                                        }
                                     >
                                         {props.children}
                                     </a>

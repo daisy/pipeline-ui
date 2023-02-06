@@ -28,9 +28,9 @@ export function Results({ job }: { job: Job }) {
                                                 <li
                                                     key={`result-${itemIndex}-${fileIndex}`}
                                                 >
-                                                    <FileLink
-                                                        fileHref={file.file}
-                                                    />
+                                                    {file.file.substring(
+                                                        item.href.length + 1
+                                                    )}
                                                 </li>
                                             )
                                         })}

@@ -251,7 +251,7 @@ function FormField({
                     <label htmlFor={controlId}>{item.nicename}</label>
                 </summary>
 
-                <span className="description">
+                <div className="description">
                     <Markdown
                         remarkPlugins={[remarkGfm]}
                         components={{
@@ -269,7 +269,7 @@ function FormField({
                     >
                         {item.desc}
                     </Markdown>
-                </span>
+                </div>
             </details>
 
             {inputType == 'file' ? ( // 'item' may be an input or an option

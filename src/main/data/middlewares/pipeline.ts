@@ -24,6 +24,8 @@ import {
     Webservice,
 } from 'shared/types'
 
+import { info, error } from 'electron-log'
+
 import { pipelineAPI } from '../apis/pipeline'
 import { PayloadAction } from '@reduxjs/toolkit'
 import { saveFile, unzipFile } from 'main/factories/ipcs/file'
@@ -108,6 +110,7 @@ async function downloadJobResults(j: Job, targetFolder: string) {
             ...j,
             jobData: {
                 ...j.jobData,
+                downloadedFolder: targetFolder,
                 results: {
                     ...j.jobData.results,
                     namedResults: [...copy],
@@ -117,6 +120,15 @@ async function downloadJobResults(j: Job, targetFolder: string) {
     })
 }
 
+/**
+ * Start a job monitor that will continue until the job is done.
+ *
+ * The monitor will update the job through store dispatch
+ * @param j the job to be monitored
+ * @param ws the webservice on which the pipeline handling the job is launched
+ * @param getState redux store getState function
+ * @param dispatch redux store dispatch function
+ */
 function startMonitor(j: Job, ws: Webservice, getState, dispatch) {
     let monitor = null
     const fetchJobData = pipelineAPI.fetchJobData(j)
@@ -246,7 +258,7 @@ export function pipelineMiddleware({ getState, dispatch }) {
                 // Also change its state to submited
                 let runJobInterval = null
                 const jobToRun = action.payload as Job
-                console.log('runJob', jobToRun)
+                info('Launching job', JSON.stringify(jobToRun))
                 const launchJobOn = pipelineAPI.launchJob(jobToRun)
                 runJobInterval = setInterval(() => {
                     const webservice = selectWebservice(state)
@@ -269,7 +281,11 @@ export function pipelineMiddleware({ getState, dispatch }) {
                                 )
                             })
                             .catch((e) => {
-                                console.log('runJob error', e)
+                                error(
+                                    'error launching job',
+                                    jobToRun.internalId,
+                                    e
+                                )
                             })
                     }
                 }, 1000)

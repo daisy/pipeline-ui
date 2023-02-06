@@ -85,6 +85,10 @@ input[type=checkbox] {
         flex-direction: column;
         gap: calc(var(--pad)/2);
     }
+
+    .file-list li ul {
+        padding-left: 1em;
+    }
 }
 
 .fixed-height-layout {

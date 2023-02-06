@@ -216,6 +216,12 @@ export type JobData = {
     status?: JobStatus
     log?: string
     results?: Results
+    /**
+     *  Job results download folder on the user disk.
+     *
+     * (computed by the job monitor of the redux pipeline middleware)
+     */
+    downloadedFolder?: string
     messages?: Array<Message>
     progress?: number
     script?: Script

@@ -1,4 +1,4 @@
-import { dialog } from 'electron'
+import { BrowserWindow, dialog, MenuItem } from 'electron'
 import { calculateJobName, readableStatus } from 'shared/jobName'
 import { JobState, JobStatus } from 'shared/types'
 
@@ -43,7 +43,7 @@ export function buildMenuTemplate({
             : []),
         // { role: 'fileMenu' }
         {
-            label: 'File',
+            label: '&File',
             submenu: [
                 {
                     label: 'New job',
@@ -114,15 +114,34 @@ export function buildMenuTemplate({
                       ]),
 
                 { type: 'separator' },
-                isMac ? { role: 'close' } : { role: 'quit' },
+                {
+                    label: 'Close window',
+                    accelerator: 'CommandOrControl+W',
+                    click: (
+                        origin: MenuItem,
+                        window: BrowserWindow,
+                        event: any
+                    ) => {
+                        window.close()
+                    },
+                },
+                isMac
+                    ? {
+                          role: 'close',
+                          accelerator: 'Cmd+Q',
+                      }
+                    : {
+                          role: 'quit',
+                          accelerator: 'Alt+F4',
+                      },
             ],
         },
         {
-            label: 'Edit',
+            label: '&Edit',
             submenu: [{ role: 'copy' }, { role: 'paste' }],
         },
         {
-            label: 'View',
+            label: '&View',
             submenu: [
                 { role: 'resetZoom' },
                 { role: 'zoomIn' },
@@ -130,7 +149,7 @@ export function buildMenuTemplate({
             ],
         },
         {
-            label: 'Goto',
+            label: '&Goto',
             submenu: [
                 {
                     label: 'Next job',
@@ -167,7 +186,7 @@ export function buildMenuTemplate({
             ],
         },
         {
-            role: 'help',
+            label: '&Help',
             submenu: [
                 {
                     label: 'Learn more',
@@ -177,6 +196,7 @@ export function buildMenuTemplate({
                 },
                 {
                     label: 'User guide',
+                    accelerator: isMac ? 'Shift+Cmd+?' : 'Alt+F1',
                     click: () => {
                         onUserGuide()
                     },

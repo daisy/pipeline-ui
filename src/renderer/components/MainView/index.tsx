@@ -14,6 +14,8 @@ import {
     updateJob,
     newJob,
     selectJob,
+    selectNextJob,
+    selectPrevJob,
 } from 'shared/data/slices/pipeline'
 import { NewJobPane } from '../NewJobPane'
 import { JobDetailsPane } from '../JobDetailsPane'
@@ -33,9 +35,42 @@ export function MainView() {
         }
     }, [])
 
+    // on navigation received for the tab, we need to refocus the selected tab
+    // for the narrators to announce it
+    useEffect(() => {
+        if (pipeline.selectedJobId !== '') {
+            document.getElementById(`${ID(pipeline.selectedJobId)}-tab`).focus()
+        }
+    }, [pipeline.selectedJobId])
+
+    /**
+     * Keyboard actions on tabs with arrows
+     * @param e KeyboardEvent
+     */
+    const keyboardActions = (e) => {
+        switch (e.key) {
+            case 'ArrowRight':
+                App.store.dispatch(selectNextJob())
+                break
+            case 'ArrowLeft':
+                App.store.dispatch(selectPrevJob())
+                break
+            case 'ArrowDown':
+                document
+                    .getElementById(`${ID(pipeline.selectedJobId)}-tabpanel`)
+                    .focus()
+                break
+            case 'Delete':
+                if (pipeline.jobs.length > 0) {
+                    // TODO if requested : possibility to delete the selection
+                }
+                break
+        }
+    }
+
     return (
         <>
-            <div role="tablist" aria-live="polite">
+            <div role="tablist" aria-live="polite" onKeyDown={keyboardActions}>
                 {pipeline.jobs.map((job, idx) => (
                     <button
                         key={idx}

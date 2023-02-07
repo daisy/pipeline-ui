@@ -1,4 +1,4 @@
-import { SettingsForm } from 'renderer/components/SettingsForm'
+import { SettingsView } from 'renderer/components'
 
 export function SettingsScreen() {
     return (
@@ -7,7 +7,7 @@ export function SettingsScreen() {
                 <h1>Settings</h1>
             </header>
             <main>
-                <SettingsForm />
+                <SettingsView />
             </main>
         </>
     )

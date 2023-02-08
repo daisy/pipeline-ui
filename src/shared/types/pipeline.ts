@@ -45,6 +45,7 @@ export type PipelineState = {
     scripts?: Script[]
     internalJobCounter?: number
     selectedJobId: string
+    datatypes?: Datatype[]
     // messages: Array<string>
     // errors: Array<string>
 }
@@ -287,4 +288,21 @@ export type JobRequest = {
     options?: Array<NameValue>
     outputs?: Array<NameValue>
     callbacks?: Array<Callback>
+}
+export type Datatype = {
+    choices?: DatatypeChoice[]
+    data?: DatatypeData[]
+}
+
+export type DatatypeChoice = {
+    value?: string
+    documentation?: string
+    type?: string
+    param?: string
+}
+
+export type DatatypeData = {
+    type?: string
+    documentation?: string
+    param?: string
 }

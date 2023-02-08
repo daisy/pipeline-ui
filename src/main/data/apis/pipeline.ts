@@ -1,4 +1,6 @@
 import {
+    datatypesXmlToJson,
+    datatypeXmlToJson,
     jobRequestToXml,
     jobsXmlToJson,
     jobXmlToJson,
@@ -68,4 +70,17 @@ export const pipelineAPI = {
         fetch(r.href)
             .then((response) => response.blob())
             .then((blob) => blob.arrayBuffer()),
+    fetchDatatypes: () =>
+        createPipelineFetchFunction(
+            (ws) => `${baseurl(ws)}/datatypes`,
+            (text) => {
+                return Promise.all(
+                    datatypesXmlToJson(text).map(async (datatypeData) => {
+                        return fetch(datatypeData.href)
+                            .then((value) => value.text())
+                            .then((text) => datatypeXmlToJson(text))
+                    })
+                )
+            }
+        ),
 }

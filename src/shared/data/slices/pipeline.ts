@@ -11,6 +11,7 @@ import {
     JobData,
     JobState,
     JobRequest,
+    Datatype,
 } from 'shared/types'
 
 import { RootState } from 'shared/types/store'
@@ -19,6 +20,7 @@ const initialState = {
     status: PipelineStatus.STOPPED,
     webservice: null,
     scripts: [],
+    datatypes: [],
     jobs: [],
     internalJobCounter: 0,
     selectedJobId: '',
@@ -82,6 +84,12 @@ export const pipeline = createSlice({
             param: PayloadAction<Array<Script>>
         ) => {
             state.scripts = param.payload
+        },
+        setDatatypes: (
+            state: PipelineState,
+            param: PayloadAction<Array<Datatype>>
+        ) => {
+            state.datatypes = param.payload
         },
         setJobs: (state: PipelineState, param: PayloadAction<Array<Job>>) => {
             state.jobs = param.payload
@@ -196,6 +204,7 @@ export const {
     setStatus,
     setJobs,
     setScripts,
+    setDatatypes,
     addJob,
     updateJob,
     runJob,
@@ -211,6 +220,7 @@ export const selectors = {
     selectWebservice: (state: RootState) => state.pipeline.webservice,
     selectJobs: (state: RootState) => state.pipeline.jobs,
     selectScripts: (state: RootState) => state.pipeline.scripts,
+    selectDatatypes: (state: RootState) => state.pipeline.datatypes,
     newJob: (pipeline: PipelineState) =>
         ({
             internalId: `job-${pipeline.internalJobCounter}`,
@@ -225,5 +235,6 @@ export const {
     selectWebservice,
     selectJobs,
     selectScripts,
+    selectDatatypes,
     newJob,
 } = selectors

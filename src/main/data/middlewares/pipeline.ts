@@ -1,6 +1,7 @@
 import {
     useWebservice,
     setScripts,
+    setDatatypes,
     setStatus,
     removeJob,
     runJob,
@@ -260,6 +261,21 @@ export function pipelineMiddleware({ getState, dispatch }) {
                                 ) {
                                     dispatch(setStatus(PipelineStatus.STOPPED))
                                 }
+                            })
+                    }
+                }, 1000)
+
+                let fetchDatatypesInterval = null
+                const fetchDatatypes = pipelineAPI.fetchDatatypes()
+                fetchDatatypesInterval = setInterval(() => {
+                    if (action.payload) {
+                        fetchDatatypes(action.payload)
+                            .then((datatypes) => {
+                                dispatch(setDatatypes(datatypes))
+                                clearInterval(fetchDatatypesInterval)
+                            })
+                            .catch((e) => {
+                                console.log('Error', e)
                             })
                     }
                 }, 1000)

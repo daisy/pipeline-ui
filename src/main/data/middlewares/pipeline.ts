@@ -162,8 +162,7 @@ function startMonitor(j: Job, ws: Webservice, getState, dispatch) {
                         console.log()
                         dispatch(updateJob(downloadedJob))
                     })
-                }
-                dispatch(updateJob(updatedJob))
+                } else dispatch(updateJob(updatedJob))
             })
             .catch((e) => {
                 console.log('received error ', e)

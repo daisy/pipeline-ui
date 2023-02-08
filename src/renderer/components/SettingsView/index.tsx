@@ -5,7 +5,7 @@ import { FileOrFolderInput } from '../CustomFields/FileOrFolderInput'
 import { setSettings, save } from 'shared/data/slices/settings'
 const { App } = window // The "App" comes from the bridge
 
-export function SettingsForm() {
+export function SettingsView() {
     // Current registered settings
     const { settings } = useWindowStore()
 

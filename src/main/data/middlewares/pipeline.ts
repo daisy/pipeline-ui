@@ -287,6 +287,10 @@ export function pipelineMiddleware({ getState, dispatch }) {
                 // Also change its state to submited
                 let runJobInterval = null
                 const jobToRun = action.payload as Job
+                // Empty previous references to jobData results for re run
+                if (jobToRun.jobData && jobToRun.jobData.results) {
+                    jobToRun.jobData.results = undefined
+                }
                 info('Launching job', JSON.stringify(jobToRun))
                 const launchJobOn = pipelineAPI.launchJob(jobToRun)
                 runJobInterval = setInterval(() => {

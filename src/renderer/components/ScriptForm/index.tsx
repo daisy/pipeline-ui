@@ -1,13 +1,8 @@
 /*
 Fill out fields for a new job and submit it
 */
-import {
-    jobRequestToXml,
-    jobXmlToJson,
-} from 'shared/parser/pipelineXmlConverter'
-import { JobRequest, JobState, baseurl, ScriptItemBase } from 'shared/types'
+import { ScriptItemBase, Job, Script } from 'shared/types'
 import { useState, useEffect } from 'react'
-import { useWindowStore } from 'renderer/store'
 import {
     findInputType,
     findValue,
@@ -16,11 +11,10 @@ import {
     ID,
 } from 'renderer/utils/utils'
 import { Section } from '../Section'
-import { marked } from 'marked'
 import { FileOrFolderInput } from '../CustomFields/FileOrFolderInput'
 import Markdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
-import { runJob } from 'shared/data/slices/pipeline'
+import { restoreJob, runJob } from 'shared/data/slices/pipeline'
 import {
     addJob,
     removeJob,
@@ -31,30 +25,47 @@ import {
 import { externalLinkClick } from 'renderer/utils/utils'
 const { App } = window
 
-export function ScriptForm({ job, script }) {
+export function ScriptForm({ job, script }: { job: Job; script: Script }) {
     const [submitInProgress, setSubmitInProgress] = useState(false)
     const [error, setError] = useState(false)
     useEffect(() => {
-        let updatedJob = {
+        // For job edition, re-add previous value of the jobRequest if it exists
+        const hasJobRequestOnScript: Boolean =
+            job.jobRequest && job.jobRequest.scriptHref == script.href
+        App.store.dispatch(
+            updateJob({
             ...job,
             jobRequest: {
                 scriptHref: script.href,
                 nicename: script.nicename,
-                inputs: script.inputs.map((item) => ({
+                    inputs: script.inputs.map((item, index) => {
+                        return {
                     name: item.name,
-                    value: null,
+                            value:
+                                (hasJobRequestOnScript &&
+                                    job.jobRequest.inputs[index].value) ||
+                                null,
                     isFile:
-                        item.type == 'anyFileURI' || item.type == 'anyDirURI',
-                })),
-                options: script.options.map((item) => ({
+                                item.type == 'anyFileURI' ||
+                                item.type == 'anyDirURI',
+                        }
+                    }),
+                    options: script.options.map((item, index) => {
+                        return {
                     name: item.name,
-                    value: item.default ? item.default : null,
+                            value:
+                                (hasJobRequestOnScript &&
+                                    job.jobRequest.options[index].value) ||
+                                item.default ||
+                                null,
                     isFile:
-                        item.type == 'anyFileURI' || item.type == 'anyDirURI',
-                })),
+                                item.type == 'anyFileURI' ||
+                                item.type == 'anyDirURI',
+                        }
+                    }),
             },
-        }
-        App.store.dispatch(updateJob(updatedJob))
+            })
+        )
     }, [script])
 
     let required = getAllRequired(script)
@@ -197,7 +208,11 @@ export function ScriptForm({ job, script }) {
                             className="cancel"
                             type="reset"
                             onClick={(e) => {
-                                App.store.dispatch(removeJob(job))
+                                App.store.dispatch(
+                                    job.linkedTo
+                                        ? restoreJob(job)
+                                        : removeJob(job)
+                                )
                             }}
                         >
                             Cancel

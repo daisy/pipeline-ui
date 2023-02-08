@@ -105,8 +105,44 @@ export const pipeline = createSlice({
                 state.jobs.push(param.payload)
                 state.internalJobCounter += 1
             }
-            // select the newly-added job
-            selectJob(param.payload)
+        },
+        editJob: (state: PipelineState, param: PayloadAction<Job>) => {
+            // Create a new job to backup
+            const temp = newJob(state)
+            state.jobs.push({
+                ...param.payload,
+                internalId: temp.internalId,
+                invisible: true,
+            })
+            state.jobs = state.jobs.map((job) => {
+                if (job.internalId == param.payload.internalId) {
+                    job.linkedTo = temp.internalId
+                    job.state = JobState.NEW
+                    if (job.jobData && job.jobData.results) {
+                        job.jobData.results = undefined
+                    }
+                }
+                return job
+            })
+        },
+        restoreJob: (state: PipelineState, param: PayloadAction<Job>) => {
+            const currentJobIndex = state.jobs.findIndex(
+                (j) => j.internalId == param.payload.internalId
+            )
+            const jobToRestore = state.jobs.find(
+                (j) => j.internalId == param.payload.linkedTo
+            )
+            console.log(currentJobIndex, jobToRestore)
+            if (currentJobIndex > -1 && jobToRestore) {
+                state.jobs[currentJobIndex] = {
+                    ...jobToRestore,
+                    internalId: param.payload.internalId,
+                    invisible: false,
+                }
+                state.jobs = state.jobs.filter(
+                    (job) => job.internalId !== jobToRestore.internalId
+                )
+            }
         },
         updateJob: (state: PipelineState, param: PayloadAction<Job>) => {
             state.jobs = state.jobs.map((job) => {
@@ -115,17 +151,11 @@ export const pipeline = createSlice({
                     : job
             })
         },
-        removeJob: (
-            state: PipelineState,
-            param: PayloadAction<Job | string>
-        ) => {
-            const searchedId =
-                typeof param.payload === 'string'
-                    ? param.payload
-                    : param.payload.internalId
+        removeJob: (state: PipelineState, param: PayloadAction<Job>) => {
+            const searchedJob = param.payload
 
             // reassign the selection if we are removing the selected job
-            if (searchedId == state.selectedJobId) {
+            if (searchedJob.internalId == state.selectedJobId) {
                 let selectedJobIndex = state.jobs.findIndex(
                     (j) => j.internalId == state.selectedJobId
                 )
@@ -138,7 +168,7 @@ export const pipeline = createSlice({
                 state.selectedJobId = state.jobs[selectedJobIndex].internalId
             }
             state.jobs = state.jobs.filter(
-                (job) => job.internalId !== searchedId
+                (job) => job.internalId !== searchedJob.internalId
             )
         },
         runJob: (state: PipelineState, param: PayloadAction<Job>) => {
@@ -206,8 +236,10 @@ export const {
     setScripts,
     setDatatypes,
     addJob,
+    editJob,
     updateJob,
     runJob,
+    restoreJob,
     removeJob,
     selectJob,
     selectNextJob,

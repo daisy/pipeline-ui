@@ -71,50 +71,60 @@ export function MainView() {
     return (
         <>
             <div role="tablist" aria-live="polite" onKeyDown={keyboardActions}>
-                {pipeline.jobs.map((job, idx) => (
-                    <button
-                        key={idx}
-                        id={`${ID(job.internalId)}-tab`}
-                        aria-selected={pipeline.selectedJobId == job.internalId}
-                        tabIndex={
-                            pipeline.selectedJobId == job.internalId ? 0 : -1
-                        }
-                        aria-controls={`${ID(job.internalId)}-tabpanel`}
-                        role="tab"
-                        type="button"
-                        onClick={(e) => App.store.dispatch(selectJob(job))}
-                    >
-                        {idx + 1}. {calculateJobName(job)}
-                    </button>
-                ))}
+                {pipeline.jobs
+                    .filter((job) => !job.invisible)
+                    .map((job, idx) => (
+                        <button
+                            key={idx}
+                            id={`${ID(job.internalId)}-tab`}
+                            aria-selected={
+                                pipeline.selectedJobId == job.internalId
+                            }
+                            tabIndex={
+                                pipeline.selectedJobId == job.internalId
+                                    ? 0
+                                    : -1
+                            }
+                            aria-controls={`${ID(job.internalId)}-tabpanel`}
+                            role="tab"
+                            type="button"
+                            onClick={(e) => App.store.dispatch(selectJob(job))}
+                        >
+                            {idx + 1}. {calculateJobName(job)}
+                        </button>
+                    ))}
             </div>
-            {pipeline.jobs.map((job, idx) => {
-                return (
-                    <div
-                        key={idx}
-                        className={`"tabPanel" ${
-                            job.state == JobState.NEW ? 'new-job' : 'job'
-                        }`}
-                        id={`${ID(job.internalId)}-tabpanel`}
-                        role="tabpanel"
-                        hidden={pipeline.selectedJobId != job.internalId}
-                        aria-labelledby={`${ID(job.internalId)}-tab`}
-                        tabIndex={0}
-                    >
+            {pipeline.jobs
+                .filter((job) => !job.invisible)
+                .map((job, idx) => {
+                    return (
                         <div
-                            className={`fixed-height-layout ${
+                            key={idx}
+                            className={`"tabPanel" ${
                                 job.state == JobState.NEW ? 'new-job' : 'job'
                             }`}
+                            id={`${ID(job.internalId)}-tabpanel`}
+                            role="tabpanel"
+                            hidden={pipeline.selectedJobId != job.internalId}
+                            aria-labelledby={`${ID(job.internalId)}-tab`}
+                            tabIndex={0}
                         >
-                            {job.state == JobState.NEW ? (
-                                <NewJobPane job={job} />
-                            ) : (
-                                <JobDetailsPane job={job} />
-                            )}
+                            <div
+                                className={`fixed-height-layout ${
+                                    job.state == JobState.NEW
+                                        ? 'new-job'
+                                        : 'job'
+                                }`}
+                            >
+                                {job.state == JobState.NEW ? (
+                                    <NewJobPane job={job} />
+                                ) : (
+                                    <JobDetailsPane job={job} />
+                                )}
+                            </div>
                         </div>
-                    </div>
-                )
-            })}
+                    )
+                })}
         </>
     )
 }

@@ -207,6 +207,19 @@ export type Job = {
         fieldName?: string
         error: string
     }>
+    /**
+     * Internal ID of a job this job is linked to.
+     *
+     * (type of link is to be defined, for now this is to link to a backup when editing a job)
+     */
+    linkedTo?: string
+    /**
+     * Hiding a job from UI.
+     *
+     * (case of temporary copies that are kept in store while not displayed
+     * and are to be destroyed on completion or restoration)
+     */
+    invisible?: boolean
     // jobRequest.script also has script info (returned from ws);
     // however, storing it separately gives us access to more details
 }

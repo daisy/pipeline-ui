@@ -8,7 +8,7 @@ import { Results } from './Results'
 import { Section } from '../Section'
 
 import { ID } from '../../utils/utils'
-import { removeJob, runJob } from 'shared/data/slices/pipeline'
+import { editJob, removeJob, runJob } from 'shared/data/slices/pipeline'
 import { readableStatus } from 'shared/jobName'
 
 const { App } = window
@@ -73,17 +73,24 @@ export function JobDetailsPane({ job }) {
                     <div className="form-buttons">
                         <button
                             onClick={(e) => {
-                                App.store.dispatch(removeJob(job))
-                            }}
-                        >
-                            Delete job
-                        </button>
-                        <button
-                            onClick={(e) => {
                                 App.store.dispatch(runJob(job))
                             }}
                         >
                             Re-run job
+                        </button>
+                        <button
+                            onClick={(e) => {
+                                App.store.dispatch(editJob(job))
+                            }}
+                        >
+                            Edit job
+                        </button>
+                        <button
+                            onClick={(e) => {
+                                App.store.dispatch(removeJob(job))
+                            }}
+                        >
+                            Delete job
                         </button>
                     </div>
                 ) : (

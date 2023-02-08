@@ -5,10 +5,17 @@ import { useState } from 'react'
 import { ScriptForm } from '../ScriptForm'
 import { useWindowStore } from 'renderer/store'
 import { ID } from 'renderer/utils/utils'
+import { Job } from 'shared/types'
 
-export function NewJobPane({ job }) {
-    const [selectedScript, setSelectedScript] = useState(null)
+export function NewJobPane({ job }: { job: Job }) {
     const { pipeline } = useWindowStore()
+    const [selectedScript, setSelectedScript] = useState(
+        (job.jobData?.script &&
+            pipeline.scripts.find(
+                (script) => script.id == job.jobData?.script.id
+            )) ||
+            null
+    )
 
     let onSelectChange = (e) => {
         let selection = pipeline.scripts.find(
@@ -16,8 +23,6 @@ export function NewJobPane({ job }) {
         )
         setSelectedScript(selection)
     }
-
-    let job_ = { ...job }
     return (
         <>
             <section
@@ -33,6 +38,7 @@ export function NewJobPane({ job }) {
                 <select
                     id={`${ID(job.internalId)}-script`}
                     onChange={(e) => onSelectChange(e)}
+                    value={selectedScript ? selectedScript.id : ''}
                 >
                     <option value={null}>None</option>
                     {pipeline.scripts
@@ -45,7 +51,7 @@ export function NewJobPane({ job }) {
                 </select>
             </section>
             {selectedScript != null ? (
-                <ScriptForm job={job_} script={selectedScript} />
+                <ScriptForm job={job} script={selectedScript} />
             ) : (
                 ''
             )}

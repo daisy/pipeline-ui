@@ -85,11 +85,24 @@ export const pipeline = createSlice({
         ) => {
             state.scripts = param.payload
         },
+        updateScript: (state: PipelineState, param: PayloadAction<Script>) => {
+            state.scripts = state.scripts.map((s: Script) =>
+                s.id == param.payload.id ? param.payload : s
+            )
+        },
         setDatatypes: (
             state: PipelineState,
             param: PayloadAction<Array<Datatype>>
         ) => {
             state.datatypes = param.payload
+        },
+        updateDatatype: (
+            state: PipelineState,
+            param: PayloadAction<Datatype>
+        ) => {
+            state.datatypes = state.datatypes.map((d: Datatype) =>
+                d.id == param.payload.id ? param.payload : d
+            )
         },
         setJobs: (state: PipelineState, param: PayloadAction<Array<Job>>) => {
             state.jobs = param.payload
@@ -234,7 +247,9 @@ export const {
     setStatus,
     setJobs,
     setScripts,
+    updateScript,
     setDatatypes,
+    updateDatatype,
     addJob,
     editJob,
     updateJob,

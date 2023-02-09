@@ -7,9 +7,18 @@ import {
     scriptsXmlToJson,
     scriptXmlToJson,
 } from 'shared/parser/pipelineXmlConverter'
-import { baseurl, Job, ResultFile, Webservice } from 'shared/types'
+import {
+    Datatype,
+    baseurl,
+    Job,
+    ResultFile,
+    Script,
+    Webservice,
+} from 'shared/types'
 
 import fetch, { Response, RequestInit } from 'node-fetch'
+
+import { info, error } from 'electron-log'
 
 /**
  * @type T return type of the parser
@@ -23,26 +32,29 @@ function createPipelineFetchFunction<T>(
     parser: (text: string) => T,
     options?: RequestInit
 ) {
-    return (ws: Webservice) => {
+    return (ws?: Webservice) => {
+        info('fetching ', webserviceUrlBuilder(ws))
         return fetch(webserviceUrlBuilder(ws), options)
-            .then((response: Response) => response.text())
-            .then((text) => Promise.resolve(parser(text)))
+            .then((response: Response) => {
+                return response.text()
+            })
+            .then((text) => {
+                const parsed = parser(text)
+                return parsed
+            })
     }
 }
 
 export const pipelineAPI = {
+    fetchScriptDetails: (s: Script) =>
+        createPipelineFetchFunction(
+            () => s.href,
+            (text) => scriptXmlToJson(text)
+        ),
     fetchScripts: () =>
         createPipelineFetchFunction(
             (ws) => `${baseurl(ws)}/scripts`,
-            (text) => {
-                return Promise.all(
-                    scriptsXmlToJson(text).map(async (scriptData) => {
-                        return fetch(scriptData.href)
-                            .then((value) => value.text())
-                            .then((text) => scriptXmlToJson(text))
-                    })
-                )
-            }
+            (text) => scriptsXmlToJson(text)
         ),
     fetchJobs: () =>
         createPipelineFetchFunction(
@@ -53,7 +65,6 @@ export const pipelineAPI = {
         createPipelineFetchFunction(
             () => j.jobData.href,
             (text) => {
-                console.log('checked data', text, jobXmlToJson(text))
                 return jobXmlToJson(text)
             }
         ),
@@ -70,23 +81,14 @@ export const pipelineAPI = {
         fetch(r.href)
             .then((response) => response.blob())
             .then((blob) => blob.arrayBuffer()),
+    fetchDatatypeDetails: (d: Datatype) =>
+        createPipelineFetchFunction(
+            () => d.href,
+            (text) => datatypeXmlToJson(d.href, d.id, text)
+        ),
     fetchDatatypes: () =>
         createPipelineFetchFunction(
             (ws) => `${baseurl(ws)}/datatypes`,
-            (text) => {
-                return Promise.all(
-                    datatypesXmlToJson(text).map(async (datatypeData) => {
-                        return fetch(datatypeData.href)
-                            .then((value) => value.text())
-                            .then((text) =>
-                                datatypeXmlToJson(
-                                    datatypeData.href,
-                                    datatypeData.id,
-                                    text
-                                )
-                            )
-                    })
-                )
-            }
+            (text) => datatypesXmlToJson(text)
         ),
 }

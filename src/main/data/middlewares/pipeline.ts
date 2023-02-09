@@ -10,14 +10,18 @@ import {
     selectStatus,
     start,
     stop,
+    updateScript,
+    updateDatatype,
 } from 'shared/data/slices/pipeline'
 
 import {
+    Datatype,
     Job,
     JobState,
     JobStatus,
     PipelineStatus,
     ResultFile,
+    Script,
     Webservice,
 } from 'shared/types'
 
@@ -34,7 +38,6 @@ import {
 import { ParserException } from 'shared/parser/pipelineXmlConverter/parser'
 import { PipelineInstance } from 'main/factories'
 import { RootState } from 'shared/types/store'
-import ElectronLog from 'electron-log'
 import { ipcMain } from 'electron'
 import { IPC } from 'shared/constants/ipc'
 
@@ -134,7 +137,7 @@ function startMonitor(j: Job, ws: Webservice, getState, dispatch) {
     monitor = setInterval(() => {
         fetchJobData(ws)
             .then((value) => {
-                console.log('received value ', value)
+                info('received job data ', value)
                 if (
                     [
                         JobStatus.ERROR,
@@ -159,13 +162,12 @@ function startMonitor(j: Job, ws: Webservice, getState, dispatch) {
                         updatedJob,
                         `${downloadFolder}/${newJobName}`
                     ).then((downloadedJob) => {
-                        console.log()
                         dispatch(updateJob(downloadedJob))
                     })
                 } else dispatch(updateJob(updatedJob))
             })
             .catch((e) => {
-                console.log('received error ', e)
+                error('Error fetching data for job', j, e)
                 dispatch(
                     updateJob({
                         ...j,
@@ -201,7 +203,7 @@ export const getPipelineInstance = (state: RootState): PipelineInstance => {
         }
         return _pipeline_instance
     } catch (e) {
-        ElectronLog.error(e)
+        error(e)
         return null
     }
 }
@@ -232,6 +234,7 @@ export function pipelineMiddleware({ getState, dispatch }) {
     return (next) => (action: PayloadAction<any>) => {
         // Note : might be a better idea to call the getState in the intervals
         const state = getState()
+        const webservice = selectWebservice(state)
         // Note NP : instead of doing the alive check, testing to directly check for scripts
         // and consider the pipeline alive as soon as we have the scripts list
         switch (action.type) {
@@ -242,20 +245,38 @@ export function pipelineMiddleware({ getState, dispatch }) {
                 getPipelineInstance(state)?.stop(action.payload)
                 break
             case useWebservice.type:
+                const newWebservice = action.payload
                 let fetchScriptsInterval = null
                 const fetchScripts = pipelineAPI.fetchScripts()
                 fetchScriptsInterval = setInterval(() => {
-                    if (action.payload) {
-                        fetchScripts(action.payload)
+                    if (selectStatus(getState()) == PipelineStatus.STOPPED) {
+                        error(
+                            'useWebservice',
+                            'Pipeline has been stopped during webservice monitoring.',
+                            'Please check pipeline logs.'
+                        )
+                        clearInterval(fetchScriptsInterval)
+                    } else if (newWebservice) {
+                        fetchScripts(newWebservice)
                             .then((scripts) => {
+                                info(
+                                    'useWebservice',
+                                    'Pipeline is ready to be used'
+                                )
                                 dispatch(setScripts(scripts))
                                 dispatch(setStatus(PipelineStatus.RUNNING))
                                 clearInterval(fetchScriptsInterval)
+                                return pipelineAPI.fetchDatatypes()(
+                                    newWebservice
+                                )
+                            })
+                            .then((datatypes) => {
+                                dispatch(setDatatypes(datatypes))
                             })
                             .catch((e) => {
-                                console.log('useWebservice', e)
+                                error('useWebservice', e)
                                 if (
-                                    selectStatus(state) ==
+                                    selectStatus(getState()) ==
                                     PipelineStatus.RUNNING
                                 ) {
                                     dispatch(setStatus(PipelineStatus.STOPPED))
@@ -263,21 +284,34 @@ export function pipelineMiddleware({ getState, dispatch }) {
                             })
                     }
                 }, 1000)
-
-                let fetchDatatypesInterval = null
-                const fetchDatatypes = pipelineAPI.fetchDatatypes()
-                fetchDatatypesInterval = setInterval(() => {
-                    if (action.payload) {
-                        fetchDatatypes(action.payload)
-                            .then((datatypes) => {
-                                dispatch(setDatatypes(datatypes))
-                                clearInterval(fetchDatatypesInterval)
-                            })
-                            .catch((e) => {
-                                console.log('Error', e)
-                            })
-                    }
-                }, 1000)
+                break
+            case setScripts.type:
+                for (const script of action.payload as Array<Script>) {
+                    pipelineAPI
+                        .fetchScriptDetails(script)()
+                        .then((updated) => {
+                            dispatch(updateScript(updated))
+                        })
+                        .catch((e) =>
+                            error('error fetching script details', script, e)
+                        )
+                }
+                break
+            case setDatatypes.type:
+                for (const datatype of action.payload as Array<Datatype>) {
+                    pipelineAPI
+                        .fetchDatatypeDetails(datatype)()
+                        .then((updated) => {
+                            dispatch(updateDatatype(updated))
+                        })
+                        .catch((e) =>
+                            error(
+                                'error fetching datatype details',
+                                datatype,
+                                e
+                            )
+                        )
+                }
                 break
             case removeJob.type:
                 // Delete the job folder from disk
@@ -294,7 +328,6 @@ export function pipelineMiddleware({ getState, dispatch }) {
                 info('Launching job', JSON.stringify(jobToRun))
                 const launchJobOn = pipelineAPI.launchJob(jobToRun)
                 runJobInterval = setInterval(() => {
-                    const webservice = selectWebservice(state)
                     if (webservice) {
                         launchJobOn(webservice)
                             .then((jobData) => {

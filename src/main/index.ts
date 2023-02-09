@@ -37,6 +37,7 @@ import { getPipelineInstance } from './data/middlewares/pipeline'
 import { selectColorScheme, selectSettings } from 'shared/data/slices/settings'
 import {
     addJob,
+    editJob,
     newJob,
     runJob,
     removeJob,
@@ -134,6 +135,9 @@ function buildMenu(mainWindow, pipelineInstance) {
         },
         onRemoveJob: async (job) => {
             store.dispatch(removeJob(job))
+        },
+        onEditJob: async (job) => {
+            store.dispatch(editJob(job))
         },
     })
     // @ts-ignore

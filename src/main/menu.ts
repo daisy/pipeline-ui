@@ -15,12 +15,30 @@ export function buildMenuTemplate({
     onGotoTab,
     onRunJob,
     onRemoveJob,
+    onEditJob,
 }) {
     const isMac = process.platform === 'darwin'
 
     let multipleJobs = jobs.length > 1
 
     let currentJob = jobs.find((j) => j.internalId == selectedJobId)
+
+    let canDelete =
+        currentJob &&
+        currentJob.state == JobState.SUBMITTED &&
+        currentJob.jobData &&
+        currentJob.jobData.status !== JobStatus.RUNNING &&
+        currentJob.jobData.status != JobStatus.IDLE
+
+    let canCancel =
+        currentJob &&
+        currentJob.state == JobState.NEW &&
+        currentJob.jobRequest != null
+
+    let canRun =
+        currentJob &&
+        currentJob.state == JobState.NEW &&
+        currentJob.jobRequest != null
 
     // @ts-ignore
     const template: MenuItemConstructorOptions = [
@@ -53,6 +71,7 @@ export function buildMenuTemplate({
                 {
                     label: 'Settings',
                     click: onShowSettings,
+                    accelerator: isMac ? 'CommandOrControl+,' : '',
                 },
                 { type: 'separator' },
                 {
@@ -61,10 +80,7 @@ export function buildMenuTemplate({
                         onRunJob(currentJob)
                     },
                     accelerator: 'CommandOrControl+R',
-                    enabled:
-                        currentJob &&
-                        currentJob.state == JobState.NEW &&
-                        currentJob.jobRequest != null,
+                    enabled: canRun,
                 },
                 ...(currentJob && currentJob.state == JobState.SUBMITTED
                     ? [
@@ -93,10 +109,7 @@ export function buildMenuTemplate({
                                   onRemoveJob(currentJob)
                               },
                               accelerator: 'CommandOrControl+Delete',
-                              enabled:
-                                  currentJob?.state == JobState.SUBMITTED &&
-                                  currentJob.status != JobStatus.RUNNING &&
-                                  currentJob.status != JobStatus.IDLE,
+                              enabled: canDelete,
                           },
                       ]
                     : [
@@ -106,10 +119,7 @@ export function buildMenuTemplate({
                                   onRemoveJob(currentJob)
                               },
                               accelerator: 'CommandOrControl+Delete',
-                              enabled:
-                                  currentJob &&
-                                  currentJob.state == JobState.NEW &&
-                                  currentJob.jobRequest != null,
+                              enabled: canCancel,
                           },
                       ]),
 
@@ -125,20 +135,27 @@ export function buildMenuTemplate({
                         window.close()
                     },
                 },
-                isMac
-                    ? {
-                          role: 'close',
-                          accelerator: 'Cmd+Q',
-                      }
-                    : {
-                          role: 'quit',
-                          accelerator: 'Alt+F4',
-                      },
+                {
+                    role: 'quit',
+                    accelerator: isMac ? 'Cmd+Q' : 'Alt+F4',
+                },
             ],
         },
         {
             label: '&Edit',
-            submenu: [{ role: 'copy' }, { role: 'paste' }],
+            submenu: [
+                {
+                    label: 'Edit job',
+                    click: () => {
+                        onEditJob(currentJob)
+                    },
+                    accelerator: 'CommandOrControl+E',
+                    enabled: canDelete,
+                },
+                { role: 'separator' },
+                { role: 'copy' },
+                { role: 'paste' },
+            ],
         },
         {
             label: '&View',

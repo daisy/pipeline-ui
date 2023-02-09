@@ -185,11 +185,30 @@ input[type=checkbox] {
                     color: var(--trace-message-color);
                 }
             }
+            
+            ul ul {
+                
+                padding-left: var(--pad);
+                border-left: 1px solid black;
+                border-bottom: 1px solid black;
+                margin-bottom: calc(var(--pad) * 0.5);
+                margin-top:  calc(var(--pad) * 0.5);
+                margin-left: var(--pad);
+                :last-child {
+                    margin-bottom: calc(var(--pad));
+                }
+            }
         }
 
         .job-results {
             width: min-content;
             white-space: nowrap;
+        }
+        .form-buttons {
+            display: flex;
+            flex-direction: line;
+            gap: var(--pad);
+            margin-bottom: calc(var(--pad) * 0.5);
         }
     }
 }

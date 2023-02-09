@@ -6,6 +6,7 @@ import {
     JobStatus,
     JobData,
     MessageLevel,
+    Message,
 } from 'shared/types/pipeline'
 import { scriptElementToJson } from './scriptToJson'
 import { parseXml } from './parser'
@@ -87,29 +88,13 @@ function jobElementToJson(jobElm: Element): JobData {
     }
     let messagesElms = jobElm.getElementsByTagName('messages')
     if (messagesElms.length > 0) {
-        //@ts-ignore
-        jobData.messages = Array.from(
-            messagesElms[0].getElementsByTagName('message')
-        ).map((messageElm) => {
-            let timestamp = messageElm.getAttribute('timeStamp')
-            try {
-                timestamp = new Date(
-                    parseInt(messageElm.getAttribute('timeStamp'))
-                ).toISOString()
-            } catch (err) {
-                console.log(err)
-            }
-            return {
-                level: MessageLevel[
-                    messageElm.getAttribute(
-                        'level'
-                    ) as keyof typeof MessageLevel
-                ],
-                content: messageElm.getAttribute('content'),
-                sequence: parseInt(messageElm.getAttribute('sequence')),
-                timestamp,
-            }
-        })
+        try {
+            jobData.messages = arrayFromChildNodes(
+                messagesElms[0].childNodes
+            ).map((e) => parseMessage(e))
+        } catch (e) {
+            console.log('error parsing messages', e)
+        }
         jobData.progress = parseInt(messagesElms[0].getAttribute('progress'))
     }
     let scriptElms = jobElm.getElementsByTagName('script')
@@ -117,6 +102,37 @@ function jobElementToJson(jobElm: Element): JobData {
         jobData.script = scriptElementToJson(scriptElms[0])
     }
     return jobData
+}
+
+const arrayFromChildNodes = (nodeList: NodeListOf<ChildNode>) => {
+    let result: Element[] = []
+    for (let i = 0; i < nodeList.length; ++i) {
+        result.push(nodeList[i] as Element)
+    }
+    return result
+}
+
+function parseMessage(messageNode: Element) {
+    let timestamp = messageNode.getAttribute('timeStamp')
+    try {
+        timestamp = new Date(
+            parseInt(messageNode.getAttribute('timeStamp'))
+        ).toISOString()
+    } catch (err) {
+        console.log(err)
+    }
+    // @ts-ignore
+    return {
+        level: MessageLevel[
+            messageNode.getAttribute('level') as keyof typeof MessageLevel
+        ],
+        content: messageNode.getAttribute('content'),
+        sequence: parseInt(messageNode.getAttribute('sequence')),
+        timestamp,
+        messages: arrayFromChildNodes(messageNode.childNodes).map((e) =>
+            parseMessage(e)
+        ),
+    } as Message
 }
 
 export { jobXmlToJson, jobElementToJson }

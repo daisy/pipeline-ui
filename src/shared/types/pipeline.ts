@@ -194,6 +194,7 @@ export type Message = {
     content: string
     sequence: number
     timestamp: number
+    messages?: Array<Message>
 }
 
 export type Job = {

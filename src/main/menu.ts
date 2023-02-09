@@ -135,10 +135,14 @@ export function buildMenuTemplate({
                         window.close()
                     },
                 },
-                {
-                    role: 'quit',
-                    accelerator: isMac ? 'Cmd+Q' : 'Alt+F4',
-                },
+                ...(!isMac
+                    ? [
+                          {
+                              role: 'quit',
+                              accelerator: 'Alt+F4',
+                          },
+                      ]
+                    : []),
             ],
         },
         {

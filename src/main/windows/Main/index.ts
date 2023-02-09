@@ -1,9 +1,10 @@
 import { app, BrowserWindow } from 'electron'
 import { join } from 'path'
 
-import { ENVIRONMENT, PLATFORM } from 'shared/constants'
-import { createWindow, Pipeline2IPC } from 'main/factories'
+import { ENVIRONMENT, IPC } from 'shared/constants'
+import { createWindow } from 'main/factories'
 import { APP_CONFIG } from '~/app.config'
+import { store } from 'main/data/store'
 
 const { MAIN, TITLE } = APP_CONFIG
 

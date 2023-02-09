@@ -6,23 +6,14 @@ export const IPC = {
         },
         SETTINGS: {
             CREATE: 'windows: create-settings-window',
-            GET: 'settings: get',
-            UPDATE: 'settings: update',
-            CHANGED: 'settings: changed',
             WHEN_CLOSE: 'windows: when-settings-window-close',
         },
     },
+    // IPCS kept for pipeline logs outside of the store for now
+    // Not used at the moment but kept as historical if a
+    // debug/management panel is required later
     PIPELINE: {
-        START: 'pipeline: start',
-        STOP: 'pipeline: stop',
-        STATE: {
-            SEND: 'pipeline: state-send',
-            GET: 'pipeline: state-get',
-            CHANGED: 'pipeline: state-changed',
-        },
-        PROPS: {
-            GET: 'pipeline: props-get',
-        },
+        PROPS: 'pipeline: props-get',
         MESSAGES: {
             SEND: 'pipeline: messages-send',
             UPDATE: 'pipeline: messages-update',
@@ -38,5 +29,10 @@ export const IPC = {
         SAVE: 'file: save',
         UNZIP: 'file: unzip',
         OPEN: 'file: open',
+    },
+    // Main store IPCs to sync proxy from full store
+    STORE: {
+        GET: 'store: get',
+        UPDATED: 'store: updated',
     },
 }

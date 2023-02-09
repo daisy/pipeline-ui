@@ -5,6 +5,7 @@ import {
     Menu,
     MenuItemConstructorOptions,
     shell,
+    nativeTheme,
 } from 'electron'
 
 import { error } from 'electron-log'
@@ -13,9 +14,6 @@ import {
     bindWindowToPipeline,
     makeAppSetup,
     makeAppWithSingleInstanceLock,
-    Pipeline2IPC,
-    registerApplicationSettingsIPC,
-    registerPipeline2ToIPC,
 } from './factories'
 
 import {
@@ -25,6 +23,9 @@ import {
     registerSettingsWindowCreationByIPC,
 } from './windows'
 
+import { buildMenuTemplate } from './menu'
+
+import { registerStoreIPC, store } from './data/store'
 import { setupFileDialogEvents } from './fileDialogs'
 import { ENVIRONMENT, IPC } from 'shared/constants'
 import { setupShowInFolderEvents } from './folder'
@@ -32,24 +33,42 @@ import { registerFileIPC } from './factories/ipcs/file'
 import { setupFileSystemEvents } from './fileSystem'
 import { setupOpenInBrowserEvents } from './browser'
 import { APP_CONFIG } from '~/app.config'
+import { getPipelineInstance } from './data/middlewares/pipeline'
+import { selectColorScheme, selectSettings } from 'shared/data/slices/settings'
+import {
+    addJob,
+    newJob,
+    runJob,
+    removeJob,
+    pipeline,
+    selectJob,
+    selectPipeline,
+    selectJobs,
+    selectNextJob,
+    selectPrevJob,
+} from 'shared/data/slices/pipeline'
 
 makeAppWithSingleInstanceLock(async () => {
     await app.whenReady()
+    registerStoreIPC()
+    // load theme from settings
+    nativeTheme.themeSource = selectColorScheme(store.getState())
+
     // Windows
     let mainWindow = await makeAppSetup(MainWindow)
+
     registerSettingsWindowCreationByIPC()
     registerAboutWindowCreationByIPC()
     registerFileIPC()
-    // Settings
-    let settings = registerApplicationSettingsIPC()
 
-    // Pipeline instance creation with IPC communication registering
-    const pipelineInstance = registerPipeline2ToIPC(settings)
-    bindWindowToPipeline(mainWindow, pipelineInstance)
+    // Pipeline instance creation
+    // IPC is managed by the store
+    const pipelineInstance = getPipelineInstance(store.getState())
+    pipelineInstance.launch()
 
     let tray: PipelineTray = null
     try {
-        tray = new PipelineTray(mainWindow, pipelineInstance)
+        tray = new PipelineTray(mainWindow)
     } catch (err) {
         error(err)
         // quit app for now but we might need to think for a better handling for the user
@@ -59,92 +78,65 @@ makeAppWithSingleInstanceLock(async () => {
     setupShowInFolderEvents()
     setupOpenInBrowserEvents()
     setupFileSystemEvents()
+    buildMenu(mainWindow, pipelineInstance)
 
-    const isMac = process.platform === 'darwin'
+    store.subscribe(() => {
+        buildMenu(mainWindow, pipelineInstance)
+    })
+})
 
-    // Template taken from electron documentation
-    // To be completed
-    // @ts-ignore
-    const template: MenuItemConstructorOptions = [
-        // { role: 'appMenu' }
-        ...(isMac
-            ? [
-                  {
-                      label: app.name,
-                      submenu: [
-                          { role: 'services' },
-                          { type: 'separator' },
-                          { role: 'hide' },
-                          { role: 'hideOthers' },
-                          { role: 'unhide' },
-                          { type: 'separator' },
-                          { role: 'quit' },
-                      ],
-                  },
-              ]
-            : []),
-        // { role: 'fileMenu' }
-        {
-            label: 'File',
-            submenu: [
-                {
-                    label: 'Create a new job',
-                    click: async () => {
-                        try {
-                            mainWindow.show()
-                        } catch (error) {
-                            mainWindow = await MainWindow()
-                            bindWindowToPipeline(mainWindow, pipelineInstance)
-                        }
-                    },
-                },
-                {
-                    label: 'Settings',
-                    click: async () => {
-                        // Open the settings window
-                        ipcMain.emit(IPC.WINDOWS.SETTINGS.CREATE)
-                    },
-                },
-                { type: 'separator' },
-                isMac ? { role: 'close' } : { role: 'quit' },
-            ],
-        },
-        {
-            label: 'Edit',
-            submenu: [{ role: 'copy' }, { role: 'paste' }],
-        },
-        {
-            label: 'View',
-            submenu: [
-                { role: 'resetZoom' },
-                { role: 'zoomIn' },
-                { role: 'zoomOut' },
-            ],
-        },
-        {
-            role: 'help',
-            submenu: [
-                {
-                    label: 'Learn more',
-                    click: async () => {
-                        await shell.openExternal(
-                            'https://daisy.github.io/pipeline/'
-                        )
-                    },
-                },
-                {
-                    label: 'User guide',
-                    click: async () => {
-                        await shell.openExternal(
-                            'https://daisy.github.io/pipeline/Get-Help/'
-                        )
-                    },
-                },
-            ],
-        },
-    ]
+function buildMenu(mainWindow, pipelineInstance) {
+    let jobs = selectPipeline(store.getState()).jobs
 
+    //@ts-ignore
+    let template = buildMenuTemplate({
+        appName: app.name,
+        jobs,
+        selectedJobId: selectPipeline(store.getState()).selectedJobId,
+        onCreateJob: async () => {
+            const job = newJob(selectPipeline(store.getState()))
+            store.dispatch(addJob(job))
+            store.dispatch(selectJob(job))
+            try {
+                mainWindow.show()
+            } catch (error) {
+                mainWindow = await MainWindow()
+                bindWindowToPipeline(mainWindow, pipelineInstance)
+            }
+        },
+        onShowSettings: async () => {
+            // Open the settings window
+            ipcMain.emit(IPC.WINDOWS.SETTINGS.CREATE)
+        },
+        onLearnMore: async () => {
+            await shell.openExternal('https://daisy.github.io/pipeline/')
+        },
+        onUserGuide: async () => {
+            await shell.openExternal(
+                'https://daisy.github.io/pipeline/Get-Help/'
+            )
+        },
+        onNextTab: async () => {
+            store.dispatch(selectNextJob())
+        },
+        onPrevTab: async () => {
+            store.dispatch(selectPrevJob())
+        },
+        onGotoTab: async (job) => {
+            store.dispatch(selectJob(job))
+        },
+        onRunJob: async (job) => {
+            store.dispatch(
+                runJob({
+                    ...job,
+                })
+            )
+        },
+        onRemoveJob: async (job) => {
+            store.dispatch(removeJob(job))
+        },
+    })
     // @ts-ignore
     const menu = Menu.buildFromTemplate(template)
     Menu.setApplicationMenu(menu)
-})
+}

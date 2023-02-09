@@ -1,230 +1,130 @@
 /*
 Data manager and owner of tab view
 */
-import { useState } from 'react'
-import { Job, JobStatus, JobState, NamedResult } from 'shared/types/pipeline'
-import { useQuery } from '@tanstack/react-query'
-import { jobXmlToJson } from 'renderer/pipelineXmlConverter'
-import { TabView } from '../TabView'
-import { AddJobTab, JobTab } from '../JobTab'
-import { JobTabPanel } from '../JobTabPanel'
+import { useEffect, useState } from 'react'
+import { Job } from 'shared/types/pipeline'
 import { useWindowStore } from 'renderer/store'
-import { ipcRenderer } from 'electron'
-import { IPC } from 'shared/constants'
-import { join } from 'path'
 
-const NEW_JOB = (id) => ({
-    internalId: id,
-    state: JobState.NEW,
-})
+import { ID } from 'renderer/utils/utils'
+import { JobState } from 'shared/types'
+
+import {
+    addJob,
+    removeJob,
+    updateJob,
+    newJob,
+    selectJob,
+    selectNextJob,
+    selectPrevJob,
+} from 'shared/data/slices/pipeline'
+import { NewJobPane } from '../NewJobPane'
+import { JobDetailsPane } from '../JobDetailsPane'
+import { calculateJobName } from 'shared/jobName'
 
 const { App } = window
 
 export function MainView() {
-    const { settings } = useWindowStore()
-    const [jobs, setJobs] = useState(Array<Job>)
-    const [nextJobId, setNextJobId] = useState(0)
-    const [autoselect, setAutoselect] = useState(false)
-    const { isLoading, error, data } = useQuery(
-        ['jobsData'],
-        async () => {
-            let fetchJobData = async (job) => {
-                let res = await fetch(job.jobData.href)
-                let xmlStr = await res.text()
-                if (xmlStr) return jobXmlToJson(xmlStr)
-                else return null
-            }
+    const { pipeline } = useWindowStore()
 
-            let updatedJobs = await Promise.all(
-                jobs.map(async (j) => {
-                    // only check submitted jobs (e.g. have a jobData property)
-                    // that are either IDLE or RUNNING (e.g. don't recheck ERROR or SUCCESS statuses)
-                    if (
-                        j.hasOwnProperty('jobData') &&
-                        (j.jobData.status == JobStatus.IDLE ||
-                            j.jobData.status == JobStatus.RUNNING)
-                    ) {
-                        let jobData = await fetchJobData(j)
-                        if (jobData.status != j.jobData.status) {
-                            // download the available results
-                            // And change file links
-                            if (settings.downloadFolder && jobData.results) {
-                                if (jobData.results.namedResults) {
-                                    console.log(
-                                        'Fetching results ',
-                                        jobData.results.namedResults
-                                    )
-                                    // const result of jobData.results.namedResults
-                                    const currentTime = new Date(Date.now())
-                                    // NP : only way i found to build the date string without loosing user localization
-                                    // ISO string is not localized on my tests
-                                    const timestamp = `${currentTime.getFullYear()}-${(
-                                        currentTime.getMonth() + 1
-                                    )
-                                        .toString()
-                                        .padStart(2, '0')}-${(
-                                        currentTime.getDay() + 1
-                                    )
-                                        .toString()
-                                        .padStart(2, '0')}-${currentTime
-                                        .getHours()
-                                        .toString()
-                                        .padStart(2, '0')}${currentTime
-                                        .getMinutes()
-                                        .toString()
-                                        .padStart(2, '0')}${currentTime
-                                        .getSeconds()
-                                        .toString()
-                                        .padStart(
-                                            2,
-                                            '0'
-                                        )}.${currentTime.getMilliseconds()}`
-                                    const newJobName = `${
-                                        jobData.nicename ??
-                                        jobData.script.nicename
-                                    }_${timestamp}`
-                                    for (
-                                        let i =
-                                            jobData.results.namedResults
-                                                .length - 1;
-                                        i >= 0;
-                                        --i
-                                    ) {
-                                        let namedResult =
-                                            jobData.results.namedResults[i]
-                                        const newJobURL = new URL(
-                                            `${settings.downloadFolder}/${newJobName}/${namedResult.name}`
-                                        ).href
-                                        // change the target jobData href
-                                        jobData.results.namedResults[i].href =
-                                            newJobURL
-                                        if (
-                                            jobData.results.namedResults[i]
-                                                .files
-                                        ) {
-                                            for (
-                                                let j =
-                                                    jobData.results
-                                                        .namedResults[i].files
-                                                        .length - 1;
-                                                j >= 0;
-                                                --j
-                                            ) {
-                                                let resultFile =
-                                                    jobData.results.namedResults[i].files[j]
-                                                // Change the file url and keep the original href
-                                                const newFileURL = new URL(
-                                                    `${
-                                                        settings.downloadFolder
-                                                    }/${newJobName}/${
-                                                        namedResult.name
-                                                    }/${resultFile.file
-                                                        .split('/')
-                                                        .pop()}`
-                                                ).href
-                                                let fetchedResult = await fetch(
-                                                    resultFile.href
-                                                )
-                                                    .then((response) =>
-                                                        response.blob()
-                                                    )
-                                                    .then((blob) =>
-                                                        blob.arrayBuffer()
-                                                    )
-                                                    .then((buffer) =>
-                                                        resultFile.mimeType ===
-                                                        'application/zip'
-                                                            ? App.unzipFile(
-                                                                  buffer,
-                                                                  newFileURL
-                                                              )
-                                                            : App.saveFile(
-                                                                  buffer,
-                                                                  newFileURL
-                                                              )
-                                                    )
-                                                    .then(() => {
-                                                        let newResult =
-                                                            Object.assign(
-                                                                {},
-                                                                resultFile
-                                                            )
-                                                        newResult.file =
-                                                            newFileURL
-                                                        return newResult
-                                                    })
-                                                    .catch((e) => resultFile) // if a problem occured, return the original result
-                                                    .finally()
-                                                jobData.results.namedResults[i].files[j].file = 
-                                                    fetchedResult.file
-                                            }
-                                        }
-                                    }
-                                    jobData.results.href = new URL(
-                                        `${settings.downloadFolder}/${jobData.jobId}`
-                                    ).href
-                                }
-                            }
-                        }
-                        j.jobData = jobData
-                    }
-                    return j
-                })
-            )
-            if (jobs.length == 0) {
-                updatedJobs.push(NEW_JOB(`job-${nextJobId}`))
-                setNextJobId(nextJobId + 1)
-            }
-            setJobs([...updatedJobs])
-            return updatedJobs
-        },
-        { refetchInterval: 3000 }
-    )
+    useEffect(() => {
+        if (!(pipeline.jobs && pipeline.jobs.length > 0)) {
+            console.log(pipeline.jobs)
+            let newJob_ = newJob(pipeline)
+            App.store.dispatch(addJob(newJob_))
+            App.store.dispatch(selectJob(newJob_))
+        }
+    }, [])
 
-    if (isLoading) {
-        return <></>
-    }
-    if (error instanceof Error) {
-        console.log('Error', error)
-        return <></>
-    }
-    if (!data) {
-        return <></>
-    }
+    // on navigation received for the tab, we need to refocus the selected tab
+    // for the narrators to announce it
+    useEffect(() => {
+        if (pipeline.selectedJobId !== '') {
+            document.getElementById(`${ID(pipeline.selectedJobId)}-tab`).focus()
+        }
+    }, [pipeline.selectedJobId])
 
-    let addJob = (onItemWasCreated?) => {
-        let theNewJob = NEW_JOB(`job-${nextJobId}`)
-        setJobs([...jobs, theNewJob])
-        setNextJobId(nextJobId + 1)
-        if (onItemWasCreated) {
-            onItemWasCreated(theNewJob.internalId)
+    /**
+     * Keyboard actions on tabs with arrows
+     * @param e KeyboardEvent
+     */
+    const keyboardActions = (e) => {
+        switch (e.key) {
+            case 'ArrowRight':
+                App.store.dispatch(selectNextJob())
+                break
+            case 'ArrowLeft':
+                App.store.dispatch(selectPrevJob())
+                break
+            case 'ArrowDown':
+                document
+                    .getElementById(`${ID(pipeline.selectedJobId)}-tabpanel`)
+                    .focus()
+                break
+            case 'Delete':
+                if (pipeline.jobs.length > 0) {
+                    // TODO if requested : possibility to delete the selection
+                }
+                break
         }
     }
 
-    let removeJob = (jobId) => {
-        const jobs_ = jobs.filter((j) => j.internalId !== jobId)
-        setJobs(jobs_)
-    }
-
-    let updateJob = (job) => {
-        let jobId = job.internalId
-        let jobs_ = jobs.map((j) => {
-            if (j.internalId == jobId) {
-                return { ...job }
-            } else return j
-        })
-        setJobs(jobs_)
-    }
-
     return (
-        <TabView<Job>
-            items={jobs}
-            onTabCreate={addJob}
-            onTabClose={removeJob}
-            ItemTab={JobTab}
-            AddItemTab={AddJobTab}
-            ItemTabPanel={JobTabPanel}
-            updateItem={updateJob}
-        />
+        <>
+            <div role="tablist" aria-live="polite" onKeyDown={keyboardActions}>
+                {pipeline.jobs
+                    .filter((job) => !job.invisible)
+                    .map((job, idx) => (
+                        <button
+                            key={idx}
+                            id={`${ID(job.internalId)}-tab`}
+                            aria-selected={
+                                pipeline.selectedJobId == job.internalId
+                            }
+                            tabIndex={
+                                pipeline.selectedJobId == job.internalId
+                                    ? 0
+                                    : -1
+                            }
+                            aria-controls={`${ID(job.internalId)}-tabpanel`}
+                            role="tab"
+                            type="button"
+                            onClick={(e) => App.store.dispatch(selectJob(job))}
+                        >
+                            {idx + 1}. {calculateJobName(job)}
+                        </button>
+                    ))}
+            </div>
+            {pipeline.jobs
+                .filter((job) => !job.invisible)
+                .map((job, idx) => {
+                    return (
+                        <div
+                            key={idx}
+                            className={`"tabPanel" ${
+                                job.state == JobState.NEW ? 'new-job' : 'job'
+                            }`}
+                            id={`${ID(job.internalId)}-tabpanel`}
+                            role="tabpanel"
+                            hidden={pipeline.selectedJobId != job.internalId}
+                            aria-labelledby={`${ID(job.internalId)}-tab`}
+                            tabIndex={0}
+                        >
+                            <div
+                                className={`fixed-height-layout ${
+                                    job.state == JobState.NEW
+                                        ? 'new-job'
+                                        : 'job'
+                                }`}
+                            >
+                                {job.state == JobState.NEW ? (
+                                    <NewJobPane job={job} />
+                                ) : (
+                                    <JobDetailsPane job={job} />
+                                )}
+                            </div>
+                        </div>
+                    )
+                })}
+        </>
     )
 }

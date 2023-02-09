@@ -1,13 +1,42 @@
 // job settings, not application settings
-import { findValue, getAllOptional, getAllRequired } from 'renderer/utils/utils'
+import { useWindowStore } from 'renderer/store'
+import {
+    externalLinkClick,
+    findValue,
+    getAllOptional,
+    getAllRequired,
+} from 'renderer/utils/utils'
+import { Job } from 'shared/types'
 
-export function Settings({ job }) {
-    let required = getAllRequired(job.script)
-    let optional = getAllOptional(job.script)
+const { App } = window
+
+export function Settings({ job }: { job: Job }) {
+    const { pipeline } = useWindowStore()
+    const scriptDetails = pipeline.scripts.filter(
+        (s) => s.id == job.jobData.script.id
+    )[0]
+    if (!scriptDetails) {
+        return <p>Unrecognized script {job.jobData.script.id}</p>
+    }
 
     return (
         <ul>
-            {required.map((item, idx) => (
+            <li>
+                <span>Script name:</span>
+                <span>
+                    {scriptDetails.homepage ? (
+                        <a
+                            href={scriptDetails.homepage}
+                            onClick={(e) => externalLinkClick(e, App)}
+                        >
+                            {scriptDetails.nicename}
+                        </a>
+                    ) : (
+                        scriptDetails.nicename
+                    )}
+                </span>
+            </li>
+            {getAllRequired(scriptDetails).map((item, idx) => (
                 <li key={idx}>
                     <span>{item.nicename}: </span>
                     <span>
@@ -15,7 +44,7 @@ export function Settings({ job }) {
                     </span>
                 </li>
             ))}
-            {optional.map((item, idx) => (
+            {getAllOptional(scriptDetails).map((item, idx) => (
                 <li key={idx}>
                     <span>{item.nicename}: </span>
                     <span>

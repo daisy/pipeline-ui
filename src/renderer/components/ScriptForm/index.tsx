@@ -1,46 +1,68 @@
 /*
 Fill out fields for a new job and submit it
 */
-import { jobRequestToXml, jobXmlToJson } from 'renderer/pipelineXmlConverter'
-import { JobRequest, JobState, baseurl, ScriptItemBase } from 'shared/types'
+import { Job, Script } from 'shared/types'
 import { useState, useEffect } from 'react'
-import { useWindowStore } from 'renderer/store'
 import {
-    findInputType,
     findValue,
     getAllOptional,
     getAllRequired,
     ID,
 } from 'renderer/utils/utils'
 import { Section } from '../Section'
-import { marked } from 'marked'
-import { FileOrFolderInput } from '../CustomFields/FileOrFolderInput'
-import Markdown from 'react-markdown'
-import remarkGfm from 'remark-gfm'
+import { restoreJob, runJob } from 'shared/data/slices/pipeline'
+import {
+    addJob,
+    removeJob,
+    updateJob,
+    newJob,
+} from 'shared/data/slices/pipeline'
 
+import { externalLinkClick } from 'renderer/utils/utils'
+import { FormField } from '../Fields/FormField'
 const { App } = window
 
-export function ScriptForm({ job, script, updateJob, onClose }) {
+export function ScriptForm({ job, script }: { job: Job; script: Script }) {
     const [submitInProgress, setSubmitInProgress] = useState(false)
     const [error, setError] = useState(false)
-    const { pipeline } = useWindowStore()
-
-    const [jobRequest, setJobRequest] = useState<JobRequest>(null)
     useEffect(() => {
-        setJobRequest({
-            scriptHref: script.href,
-            nicename: script.nicename,
-            inputs: script.inputs.map((item) => ({
-                name: item.name,
-                value: null,
-                isFile: item.type == 'anyFileURI' || item.type == 'anyDirURI',
-            })),
-            options: script.options.map((item) => ({
-                name: item.name,
-                value: item.default ? item.default : null,
-                isFile: item.type == 'anyFileURI' || item.type == 'anyDirURI',
-            })),
-        })
+        // For job edition, re-add previous value of the jobRequest if it exists
+        const hasJobRequestOnScript: Boolean =
+            job.jobRequest && job.jobRequest.scriptHref == script.href
+        App.store.dispatch(
+            updateJob({
+                ...job,
+                jobRequest: {
+                    scriptHref: script.href,
+                    nicename: script.nicename,
+                    inputs: script.inputs.map((item, index) => {
+                        return {
+                            name: item.name,
+                            value:
+                                (hasJobRequestOnScript &&
+                                    job.jobRequest.inputs[index].value) ||
+                                null,
+                            isFile:
+                                item.type == 'anyFileURI' ||
+                                item.type == 'anyDirURI',
+                        }
+                    }),
+                    options: script.options.map((item, index) => {
+                        return {
+                            name: item.name,
+                            value:
+                                (hasJobRequestOnScript &&
+                                    job.jobRequest.options[index].value) ||
+                                item.default ||
+                                null,
+                            isFile:
+                                item.type == 'anyFileURI' ||
+                                item.type == 'anyDirURI',
+                        }
+                    }),
+                },
+            })
+        )
     }, [script])
 
     let required = getAllRequired(script)
@@ -48,11 +70,11 @@ export function ScriptForm({ job, script, updateJob, onClose }) {
 
     // take input from the form and add it to the job request
     let saveValueInJobRequest = (value, data) => {
-        if (!jobRequest) {
+        if (!job.jobRequest) {
             return
         }
-        let inputs = [...jobRequest.inputs]
-        let options = [...jobRequest.options]
+        let inputs = [...job.jobRequest.inputs]
+        let options = [...job.jobRequest.options]
 
         // update the array and return a new copy of it
         let updateValue = (value, data, arr) => {
@@ -66,47 +88,28 @@ export function ScriptForm({ job, script, updateJob, onClose }) {
         } else {
             options = updateValue(value, data, options)
         }
-        let newJobRequest = {
-            ...jobRequest,
-            inputs: [...inputs],
-            options: [...options],
-        }
-
-        setJobRequest(newJobRequest)
+        App.store.dispatch(
+            updateJob({
+                ...job,
+                jobRequest: {
+                    ...job.jobRequest,
+                    inputs: [...inputs],
+                    options: [...options],
+                },
+            })
+        )
     }
 
     // submit a job
-    let onSubmit = async (e) => {
+    let onSubmit = (e) => {
         e.preventDefault()
         setSubmitInProgress(true)
-
-        let xmlStr = jobRequestToXml(jobRequest)
-
-        // this post request submits the job to the pipeline webservice
-        let res = await fetch(`${baseurl(pipeline.runningWebservice)}/jobs`, {
-            method: 'POST',
-            body: xmlStr,
-            mode: 'cors',
-        })
+        App.store.dispatch(
+            runJob({
+                ...job,
+            })
+        )
         setSubmitInProgress(false)
-        if (res.status != 201) {
-            setError(true)
-        } else {
-            let newJobXml = await res.text()
-            try {
-                let newJobJson = jobXmlToJson(newJobXml)
-                let job_ = {
-                    ...job,
-                    state: JobState.SUBMITTED,
-                    jobData: newJobJson,
-                    jobRequest,
-                    script,
-                }
-                updateJob(job_)
-            } catch (err) {
-                setError(true)
-            }
-        }
     }
 
     return (
@@ -119,7 +122,19 @@ export function ScriptForm({ job, script, updateJob, onClose }) {
                     <h1 id={`${ID(job.internalId)}-script-hd`}>
                         {script?.nicename}
                     </h1>
-                    <p>{script?.description}</p>
+                    <p>
+                        {script?.description}{' '}
+                        {script?.homepage ? (
+                            <a
+                                href={script.homepage}
+                                onClick={(e) => externalLinkClick(e, App)}
+                            >
+                                Read the script documentation.
+                            </a>
+                        ) : (
+                            ''
+                        )}
+                    </p>
                 </div>
                 {error ? <p>Error</p> : ''}
             </section>
@@ -145,7 +160,7 @@ export function ScriptForm({ job, script, updateJob, onClose }) {
                                             initialValue={findValue(
                                                 item.name,
                                                 item.kind,
-                                                jobRequest
+                                                job.jobRequest
                                             )}
                                         />
                                     </li>
@@ -171,7 +186,7 @@ export function ScriptForm({ job, script, updateJob, onClose }) {
                                                 initialValue={findValue(
                                                     item.name,
                                                     item.kind,
-                                                    jobRequest
+                                                    job.jobRequest
                                                 )}
                                             />
                                         </li>
@@ -183,13 +198,19 @@ export function ScriptForm({ job, script, updateJob, onClose }) {
                         )}
                     </div>
                     <div className="form-buttons">
-                        <button className="run" type="submit" accessKey="r">
+                        <button className="run" type="submit">
                             Run
                         </button>
                         <button
                             className="cancel"
                             type="reset"
-                            onClick={(e) => onClose(job, e)}
+                            onClick={(e) => {
+                                App.store.dispatch(
+                                    job.linkedTo
+                                        ? restoreJob(job)
+                                        : removeJob(job)
+                                )
+                            }}
                         >
                             Cancel
                         </button>
@@ -205,109 +226,3 @@ export function ScriptForm({ job, script, updateJob, onClose }) {
     )
 }
 
-// create a form element for the item
-// item.type can be:
-// anyFileURI, anyDirURI, xsd:string, xsd:dateTime, xsd:boolean, xsd:integer, xsd:float, xsd:double, xsd:decimal
-// item.mediaType is a file type e.g. application/x-dtbook+xml
-function FormField({
-    item,
-    idprefix,
-    onChange,
-    initialValue,
-}: {
-    item: ScriptItemBase
-    idprefix: string
-    onChange: (string, ScriptItemBase) => void // function to set the value in a parent-level collection.
-    initialValue: any // the initialValue
-}) {
-    let inputType = findInputType(item.type)
-    const [value, setValue] = useState(initialValue)
-    let controlId = `${idprefix}-${item.name}`
-
-    let onFileFolderChange = (filename, data) => {
-        console.log('onFileFolderChange', filename)
-        onChange(filename, data)
-    }
-    let onInputChange = (e, data) => {
-        let newValue =
-            e.target.getAttribute('type') == 'checkbox'
-                ? e.target.checked
-                : e.target.value
-        setValue(newValue)
-        onChange(newValue, data)
-    }
-    let dialogOpts =
-        item.type == 'anyFileURI'
-            ? ['openFile']
-            : item.type == 'anyDirURI'
-            ? ['openDirectory']
-            : ['openFile', 'openDirectory']
-
-    let externalLinkClick = (e) => {
-        e.preventDefault()
-        App.openInBrowser(e.target.href)
-    }
-
-    return (
-        <div className="form-field">
-            <details>
-                <summary>
-                    <label htmlFor={controlId}>{item.nicename}</label>
-                </summary>
-
-                <span className="description">
-                    <Markdown
-                        remarkPlugins={[remarkGfm]}
-                        components={{
-                            a: (props) => {
-                                return (
-                                    <a
-                                        href={props.href}
-                                        onClick={externalLinkClick}
-                                    >
-                                        {props.children}
-                                    </a>
-                                )
-                            },
-                        }}
-                    >
-                        {item.desc}
-                    </Markdown>
-                </span>
-            </details>
-
-            {inputType == 'file' ? ( // 'item' may be an input or an option
-                <FileOrFolderInput
-                    type="open"
-                    dialogProperties={dialogOpts}
-                    elemId={controlId}
-                    mediaType={item.mediaType}
-                    name={item.name}
-                    onChange={(filename) => onFileFolderChange(filename, item)}
-                    useSystemPath={false}
-                    buttonLabel="Browse"
-                    required={item.required}
-                    initialValue={initialValue}
-                />
-            ) : inputType == 'checkbox' ? ( // 'item' is an option
-                <input
-                    type={inputType}
-                    required={item.required}
-                    onChange={(e) => onInputChange(e, item)}
-                    id={controlId}
-                    checked={value === 'true' || value === true}
-                ></input>
-            ) : (
-                // 'item' is an option
-                <input
-                    type={inputType}
-                    required={item.required}
-                    // @ts-ignore
-                    value={initialValue ?? ''}
-                    id={controlId}
-                    onChange={(e) => onInputChange(e, item)}
-                ></input>
-            )}
-        </div>
-    )
-}

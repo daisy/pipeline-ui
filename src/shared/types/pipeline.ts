@@ -38,11 +38,105 @@ export enum PipelineStatus {
 /**
  * Local instance state to be used by front
  */
-export interface PipelineState {
-    runningWebservice?: Webservice
+export type PipelineState = {
+    webservice?: Webservice
     status: PipelineStatus
+    jobs?: Job[]
+    scripts?: Script[]
+    internalJobCounter?: number
+    selectedJobId: string
+    datatypes?: Datatype[]
     // messages: Array<string>
     // errors: Array<string>
+}
+
+/**
+ * Properties for initializing ipc with the daisy pipeline 2
+ *
+ */
+export type PipelineInstanceProperties = {
+    /**
+     * optional path of the local installation of the pipeline,
+     *
+     * defaults to the application resources/daisy-pipeline
+     */
+    localPipelineHome?: string
+
+    appDataFolder?: string
+
+    logsFolder?: string
+    /**
+     * optional path to the java runtime
+     *
+     * defaults to the application resource/jre folder
+     */
+    jrePath?: string
+
+    /**
+     * Webservice configuration to use for embedded pipeline,
+     *
+     * defaults to a localhost managed configuration :
+     * ```js
+     * {
+     *      host: "localhost"
+     *      port: 0, // will search for an available port on the current host when calling launch() the first time
+     *      path: "/ws"
+     * }
+     * ```
+     *
+     */
+    webservice?: Webservice
+
+    /**
+     *
+     */
+    onError?: (error: string) => void
+
+    onMessage?: (message: string) => void
+}
+
+/**
+ * Properties for running a DAISY pipeline instance.
+ */
+export interface PipelineInstanceProps {
+    /**
+     * optional path of the local installation of the pipeline,
+     *
+     * defaults to the application resources/daisy-pipeline
+     */
+    localPipelineHome?: string
+
+    appDataFolder?: string
+
+    logsFolder?: string
+    /**
+     * optional path to the java runtime
+     *
+     * defaults to the application resource/jre folder
+     */
+    jrePath?: string
+
+    /**
+     * Webservice configuration to use for embedded pipeline,
+     *
+     * defaults to a localhost managed configuration :
+     * ```js
+     * {
+     *      host: "localhost"
+     *      port: 0, // will search for an available port on the current host when calling launch() the first time
+     *      path: "/ws"
+     * }
+     * ```
+     *
+     */
+    webservice?: Webservice
+
+    /**
+     *
+     */
+    onError?: (error: string) => void
+
+    onMessage?: (message: string) => void
 }
 
 export type Alive = {
@@ -104,10 +198,28 @@ export type Message = {
 
 export type Job = {
     internalId: string // the ID assigned internally by the UI
+    index?: number
     state: JobState
     jobData?: JobData
     jobRequest?: JobRequest
     script?: Script
+    errors?: Array<{
+        fieldName?: string
+        error: string
+    }>
+    /**
+     * Internal ID of a job this job is linked to.
+     *
+     * (type of link is to be defined, for now this is to link to a backup when editing a job)
+     */
+    linkedTo?: string
+    /**
+     * Hiding a job from UI.
+     *
+     * (case of temporary copies that are kept in store while not displayed
+     * and are to be destroyed on completion or restoration)
+     */
+    invisible?: boolean
     // jobRequest.script also has script info (returned from ws);
     // however, storing it separately gives us access to more details
 }
@@ -118,6 +230,12 @@ export type JobData = {
     status?: JobStatus
     log?: string
     results?: Results
+    /**
+     *  Job results download folder on the user disk.
+     *
+     * (computed by the job monitor of the redux pipeline middleware)
+     */
+    downloadedFolder?: string
     messages?: Array<Message>
     progress?: number
     script?: Script
@@ -161,6 +279,7 @@ export type Script = {
     version?: string
     inputs?: Array<ScriptInput>
     options?: Array<ScriptOption>
+    homepage?: string
 }
 
 export type NameValue = {
@@ -182,4 +301,21 @@ export type JobRequest = {
     options?: Array<NameValue>
     outputs?: Array<NameValue>
     callbacks?: Array<Callback>
+}
+export type Datatype = {
+    href: string
+    id: string
+    choices?: DatatypeChoice[]
+}
+
+export type DatatypeChoice = {
+    documentation?: string
+}
+export type ValueChoice = DatatypeChoice & {
+    value?: string
+}
+
+export type TypeChoice = DatatypeChoice & {
+    type?: string
+    pattern?: string
 }

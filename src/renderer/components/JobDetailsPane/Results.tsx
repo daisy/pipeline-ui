@@ -1,34 +1,55 @@
-export function Results({ job }) {
+import { Job } from 'shared/types'
+
+export function Results({ job }: { job: Job }) {
+    let handleWebLink = (e) => {
+        e.preventDefault()
+        App.openInBrowser(e.target.href)
+    }
+
     return (
-        <ul aria-live="polite">
+        <ul aria-live="polite" className="file-list">
             <li>
-                <JobResultsFolder
-                    jobId={job.jobData.jobId}
-                    results={job.jobData.results}
-                />
-            </li>
-            {job.jobData.results?.namedResults.map((item, itemIndex) => (
-                <li key={`result-${itemIndex}`}>
-                    {item.files.length > 1 ? (
-                        <>
-                            <span>{item.nicename}</span>
-                            <ul>
-                                {item.files.map((resultFile, resultIndex) => (
-                                    <li
-                                        key={`result-${itemIndex}-file-${resultIndex}`}
-                                    >
-                                        <FileLink fileHref={resultFile.file} />
-                                    </li>
-                                ))}
-                            </ul>
-                        </>
-                    ) : (
-                        <FileLink fileHref={item.files[0]?.file}>
-                            {item.nicename}
-                        </FileLink>
+                {job.jobData.downloadedFolder && (
+                    <FileLink fileHref={job.jobData.downloadedFolder}>
+                        Results folder
+                    </FileLink>
+                )}
+                <ul>
+                    {job.jobData.results?.namedResults.map(
+                        (item, itemIndex) => (
+                            <li key={`result-${itemIndex}`}>
+                                <FileLink fileHref={item.href}>
+                                    {item.nicename}
+                                </FileLink>
+                                {item.files.length > 0 && (
+                                    <ul className="file-list">
+                                        {item.files.map((file, fileIndex) => {
+                                            return (
+                                                <li
+                                                    key={`result-${itemIndex}-${fileIndex}`}
+                                                >
+                                                    {file.file.substring(
+                                                        item.href.length + 1
+                                                    )}
+                                                </li>
+                                            )
+                                        })}
+                                    </ul>
+                                )}
+                            </li>
+                        )
                     )}
+                </ul>
+            </li>
+            {job?.jobData?.log ? (
+                <li>
+                    <a href={job.jobData.log} onClick={handleWebLink}>
+                        Log
+                    </a>
                 </li>
-            ))}
+            ) : (
+                ''
+            )}
         </ul>
     )
 }

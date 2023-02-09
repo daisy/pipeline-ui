@@ -1,6 +1,8 @@
 import { ipcMain, shell } from 'electron'
 import { PLATFORM } from 'shared/constants'
 
+import { lstatSync } from 'fs'
+
 // helper functions
 import { IPC_EVENT_showItemInFolder } from '../shared/main-renderer-events'
 
@@ -14,7 +16,7 @@ function setupShowInFolderEvents() {
                 f = f.replaceAll('/', '\\')
             }
         }
-        if (f.endsWith('/') || f.endsWith('\\')) {
+        if (f.endsWith('/') || f.endsWith('\\') || lstatSync(f).isDirectory()) {
             shell.openPath(f)
         } else shell.showItemInFolder(f)
     })

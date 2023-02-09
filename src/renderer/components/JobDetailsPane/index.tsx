@@ -8,18 +8,12 @@ import { Results } from './Results'
 import { Section } from '../Section'
 
 import { ID } from '../../utils/utils'
+import { editJob, removeJob, runJob } from 'shared/data/slices/pipeline'
+import { readableStatus } from 'shared/jobName'
 
 const { App } = window
 
-const readableStatus = {
-    IDLE: 'Waiting',
-    RUNNING: 'Running',
-    ERROR: 'Error',
-    SUCCESS: 'Completed',
-    FAIL: 'Error',
-}
-
-export function JobDetailsPane({ job, onClose }) {
+export function JobDetailsPane({ job }) {
     return (
         <>
             <section
@@ -76,7 +70,29 @@ export function JobDetailsPane({ job, onClose }) {
                 </Section>
                 {job.jobData.status != JobStatus.RUNNING &&
                 job.jobData.status != JobStatus.IDLE ? (
-                    <button onClick={(e) => onClose(job, e)}>Delete job</button>
+                    <div className="form-buttons">
+                        <button
+                            onClick={(e) => {
+                                App.store.dispatch(runJob(job))
+                            }}
+                        >
+                            Re-run job
+                        </button>
+                        <button
+                            onClick={(e) => {
+                                App.store.dispatch(editJob(job))
+                            }}
+                        >
+                            Edit job
+                        </button>
+                        <button
+                            onClick={(e) => {
+                                App.store.dispatch(removeJob(job))
+                            }}
+                        >
+                            Delete job
+                        </button>
+                    </div>
                 ) : (
                     ''
                 )}

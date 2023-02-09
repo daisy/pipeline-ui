@@ -1,6 +1,7 @@
+import { store } from 'main/data/store'
 import { createWindow } from 'main/factories'
 import { join } from 'path'
-import { ENVIRONMENT } from 'shared/constants'
+import { ENVIRONMENT, IPC } from 'shared/constants'
 import { APP_CONFIG } from '~/app.config'
 
 export * from './ipcs'

@@ -6,10 +6,6 @@ export * from './folder'
 
 export * from './pipeline2/errors'
 export * from './pipeline2/messages'
-export * from './pipeline2/start'
-export * from './pipeline2/stop'
-export * from './pipeline2/state'
-export * from './pipeline2/props'
 
 export * from './settings'
 export * from './fileSystem'

@@ -78,7 +78,13 @@ export const pipelineAPI = {
                     datatypesXmlToJson(text).map(async (datatypeData) => {
                         return fetch(datatypeData.href)
                             .then((value) => value.text())
-                            .then((text) => datatypeXmlToJson(text))
+                            .then((text) =>
+                                datatypeXmlToJson(
+                                    datatypeData.href,
+                                    datatypeData.id,
+                                    text
+                                )
+                            )
                     })
                 )
             }

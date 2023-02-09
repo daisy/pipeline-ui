@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { mediaTypesFileFilters } from 'shared/constants'
+import { Datatype } from 'shared/types'
 
 const { App } = window
 
@@ -78,6 +79,8 @@ export function FileOrFolderInput({
 
     // all items that make it to this function have type of 'anyFileURI' or 'anyDirURI'`
     return (
+        <>
+        <p>Enter a filepath. Press the button to browse files.</p>
         <div className="file-or-folder">
             <input
                 type="text"
@@ -91,7 +94,9 @@ export function FileOrFolderInput({
             <button type="button" onClick={(e) => onClick(e, name)}>
                 {buttonLabel}
             </button>
+            
         </div>
+        </>
     )
 }
 

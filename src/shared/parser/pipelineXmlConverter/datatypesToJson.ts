@@ -1,3 +1,4 @@
+import { Datatype } from 'shared/types'
 import { parseXml } from './parser'
 
 // parses a datatypes xml file
@@ -7,7 +8,7 @@ import { parseXml } from './parser'
     ...
 </datatypes>
 */
-function datatypesXmlToJson(xmlString){
+function datatypesXmlToJson(xmlString): Array<Datatype> {
     let datatypesElm = parseXml(xmlString, 'datatypes')
     let datatypes = Array.from(
         datatypesElm.getElementsByTagName('datatype')
@@ -18,7 +19,7 @@ function datatypesXmlToJson(xmlString){
     return datatypes
 }
 
-function datatypeElementToJson(datatypeElm) {
+function datatypeElementToJson(datatypeElm): Datatype {
     let datatypeData = {
         href: datatypeElm.getAttribute('href'),
         id: datatypeElm.getAttribute('id'),

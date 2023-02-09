@@ -1,4 +1,4 @@
-import { Datatype, DatatypeChoice, DatatypeData } from 'shared/types'
+import { Datatype, DatatypeChoice, ValueChoice, TypeChoice } from 'shared/types'
 import { parseXml, sniffRoot } from './parser'
 
 /*
@@ -40,20 +40,25 @@ supported inputs:
     
 */
 
-function datatypeXmlToJson(xmlString): Datatype {
+function datatypeXmlToJson(href, id, xmlString): Datatype {
     let root = sniffRoot(xmlString)
+    let datatype = { id, href }
     if (root == 'choice') {
         let choiceElm = parseXml(xmlString, 'choice')
-        return { choices: choiceElementToJson(choiceElm) }
+        return { ...datatype, choices: choiceElementToJson(choiceElm) }
     } else if (root == 'data') {
         let dataElm = parseXml(xmlString, 'data')
-        return { data: [dataElementToJson(dataElm)] }
+        return { ...datatype, choices: [dataElementToJson(dataElm)] }
+    } else {
+        return null
     }
 }
 
 function choiceElementToJson(choiceElm: Element): DatatypeChoice[] {
     //@ts-ignore
-    let children = Array.from(choiceElm.childNodes).filter(n => n.nodeType == n.ELEMENT_NODE)
+    let children = Array.from(choiceElm.childNodes).filter(
+        (n) => n.nodeType == n.ELEMENT_NODE
+    )
     let choices = []
     for (let i = 0; i < children.length; i++) {
         let c = children[i]
@@ -77,26 +82,28 @@ function choiceElementToJson(choiceElm: Element): DatatypeChoice[] {
                     documentation = children[++i].textContent.trim()
                 }
             }
-            choices.push({
-                value,
-                documentation,
-            })
+            let valueChoice: ValueChoice = { value, documentation }
+            choices.push(valueChoice)
         }
     }
     return choices
 }
 
-function dataElementToJson(dataElm): DatatypeData {
+function dataElementToJson(dataElm): TypeChoice {
     let documentationElms = dataElm.getElementsByTagName('documentation')
     let paramElms = dataElm.getElementsByTagName('param')
-    let retval: DatatypeData = {
+    let retval: TypeChoice = {
         type: dataElm.getAttribute('type'),
     }
     if (documentationElms.length > 0) {
         retval.documentation = documentationElms[0].textContent.trim()
     }
-    if (paramElms.length > 0) {
-        retval.param = paramElms[0].textContent.trim()
+    if (
+        paramElms.length > 0 &&
+        paramElms[0].hasAttribute('name') &&
+        paramElms[0].getAttribute('name') == 'pattern'
+    ) {
+        retval.pattern = paramElms[0].textContent.trim()
     }
     return retval
 }

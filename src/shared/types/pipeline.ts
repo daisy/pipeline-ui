@@ -303,19 +303,19 @@ export type JobRequest = {
     callbacks?: Array<Callback>
 }
 export type Datatype = {
+    href: string
+    id: string
     choices?: DatatypeChoice[]
-    data?: DatatypeData[]
 }
 
 export type DatatypeChoice = {
-    value?: string
     documentation?: string
-    type?: string
-    param?: string
+}
+export type ValueChoice = DatatypeChoice & {
+    value?: string
 }
 
-export type DatatypeData = {
+export type TypeChoice = DatatypeChoice & {
     type?: string
-    documentation?: string
-    param?: string
+    pattern?: string
 }

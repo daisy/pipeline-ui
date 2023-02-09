@@ -1,19 +1,15 @@
 /*
 Fill out fields for a new job and submit it
 */
-import { ScriptItemBase, Job, Script } from 'shared/types'
+import { Job, Script } from 'shared/types'
 import { useState, useEffect } from 'react'
 import {
-    findInputType,
     findValue,
     getAllOptional,
     getAllRequired,
     ID,
 } from 'renderer/utils/utils'
 import { Section } from '../Section'
-import { FileOrFolderInput } from '../CustomFields/FileOrFolderInput'
-import Markdown from 'react-markdown'
-import remarkGfm from 'remark-gfm'
 import { restoreJob, runJob } from 'shared/data/slices/pipeline'
 import {
     addJob,
@@ -23,6 +19,7 @@ import {
 } from 'shared/data/slices/pipeline'
 
 import { externalLinkClick } from 'renderer/utils/utils'
+import { FormField } from '../Fields/FormField'
 const { App } = window
 
 export function ScriptForm({ job, script }: { job: Job; script: Script }) {
@@ -34,36 +31,36 @@ export function ScriptForm({ job, script }: { job: Job; script: Script }) {
             job.jobRequest && job.jobRequest.scriptHref == script.href
         App.store.dispatch(
             updateJob({
-            ...job,
-            jobRequest: {
-                scriptHref: script.href,
-                nicename: script.nicename,
+                ...job,
+                jobRequest: {
+                    scriptHref: script.href,
+                    nicename: script.nicename,
                     inputs: script.inputs.map((item, index) => {
                         return {
-                    name: item.name,
+                            name: item.name,
                             value:
                                 (hasJobRequestOnScript &&
                                     job.jobRequest.inputs[index].value) ||
                                 null,
-                    isFile:
+                            isFile:
                                 item.type == 'anyFileURI' ||
                                 item.type == 'anyDirURI',
                         }
                     }),
                     options: script.options.map((item, index) => {
                         return {
-                    name: item.name,
+                            name: item.name,
                             value:
                                 (hasJobRequestOnScript &&
                                     job.jobRequest.options[index].value) ||
                                 item.default ||
                                 null,
-                    isFile:
+                            isFile:
                                 item.type == 'anyFileURI' ||
                                 item.type == 'anyDirURI',
                         }
                     }),
-            },
+                },
             })
         )
     }, [script])
@@ -132,7 +129,7 @@ export function ScriptForm({ job, script }: { job: Job; script: Script }) {
                                 href={script.homepage}
                                 onClick={(e) => externalLinkClick(e, App)}
                             >
-                                Read documentation.
+                                Read the script documentation.
                             </a>
                         ) : (
                             ''
@@ -229,106 +226,3 @@ export function ScriptForm({ job, script }: { job: Job; script: Script }) {
     )
 }
 
-// create a form element for the item
-// item.type can be:
-// anyFileURI, anyDirURI, xsd:string, xsd:dateTime, xsd:boolean, xsd:integer, xsd:float, xsd:double, xsd:decimal
-// item.mediaType is a file type e.g. application/x-dtbook+xml
-function FormField({
-    item,
-    idprefix,
-    onChange,
-    initialValue,
-}: {
-    item: ScriptItemBase
-    idprefix: string
-    onChange: (string, ScriptItemBase) => void // function to set the value in a parent-level collection.
-    initialValue: any // the initialValue
-}) {
-    let inputType = findInputType(item.type)
-    const [value, setValue] = useState(initialValue)
-    let controlId = `${idprefix}-${item.name}`
-
-    let onFileFolderChange = (filename, data) => {
-        console.log('onFileFolderChange', filename)
-        onChange(filename, data)
-    }
-    let onInputChange = (e, data) => {
-        let newValue =
-            e.target.getAttribute('type') == 'checkbox'
-                ? e.target.checked
-                : e.target.value
-        setValue(newValue)
-        onChange(newValue, data)
-    }
-    let dialogOpts =
-        item.type == 'anyFileURI'
-            ? ['openFile']
-            : item.type == 'anyDirURI'
-            ? ['openDirectory']
-            : ['openFile', 'openDirectory']
-
-    return (
-        <div className="form-field">
-            <details>
-                <summary>
-                    <label htmlFor={controlId}>{item.nicename}</label>
-                </summary>
-
-                <div className="description">
-                    <Markdown
-                        remarkPlugins={[remarkGfm]}
-                        components={{
-                            a: (props) => {
-                                return (
-                                    <a
-                                        href={props.href}
-                                        onClick={(e) =>
-                                            externalLinkClick(e, App)
-                                        }
-                                    >
-                                        {props.children}
-                                    </a>
-                                )
-                            },
-                        }}
-                    >
-                        {item.desc}
-                    </Markdown>
-                </div>
-            </details>
-
-            {inputType == 'file' ? ( // 'item' may be an input or an option
-                <FileOrFolderInput
-                    type="open"
-                    dialogProperties={dialogOpts}
-                    elemId={controlId}
-                    mediaType={item.mediaType}
-                    name={item.name}
-                    onChange={(filename) => onFileFolderChange(filename, item)}
-                    useSystemPath={false}
-                    buttonLabel="Browse"
-                    required={item.required}
-                    initialValue={initialValue}
-                />
-            ) : inputType == 'checkbox' ? ( // 'item' is an option
-                <input
-                    type={inputType}
-                    required={item.required}
-                    onChange={(e) => onInputChange(e, item)}
-                    id={controlId}
-                    checked={value === 'true' || value === true}
-                ></input>
-            ) : (
-                // 'item' is an option
-                <input
-                    type={inputType}
-                    required={item.required}
-                    // @ts-ignore
-                    value={initialValue ?? ''}
-                    id={controlId}
-                    onChange={(e) => onInputChange(e, item)}
-                ></input>
-            )}
-        </div>
-    )
-}

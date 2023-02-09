@@ -29,6 +29,7 @@ export function parseXml(xmlString, elmName) {
     return elm[0]
 }
 export function sniffRoot(xmlString) {
+    if (!xmlString) return ''
     let doc = new DOMParser().parseFromString(xmlString, 'text/xml')
     return doc.documentElement.tagName
 }

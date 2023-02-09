@@ -38,7 +38,7 @@ export function findValue(name: string, kind: string, jobRequest: JobRequest) {
 }
 
 export function findInputType(type) {
-    let inputType = 'text'
+    let inputType = ''
     if (type == 'anyFileURI') {
         inputType = 'file'
     } else if (type == 'anyDirURI') {
@@ -61,8 +61,10 @@ export function findInputType(type) {
         ].includes(type)
     ) {
         inputType = 'number'
-    } else {
+    } else if (type == '') {
         inputType = 'text'
+    } else {
+        inputType = 'custom'
     }
     return inputType
 }

@@ -28,6 +28,7 @@ button {
 
 input {
     display: block;
+    height: min-content;
 }
 input:invalid {
     border-color: var(--error-message-color);
@@ -221,15 +222,12 @@ input[type=checkbox] {
             display: flex;
             flex-direction: column;
             gap: 8%;
-            // flex-wrap: wrap;
             section {
                 width: 70%;
             }
             overflow-y: scroll;
 
             h2 {
-                position: sticky;
-                top: 0;
                 background-color: var(--background-color);
                 color: var(--primary-color-1);
                 padding-bottom: 5px;
@@ -237,11 +235,42 @@ input[type=checkbox] {
 
             ul.fields {
                 gap: var(--pad);
-            
                 li {
-                    > input[type=checkbox] {
+                    input[type=text] {
+                        width: 100%;
+                        font-size: large;
+                    }
+                    input[type=checkbox] {
                         flex-basis: 2rem;
                         accent-color: var(--secondary-color-2);
+                    }
+                    input[type=number] {
+                        width: min-content;
+                        font-size: large;
+                    }
+                    select {
+                        font-size: large;
+                        border: thin solid;
+                        border-radius: 4px;
+                        width: min-content;
+                    }
+                }
+
+                .customDatatypeField {
+                    // display: flex;
+                    // flex-direction: row;
+                    gap: var(--pad);
+
+                    details {
+                        display: inline-block;
+                        font-style: italic;
+                        font-size: small;
+                    }
+                }
+
+                details.documentation {
+                    ul {
+                        list-style-type:circle;
                     }
                 }
             }

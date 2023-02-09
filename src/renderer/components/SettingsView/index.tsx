@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useWindowStore } from 'renderer/store'
 import { ApplicationSettings, ColorScheme } from 'shared/types'
-import { FileOrFolderInput } from '../CustomFields/FileOrFolderInput'
+import { FileOrFolderInput } from '../Fields/FileOrFolderInput'
 import { setSettings, save } from 'shared/data/slices/settings'
 const { App } = window // The "App" comes from the bridge
 

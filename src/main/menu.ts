@@ -22,6 +22,9 @@ export function buildMenuTemplate({
     let multipleJobs = jobs.length > 1
 
     let currentJob = jobs.find((j) => j.internalId == selectedJobId)
+    let status = currentJob?.jobData
+        ? readableStatus[currentJob.jobData.status]
+        : `new job`
 
     let canDelete =
         currentJob &&
@@ -82,20 +85,15 @@ export function buildMenuTemplate({
                     accelerator: 'CommandOrControl+R',
                     enabled: canRun,
                 },
-                ...(currentJob && currentJob.state == JobState.SUBMITTED
+                ...(currentJob
                     ? [
                           {
-                              label: `Status: ${
-                                  readableStatus[currentJob.jobData.status]
-                              }`,
+                              label: `Status: ${status}`,
                               accelerator: 'CommandOrControl+Shift+I',
                               click: async () => {
                                   await dialog.showMessageBox({
-                                      message: `Status: ${
-                                          readableStatus[
-                                              currentJob.jobData.status
-                                          ]
-                                      }`,
+                                      type: 'info',
+                                      message: `Status: ${status}`,
                                   })
                               },
                           },

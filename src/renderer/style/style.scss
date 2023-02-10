@@ -95,7 +95,7 @@ input[type=checkbox] {
 .fixed-height-layout {
     display: flex;
     flex-direction: column;
-    gap: calc(var(--pad) * 2);
+    gap: var(--pad);
     max-height: var(--tab-panel-height);
     min-height: var(--tab-panel-height);
     overflow: scroll;
@@ -103,7 +103,7 @@ input[type=checkbox] {
 
 // the tab panel "header" 
 .header {
-    line-height: .8;
+    line-height: 1.2;
     display: grid;
     grid-template-columns: 60% auto;
     font-size: large;
@@ -287,9 +287,14 @@ input[type=checkbox] {
                     }
                 }
 
-                details.documentation {
+                .documentation {
                     ul {
                         list-style-type:circle;
+                        margin: var(--pad);
+                    }
+
+                    .details {
+                        margin: var(--pad);
                     }
                 }
             }

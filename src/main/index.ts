@@ -50,6 +50,7 @@ import {
 } from 'shared/data/slices/pipeline'
 
 makeAppWithSingleInstanceLock(async () => {
+    app.setName(APP_CONFIG.TITLE)
     await app.whenReady()
     registerStoreIPC()
     // load theme from settings

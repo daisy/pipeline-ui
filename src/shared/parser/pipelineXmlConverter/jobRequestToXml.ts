@@ -1,8 +1,6 @@
 import { JobRequest } from 'shared/types/pipeline'
 
 function jobRequestToXml(jobRequest: JobRequest): string {
-    console.log(JSON.stringify(jobRequest, null, 2))
-
     let xmlString = `<?xml version="1.0" encoding="UTF-8" standalone="no"?>
   <jobRequest xmlns="http://www.daisy.org/ns/pipeline/data">
     <nicename>${jobRequest.nicename}</nicename>
@@ -16,7 +14,7 @@ function jobRequestToXml(jobRequest: JobRequest): string {
         .map(
             (input) =>
                 `<input name="${input.name}"><item value="${
-                    input.value.trim() ?? ''
+                    input.value.toString().trim() ?? ''
                 }"/></input>`
         )
         .join('')}
@@ -28,7 +26,7 @@ function jobRequestToXml(jobRequest: JobRequest): string {
         .map(
             (option) =>
                 `<option name="${option.name}">${
-                    option.value.trim() ?? ''
+                    option.value.toString().trim() ?? ''
                 }</option>`
         )
         .join('')}

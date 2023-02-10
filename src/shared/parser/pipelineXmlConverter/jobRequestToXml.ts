@@ -2,14 +2,17 @@ import { JobRequest } from 'shared/types/pipeline'
 
 function jobRequestToXml(jobRequest: JobRequest): string {
     console.log(JSON.stringify(jobRequest, null, 2))
-    
+
     let xmlString = `<?xml version="1.0" encoding="UTF-8" standalone="no"?>
   <jobRequest xmlns="http://www.daisy.org/ns/pipeline/data">
     <nicename>${jobRequest.nicename}</nicename>
     <priority>medium</priority>
     <script href="${jobRequest.scriptHref}"/>
     ${jobRequest.inputs
-        .filter((input) => input.value != null && input.value.trim() != '')
+        .filter(
+            (input) =>
+                input.value != null && input.value.toString().trim() != ''
+        )
         .map(
             (input) =>
                 `<input name="${input.name}"><item value="${
@@ -18,7 +21,10 @@ function jobRequestToXml(jobRequest: JobRequest): string {
         )
         .join('')}
     ${jobRequest.options
-        .filter((option) => option.value != null && option.value?.trim() != '')
+        .filter(
+            (option) =>
+                option.value != null && option.value.toString().trim() != ''
+        )
         .map(
             (option) =>
                 `<option name="${option.name}">${

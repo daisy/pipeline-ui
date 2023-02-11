@@ -9,11 +9,11 @@
     border-radius: var(--border-radius);
     border-bottom-left-radius: 0;
     border-bottom-right-radius: 0;
-    border: thin solid;
+    border: thin solid var(--fg);
     
     font-weight: normal;
     font-size: larger;
-    color: var(--primary-color-2);
+    color: var(--fg-mix-bold);
 
     display: flex;
     gap: calc(var(--pad)/2);
@@ -22,15 +22,15 @@
     border-bottom: none;
     
     &[aria-selected=false]:hover {
-        background-color: var(--secondary-color-2hov);
-        color: var(--secondary-2-contrast);
+        background-color: var(--select-mix);
+        color: var(--fg);
     }
     &[aria-selected=true] {
-        background-color: var(--secondary-color-2);
-        color: var(--secondary-2-contrast);
-        border-bottom-color: var(--background-color);
-        border-bottom-width: 1px;
-        margin-bottom: -1px;
+        background-color: var(--select);
+        color: var(--bg);
+        border-bottom-color: var(--bg);
+        
+        font-weight: bold;
     }
 }
 

@@ -3,35 +3,44 @@
 @use 'settings.scss' as *;
 
 body {
-    margin: calc(.25 * var(--pad));
+    color: var(--fg);
+    background-color: var(--bg);
+
     font-family: var(--font-family);
     font-size: var(--font-size);
-    border-color: var(--primary-color-2);
-    background-color: var(--background-color);
-    color: var(--primary-color-1);
+
+    margin: calc(.25 * var(--pad));
+    border-color: var(--fg-mix);
 }
 h2, h3 {
     font-weight: normal;
 }
 
 button {
-    background-color: var(--background-color);
-    border: thin solid var(--primary-color-2);
-    padding: calc(var(--pad)/2);
-    border-radius: var(--border-radius);
-    width: min-content;
-    white-space: nowrap;
-    height: min-content;
-    color: var(--primary-color-1);
+    color: inherit;
+    background-color: inherit;
+    
     font-size: larger;
+
+    width: min-content;
+    height: min-content;
+
+    padding: calc(var(--pad)/2);
+    
+    border: thin solid;
+    border-color: inherit;
+    border-radius: var(--border-radius);
+    
+    white-space: nowrap;
 }
 
 input {
+    border-radius: var(--border-radius);
     display: block;
-    height: min-content;
+    height:calc(1.5 * var(--font-size)); 
 }
 input:invalid {
-    border-color: var(--error-message-color);
+    border-color: var(--error);
 }
 input[type=checkbox] {
     width: calc(1.5 * var(--font-size));
@@ -47,9 +56,14 @@ input[type=checkbox] {
 .file-or-folder {
     display: flex;
     gap: calc(var(--pad)/2);
-    
+    align-items: center;
+
     input {
         width: 100%;
+    }
+    button {
+        padding-top: 1px;
+        padding-bottom: 1px;
     }
 }
 .description {
@@ -57,26 +71,26 @@ input[type=checkbox] {
     font-size: smaller;
 }
 .filelink {
-    color: var(--primary-color-1);
+    color: var(--fg);
 }
 
 [role=tabpanel] {
+    border-radius: var(--border-radius);
     // i.e. a button that's not a tab but rater in the main body of the tab panel
     button {
         transition: all .2s ease-in;
     }
     
     button:hover {
-        background-color: var(--secondary-color-2);
-        color: var(--secondary-2-contrast);
+        background-color: var(--select-mix);
     }
 
     a {
-        color: var(--primary-color-1);
-        transition: all .2s ease-in;
+        color: var(--fg);
     }
     a:hover {
-        text-decoration-thickness: 2px;
+        text-decoration-thickness: 3px;
+        background: var(--fg-mix-fade);
     }
 
     ul {
@@ -98,7 +112,6 @@ input[type=checkbox] {
     gap: var(--pad);
     max-height: var(--tab-panel-height);
     min-height: var(--tab-panel-height);
-    overflow: scroll;
 }
 
 // the tab panel "header" 
@@ -127,13 +140,6 @@ input[type=checkbox] {
         font-weight: bold;
         width: min-content;
         white-space: nowrap;
-        
-        &.success {
-            border-bottom: 4px var(--success-color) solid;
-        }
-        &.error {
-            border-bottom: 4px var(--failure-color) solid;
-        }
     }
 
     .job-settings {
@@ -147,7 +153,7 @@ input[type=checkbox] {
             display: flex;
             flex-direction: row;
             justify-content: space-between;
-            border-bottom: thin solid var(--primary-color-3);
+            border-bottom: thin solid var(--fg-mix-fade);
             gap: calc(var(--pad)/2);
 
             span:first-of-type {
@@ -164,33 +170,38 @@ input[type=checkbox] {
         gap: calc(var(--pad) * 2);
         display: flex;
         flex-direction: column;
-        
+        overflow-y: scroll;
+
+        .scrolling-area {
+            overflow-y: scroll;
+        }
+
         .job-messages {
             ul {
                 font-family: var(--fw-font-family);
                 
                 .error {
-                    color: var(--error-message-color);
+                    background-color: var(--error);
                 }
                 .info {
-                    color: var(--info-message-color);
+                    color: var(--fg);
                 }
                 .warning {
-                    color: var(--warning-message-color);
+                    color: var(--warning);
                 }
                 .debug {
-                    color: var(--debug-message-color);
+                    color: var(--fg);
                 }
                 .trace {
-                    color: var(--trace-message-color);
+                    color: var(--fg);
                 }
             }
             
             ul ul {
                 
                 padding-left: var(--pad);
-                border-left: 1px solid black;
-                border-bottom: 1px solid black;
+                border-left: 1px solid var(--fg-mix);
+                border-bottom: 1px solid var(--fg-mix);
                 margin-bottom: calc(var(--pad) * 0.5);
                 margin-top:  calc(var(--pad) * 0.5);
                 margin-left: var(--pad);
@@ -225,7 +236,7 @@ input[type=checkbox] {
             border: thin solid;
             border-radius: 4px;
         }
-        border-bottom: thin solid var(--primary-color-2);
+        border-bottom: thin solid var(--fg-mix);
         padding-top: calc(var(--pad));
         padding-bottom: calc(var(--pad));
         padding-left: 2px;
@@ -246,12 +257,6 @@ input[type=checkbox] {
             }
             overflow-y: scroll;
 
-            h2 {
-                background-color: var(--background-color);
-                color: var(--primary-color-1);
-                padding-bottom: 5px;
-            }
-
             ul.fields {
                 gap: var(--pad);
                 li {
@@ -261,7 +266,7 @@ input[type=checkbox] {
                     }
                     input[type=checkbox] {
                         flex-basis: 2rem;
-                        accent-color: var(--secondary-color-2);
+                        accent-color: var(--select);
                     }
                     input[type=number] {
                         width: min-content;

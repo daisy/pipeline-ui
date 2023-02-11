@@ -6,6 +6,7 @@
     flex-direction: column;
     gap: calc(var(--pad) * 2);
     width: 100%;
+    font-size: large;
 
     .filename {
         width: 80%;
@@ -13,6 +14,16 @@
     }
     label {
         font-weight: bold;
+        
+    }
+    input, select {
+        font-size: large;  
+    }
+    select {
+        width: min-content;
+    }
+    button:hover {
+        background-color: var(--select-mix);
     }
 }
 

@@ -166,7 +166,7 @@ export const pipeline = createSlice({
         },
         removeJob: (state: PipelineState, param: PayloadAction<Job>) => {
             const searchedJob = param.payload
-
+            if (!searchedJob || !searchedJob.internalId) return
             // reassign the selection if we are removing the selected job
             if (searchedJob.internalId == state.selectedJobId) {
                 let selectedJobIndex = state.jobs.findIndex(
@@ -177,7 +177,6 @@ export const pipeline = createSlice({
                 } else {
                     selectedJobIndex = state.jobs.length - 1
                 }
-                console.log(selectedJobIndex)
                 state.selectedJobId = state.jobs[selectedJobIndex].internalId
             }
             state.jobs = state.jobs.filter(
@@ -222,7 +221,6 @@ export const pipeline = createSlice({
             state.selectedJobId = state.jobs[selectedJobIndex].internalId
         },
         selectPrevJob: (state: PipelineState) => {
-            console.log('select prev job')
             let selectedJobIndex = state.jobs.findIndex(
                 (j) => j.internalId == state.selectedJobId
             )

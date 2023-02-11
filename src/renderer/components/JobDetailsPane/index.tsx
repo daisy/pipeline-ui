@@ -54,20 +54,22 @@ export function JobDetailsPane({ job }) {
             </section>
 
             <div className="details">
-                <Section
-                    label="Results"
-                    className="job-results"
-                    id={`${ID(job.internalId)}-job-results`}
-                >
-                    <Results job={job} />
-                </Section>
-                <Section
-                    label="Messages"
-                    className="job-messages"
-                    id={`${ID(job.internalId)}-job-messages`}
-                >
-                    <Messages job={job} />
-                </Section>
+                <div className="scrolling-area">
+                    <Section
+                        label="Results"
+                        className="job-results"
+                        id={`${ID(job.internalId)}-job-results`}
+                    >
+                        <Results job={job} />
+                    </Section>
+                    <Section
+                        label="Messages"
+                        className="job-messages"
+                        id={`${ID(job.internalId)}-job-messages`}
+                    >
+                        <Messages job={job} />
+                    </Section>
+                </div>
                 {job.jobData.status != JobStatus.RUNNING &&
                 job.jobData.status != JobStatus.IDLE ? (
                     <div className="form-buttons">

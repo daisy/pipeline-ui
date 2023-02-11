@@ -30,7 +30,7 @@ export function buildMenuTemplate({
         currentJob &&
         currentJob.state == JobState.SUBMITTED &&
         currentJob.jobData &&
-        currentJob.jobData.status !== JobStatus.RUNNING &&
+        currentJob.jobData.status != JobStatus.RUNNING &&
         currentJob.jobData.status != JobStatus.IDLE
 
     let canCancel =
@@ -106,7 +106,7 @@ export function buildMenuTemplate({
                               click: () => {
                                   onRemoveJob(currentJob)
                               },
-                              accelerator: 'CommandOrControl+Delete',
+                              accelerator: 'CommandOrControl+D',
                               enabled: canDelete,
                           },
                       ]
@@ -116,7 +116,7 @@ export function buildMenuTemplate({
                               click: () => {
                                   onRemoveJob(currentJob)
                               },
-                              accelerator: 'CommandOrControl+Delete',
+                              accelerator: 'CommandOrControl+D',
                               enabled: canCancel,
                           },
                       ]),

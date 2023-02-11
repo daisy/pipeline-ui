@@ -4,8 +4,6 @@ import Markdown from 'react-markdown'
 const { App } = window
 
 export function CustomFieldDocumentation({ datatypes }) {
-    console.log(datatypes)
-
     let allDocumentation = datatypes.map((dt) => {
         let summary =
             dt.documentation.indexOf('\n\n') != -1

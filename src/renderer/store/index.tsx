@@ -72,8 +72,6 @@ export function WindowStoreProvider({ children }) {
         }
     )
 
-    console.log('store', reduxStore)
-
     // const [about, setAboutWindowState] = useState({
     //     isOpen: false,
     // })

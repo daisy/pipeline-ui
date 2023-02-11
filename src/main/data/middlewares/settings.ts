@@ -64,6 +64,8 @@ export function readSettings() {
         info(e)
         info('Falling back to default settings')
     }
+    // FIXME : deactivating local pipeline props settings loading from file
+    settings.localPipelineProps = undefined
     return settings
 }
 

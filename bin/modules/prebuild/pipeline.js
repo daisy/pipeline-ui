@@ -40,6 +40,17 @@ function walk(
     return results
 }
 
+
+const deployFolder = path.resolve('src', 'resources', 'daisy-pipeline')
+
+const refresh =
+    process.argv.indexOf('--refresh') > -1 || !fs.existsSync(deployFolder)
+const update =
+    process.argv.indexOf('--update') > -1 ||
+    fs.readdirSync('engine').length == 0
+
+const withCli = process.argv.indexOf('--with-cli') > -1
+
 const fetch = (...args) =>
     import('node-fetch').then(({ default: fetch }) => fetch(...args))
 
@@ -78,17 +89,10 @@ const defaultProfiles = [
     'without-gui',
     'without-persistence',
     'without-osgi',
-    'without-cli',
     'without-updater',
-]
+].concat(!withCli ? ['without-cli']: [])
 
-const deployFolder = path.resolve('src', 'resources', 'daisy-pipeline')
 
-const refresh =
-    process.argv.indexOf('--refresh') > -1 || !fs.existsSync(deployFolder)
-const update =
-    process.argv.indexOf('--update') > -1 ||
-    fs.readdirSync('engine').length == 0
 
 /**
  * Get a maven command.
@@ -297,6 +301,7 @@ async function buildPipeline(platform = null, arch = null) {
     // Check if 'engine' repository is not empty to ensure pipeline can be build
     if (update) {
         try {
+            console.info('Checking engine submodule updates')
             execSync('git submodule update --init')
         } catch (err) {
             console.error(
@@ -324,18 +329,29 @@ async function buildPipeline(platform = null, arch = null) {
     switch (targetedPlatform) {
         case 'windows':
             profiles.push('assemble-win-dir')
+            if(withCli){
+                profiles.push('unpack-cli-win')
+            }
             break
         case 'mac':
             profiles.push('assemble-mac-dir')
+            if(withCli){
+                profiles.push('unpack-cli-mac')
+            }
             break
         case 'linux':
         default:
             profiles.push('assemble-linux-dir')
+            if(withCli){
+                profiles.push('unpack-cli-linux')
+            }
             break
     }
     profiles.push(jreBuildProfiles[targetedPlatform][targetedArch])
     console.info(' > building DAISY Pipeline 2 engine for', targetedPlatform, targetedArch)
     try {
+        console.debug(`launching command : ${mvn} clean package -P ${profiles.join(',')}`)
+        console.debug('with execution options :', execOpts(java_home))
         const mvnCall = spawnSync(
             mvn,
             ['clean', 'package', '-P', profiles.join(',')],
@@ -362,6 +378,10 @@ async function buildPipeline(platform = null, arch = null) {
     if(fs.existsSync(pipelineFolder)){
         console.info(' > Moving', pipelineFolder, 'to', deployFolder)
         fs.renameSync(pipelineFolder, deployFolder)
+        if(targetedPlatform == 'mac'){
+            console.info(' > Update permissions for macOS')
+            execSync(`chmod -R +x "${deployFolder}"`)
+        }
     } else console.error('No pipeline folder to deploy')
 }
 // TODO : replace the refresh arg by a version check to verify if a newer version has been pulled from the submodule

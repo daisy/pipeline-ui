@@ -135,53 +135,57 @@ function startMonitor(j: Job, ws: Webservice, getState, dispatch) {
     let monitor = null
     const fetchJobData = pipelineAPI.fetchJobData(j)
     monitor = setInterval(() => {
-        fetchJobData(ws)
-            .then((value) => {
-                info('received job data ', value)
-                if (
-                    [
-                        JobStatus.ERROR,
-                        JobStatus.FAIL,
-                        JobStatus.SUCCESS,
-                    ].includes(value.status)
-                ) {
-                    // Job is finished, stop monitor
-                    clearInterval(monitor)
-                }
-                let updatedJob = { ...j }
-                updatedJob.jobData = value
-                // If job has results, download them
-                if (updatedJob.jobData && updatedJob.jobData.results) {
-                    const newJobName = `${
-                        updatedJob.jobData.nicename ??
-                        updatedJob.jobData.script.nicename
-                    }_${timestamp()}`
-                    //`${settings.downloadFolder}/${newJobName}/${namedResult.name}`
-                    const downloadFolder = selectDownloadPath(getState())
-                    downloadJobResults(
-                        updatedJob,
-                        `${downloadFolder}/${newJobName}`
-                    ).then((downloadedJob) => {
-                        dispatch(updateJob(downloadedJob))
-                    })
-                } else dispatch(updateJob(updatedJob))
-            })
-            .catch((e) => {
-                error('Error fetching data for job', j, e)
-                dispatch(
-                    updateJob({
-                        ...j,
-                        errors: [
-                            {
-                                error:
-                                    e instanceof ParserException
-                                        ? e.parsedText
-                                        : String(e),
-                            },
-                        ],
-                    })
-                )
-            })
+        if (selectStatus(getState()) == PipelineStatus.STOPPED) {
+            error('The pipeline has stopped working while executing job', j)
+            clearInterval(monitor)
+        } else
+            fetchJobData(ws)
+                .then((value) => {
+                    info('received job data ', value)
+                    if (
+                        [
+                            JobStatus.ERROR,
+                            JobStatus.FAIL,
+                            JobStatus.SUCCESS,
+                        ].includes(value.status)
+                    ) {
+                        // Job is finished, stop monitor
+                        clearInterval(monitor)
+                    }
+                    let updatedJob = { ...j }
+                    updatedJob.jobData = value
+                    // If job has results, download them
+                    if (updatedJob.jobData && updatedJob.jobData.results) {
+                        const newJobName = `${
+                            updatedJob.jobData.nicename ??
+                            updatedJob.jobData.script.nicename
+                        }_${timestamp()}`
+                        //`${settings.downloadFolder}/${newJobName}/${namedResult.name}`
+                        const downloadFolder = selectDownloadPath(getState())
+                        downloadJobResults(
+                            updatedJob,
+                            `${downloadFolder}/${newJobName}`
+                        ).then((downloadedJob) => {
+                            dispatch(updateJob(downloadedJob))
+                        })
+                    } else dispatch(updateJob(updatedJob))
+                })
+                .catch((e) => {
+                    error('Error fetching data for job', j, e)
+                    dispatch(
+                        updateJob({
+                            ...j,
+                            errors: [
+                                {
+                                    error:
+                                        e instanceof ParserException
+                                            ? e.parsedText
+                                            : String(e),
+                                },
+                            ],
+                        })
+                    )
+                })
     }, 1000)
 }
 

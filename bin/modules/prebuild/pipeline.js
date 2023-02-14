@@ -53,6 +53,7 @@ const execOpts = (java_home) => ({
     cwd: path.resolve('engine'),
     env: {
         JAVA_HOME: java_home,
+        PATH: process.env.PATH, // Required on MacOS : path is not forwarded as on windows
     },
     stderr: 'inherit',
     stdio: 'inherit',
@@ -115,7 +116,7 @@ async function getMaven(useOwnMvn = true) {
                 mvnAvailabe = false
             }
         } catch (error) {
-            console.log(
+            console.error(
                 `An error occured while trying to run system wide maven.\n
 -- I will download maven for you. --`
             )
@@ -152,7 +153,7 @@ async function getMaven(useOwnMvn = true) {
                     files.map((file) => path.resolve(targetPath, file.path))
                 )
                 .catch((err) => {
-                    console.log(
+                    console.error(
                         `Sorry, I could not download and unzip maven 3.8.6 on your system.\n
 Please install one manually and retry`,
                         err
@@ -198,11 +199,11 @@ async function getJDK(platform = null, arch = null) {
                     .split('.')
                 // Now can do version check if needed
             } catch (err) {
-                console.log('Version not found')
+                console.error('Version not found')
                 requestedJDKIsInstalled = false
             }
         } catch (error) {
-            console.log('No jlink found in JAVA_HOME folder, downloading a jdk')
+            console.error('No jlink found in JAVA_HOME folder, downloading a jdk')
             requestedJDKIsInstalled = false
         }
     }
@@ -230,7 +231,6 @@ async function getJDK(platform = null, arch = null) {
             'jre',
             archiveName
         )
-        console.log(targetPath)
         try {
             java_home = fs.existsSync(targetPath)
                 ? path.dirname(
@@ -272,19 +272,17 @@ async function getJDK(platform = null, arch = null) {
                     files.map((file) => path.resolve(targetPath, file.path))
                 )
                 .catch((err) => {
-                    console.log(
+                    console.error(
                         'Could not download and decompress OpenJDK',
                         err
                     )
                     throw err
                 })
-            console.log(jdkFiles)
             java_home = path.dirname(
                 jdkFiles.filter((file) => file.endsWith('bin'))[0]
             )
         }
     }
-
     return java_home
 }
 
@@ -308,10 +306,10 @@ async function buildPipeline(platform = null, arch = null) {
             return
         }
     }
-
     let mvn = await getMaven()
+    console.info(' > Using maven command : ', mvn)
     let java_home = await getJDK()
-
+    console.info(' > Using java home : ', java_home)
     //  pipeline build profiles
     let profiles = [...defaultProfiles]
     const targetedPlatform = getJDKPlatform(platform ?? os.platform())
@@ -336,13 +334,15 @@ async function buildPipeline(platform = null, arch = null) {
             break
     }
     profiles.push(jreBuildProfiles[targetedPlatform][targetedArch])
-    console.log('build for', targetedPlatform, targetedArch)
+    console.info(' > building DAISY Pipeline 2 engine for', targetedPlatform, targetedArch)
     try {
-        spawnSync(
+        const mvnCall = spawnSync(
             mvn,
             ['clean', 'package', '-P', profiles.join(',')],
             execOpts(java_home)
         )
+        if(mvnCall.error) throw mvnCall.error
+        
     } catch (err) {
         console.error(err)
         throw err
@@ -356,11 +356,13 @@ async function buildPipeline(platform = null, arch = null) {
     )[0]
     // replace folder
     if (fs.existsSync(deployFolder)) {
-        console.log('delete folder for update', deployFolder)
+        console.info(' > Deleting folder for update', deployFolder)
         fs.rmSync(deployFolder, { recursive: true, force: true })
     }
-    console.log('Moving', pipelineFolder, 'to', deployFolder)
-    fs.renameSync(pipelineFolder, deployFolder)
+    if(fs.existsSync(pipelineFolder)){
+        console.info(' > Moving', pipelineFolder, 'to', deployFolder)
+        fs.renameSync(pipelineFolder, deployFolder)
+    } else console.error('No pipeline folder to deploy')
 }
 // TODO : replace the refresh arg by a version check to verify if a newer version has been pulled from the submodule
 // and trigger the update if so

@@ -1,6 +1,6 @@
 import { BrowserWindow, dialog, MenuItem } from 'electron'
 import { calculateJobName, readableStatus } from 'shared/jobName'
-import { JobState, JobStatus } from 'shared/types'
+import { Job, JobState, JobStatus } from 'shared/types'
 
 export function buildMenuTemplate({
     appName,
@@ -188,18 +188,20 @@ export function buildMenuTemplate({
                 },
                 ...(jobs.length > 0 ? [{ type: 'separator' }] : []),
                 ...(jobs.length > 0
-                    ? jobs.map((j, idx) => {
-                          let menuItem = {
-                              label: `${idx + 1}. ${calculateJobName(j)}`,
-                              click: () => onGotoTab(j),
-                          }
-                          if (idx < 10) {
-                              menuItem['accelerator'] = `CommandOrControl+${
-                                  (idx % 10) + 1 != 10 ? (idx % 10) + 1 : 0
-                              }`
-                          }
-                          return menuItem
-                      })
+                    ? jobs
+                          .filter((j: Job) => !j.invisible)
+                          .map((j: Job, idx: number) => {
+                              let menuItem = {
+                                  label: `${idx + 1}. ${calculateJobName(j)}`,
+                                  click: () => onGotoTab(j),
+                              }
+                              if (idx < 10) {
+                                  menuItem['accelerator'] = `CommandOrControl+${
+                                      (idx % 10) + 1 != 10 ? (idx % 10) + 1 : 0
+                                  }`
+                              }
+                              return menuItem
+                          })
                     : []),
                 ,
             ],

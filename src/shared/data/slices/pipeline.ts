@@ -213,23 +213,32 @@ export const pipeline = createSlice({
             let selectedJobIndex = state.jobs.findIndex(
                 (j) => j.internalId == state.selectedJobId
             )
-            if (selectedJobIndex + 1 <= state.jobs.length - 1) {
-                selectedJobIndex++
-            } else {
-                selectedJobIndex = 0
-            }
+            let i = 0
+            do {
+                selectedJobIndex =
+                    (state.jobs.length + selectedJobIndex + 1) %
+                    state.jobs.length
+                ++i
+            } while (
+                i < state.jobs.length &&
+                state.jobs[selectedJobIndex].invisible
+            )
             state.selectedJobId = state.jobs[selectedJobIndex].internalId
         },
         selectPrevJob: (state: PipelineState) => {
             let selectedJobIndex = state.jobs.findIndex(
                 (j) => j.internalId == state.selectedJobId
             )
-            if (selectedJobIndex - 1 >= 0) {
-                selectedJobIndex--
-            } else {
-                selectedJobIndex = state.jobs.length - 1
-            }
-            console.log(selectedJobIndex)
+            let i = 0
+            do {
+                selectedJobIndex =
+                    (state.jobs.length + selectedJobIndex - 1) %
+                    state.jobs.length
+                ++i
+            } while (
+                i < state.jobs.length &&
+                state.jobs[selectedJobIndex].invisible
+            )
             state.selectedJobId = state.jobs[selectedJobIndex].internalId
         },
     },

@@ -27,6 +27,7 @@
   "license": "MIT",
   "scripts": {
     "start": "electron .",
+    "prebuild": "yarn r predev pipeline:install",
     "build": "cross-env NODE_ENV=production yarn r clean webpack:main webpack:renderer",
     "postbuild": "node ./bin/modules/postbuild/index.js",
     "predev": "cross-var \"rimraf $npm_package_devTempBuildFolder\"",
@@ -40,6 +41,8 @@
     "webpack:renderer": "webpack --config ./webpack/renderer.config.js",
     "webpack:serve": "webpack serve --config ./webpack/renderer.config.js",
     "server:wait": "cross-var \"wait-on $npm_package_devServer\"",
+    "pipeline:install":"node ./bin/modules/prebuild/pipeline.js", 
+    "pipeline:refresh":"node ./bin/modules/prebuild/pipeline.js --refresh", 
     "nodemon:start": "nodemon --watch src/main --watch src/renderer/bridge --watch src/shared --ignore src/resources --ext \"*\" --exec yarn dev:main",
     "predist": "yarn build",
     "dist": "./node_modules/.bin/electron-builder",

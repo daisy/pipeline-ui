@@ -3,6 +3,7 @@ import { app, nativeTheme } from 'electron'
 import { info } from 'electron-log'
 import { existsSync, readFileSync, writeFile } from 'fs'
 import { resolve } from 'path'
+import { ENVIRONMENT } from 'shared/constants'
 import { save } from 'shared/data/slices/settings'
 import { ApplicationSettings, ColorScheme } from 'shared/types'
 import { RootState } from 'shared/types/store'
@@ -64,8 +65,10 @@ export function readSettings() {
         info(e)
         info('Falling back to default settings')
     }
-    // FIXME : deactivating local pipeline props settings loading from file
-    settings.localPipelineProps = undefined
+
+    // Remove pipeline props loading for dev
+    if (ENVIRONMENT.IS_DEV) settings.localPipelineProps = undefined
+
     return settings
 }
 

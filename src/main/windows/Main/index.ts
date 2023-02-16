@@ -7,32 +7,34 @@ import { APP_CONFIG } from '~/app.config'
 import { store } from 'main/data/store'
 
 const { MAIN, TITLE } = APP_CONFIG
+let mainWindow: BrowserWindow = null
 
 export async function MainWindow() {
-    const window = createWindow({
-        id: 'main',
-        title: TITLE,
-        width: MAIN.WINDOW.WIDTH,
-        height: MAIN.WINDOW.HEIGHT,
-        center: true,
-        movable: true,
-        resizable: true,
-        alwaysOnTop: false,
+    if (mainWindow == null || mainWindow.isDestroyed()) {
+        mainWindow = createWindow({
+            id: 'main',
+            title: TITLE,
+            width: MAIN.WINDOW.WIDTH,
+            height: MAIN.WINDOW.HEIGHT,
+            center: true,
+            movable: true,
+            resizable: true,
+            alwaysOnTop: false,
+            webPreferences: {
+                preload: join(__dirname, 'bridge.js'),
+                nodeIntegration: false,
+                contextIsolation: true,
+                spellcheck: false,
+                sandbox: false,
+            },
+        })
+        ENVIRONMENT.IS_DEV &&
+            mainWindow.webContents.openDevTools({ mode: 'detach' })
 
-        webPreferences: {
-            preload: join(__dirname, 'bridge.js'),
-            nodeIntegration: false,
-            contextIsolation: true,
-            spellcheck: false,
-            sandbox: false,
-        },
-    })
+        mainWindow.on('close', (event) => {
+            BrowserWindow.getAllWindows().forEach((window) => window.destroy())
+        })
+    }
 
-    ENVIRONMENT.IS_DEV && window.webContents.openDevTools({ mode: 'detach' })
-
-    window.on('close', (event) => {
-        BrowserWindow.getAllWindows().forEach((window) => window.destroy())
-    })
-
-    return window
+    return mainWindow
 }

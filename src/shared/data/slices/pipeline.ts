@@ -127,6 +127,7 @@ export const pipeline = createSlice({
                 internalId: temp.internalId,
                 invisible: true,
             })
+            state.internalJobCounter += 1
             state.jobs = state.jobs.map((job) => {
                 if (job.internalId == param.payload.internalId) {
                     job.linkedTo = temp.internalId

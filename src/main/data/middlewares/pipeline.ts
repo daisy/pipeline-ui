@@ -15,6 +15,7 @@ import {
     selectJobs,
     newJob,
     addJob,
+    selectPipeline,
 } from 'shared/data/slices/pipeline'
 
 import {
@@ -321,12 +322,11 @@ export function pipelineMiddleware({ getState, dispatch }) {
                 }
                 break
             case removeJob.type:
-                const visibleJobs = selectJobs(state).filter(
-                    (j) => !j.invisible
-                )
+                const currentJobs = selectJobs(state)
+                const visibleJobs = currentJobs.filter((j) => !j.invisible)
                 const removedJob = action.payload as Job
-                if (removedJob.jobRequest) {
-                    // Ask delete confirmation
+                if (removedJob.jobRequest && !removedJob.invisible) {
+                    // Ask delete confirmation for visible jobs deletion
                     const result = dialog.showMessageBoxSync(null, {
                         message: `Are you sure you want to delete this job ?`,
                         buttons: ['Yes', 'No'],
@@ -342,13 +342,22 @@ export function pipelineMiddleware({ getState, dispatch }) {
                 ) {
                     // recreate a new job tab if the job closed was not empty
                     if (removedJob.jobRequest) {
-                        dispatch(addJob(newJob(state)))
+                        dispatch(addJob(newJob(selectPipeline(state))))
                     } else {
                         // choice 1 : avoid deleting last job present
                         action = null
                         // choice 2 : Close the window
                         // ipcMain.emit(IPC.WINDOWS.MAIN.CLOSE)
                     }
+                }
+                // Remove linked invisible jobs
+                if (action && removedJob.linkedTo) {
+                    const linkedInvisibleJob = currentJobs.find(
+                        (j) =>
+                            j.invisible && removedJob.linkedTo == j.internalId
+                    )
+                    if (linkedInvisibleJob)
+                        dispatch(removeJob(linkedInvisibleJob))
                 }
                 break
             case runJob.type:

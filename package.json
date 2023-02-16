@@ -1,5 +1,5 @@
 {
-  "displayName": "DAISY Pipeline",
+  "displayName": "DAISY Pipeline app",
   "name": "pipeline-ui",
   "description": "User interface for the DAISY Pipeline",
   "version": "0.4.0-beta",

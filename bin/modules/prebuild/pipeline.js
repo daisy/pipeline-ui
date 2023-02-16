@@ -40,7 +40,6 @@ function walk(
     return results
 }
 
-
 const deployFolder = path.resolve('src', 'resources', 'daisy-pipeline')
 
 const refresh =
@@ -90,9 +89,7 @@ const defaultProfiles = [
     'without-persistence',
     'without-osgi',
     'without-updater',
-].concat(!withCli ? ['without-cli']: [])
-
-
+].concat(!withCli ? ['without-cli'] : [])
 
 /**
  * Get a maven command.
@@ -207,7 +204,9 @@ async function getJDK(platform = null, arch = null) {
                 requestedJDKIsInstalled = false
             }
         } catch (error) {
-            console.error('No jlink found in JAVA_HOME folder, downloading a jdk')
+            console.error(
+                'No jlink found in JAVA_HOME folder, downloading a jdk'
+            )
             requestedJDKIsInstalled = false
         }
     }
@@ -329,36 +328,41 @@ async function buildPipeline(platform = null, arch = null) {
     switch (targetedPlatform) {
         case 'windows':
             profiles.push('assemble-win-dir')
-            if(withCli){
+            if (withCli) {
                 profiles.push('unpack-cli-win')
             }
             break
         case 'mac':
             profiles.push('assemble-mac-dir')
-            if(withCli){
+            if (withCli) {
                 profiles.push('unpack-cli-mac')
             }
             break
         case 'linux':
         default:
             profiles.push('assemble-linux-dir')
-            if(withCli){
+            if (withCli) {
                 profiles.push('unpack-cli-linux')
             }
             break
     }
     profiles.push(jreBuildProfiles[targetedPlatform][targetedArch])
-    console.info(' > building DAISY Pipeline 2 engine for', targetedPlatform, targetedArch)
+    console.info(
+        ' > building DAISY Pipeline 2 engine for',
+        targetedPlatform,
+        targetedArch
+    )
     try {
-        console.debug(`launching command : ${mvn} clean package -P ${profiles.join(',')}`)
+        console.debug(
+            `launching command : ${mvn} clean package -P ${profiles.join(',')}`
+        )
         console.debug('with execution options :', execOpts(java_home))
         const mvnCall = spawnSync(
             mvn,
             ['clean', 'package', '-P', profiles.join(',')],
             execOpts(java_home)
         )
-        if(mvnCall.error) throw mvnCall.error
-        
+        if (mvnCall.error) throw mvnCall.error
     } catch (err) {
         console.error(err)
         throw err
@@ -375,10 +379,10 @@ async function buildPipeline(platform = null, arch = null) {
         console.info(' > Deleting folder for update', deployFolder)
         fs.rmSync(deployFolder, { recursive: true, force: true })
     }
-    if(fs.existsSync(pipelineFolder)){
+    if (fs.existsSync(pipelineFolder)) {
         console.info(' > Moving', pipelineFolder, 'to', deployFolder)
         fs.renameSync(pipelineFolder, deployFolder)
-        if(targetedPlatform == 'mac'){
+        if (targetedPlatform == 'mac') {
             console.info(' > Update permissions for macOS')
             execSync(`chmod -R +x "${deployFolder}"`)
         }

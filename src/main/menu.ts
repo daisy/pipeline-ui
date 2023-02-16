@@ -33,10 +33,7 @@ export function buildMenuTemplate({
         currentJob.jobData.status != JobStatus.RUNNING &&
         currentJob.jobData.status != JobStatus.IDLE
 
-    let canCancel =
-        currentJob &&
-        currentJob.state == JobState.NEW &&
-        currentJob.jobRequest != null
+    let canCancel = currentJob && currentJob.state == JobState.NEW
 
     let canRun =
         currentJob &&

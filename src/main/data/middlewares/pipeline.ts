@@ -12,6 +12,9 @@ import {
     stop,
     updateScript,
     updateDatatype,
+    selectJobs,
+    newJob,
+    addJob,
 } from 'shared/data/slices/pipeline'
 
 import {
@@ -38,7 +41,7 @@ import {
 import { ParserException } from 'shared/parser/pipelineXmlConverter/parser'
 import { PipelineInstance } from 'main/factories'
 import { RootState } from 'shared/types/store'
-import { ipcMain } from 'electron'
+import { dialog, ipcMain } from 'electron'
 import { IPC } from 'shared/constants/ipc'
 
 // prettier-ignore
@@ -330,6 +333,22 @@ export function pipelineMiddleware({ getState, dispatch }) {
                     })
                     // Cancel action if no is selected
                     action = result === 1 ? null : action
+                }
+                // #41 : Handle removing the last visible job
+                if (
+                    action &&
+                    visibleJobs.length === 1 &&
+                    removedJob.internalId === visibleJobs[0].internalId
+                ) {
+                    // recreate a new job tab if the job closed was not empty
+                    if (removedJob.jobRequest) {
+                        dispatch(addJob(newJob(state)))
+                    } else {
+                        // choice 1 : avoid deleting last job present
+                        action = null
+                        // choice 2 : Close the window
+                        // ipcMain.emit(IPC.WINDOWS.MAIN.CLOSE)
+                    }
                 }
                 break
             case runJob.type:

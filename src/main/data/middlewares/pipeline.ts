@@ -318,7 +318,19 @@ export function pipelineMiddleware({ getState, dispatch }) {
                 }
                 break
             case removeJob.type:
-                // Delete the job folder from disk
+                const visibleJobs = selectJobs(state).filter(
+                    (j) => !j.invisible
+                )
+                const removedJob = action.payload as Job
+                if (removedJob.jobRequest) {
+                    // Ask delete confirmation
+                    const result = dialog.showMessageBoxSync(null, {
+                        message: `Are you sure you want to delete this job ?`,
+                        buttons: ['Yes', 'No'],
+                    })
+                    // Cancel action if no is selected
+                    action = result === 1 ? null : action
+                }
                 break
             case runJob.type:
                 // Launch the job with the API and start monitoring its execution

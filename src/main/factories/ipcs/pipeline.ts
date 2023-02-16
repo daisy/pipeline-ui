@@ -50,7 +50,6 @@ export class PipelineInstance {
      * @param parameters
      */
     constructor(props?: PipelineInstanceProperties) {
-        const osAppDataFolder = app.getPath('userData')
         this.props = {
             localPipelineHome:
                 (props && props.localPipelineHome) ??
@@ -171,7 +170,13 @@ export class PipelineInstance {
                         this.props.webservice.host
                     )
                         .then((port) => {
-                            this.props.webservice.port = port
+                            this.props = {
+                                ...this.props,
+                                webservice: {
+                                    ...this.props.webservice,
+                                    port,
+                                },
+                            }
                         })
                         .catch((err) => {
                             // propagate exception for now
@@ -180,7 +185,13 @@ export class PipelineInstance {
                 } catch (exception) {
                     this.pushError(exception)
                     // Reset to port 0 to auto scan
-                    this.props.webservice.port = 0
+                    this.props = {
+                        ...this.props,
+                        webservice: {
+                            ...this.props.webservice,
+                            port: 0,
+                        },
+                    }
                 }
                 if (this.props.webservice.port === 0) {
                     dialog.showMessageBox(null, {
@@ -210,7 +221,13 @@ Then close the program using the port and restart this application.`,
                         this.props.webservice.host
                     )
                         .then((port) => {
-                            this.props.webservice.port = port
+                            this.props = {
+                                ...this.props,
+                                webservice: {
+                                    ...this.props.webservice,
+                                    port,
+                                },
+                            }
                         })
                         .catch((err) => {
                             // propagate exception for now
@@ -219,7 +236,13 @@ Then close the program using the port and restart this application.`,
                 } catch (exception) {
                     this.pushError(exception)
                     // no port available, try to use the usual 8181
-                    this.props.webservice.port = 8181
+                    this.props = {
+                        ...this.props,
+                        webservice: {
+                            ...this.props.webservice,
+                            port: 8181,
+                        },
+                    }
                 }
             }
             this.validatedProps()

@@ -39,7 +39,9 @@ export function MainView() {
     // for the narrators to announce it
     useEffect(() => {
         if (pipeline.selectedJobId !== '') {
-            document.getElementById(`${ID(pipeline.selectedJobId)}-tab`).focus()
+            document
+                .getElementById(`${ID(pipeline.selectedJobId)}-tab`)
+                ?.focus()
         }
     }, [pipeline.selectedJobId])
 
@@ -58,7 +60,7 @@ export function MainView() {
             case 'ArrowDown':
                 document
                     .getElementById(`${ID(pipeline.selectedJobId)}-tabpanel`)
-                    .focus()
+                    ?.focus()
                 break
             case 'Delete':
                 if (pipeline.jobs.length > 0) {

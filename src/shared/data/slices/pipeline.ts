@@ -182,6 +182,9 @@ export const pipeline = createSlice({
             state.jobs = state.jobs.filter(
                 (job) => job.internalId !== searchedJob.internalId
             )
+            if (state.jobs.length === 0) {
+                state.selectedJobId = ''
+            }
         },
         runJob: (state: PipelineState, param: PayloadAction<Job>) => {
             if (param.payload.jobRequest) {

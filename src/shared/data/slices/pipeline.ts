@@ -285,6 +285,37 @@ export const selectors = {
             state: JobState.NEW,
             jobRequest: null,
         } as Job),
+    prepareJobRequest: (job: Job, script: Script) => {
+        const hasJobRequestOnScript: Boolean =
+            job.jobRequest && job.jobRequest.scriptHref == script.href
+        return {
+            scriptHref: script.href,
+            nicename: (job.jobData && job.jobData.nicename) || script.nicename,
+            inputs: script.inputs.map((item, index) => {
+                return {
+                    name: item.name,
+                    value:
+                        (hasJobRequestOnScript &&
+                            job.jobRequest.inputs[index].value) ||
+                        null,
+                    isFile:
+                        item.type == 'anyFileURI' || item.type == 'anyDirURI',
+                }
+            }),
+            options: script.options.map((item, index) => {
+                return {
+                    name: item.name,
+                    value:
+                        (hasJobRequestOnScript &&
+                            job.jobRequest.options[index].value) ||
+                        item.default ||
+                        null,
+                    isFile:
+                        item.type == 'anyFileURI' || item.type == 'anyDirURI',
+                }
+            }),
+        } as JobRequest
+    },
 }
 
 export const {
@@ -295,4 +326,5 @@ export const {
     selectScripts,
     selectDatatypes,
     newJob,
+    prepareJobRequest,
 } = selectors

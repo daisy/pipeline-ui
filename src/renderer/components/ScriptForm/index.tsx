@@ -25,47 +25,6 @@ const { App } = window
 export function ScriptForm({ job, script }: { job: Job; script: Script }) {
     const [submitInProgress, setSubmitInProgress] = useState(false)
     const [error, setError] = useState(false)
-    useEffect(() => {
-        // For job edition, re-add previous value of the jobRequest if it exists
-        const hasJobRequestOnScript: Boolean =
-            job.jobRequest && job.jobRequest.scriptHref == script.href
-        App.store.dispatch(
-            updateJob({
-                ...job,
-                jobRequest: {
-                    scriptHref: script.href,
-                    nicename:
-                        (job.jobData && job.jobData.nicename) ||
-                        script.nicename,
-                    inputs: script.inputs.map((item, index) => {
-                        return {
-                            name: item.name,
-                            value:
-                                (hasJobRequestOnScript &&
-                                    job.jobRequest.inputs[index].value) ||
-                                null,
-                            isFile:
-                                item.type == 'anyFileURI' ||
-                                item.type == 'anyDirURI',
-                        }
-                    }),
-                    options: script.options.map((item, index) => {
-                        return {
-                            name: item.name,
-                            value:
-                                (hasJobRequestOnScript &&
-                                    job.jobRequest.options[index].value) ||
-                                item.default ||
-                                null,
-                            isFile:
-                                item.type == 'anyFileURI' ||
-                                item.type == 'anyDirURI',
-                        }
-                    }),
-                },
-            })
-        )
-    }, [script])
 
     let required = getAllRequired(script)
     let optional = getAllOptional(script)

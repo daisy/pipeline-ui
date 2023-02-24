@@ -121,6 +121,9 @@ input[type=checkbox] {
     grid-template-columns: 60% auto;
     font-size: large;
 
+    h1 {
+        white-space: nowrap;
+    }
     h1 span {
         font-size: small;
         display: block;
@@ -225,21 +228,43 @@ input[type=checkbox] {
 }
 
 .new-job {
+    input[type=text] {
+        width: 25rem;
+        font-size: large;
+    }
+    input[type=checkbox] {
+        flex-basis: 2rem;
+        accent-color: var(--select);
+    }
+    input[type=number] {
+        width: min-content;
+        font-size: large;
+    }
+    select {
+        font-size: large;
+        border: thin solid;
+        border-radius: 4px;
+        width: 25rem;
+    }
+
     .select-script {
         display: flex;
         flex-direction: row;
+        flex-wrap: wrap;
         gap: calc(var(--pad)*2);
         font-size: x-large;
         
-        select {
-            font-size: large;
-            border: thin solid;
-            border-radius: 4px;
-        }
+        
         border-bottom: thin solid var(--fg-mix);
         padding-top: calc(var(--pad));
         padding-bottom: calc(var(--pad));
         padding-left: 2px;
+        align-items: center;
+
+        &>div {
+            display: flex;
+            gap: calc(var(--pad)/2);
+        }
     }
 
     form {
@@ -259,27 +284,10 @@ input[type=checkbox] {
 
             ul.fields {
                 gap: var(--pad);
-                li {
-                    input[type=text] {
-                        width: 100%;
-                        font-size: large;
-                    }
-                    input[type=checkbox] {
-                        flex-basis: 2rem;
-                        accent-color: var(--select);
-                    }
-                    input[type=number] {
-                        width: min-content;
-                        font-size: large;
-                    }
-                    select {
-                        font-size: large;
-                        border: thin solid;
-                        border-radius: 4px;
-                        width: min-content;
-                    }
+                
+                select {
+                    width: min-content;
                 }
-
                 .customDatatypeField {
                     // display: flex;
                     // flex-direction: row;

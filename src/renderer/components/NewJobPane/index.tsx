@@ -32,55 +32,59 @@ export function NewJobPane({ job }: { job: Job }) {
                 className="select-script"
                 aria-labelledby={`${ID(job.internalId)}-select-script`}
             >
-                <label
-                    id={`${ID(job.internalId)}-select-script`}
-                    htmlFor={`${ID(job.internalId)}-script`}
-                >
-                    Select a script:
-                </label>
-                <select
-                    id={`${ID(job.internalId)}-script`}
-                    onChange={(e) => onSelectChange(e)}
-                    value={job.script ? job.script.id : ''}
-                >
-                    <option value={null}>None</option>
-                    {pipeline.scripts
-                        .sort((a, b) => (a.nicename > b.nicename ? 1 : -1))
-                        .map((script, idx) => (
-                            <option key={idx} value={script.id}>
-                                {script.nicename}
-                            </option>
-                        ))}
-                </select>
-                <label
-                    id={`${ID(job.internalId)}-change-name`}
-                    htmlFor={`${ID(job.internalId)}-nicename`}
-                >
-                    Job's name
-                </label>
-                <input
-                    id={`${ID(job.internalId)}-nicename`}
-                    type="text"
-                    value={
-                        (job.jobData && job.jobData.nicename) ||
-                        (job.jobRequest && job.jobRequest.nicename) ||
-                        ''
-                    }
-                    onChange={(e) => {
-                        const updatedJob: Job = {
-                            ...job,
-                            jobData: {
-                                ...job.jobData,
-                                nicename: e.target.value,
-                            },
-                            jobRequest: {
-                                ...job.jobRequest,
-                                nicename: e.target.value,
-                            },
+                <div>
+                    <label
+                        id={`${ID(job.internalId)}-select-script`}
+                        htmlFor={`${ID(job.internalId)}-script`}
+                    >
+                        Select a script:
+                    </label>
+                    <select
+                        id={`${ID(job.internalId)}-script`}
+                        onChange={(e) => onSelectChange(e)}
+                        value={job.script ? job.script.id : ''}
+                    >
+                        <option value={null}>None</option>
+                        {pipeline.scripts
+                            .sort((a, b) => (a.nicename > b.nicename ? 1 : -1))
+                            .map((script, idx) => (
+                                <option key={idx} value={script.id}>
+                                    {script.nicename}
+                                </option>
+                            ))}
+                    </select>
+                </div>
+                <div>
+                    <label
+                        id={`${ID(job.internalId)}-change-name`}
+                        htmlFor={`${ID(job.internalId)}-nicename`}
+                    >
+                        Job's name:
+                    </label>
+                    <input
+                        id={`${ID(job.internalId)}-nicename`}
+                        type="text"
+                        value={
+                            (job.jobData && job.jobData.nicename) ||
+                            (job.jobRequest && job.jobRequest.nicename) ||
+                            ''
                         }
-                        App.store.dispatch(updateJob(updatedJob))
-                    }}
-                />
+                        onChange={(e) => {
+                            const updatedJob: Job = {
+                                ...job,
+                                jobData: {
+                                    ...job.jobData,
+                                    nicename: e.target.value,
+                                },
+                                jobRequest: {
+                                    ...job.jobRequest,
+                                    nicename: e.target.value,
+                                },
+                            }
+                            App.store.dispatch(updateJob(updatedJob))
+                        }}
+                    />
+                </div>
             </section>
             {job.script != null ? (
                 <ScriptForm job={job} script={job.script} />

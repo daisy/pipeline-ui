@@ -42,9 +42,13 @@ export function MainView() {
             document
                 .getElementById(`${ID(pipeline.selectedJobId)}-tab`)
                 ?.focus()
+        } else {
+            document.getElementById(`new-job-button`)?.focus()
         }
     }, [pipeline.selectedJobId])
 
+    const visibleJobs = pipeline.jobs.filter((job) => !job.invisible)
+    const newJobButton = document.getElementById(`new-job-button`)
     /**
      * Keyboard actions on tabs with arrows
      * @param e KeyboardEvent
@@ -52,10 +56,35 @@ export function MainView() {
     const keyboardActions = (e) => {
         switch (e.key) {
             case 'ArrowRight':
-                App.store.dispatch(selectNextJob())
+                if (newJobButton == document.activeElement) {
+                    App.store.dispatch(selectJob(visibleJobs[0]))
+                    document
+                        .getElementById(`${ID(visibleJobs[0].internalId)}-tab`)
+                        ?.focus()
+                } else if (
+                    pipeline.selectedJobId ==
+                    visibleJobs[visibleJobs.length - 1].internalId
+                ) {
+                    document.getElementById(`new-job-button`)?.focus()
+                } else App.store.dispatch(selectNextJob())
                 break
             case 'ArrowLeft':
-                App.store.dispatch(selectPrevJob())
+                if (newJobButton == document.activeElement) {
+                    App.store.dispatch(
+                        selectJob(visibleJobs[visibleJobs.length - 1])
+                    )
+                    document
+                        .getElementById(
+                            `${ID(
+                                visibleJobs[visibleJobs.length - 1].internalId
+                            )}-tab`
+                        )
+                        ?.focus()
+                } else if (
+                    pipeline.selectedJobId == visibleJobs[0].internalId
+                ) {
+                    document.getElementById(`new-job-button`)?.focus()
+                } else App.store.dispatch(selectPrevJob())
                 break
             case 'ArrowDown':
                 document
@@ -73,28 +102,42 @@ export function MainView() {
     return (
         <>
             <div role="tablist" aria-live="polite" onKeyDown={keyboardActions}>
-                {pipeline.jobs
-                    .filter((job) => !job.invisible)
-                    .map((job, idx) => (
-                        <button
-                            key={idx}
-                            id={`${ID(job.internalId)}-tab`}
-                            aria-selected={
-                                pipeline.selectedJobId == job.internalId
-                            }
-                            tabIndex={
-                                pipeline.selectedJobId == job.internalId
-                                    ? 0
-                                    : -1
-                            }
-                            aria-controls={`${ID(job.internalId)}-tabpanel`}
-                            role="tab"
-                            type="button"
-                            onClick={(e) => App.store.dispatch(selectJob(job))}
-                        >
-                            {idx + 1}. {calculateJobName(job)}
-                        </button>
-                    ))}
+                {visibleJobs.map((job, idx) => (
+                    <button
+                        key={idx}
+                        id={`${ID(job.internalId)}-tab`}
+                        aria-selected={pipeline.selectedJobId == job.internalId}
+                        tabIndex={
+                            pipeline.selectedJobId == job.internalId ? 0 : -1
+                        }
+                        aria-controls={`${ID(job.internalId)}-tabpanel`}
+                        role="tab"
+                        type="button"
+                        onClick={(e) => {
+                            App.store.dispatch(selectJob(job))
+                            document
+                                .getElementById(
+                                    `${ID(job.internalId)}-tabpanel`
+                                )
+                                ?.focus()
+                        }}
+                    >
+                        {idx + 1}. {calculateJobName(job)}
+                    </button>
+                ))}
+                <button
+                    className={'as-tab'}
+                    id={`new-job-button`}
+                    aria-selected={pipeline.selectedJobId == ''}
+                    title="Create a job (Ctrl+N)"
+                    onClick={(e) => {
+                        const newJob_ = newJob(pipeline)
+                        App.store.dispatch(addJob(newJob_))
+                        App.store.dispatch(selectJob(newJob_))
+                    }}
+                >
+                    +
+                </button>
             </div>
             {pipeline.jobs
                 .filter((job) => !job.invisible)

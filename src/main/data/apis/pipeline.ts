@@ -21,11 +21,16 @@ import fetch, { Response, RequestInit } from 'node-fetch'
 import { info, error } from 'electron-log'
 
 /**
+ * Create a fetch function on the pipeline webservice
+ * for which the resulting pipeline xml is parsed and converted to a js object
  * @type T return type of the parser
- * @param webserviceUrlBuilder method to build a url, optionnaly using  a webservice (like ``(ws) => `${baseurl(ws)}/scripts` ``)
+ * @param webserviceUrlBuilder method to build a url,
+ * optionnaly using  a webservice (like ``(ws) => `${baseurl(ws)}/scripts` ``)
  * @param parser method to convert pipeline xml to an object object
- * @param options options to be passed to the fetch call (like `{method:'POST', body:whateveryoulike}`)
- * @returns a customized fetch function from the webservice `` (ws:Webservice) => Promise<Awaited<T>> ``
+ * @param options options to be passed to the fetch call
+ * (like `{method:'POST', body:whateveryoulike}`)
+ * @returns a customized fetch function from the webservice
+ * `` (ws:Webservice) => Promise<Awaited<T>> ``
  */
 function createPipelineFetchFunction<T>(
     webserviceUrlBuilder: (ws: Webservice) => string,
@@ -35,13 +40,24 @@ function createPipelineFetchFunction<T>(
     return (ws?: Webservice) => {
         info('fetching ', webserviceUrlBuilder(ws))
         return fetch(webserviceUrlBuilder(ws), options)
-            .then((response: Response) => {
-                return response.text()
-            })
-            .then((text) => {
-                const parsed = parser(text)
-                return parsed
-            })
+            .then((response: Response) => response.text())
+            .then((text: string) => parser(text))
+    }
+}
+
+/**
+ * Create a simple request on the pipeline webservice
+ * @param webserviceUrlBuilder method to build a url, optionnaly using  a webservice (like ``(ws) => `${baseurl(ws)}/scripts` ``)
+ * @param options options to be passed to the fetch call (like `{method:'POST', body:whateveryoulike}`)
+ * @returns a customized fetch function from the webservice `` (ws:Webservice) => Promise<Awaited<T>> ``
+ */
+function createPipelineRequestFunction(
+    webserviceUrlBuilder: (ws: Webservice) => string,
+    options?: RequestInit
+) {
+    return (ws?: Webservice) => {
+        info('request', options.method ?? '', webserviceUrlBuilder(ws))
+        return fetch(webserviceUrlBuilder(ws), options)
     }
 }
 
@@ -77,6 +93,10 @@ export const pipelineAPI = {
                 body: jobRequestToXml(j.jobRequest),
             }
         ),
+    deleteJob: (j: Job) =>
+        createPipelineRequestFunction(() => j.jobData.href, {
+            method: 'DELETE',
+        }),
     fetchFile: (r: ResultFile) => () =>
         fetch(r.href)
             .then((response) => response.blob())

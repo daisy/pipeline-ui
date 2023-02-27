@@ -34,6 +34,36 @@
     }
 }
 
+.as-tab {
+    padding: var(--pad);
+    border-radius: var(--border-radius);
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+    border: thin solid var(--fg);
+    
+    font-weight: normal;
+    font-size: larger;
+    color: var(--fg-mix-bold);
+
+    display: flex;
+    gap: calc(var(--pad)/2);
+    font-size: large;
+    transition: all .1s ease-in-out;
+    border-bottom: none;
+
+    &[aria-selected=false]:hover {
+        background-color: var(--select-mix);
+        color: var(--fg);
+    }
+    &[aria-selected=true] {
+        background-color: var(--select);
+        color: var(--bg);
+        border-bottom-color: var(--bg);
+        
+        font-weight: bold;
+    }
+}
+
 [role=tablist] {
     display: flex;
     flex-direction: row;

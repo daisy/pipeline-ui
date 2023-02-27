@@ -114,7 +114,6 @@ export function buildMenuTemplate({
                                   onRemoveJob(currentJob)
                               },
                               accelerator: 'CommandOrControl+D',
-                              enabled: canCancel,
                           },
                       ]),
 

@@ -5,7 +5,7 @@ import { existsSync, readFileSync, writeFile } from 'fs'
 import { resolve } from 'path'
 import { ENVIRONMENT } from 'shared/constants'
 import { save } from 'shared/data/slices/settings'
-import { ApplicationSettings, ColorScheme } from 'shared/types'
+import { ApplicationSettings } from 'shared/types'
 import { RootState } from 'shared/types/store'
 import { resolveUnpacked } from 'shared/utils'
 import { pathToFileURL } from 'url'
@@ -43,6 +43,7 @@ export function readSettings() {
             
         }*/
         colorScheme: 'system',
+        onClosingMainWindows: undefined,
     } as ApplicationSettings
     try {
         if (existsSync(settingsFile)) {

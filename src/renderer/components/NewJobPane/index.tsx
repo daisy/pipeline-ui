@@ -6,7 +6,11 @@ import { ScriptForm } from '../ScriptForm'
 import { useWindowStore } from 'renderer/store'
 import { ID } from 'renderer/utils/utils'
 import { Job } from 'shared/types'
-import { prepareJobRequest, updateJob } from 'shared/data/slices/pipeline'
+import {
+    prepareJobRequest,
+    removeJob,
+    updateJob,
+} from 'shared/data/slices/pipeline'
 
 const { App } = window
 
@@ -89,7 +93,14 @@ export function NewJobPane({ job }: { job: Job }) {
             {job.script != null ? (
                 <ScriptForm job={job} script={job.script} />
             ) : (
-                ''
+                <button
+                    id={`cancel-job-${job.internalId}`}
+                    onClick={(e) => {
+                        App.store.dispatch(removeJob(job))
+                    }}
+                >
+                    Cancel
+                </button>
             )}
         </>
     )

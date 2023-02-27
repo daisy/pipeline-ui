@@ -6,6 +6,12 @@ export enum ColorScheme {
     dark = 'Dark mode',
 }
 
+export enum ClosingMainWindowAction {
+    keep = 'Keep running in the tray (recommended, default)',
+    close = 'Close the application',
+    ask = 'Ask when closing window',
+}
+
 export type ApplicationSettings = {
     // Default folder to download the results on the user disk
     downloadFolder?: string
@@ -21,4 +27,5 @@ export type ApplicationSettings = {
     remotePipelineWebservice?: Webservice
     // Dark mode selector
     colorScheme: keyof typeof ColorScheme
+    onClosingMainWindows?: keyof typeof ClosingMainWindowAction
 }

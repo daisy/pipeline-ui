@@ -2,6 +2,7 @@ import { createSlice } from '@reduxjs/toolkit'
 import type { PayloadAction } from '@reduxjs/toolkit'
 import {
     ApplicationSettings,
+    ClosingMainWindowAction,
     ColorScheme,
     PipelineInstanceProperties,
 } from 'shared/types'
@@ -18,6 +19,7 @@ export const settings = createSlice({
         useRemotePipeline: false,
         remotePipelineWebservice: undefined,
         colorScheme: 'system',
+        onClosingMainWindows: undefined,
     } as ApplicationSettings,
     reducers: {
         // general state changer, not recommended based on how redux works
@@ -35,6 +37,8 @@ export const settings = createSlice({
                 state.useRemotePipeline = action.payload.useRemotePipeline
             if (action.payload.colorScheme)
                 state.colorScheme = action.payload.colorScheme
+            if (action.payload.onClosingMainWindows)
+                state.onClosingMainWindows = action.payload.onClosingMainWindows
         },
         save: (state: ApplicationSettings) => {
             // save action to trigger middleware save on disk
@@ -57,6 +61,12 @@ export const settings = createSlice({
         ) => {
             state.colorScheme = action.payload
         },
+        setClosingMainWindowAction: (
+            state: ApplicationSettings,
+            action: PayloadAction<keyof typeof ClosingMainWindowAction>
+        ) => {
+            state.onClosingMainWindows = action.payload
+        },
     },
 })
 
@@ -66,6 +76,7 @@ export const {
     setSettings,
     setPipelineProperties,
     setColorScheme,
+    setClosingMainWindowAction,
 } = settings.actions
 
 export const selectors = {
@@ -74,6 +85,7 @@ export const selectors = {
     selectPipelineProperties: (s: RootState) => s.settings.localPipelineProps,
     shouldRunLocalPipeline: (s: RootState) => s.settings.runLocalPipeline,
     selectColorScheme: (s: RootState) => s.settings.colorScheme,
+    selectClosingAction: (s: RootState) => s.settings.onClosingMainWindows,
 }
 // prettier-ignore
 export const {
@@ -81,5 +93,6 @@ export const {
     selectDownloadPath,
     selectPipelineProperties,
     shouldRunLocalPipeline,
-    selectColorScheme
+    selectColorScheme,
+    selectClosingAction
 } = selectors

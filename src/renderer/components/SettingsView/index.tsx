@@ -1,6 +1,10 @@
 import { useEffect, useState } from 'react'
 import { useWindowStore } from 'renderer/store'
-import { ApplicationSettings, ColorScheme } from 'shared/types'
+import {
+    ApplicationSettings,
+    ClosingMainWindowAction,
+    ColorScheme,
+} from 'shared/types'
 import { FileOrFolderInput } from '../Fields/FileOrFolderInput'
 import { setSettings, save } from 'shared/data/slices/settings'
 const { App } = window // The "App" comes from the bridge
@@ -36,6 +40,15 @@ export function SettingsView() {
             colorScheme: Object.keys(ColorScheme)[
                 e.target.selectedIndex
             ] as keyof typeof ColorScheme,
+        })
+        setSaved(false)
+    }
+    const ClosingActionChanged = (e) => {
+        setNewSettings({
+            ...newSettings,
+            onClosingMainWindows: Object.keys(ClosingMainWindowAction)[
+                e.target.selectedIndex
+            ] as keyof typeof ClosingMainWindowAction,
         })
         setSaved(false)
     }
@@ -83,6 +96,35 @@ export function SettingsView() {
                                     <option
                                         key={k}
                                         selected={settings.colorScheme == k}
+                                    >
+                                        {v}
+                                    </option>
+                                )
+                            }
+                        )}
+                    </select>
+                </div>
+                <div className="form-field">
+                    <label htmlFor="onMainWindowClosing">
+                        Action on closing the main window
+                    </label>
+                    <span className="description">
+                        Choose here if you want to keep the app running in the
+                        tray or close the application when closing the
+                        application's window.
+                    </span>
+                    <select
+                        id="onMainWindowClosing"
+                        onChange={(e) => ClosingActionChanged(e)}
+                    >
+                        {Object.entries(ClosingMainWindowAction).map(
+                            ([k, v]: [string, string]) => {
+                                return (
+                                    <option
+                                        key={k}
+                                        selected={
+                                            settings.onClosingMainWindows == k
+                                        }
                                     >
                                         {v}
                                     </option>

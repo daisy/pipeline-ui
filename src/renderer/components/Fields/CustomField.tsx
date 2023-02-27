@@ -77,11 +77,20 @@ function makeCustomDatatypeInput(
 function makeSelect(options, onChange, initialValue, controlId) {
     return (
         <select id={controlId} onChange={onChange} value={initialValue ?? ''}>
-            {options.map((option, idx) => (
-                <option key={idx} value={option.value}>
-                    {option.value}
-                </option>
-            ))}
+            {options.map((option, idx) => {
+                let displayString = option.documentation ?? option.value
+                // documentation strings can be split into short and long descriptions, one per line
+                if (displayString.split('\n').length > 1) {
+                    displayString = displayString.split('\n')[0]
+                }
+                return (
+                    <option key={idx} value={option.value}>
+                        {option.documentation
+                            ? option.documentation.split('\n')[0]
+                            : option.value}
+                    </option>
+                )
+            })}
         </select>
     )
 }

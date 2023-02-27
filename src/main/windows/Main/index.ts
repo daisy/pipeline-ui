@@ -38,19 +38,20 @@ export async function MainWindow() {
             mainWindow.webContents.openDevTools({ mode: 'detach' })
 
         mainWindow.on('close', (event) => {
-            if (selectClosingAction(store.getState()) == 'ask') {
+            const closingAction = selectClosingAction(store.getState())
+            if (!closingAction || closingAction == 'ask') {
                 dialog
                     .showMessageBox(null, {
-                        message: `The application still runs in the tray to keep the engine alive and reload the application faster.
+                        message: `The application can keep running in the tray to keep the engine alive and reload the application faster.
 
 Do you want to stop the engine and quit the application on closing this window ?`,
                         checkboxLabel:
                             'Remember my choice (can be changed in settings)',
                         checkboxChecked: false,
-                        title: 'Keep the engine running ?',
-                        type: 'warning',
+                        title: 'Keep the application in tray ?',
+                        type: 'info',
                         buttons: [
-                            'Keep the engine running (default, recommended)',
+                            'Keep the application in tray',
                             'Stop the application',
                         ],
                     })
@@ -68,7 +69,7 @@ Do you want to stop the engine and quit the application on closing this window ?
                     })
             }
 
-            if (selectClosingAction(store.getState()) == 'close') {
+            if (closingAction == 'close') {
                 app.quit()
             }
             BrowserWindow.getAllWindows().forEach((window) => window.destroy())
@@ -87,7 +88,7 @@ If you want to change this behaviour and also close the engine when closing the 
                 })
                 .then((result) => {
                     if (result.checkboxChecked) {
-                        store.dispatch(setClosingMainWindowAction('keep'))
+                        store.dispatch(setClosingMainWindowAction('ask'))
                         store.dispatch(save())
                         // Save result
                     }

@@ -359,6 +359,18 @@ export function pipelineMiddleware({ getState, dispatch }) {
                     if (linkedInvisibleJob)
                         dispatch(removeJob(linkedInvisibleJob))
                 }
+                if (action && removedJob.jobData && removedJob.jobData.href) {
+                    // Remove server-side job using API
+                    const deleteJob = pipelineAPI.deleteJob(removedJob)
+                    deleteJob().then((response) => {
+                        console.log(
+                            removedJob.jobData.jobId,
+                            'delete response',
+                            response.status,
+                            response.statusText
+                        )
+                    })
+                }
                 break
             case runJob.type:
                 // Launch the job with the API and start monitoring its execution

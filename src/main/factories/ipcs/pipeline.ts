@@ -309,18 +309,18 @@ Then close the program using the port and restart this application.`,
                         resolve(
                             this.props.localPipelineHome,
                             'etc',
-                            'config-logback.xml'
+                            'logback.xml'
                         )
                     ).href +
                     '',
                 // XMLCalabash base configuration file
-                '-Dorg.daisy.pipeline.xproc.configuration="' +
-                    resolve(
-                        this.props.localPipelineHome,
-                        'etc',
-                        'config-calabash.xml'
-                    ).replaceAll('\\', '/') +
-                    '"',
+                // '-Dorg.daisy.pipeline.xproc.configuration="' +
+                //     resolve(
+                //         this.props.localPipelineHome,
+                //         'etc',
+                //         'config-calabash.xml'
+                //     ).replaceAll('\\', '/') +
+                //     '"',
                 // Updater configuration
                 '-Dorg.daisy.pipeline.updater.bin="' +
                     resolve(
@@ -419,7 +419,10 @@ ${command} ${args.join(' ')}`
                 let message = `Pipeline exiting with code ${code} and signal ${signal}`
                 store.dispatch(setStatus(PipelineStatus.STOPPED))
                 this.pushMessage(message)
-                if (existsSync(resolve(this.props.appDataFolder, 'jobs'))) {
+                if (
+                    code == 0 &&
+                    existsSync(resolve(this.props.appDataFolder, 'jobs'))
+                ) {
                     rmSync(resolve(this.props.appDataFolder, 'jobs'), {
                         recursive: true,
                         force: true,

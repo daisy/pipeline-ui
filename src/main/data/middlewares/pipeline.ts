@@ -98,7 +98,7 @@ async function downloadJobResults(j: Job, targetFolder: string) {
                     return downloadResultFile(
                         f,
                         new URL(
-                            `${targetFolder}/${r.name}/${f.file.split('/').pop()}`
+                            `${targetFolder}/${r.nicename ?? r.name}/${f.file.split('/').pop()}`
                         ).href
                     )
                 })
@@ -107,8 +107,9 @@ async function downloadJobResults(j: Job, targetFolder: string) {
 
     return Promise.all(downloads).then((downloadsByResults) => {
         downloadsByResults.forEach((namedResults, index) => {
-            const newJobURL = new URL(`${targetFolder}/${copy[index].name}`)
-                .href
+            const newJobURL = new URL(
+                `${targetFolder}/${copy[index].nicename ?? copy[index].name}`
+            ).href
             copy[index].href = newJobURL
             copy[index].files = downloadsByResults[index]
         })
@@ -266,7 +267,7 @@ export function pipelineMiddleware({ getState, dispatch }) {
                         clearInterval(fetchScriptsInterval)
                     } else if (newWebservice) {
                         fetchScripts(newWebservice)
-                            .then((scripts) => {
+                            .then((scripts: Array<Script>) => {
                                 info(
                                     'useWebservice',
                                     'Pipeline is ready to be used'

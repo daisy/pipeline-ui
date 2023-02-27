@@ -17,12 +17,14 @@ export function SettingsView() {
     // (without affecting the rest of the app)
     const [newSettings, setNewSettings] = useState<ApplicationSettings>({
         ...settings,
+        onClosingMainWindows: settings.onClosingMainWindows ?? 'ask', // defaults to ask in form
     })
     const [saved, setSaved] = useState(true)
     useEffect(() => {
         // Reload settings from store if it has changed
         setNewSettings({
             ...settings,
+            onClosingMainWindows: settings.onClosingMainWindows ?? 'ask', // defaults to ask in form
         })
     }, [settings])
 
@@ -95,7 +97,7 @@ export function SettingsView() {
                                 return (
                                     <option
                                         key={k}
-                                        selected={settings.colorScheme == k}
+                                        selected={newSettings.colorScheme == k}
                                     >
                                         {v}
                                     </option>
@@ -123,7 +125,8 @@ export function SettingsView() {
                                     <option
                                         key={k}
                                         selected={
-                                            settings.onClosingMainWindows == k
+                                            newSettings.onClosingMainWindows ==
+                                            k
                                         }
                                     >
                                         {v}

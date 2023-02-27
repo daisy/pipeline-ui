@@ -7,7 +7,7 @@ export enum ColorScheme {
 }
 
 export enum ClosingMainWindowAction {
-    keep = 'Keep running in the tray (recommended, default)',
+    keep = 'Keep running in the tray',
     close = 'Close the application',
     ask = 'Ask when closing window',
 }

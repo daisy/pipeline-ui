@@ -419,6 +419,6 @@ export function pipelineMiddleware({ getState, dispatch }) {
                 }
                 break
         }
-        return next(action)
+        if (action != null) return next(action)
     }
 }

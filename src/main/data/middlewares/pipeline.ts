@@ -23,6 +23,7 @@ import {
     Job,
     JobState,
     JobStatus,
+    NamedResult,
     PipelineStatus,
     ResultFile,
     Script,
@@ -44,6 +45,7 @@ import { PipelineInstance } from 'main/factories'
 import { RootState } from 'shared/types/store'
 import { dialog, ipcMain } from 'electron'
 import { IPC } from 'shared/constants/ipc'
+import { pathToFileURL } from 'url'
 
 // prettier-ignore
 /**
@@ -74,45 +76,56 @@ const timestamp = () => {
 
 async function downloadResultFile(r: ResultFile, targetUrl: string) {
     return pipelineAPI
-        .fetchFile(r)()
+        .fetchResult(r)()
         .then((buffer) =>
             r.mimeType === 'application/zip'
                 ? unzipFile(buffer, targetUrl)
                 : saveFile(buffer, targetUrl)
         )
         .then(() => {
-            let newResult = Object.assign({}, r)
+            let newResult: ResultFile = Object.assign({}, r)
             newResult.file = targetUrl
             return newResult
         })
         .catch(() => r) // if a problem occured, return the original result
 }
 
-async function downloadJobResults(j: Job, targetFolder: string) {
-    let copy = [...j.jobData.results.namedResults]
-    let downloads: Array<Promise<ResultFile[]>> =
-        j.jobData.results.namedResults.map((r) =>
-            Promise.all(
-                r.files.map((f) => {
-                    // prettier-ignore
-                    return downloadResultFile(
-                        f,
-                        new URL(
-                            `${targetFolder}/${r.nicename ?? r.name}/${f.file.split('/').pop()}`
-                        ).href
-                    )
-                })
-            )
+async function downloadNamedResult(r: NamedResult, targetUrl: string) {
+    return pipelineAPI
+        .fetchResult(r)()
+        .then((buffer) =>
+            r.mimeType === 'application/zip'
+                ? unzipFile(buffer, targetUrl)
+                : saveFile(buffer, targetUrl)
         )
-
-    return Promise.all(downloads).then((downloadsByResults) => {
-        downloadsByResults.forEach((namedResults, index) => {
-            const newJobURL = new URL(
-                `${targetFolder}/${copy[index].nicename ?? copy[index].name}`
-            ).href
-            copy[index].href = newJobURL
-            copy[index].files = downloadsByResults[index]
+        .then((files) => {
+            const filesUrls = files.map((f) => pathToFileURL(f))
+            let newResult: NamedResult = Object.assign({}, r)
+            newResult.href = targetUrl
+            newResult.files = newResult.files.map((res) => {
+                let newResultFile: ResultFile = Object.assign({}, res)
+                // Rematch file urls with 
+                const urlFound = filesUrls.find((furl) =>
+                    res.file.endsWith(furl.href.substring(targetUrl.length))
+                )
+                if (urlFound) {
+                    newResultFile.file = urlFound.href
+                }
+                return newResultFile
+            })
+            return newResult
         })
+        .catch(() => r) // if a problem occured, return the original result
+}
+
+
+async function downloadJobResults(j: Job, targetFolder: string) {
+    // Download and unzip named results archives
+    return Promise.all(j.jobData.results.namedResults.map((r) => {
+        return downloadNamedResult(r,new URL(
+            `${targetFolder}/${r.nicename ?? r.name}`
+        ).href)
+    })).then((downloadedNamedResults: NamedResult[]) => {
         return {
             ...j,
             jobData: {
@@ -120,7 +133,7 @@ async function downloadJobResults(j: Job, targetFolder: string) {
                 downloadedFolder: targetFolder,
                 results: {
                     ...j.jobData.results,
-                    namedResults: [...copy],
+                    namedResults: [...downloadedNamedResults],
                 },
             },
         } as Job

@@ -5,6 +5,7 @@ import { info } from 'electron-log'
 import { dirname, resolve } from 'path'
 import { fileURLToPath } from 'url'
 import { existsSync, mkdirSync } from 'fs'
+import { error } from 'electron-log'
 
 import decompress, { File as DecompressedFile } from 'decompress'
 
@@ -16,12 +17,10 @@ export async function saveFile(buffer: ArrayBuffer, pathFileURL: string) {
     }
     return writeFile(systemPath, Buffer.from(buffer))
         .catch((e) => {
-            info('An error occured writing file ', pathFileURL, ' : ', e)
-            return false
+            error('An error occured writing file ', pathFileURL, ' : ', e)
+            return [] as Array<string>
         })
-        .then((v) => {
-            return true
-        })
+        .then((v) => [systemPath])
 }
 
 export async function unzipFile(buffer: ArrayBuffer, pathFileURL: string) {
@@ -32,10 +31,11 @@ export async function unzipFile(buffer: ArrayBuffer, pathFileURL: string) {
     }
     return decompress(Buffer.from(buffer), systemPath)
         .then((files: DecompressedFile[]) =>
-            files.map((file) => resolve(systemPath, file.path))
-        )
-        .catch((error) => {
-            return null
+            files.map((file) => resolve(systemPath, file.path)
+        ))
+        .catch((err) => {
+            error(err)
+            return [] as Array<string>
         })
 }
 

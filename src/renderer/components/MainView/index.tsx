@@ -20,6 +20,7 @@ import {
 import { NewJobPane } from '../NewJobPane'
 import { JobDetailsPane } from '../JobDetailsPane'
 import { calculateJobName } from 'shared/jobName'
+import { PLATFORM } from 'shared/constants'
 
 const { App } = window
 
@@ -129,7 +130,9 @@ export function MainView() {
                     className={'as-tab'}
                     id={`new-job-button`}
                     aria-selected={pipeline.selectedJobId == ''}
-                    title="Create a job (Ctrl+N)"
+                    title={`Create a job (${
+                        PLATFORM.IS_MAC ? 'Cmd' : 'Ctrl'
+                    }+N)`}
                     onClick={(e) => {
                         const newJob_ = newJob(pipeline)
                         App.store.dispatch(addJob(newJob_))

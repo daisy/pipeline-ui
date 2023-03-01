@@ -9,6 +9,7 @@ import Markdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import { FileOrFolderInput } from './FileOrFolderInput'
 import { CustomField } from './CustomField'
+import { MultiFileOrFolderInput } from './MultiFileOrFolderInput'
 const { App } = window
 
 // item.mediaType is a file type e.g. application/x-dtbook+xml
@@ -45,9 +46,23 @@ export function FormField({
             ? ['openDirectory']
             : ['openFile', 'openDirectory']
 
-    let matchType = (inputType) => {
+    let matchType = (inputType, sequence, ordered) => {
         if (inputType == 'file') {
-            return (
+            return sequence ? (
+                <MultiFileOrFolderInput
+                    type="open"
+                    dialogProperties={dialogOpts}
+                    elemId={controlId}
+                    mediaType={item.mediaType}
+                    name={item.name}
+                    onChange={(filename) => onFileFolderChange(filename, item)}
+                    useSystemPath={false}
+                    buttonLabel="Browse"
+                    required={item.required}
+                    initialValue={initialValue}
+                    ordered={item.ordered}
+                />
+            ) : (
                 <FileOrFolderInput
                     type="open"
                     dialogProperties={dialogOpts}
@@ -126,7 +141,7 @@ export function FormField({
             ) : (
                 <label htmlFor={controlId}>{item.nicename}</label>
             )}
-            {matchType(findInputType(item.type))}
+            {matchType(findInputType(item.type), item.sequence, item.ordered)}
         </div>
     )
 }

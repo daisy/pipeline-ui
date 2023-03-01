@@ -80,7 +80,6 @@ export function FileOrFolderInput({
     // all items that make it to this function have type of 'anyFileURI' or 'anyDirURI'`
     return (
         <>
-        <p>Enter a filepath. Press the button to browse files.</p>
         <div className="file-or-folder">
             <input
                 type="text"

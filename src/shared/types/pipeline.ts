@@ -259,14 +259,15 @@ export type ScriptItemBase = {
     nicename?: string
     type?: string
     kind?: string
+    ordered?: boolean
 }
 export type ScriptInput = ScriptItemBase & {
     type: 'anyFileURI'
     kind: 'input'
+    ordered: false
 }
 
 export type ScriptOption = ScriptItemBase & {
-    ordered?: boolean
     type: string
     default?: string
     kind: 'option'
@@ -285,7 +286,7 @@ export type Script = {
 
 export type NameValue = {
     name: string
-    value: string
+    value: any
     isFile: boolean
 }
 export type Callback = {

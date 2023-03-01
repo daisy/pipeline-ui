@@ -246,6 +246,15 @@ input[type=checkbox] {
         border-radius: 4px;
         width: 25rem;
     }
+    div.multi-file-or-folder {
+        display: flex;
+        gap: var(--pad);
+    }
+    button.multi-file-or-folder {
+        height: 2rem;
+        width: 2rem;
+        padding: 3px;
+    }
 
     .select-script {
         display: flex;

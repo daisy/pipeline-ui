@@ -13,9 +13,21 @@ function jobRequestToXml(jobRequest: JobRequest): string {
         )
         .map(
             (input) =>
-                `<input name="${input.name}"><item value="${
-                    input.value.toString().trim() ?? ''
-                }"/></input>`
+                `<input name="${input.name}">
+                ${
+                    Array.isArray(input.value)
+                        ? input.value
+                              .map(
+                                  (value) =>
+                                      `<item value="${
+                                          value.toString().trim() ?? ''
+                                      }"/>`
+                              )
+                              .join('')
+                        : `<item value="${
+                              input.value.toString().trim() ?? ''
+                          }"/>`
+                }</input>`
         )
         .join('')}
     ${jobRequest.options
@@ -26,11 +38,24 @@ function jobRequestToXml(jobRequest: JobRequest): string {
         .map(
             (option) =>
                 `<option name="${option.name}">${
-                    option.value.toString().trim() ?? ''
+                    Array.isArray(option.value)
+                        ? option.value
+                              .map(
+                                  (value) =>
+                                      `<item value="${
+                                          value.toString().trim() ?? ''
+                                      }"/>`
+                              )
+                              .join('')
+                        : `<item value="${
+                              option.value.toString().trim() ?? ''
+                          }"/>`
+                }
                 }</option>`
         )
         .join('')}
   </jobRequest>`
+    console.log(xmlString)
     return xmlString
 }
 

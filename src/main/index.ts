@@ -85,6 +85,19 @@ makeAppWithSingleInstanceLock(async () => {
     store.subscribe(() => {
         buildMenu(mainWindow, pipelineInstance)
     })
+    // Reopen the main window when trying to launch
+    // the app when it is already launched
+    app.on(
+        'second-instance',
+        (event, commandLine, workingDirectory, additionalData) => {
+            MainWindow().then((window) => {
+                if (window.isMinimized()) {
+                    window.restore()
+                }
+                window.focus()
+            })
+        }
+    )
 })
 
 function buildMenu(mainWindow, pipelineInstance) {

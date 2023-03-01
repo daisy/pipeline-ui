@@ -107,7 +107,7 @@ async function getMaven(useOwnMvn = true) {
     if (mvnAvailabe) {
         try {
             let stdout = execSync(mavenCmd + ' --version').toString()
-            const versionSearch = /Apache Maven (\d\.\d\.\d)/
+            const versionSearch = /Apache Maven (\d+\.\d+\.\d+)/
             try {
                 const [major, minor, patch] = stdout
                     .match(versionSearch)[1]
@@ -186,6 +186,12 @@ Please install one manually and retry`,
 async function getJDK(platform = null, arch = null) {
     let java_home = process.env.JAVA_HOME
     let jlinkCmd = path.join(java_home, 'bin', 'jlink')
+
+    const jdkVersion = os.platform() === 'darwin' ? '17.0.5+8' : '11.0.17+8'
+    const jdkSystem = getJDKPlatform(platform ?? os.platform())
+    const jdkArch = getJDKArch(arch ?? os.arch())
+    const jdkMajor = jdkVersion.split('.')[0]
+
     // Note : check if the specific jdk arch provided is valid
     let requestedJDKIsInstalled =
         platform == null && arch == null && java_home !== undefined
@@ -193,12 +199,13 @@ async function getJDK(platform = null, arch = null) {
         // Check if the current java_home points to a valid jdk
         try {
             let stdout = execSync(jlinkCmd + ' --version').toString()
-            const versionSearch = /(\d\.\d\.\d)(\.\d)?/
+            const versionSearch = /(\d+\.\d+\.\d+)(\.\d+)?/
             try {
                 const [major, minor, patch] = stdout
                     .match(versionSearch)[1]
                     .split('.')
-                // Now can do version check if needed
+                // Check if the jdk major version matches the target
+                requestedJDKIsInstalled = major == jdkMajor
             } catch (err) {
                 console.error('Version not found')
                 requestedJDKIsInstalled = false
@@ -213,17 +220,13 @@ async function getJDK(platform = null, arch = null) {
     if (!requestedJDKIsInstalled) {
         // No valid JDK installed for the requested settings
         // Download a valid one
-        const jdkVersion = os.platform() === 'darwin' ? '17.0.5+8' : '11.0.17+8'
-        const jdkSystem = getJDKPlatform(platform ?? os.platform())
-        const jdkArch = getJDKArch(arch ?? os.arch())
-        const major = jdkVersion.split('.')[0]
         const archiveName =
-            `OpenJDK${major}U-jdk_${jdkArch}_${jdkSystem}` +
+            `OpenJDK${jdkMajor}U-jdk_${jdkArch}_${jdkSystem}` +
             `_hotspot_${jdkVersion.replace('+', '_')}`
         const extension = os.platform() === 'win32' ? 'zip' : 'tar.gz'
         // Download the jdk and unzip it in the engine/src/main/jre/archive_name folder
         const url = new URL(
-            `https://github.com/adoptium/temurin${major}-binaries/releases/download` +
+            `https://github.com/adoptium/temurin${jdkMajor}-binaries/releases/download` +
                 `/jdk-${encodeURIComponent(jdkVersion)}` +
                 `/${archiveName}.${extension}`
         )

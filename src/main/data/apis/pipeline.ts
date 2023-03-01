@@ -14,6 +14,7 @@ import {
     ResultFile,
     Script,
     Webservice,
+    NamedResult,
 } from 'shared/types'
 
 import fetch, { Response, RequestInit } from 'node-fetch'
@@ -97,7 +98,7 @@ export const pipelineAPI = {
         createPipelineRequestFunction(() => j.jobData.href, {
             method: 'DELETE',
         }),
-    fetchFile: (r: ResultFile) => () =>
+    fetchResult: (r: ResultFile|NamedResult) => () =>
         fetch(r.href)
             .then((response) => response.blob())
             .then((blob) => blob.arrayBuffer()),

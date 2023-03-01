@@ -21,6 +21,7 @@ import { NewJobPane } from '../NewJobPane'
 import { JobDetailsPane } from '../JobDetailsPane'
 import { calculateJobName } from 'shared/jobName'
 import { PLATFORM } from 'shared/constants'
+import { Plus } from '../SvgIcons'
 
 const { App } = window
 
@@ -139,7 +140,7 @@ export function MainView() {
                         App.store.dispatch(selectJob(newJob_))
                     }}
                 >
-                    +
+                    <Plus width="24" height="24" />
                 </button>
             </div>
             {pipeline.jobs

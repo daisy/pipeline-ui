@@ -13,8 +13,7 @@ function jobRequestToXml(jobRequest: JobRequest): string {
         )
         .map(
             (input) =>
-                `<input name="${input.name}">
-                ${
+                `<input name="${input.name}">${
                     Array.isArray(input.value)
                         ? input.value
                               .map(
@@ -39,23 +38,13 @@ function jobRequestToXml(jobRequest: JobRequest): string {
             (option) =>
                 `<option name="${option.name}">${
                     Array.isArray(option.value)
-                        ? option.value
-                              .map(
-                                  (value) =>
-                                      `<item value="${
-                                          value.toString().trim() ?? ''
-                                      }"/>`
-                              )
-                              .join('')
-                        : `<item value="${
-                              option.value.toString().trim() ?? ''
-                          }"/>`
-                }
+                        ? option.value.join(',')
+                        : option.value.toString().trim() ?? ''
                 }</option>`
         )
         .join('')}
   </jobRequest>`
-    console.log(xmlString)
+    console.log('JSON to XML result', xmlString)
     return xmlString
 }
 

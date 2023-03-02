@@ -30,7 +30,6 @@ export function MainView() {
 
     useEffect(() => {
         if (!(pipeline.jobs && pipeline.jobs.length > 0)) {
-            console.log(pipeline.jobs)
             let newJob_ = newJob(pipeline)
             App.store.dispatch(addJob(newJob_))
             App.store.dispatch(selectJob(newJob_))

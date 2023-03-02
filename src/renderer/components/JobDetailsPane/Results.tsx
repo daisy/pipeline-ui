@@ -21,21 +21,6 @@ export function Results({ job }: { job: Job }) {
                                 <FileLink fileHref={item.href}>
                                     {item.nicename}
                                 </FileLink>
-                                {item.files.length > 0 && (
-                                    <ul className="file-list">
-                                        {item.files.map((file, fileIndex) => {
-                                            return (
-                                                <li
-                                                    key={`result-${itemIndex}-${fileIndex}`}
-                                                >
-                                                    {file.file.substring(
-                                                        item.href.length + 1
-                                                    )}
-                                                </li>
-                                            )
-                                        })}
-                                    </ul>
-                                )}
                             </li>
                         )
                     )}

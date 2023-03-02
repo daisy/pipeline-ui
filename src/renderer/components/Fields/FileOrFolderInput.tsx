@@ -37,6 +37,7 @@ export function FileOrFolderInput({
     // the value is stored internally as it can be set 2 ways
     // and also broadcast via onChange so that a parent component can subscribe
     const [value, setValue] = useState('')
+    const [initial, setInitial] = useState(true) // false if the user started typing
 
     useEffect(() => {
         setValue(initialValue)
@@ -78,6 +79,7 @@ export function FileOrFolderInput({
     }
 
     let onTextInput = (e) => {
+        setInitial(false)
         updateFilename(e.target.value)
     }
 
@@ -85,21 +87,23 @@ export function FileOrFolderInput({
     return (
         <>
             <div className="file-or-folder">
-                <input
-                    type="text"
-                    tabIndex={0}
-                    className="filename"
-                    value={value ?? ''}
-                    onChange={onTextInput}
-                    id={elemId}
-                    required={required}
-                    aria-labelledby={labelledBy ?? ''}
-                ></input>
-                <button type="button" onClick={(e) => onClick(e, name)}>
-                    {buttonLabel}
-                </button>
+                <div className="controls-row">
+                    <input
+                        type="text"
+                        tabIndex={0}
+                        className={`filename ${initial ? 'initial' : ''}`}
+                        value={value ?? ''}
+                        onChange={onTextInput}
+                        id={elemId}
+                        required={required}
+                        aria-labelledby={labelledBy ?? ''}
+                    ></input>
+                    <button type="button" onClick={(e) => onClick(e, name)}>
+                        {buttonLabel}
+                    </button>
+                </div>
                 {makeSlotForErrors ? (
-                    <span className="field-errors"></span>
+                    <span className="field-errors" aria-live="polite"></span>
                 ) : (
                     ''
                 )}

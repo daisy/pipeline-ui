@@ -94,7 +94,6 @@ export function FormField({
                         id={controlId}
                         checked={value === 'true' || value === true}
                     ></input>
-                    <span className="field-errors"></span>
                 </>
             )
         } else if (inputType == 'custom') {
@@ -117,7 +116,6 @@ export function FormField({
                         id={controlId}
                         onChange={(e) => onInputChange(e, item)}
                     ></input>
-                    <span className="field-errors"></span>
                 </>
             )
         }

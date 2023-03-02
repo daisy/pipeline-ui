@@ -101,7 +101,7 @@ export function MultiFileOrFolderInput({
                             ''
                         )}
                     </div>
-                    <span className="field-errors"></span>
+                    <span className="field-errors" aria-live="polite"></span>
                 </div>
             ))}
         </>

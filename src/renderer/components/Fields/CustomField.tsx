@@ -1,9 +1,11 @@
 import { useWindowStore } from 'renderer/store'
 import { CustomFieldDocumentation } from './CustomFieldDocumentation'
 import { Datatype } from 'shared/types'
+import { useState } from 'react'
 
 export function CustomField({ item, onChange, initialValue, controlId }) {
     const { pipeline } = useWindowStore()
+    const [initial, setInitial] = useState(true) // false if the user started typing
 
     // find the datatype in the pipeline.datatypes store
     let datatype = pipeline.datatypes.find((dt) => dt.id == item.type)
@@ -40,6 +42,11 @@ export function CustomField({ item, onChange, initialValue, controlId }) {
         }
     }
 
+    let onChangeValue = (e) => {
+        setInitial(false)
+        onChange(e)
+    }
+
     // catch-all return value
     return (
         <>
@@ -49,10 +56,11 @@ export function CustomField({ item, onChange, initialValue, controlId }) {
                 // @ts-ignore
                 value={initialValue ?? null}
                 id={controlId}
-                onChange={onChange}
+                onChange={onChangeValue}
                 pattern={item.pattern ?? null}
+                className={initial ? 'initial' : null}
             ></input>
-            <span className="field-errors"></span>
+            <span className="field-errors" aria-live="polite"></span>
         </>
     )
 }
@@ -65,7 +73,13 @@ function makeCustomDatatypeInput(
     controlId,
     datatype: Datatype
 ) {
-    console.log('custom datatype', datatype)
+
+    const [initial, setInitial] = useState(true)
+
+    let onChangeValue = (e) => {
+        setInitial(false)
+        onChange(e)
+    }
     return (
         <div className="customDatatypeField">
             <CustomFieldDocumentation datatypes={options} />
@@ -76,7 +90,8 @@ function makeCustomDatatypeInput(
                 // @ts-ignore
                 value={initialValue ?? ''}
                 id={controlId}
-                onChange={onChange}
+                onChange={onChangeValue}
+                className={initial ? 'initial' : null}
                 pattern={
                     datatype.choices.length == 1
                         ? // @ts-ignore
@@ -84,7 +99,7 @@ function makeCustomDatatypeInput(
                         : ''
                 }
             ></input>
-            <span className="field-errors"></span>
+            <span className="field-errors" aria-live="polite"></span>
         </div>
     )
 }

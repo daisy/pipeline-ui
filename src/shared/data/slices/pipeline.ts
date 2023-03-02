@@ -12,6 +12,7 @@ import {
     JobState,
     JobRequest,
     Datatype,
+    JobStatus,
 } from 'shared/types'
 
 import { RootState } from 'shared/types/store'
@@ -187,6 +188,17 @@ export const pipeline = createSlice({
                 state.selectedJobId = ''
             }
         },
+        removeJobs: (state: PipelineState, param: PayloadAction<Job[]>) => {
+            const removedId = param.payload.map((j) => j.internalId)
+            state.jobs = state.jobs.filter(
+                (j) => !removedId.includes(j.internalId)
+            )
+            if (state.jobs.length === 0) {
+                state.selectedJobId = ''
+            } else if (removedId.includes(state.selectedJobId)) {
+                state.selectedJobId = state.jobs[0].internalId
+            }
+        },
         runJob: (state: PipelineState, param: PayloadAction<Job>) => {
             if (param.payload.jobRequest) {
                 // Retrieve latest JobRequest payload
@@ -267,6 +279,7 @@ export const {
     runJob,
     restoreJob,
     removeJob,
+    removeJobs,
     selectJob,
     selectNextJob,
     selectPrevJob,
@@ -277,6 +290,30 @@ export const selectors = {
     selectStatus: (state: RootState) => state.pipeline.status,
     selectWebservice: (state: RootState) => state.pipeline.webservice,
     selectJobs: (state: RootState) => state.pipeline.jobs,
+    selectVisibleJobs: (state: RootState) =>
+        state.pipeline.jobs.filter((j) => !j.invisible),
+    selectIncompleteJobs: (state: RootState) =>
+        state.pipeline.jobs.filter(
+            (j) => !(j.state == JobState.NEW && j.jobRequest && !j.invisible)
+        ),
+    selectNonRunningJobs: (state: RootState) =>
+        state.pipeline.jobs.filter(
+            (j) =>
+                !(
+                    j.jobData &&
+                    j.jobData.status &&
+                    (j.jobData.status == JobStatus.RUNNING ||
+                        j.jobData.status == JobStatus.IDLE)
+                )
+        ),
+    selectRunningJobs: (state: RootState) =>
+        state.pipeline.jobs.filter(
+            (j) =>
+                j.jobData &&
+                j.jobData.status &&
+                (j.jobData.status == JobStatus.RUNNING ||
+                    j.jobData.status == JobStatus.IDLE)
+        ),
     selectScripts: (state: RootState) => state.pipeline.scripts,
     selectDatatypes: (state: RootState) => state.pipeline.datatypes,
     newJob: (pipeline: PipelineState) =>
@@ -323,6 +360,10 @@ export const {
     selectStatus,
     selectWebservice,
     selectJobs,
+    selectVisibleJobs,
+    selectNonRunningJobs,
+    selectRunningJobs,
+    selectIncompleteJobs,
     selectScripts,
     selectDatatypes,
     newJob,

@@ -16,6 +16,9 @@ import {
     newJob,
     addJob,
     selectPipeline,
+    selectJob,
+    removeJobs,
+    selectVisibleJobs,
 } from 'shared/data/slices/pipeline'
 
 import {
@@ -46,6 +49,7 @@ import { RootState } from 'shared/types/store'
 import { dialog, ipcMain } from 'electron'
 import { IPC } from 'shared/constants/ipc'
 import { pathToFileURL } from 'url'
+import { MainWindow, MainWindowInstance } from 'main/windows'
 
 // prettier-ignore
 /**
@@ -118,14 +122,16 @@ async function downloadNamedResult(r: NamedResult, targetUrl: string) {
         .catch(() => r) // if a problem occured, return the original result
 }
 
-
 async function downloadJobResults(j: Job, targetFolder: string) {
     // Download and unzip named results archives
-    return Promise.all(j.jobData.results.namedResults.map((r) => {
-        return downloadNamedResult(r,new URL(
-            `${targetFolder}/${r.nicename ?? r.name}`
-        ).href)
-    })).then((downloadedNamedResults: NamedResult[]) => {
+    return Promise.all(
+        j.jobData.results.namedResults.map((r) =>
+            downloadNamedResult(
+                r,
+                new URL(`${targetFolder}/${r.nicename ?? r.name}`).href
+            )
+        )
+    ).then((downloadedNamedResults: NamedResult[]) => {
         return {
             ...j,
             jobData: {
@@ -257,6 +263,7 @@ export function pipelineMiddleware({ getState, dispatch }) {
         // Note : might be a better idea to call the getState in the intervals
         const state = getState()
         const webservice = selectWebservice(state)
+        const currentJobs = selectJobs(state)
         // Note NP : instead of doing the alive check, testing to directly check for scripts
         // and consider the pipeline alive as soon as we have the scripts list
         switch (action.type) {
@@ -335,16 +342,53 @@ export function pipelineMiddleware({ getState, dispatch }) {
                         )
                 }
                 break
+            case removeJobs.type:
+                const removedJobs = action.payload as Job[]
+                if (
+                    removedJobs.filter(
+                        (j) => j.state == JobState.NEW && j.jobRequest
+                    ).length > 0
+                ) {
+                    // ask confirmation if there are non-submitted job requests
+                    const result = dialog.showMessageBoxSync(
+                        MainWindowInstance,
+                        {
+                            message: `Some unsubmitted jobs are present and will be deleted when closing this window. Are you sure you want to delete them ?`,
+                            buttons: ['Yes', 'No'],
+                        }
+                    )
+                    // Cancel action if no is selected
+                    action = result === 1 ? null : action
+                }
+                if (action) {
+                    for (const jobToRemove of removedJobs) {
+                        // Remove server-side job using API
+                        if (jobToRemove.jobData && jobToRemove.jobData.href) {
+                            const deleteJob = pipelineAPI.deleteJob(jobToRemove)
+                            deleteJob().then((response) => {
+                                console.log(
+                                    jobToRemove.jobData.jobId,
+                                    'delete response',
+                                    response.status,
+                                    response.statusText
+                                )
+                            })
+                        }
+                    }
+                }
+                break
             case removeJob.type:
-                const currentJobs = selectJobs(state)
-                const visibleJobs = currentJobs.filter((j) => !j.invisible)
+                const visibleJobs = selectVisibleJobs(getState())
                 const removedJob = action.payload as Job
                 if (removedJob.jobRequest && !removedJob.invisible) {
                     // Ask delete confirmation for visible jobs deletion
-                    const result = dialog.showMessageBoxSync(null, {
+                    const result = dialog.showMessageBoxSync(
+                        MainWindowInstance,
+                        {
                         message: `Are you sure you want to delete this job ?`,
                         buttons: ['Yes', 'No'],
-                    })
+                        }
+                    )
                     // Cancel action if no is selected
                     action = result === 1 ? null : action
                 }

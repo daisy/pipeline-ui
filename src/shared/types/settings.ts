@@ -6,10 +6,15 @@ export enum ColorScheme {
     dark = 'Dark mode',
 }
 
-export enum ClosingMainWindowAction {
+export enum ClosingMainWindowActionForApp {
     keep = 'Keep running in the tray',
     close = 'Close the application',
     ask = 'Ask when closing window',
+}
+
+export enum ClosingMainWindowActionForJobs {
+    keep = 'Keep all jobs opened',
+    close = 'Close all non-running jobs',
 }
 
 export type ApplicationSettings = {
@@ -27,5 +32,7 @@ export type ApplicationSettings = {
     remotePipelineWebservice?: Webservice
     // Dark mode selector
     colorScheme: keyof typeof ColorScheme
-    onClosingMainWindows?: keyof typeof ClosingMainWindowAction
+    // Actions to perform when closing the main window
+    appStateOnClosingMainWindow?: keyof typeof ClosingMainWindowActionForApp
+    jobsStateOnClosingMainWindow?: keyof typeof ClosingMainWindowActionForJobs
 }

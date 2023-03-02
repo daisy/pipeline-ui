@@ -2,7 +2,8 @@ import { useEffect, useState } from 'react'
 import { useWindowStore } from 'renderer/store'
 import {
     ApplicationSettings,
-    ClosingMainWindowAction,
+    ClosingMainWindowActionForApp,
+    ClosingMainWindowActionForJobs,
     ColorScheme,
 } from 'shared/types'
 import { FileOrFolderInput } from '../Fields/FileOrFolderInput'
@@ -17,14 +18,20 @@ export function SettingsView() {
     // (without affecting the rest of the app)
     const [newSettings, setNewSettings] = useState<ApplicationSettings>({
         ...settings,
-        onClosingMainWindows: settings.onClosingMainWindows ?? 'ask', // defaults to ask in form
+        appStateOnClosingMainWindow:
+            settings.appStateOnClosingMainWindow ?? 'ask', // defaults to ask in form
+        jobsStateOnClosingMainWindow:
+            settings.jobsStateOnClosingMainWindow ?? 'close', // defaults to ask in form
     })
     const [saved, setSaved] = useState(true)
     useEffect(() => {
         // Reload settings from store if it has changed
         setNewSettings({
             ...settings,
-            onClosingMainWindows: settings.onClosingMainWindows ?? 'ask', // defaults to ask in form
+            appStateOnClosingMainWindow:
+                settings.appStateOnClosingMainWindow ?? 'ask', // defaults to ask in form
+            jobsStateOnClosingMainWindow:
+                settings.jobsStateOnClosingMainWindow ?? 'close', // defaults to ask in form
         })
     }, [settings])
 
@@ -45,12 +52,26 @@ export function SettingsView() {
         })
         setSaved(false)
     }
-    const ClosingActionChanged = (e) => {
+    const AppClosingActionChanged = (e) => {
         setNewSettings({
             ...newSettings,
-            onClosingMainWindows: Object.keys(ClosingMainWindowAction)[
+            appStateOnClosingMainWindow: Object.keys(
+                ClosingMainWindowActionForApp
+            )[
                 e.target.selectedIndex
-            ] as keyof typeof ClosingMainWindowAction,
+            ] as keyof typeof ClosingMainWindowActionForApp,
+        })
+        setSaved(false)
+    }
+
+    const JobsClosingActionChanged = (e) => {
+        setNewSettings({
+            ...newSettings,
+            jobsStateOnClosingMainWindow: Object.keys(
+                ClosingMainWindowActionForJobs
+            )[
+                e.target.selectedIndex
+            ] as keyof typeof ClosingMainWindowActionForJobs,
         })
         setSaved(false)
     }
@@ -67,7 +88,8 @@ export function SettingsView() {
                 <div className="form-field">
                     <label htmlFor="resultsFolder">Results folder</label>
                     <span className="description">
-                        A folder where all job results will be automatically downloaded
+                        A folder where all job results will be automatically
+                        downloaded
                     </span>
                     <FileOrFolderInput
                         type="open"
@@ -105,24 +127,57 @@ export function SettingsView() {
                     </select>
                 </div>
                 <div className="form-field">
-                    <label htmlFor="onMainWindowClosing">
-                        Action on closing the main window
+                    <label htmlFor="appStateOnMainWindowClosing">
+                        Action on closing the app window
                     </label>
                     <span className="description">
-                        Choose here if you want to keep the app running in the
-                        tray or close it when closing the application's window.
+                        Choose here if you want to keep the application running
+                        in the tray or close it when closing the app window.
                     </span>
                     <select
-                        id="onMainWindowClosing"
-                        onChange={(e) => ClosingActionChanged(e)}
+                        id="appStateOnMainWindowClosing"
+                        onChange={(e) => AppClosingActionChanged(e)}
                     >
-                        {Object.entries(ClosingMainWindowAction).map(
+                        {Object.entries(ClosingMainWindowActionForApp).map(
                             ([k, v]: [string, string]) => {
                                 return (
                                     <option
                                         key={k}
                                         selected={
-                                            newSettings.onClosingMainWindows ==
+                                            newSettings.appStateOnClosingMainWindow ==
+                                            k
+                                        }
+                                    >
+                                        {v}
+                                    </option>
+                                )
+                            }
+                        )}
+                    </select>
+                </div>
+                <div className="form-field">
+                    <label htmlFor="jobsStateOnMainWindowClosing">
+                        Jobs conservation on closing the app window
+                    </label>
+                    <span className="description">
+                        By default, when closing the app window while the engine
+                        runs, all non-running jobs are deleted.
+                        <br />
+                        Here you can choose to keep the jobs in memory when
+                        closing the window so that they reload on reopening the
+                        app window.
+                    </span>
+                    <select
+                        id="jobsStateOnMainWindowClosing"
+                        onChange={(e) => JobsClosingActionChanged(e)}
+                    >
+                        {Object.entries(ClosingMainWindowActionForJobs).map(
+                            ([k, v]: [string, string]) => {
+                                return (
+                                    <option
+                                        key={k}
+                                        selected={
+                                            newSettings.jobsStateOnClosingMainWindow ==
                                             k
                                         }
                                     >

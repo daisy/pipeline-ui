@@ -1,5 +1,5 @@
 import { app, Menu, Tray, BrowserWindow, ipcMain, nativeImage } from 'electron'
-import { MainWindow } from '../../windows'
+import { closeApplication, MainWindow } from 'main/windows'
 import { IPC } from 'shared/constants'
 import { PipelineState, PipelineStatus } from 'shared/types'
 import { resolveUnpacked } from 'shared/utils'
@@ -46,11 +46,7 @@ export class PipelineTray {
             {
                 label: 'Quit',
                 click: (item, window, event) => {
-                    BrowserWindow.getAllWindows().forEach((window) =>
-                        window.destroy()
-                    )
-                    store.dispatch(stop(true))
-                    app.quit()
+                    closeApplication()
                 },
             },
         ]

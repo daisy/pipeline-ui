@@ -98,7 +98,7 @@ export const pipelineAPI = {
         createPipelineRequestFunction(() => j.jobData.href, {
             method: 'DELETE',
         }),
-    fetchResult: (r: ResultFile|NamedResult) => () =>
+    fetchResult: (r: ResultFile | NamedResult) => () =>
         fetch(r.href)
             .then((response) => response.blob())
             .then((blob) => blob.arrayBuffer()),

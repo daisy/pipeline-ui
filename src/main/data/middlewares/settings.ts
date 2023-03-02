@@ -43,7 +43,8 @@ export function readSettings() {
             
         }*/
         colorScheme: 'system',
-        onClosingMainWindows: undefined,
+        appStateOnClosingMainWindow: undefined,
+        jobsStateOnClosingMainWindow: 'close',
     } as ApplicationSettings
     try {
         if (existsSync(settingsFile)) {

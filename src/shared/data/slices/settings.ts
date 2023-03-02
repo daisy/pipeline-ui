@@ -2,7 +2,8 @@ import { createSlice } from '@reduxjs/toolkit'
 import type { PayloadAction } from '@reduxjs/toolkit'
 import {
     ApplicationSettings,
-    ClosingMainWindowAction,
+    ClosingMainWindowActionForApp,
+    ClosingMainWindowActionForJobs,
     ColorScheme,
     PipelineInstanceProperties,
 } from 'shared/types'
@@ -19,7 +20,8 @@ export const settings = createSlice({
         useRemotePipeline: false,
         remotePipelineWebservice: undefined,
         colorScheme: 'system',
-        onClosingMainWindows: undefined,
+        appStateOnClosingMainWindow: undefined,
+        jobsStateOnClosingMainWindow: undefined,
     } as ApplicationSettings,
     reducers: {
         // general state changer, not recommended based on how redux works
@@ -37,8 +39,12 @@ export const settings = createSlice({
                 state.useRemotePipeline = action.payload.useRemotePipeline
             if (action.payload.colorScheme)
                 state.colorScheme = action.payload.colorScheme
-            if (action.payload.onClosingMainWindows)
-                state.onClosingMainWindows = action.payload.onClosingMainWindows
+            if (action.payload.appStateOnClosingMainWindow)
+                state.appStateOnClosingMainWindow =
+                    action.payload.appStateOnClosingMainWindow
+            if (action.payload.jobsStateOnClosingMainWindow)
+                state.jobsStateOnClosingMainWindow =
+                    action.payload.jobsStateOnClosingMainWindow
         },
         save: (state: ApplicationSettings) => {
             // save action to trigger middleware save on disk
@@ -61,11 +67,17 @@ export const settings = createSlice({
         ) => {
             state.colorScheme = action.payload
         },
-        setClosingMainWindowAction: (
+        setClosingMainWindowActionForApp: (
             state: ApplicationSettings,
-            action: PayloadAction<keyof typeof ClosingMainWindowAction>
+            action: PayloadAction<keyof typeof ClosingMainWindowActionForApp>
         ) => {
-            state.onClosingMainWindows = action.payload
+            state.appStateOnClosingMainWindow = action.payload
+        },
+        setClosingMainWindowActionForJobs: (
+            state: ApplicationSettings,
+            action: PayloadAction<keyof typeof ClosingMainWindowActionForJobs>
+        ) => {
+            state.jobsStateOnClosingMainWindow = action.payload
         },
     },
 })
@@ -76,7 +88,8 @@ export const {
     setSettings,
     setPipelineProperties,
     setColorScheme,
-    setClosingMainWindowAction,
+    setClosingMainWindowActionForApp,
+    setClosingMainWindowActionForJobs,
 } = settings.actions
 
 export const selectors = {
@@ -85,7 +98,10 @@ export const selectors = {
     selectPipelineProperties: (s: RootState) => s.settings.localPipelineProps,
     shouldRunLocalPipeline: (s: RootState) => s.settings.runLocalPipeline,
     selectColorScheme: (s: RootState) => s.settings.colorScheme,
-    selectClosingAction: (s: RootState) => s.settings.onClosingMainWindows,
+    selectClosingActionForApp: (s: RootState) =>
+        s.settings.appStateOnClosingMainWindow,
+    selectClosingActionForJobs: (s: RootState) =>
+        s.settings.jobsStateOnClosingMainWindow,
 }
 // prettier-ignore
 export const {
@@ -94,5 +110,6 @@ export const {
     selectPipelineProperties,
     shouldRunLocalPipeline,
     selectColorScheme,
-    selectClosingAction
+    selectClosingActionForApp,
+    selectClosingActionForJobs
 } = selectors

@@ -99,7 +99,7 @@ export function buildMenuTemplate({
                 ...(currentJob && currentJob.state == JobState.SUBMITTED
                     ? [
                           {
-                              label: 'Delete job',
+                              label: 'Close job',
                               click: () => {
                                   onRemoveJob(currentJob)
                               },

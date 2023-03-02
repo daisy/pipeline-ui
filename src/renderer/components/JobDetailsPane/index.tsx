@@ -92,7 +92,7 @@ export function JobDetailsPane({ job }) {
                                 App.store.dispatch(removeJob(job))
                             }}
                         >
-                            Delete job
+                            Close job
                         </button>
                     </div>
                 ) : (

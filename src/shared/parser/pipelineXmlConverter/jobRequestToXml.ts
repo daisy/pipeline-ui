@@ -38,7 +38,14 @@ function jobRequestToXml(jobRequest: JobRequest): string {
             (option) =>
                 `<option name="${option.name}">${
                     Array.isArray(option.value)
-                        ? option.value.join(',')
+                        ? option.value
+                        .map(
+                            (value) =>
+                                `<item value="${
+                                    value.toString().trim() ?? ''
+                                }"/>`
+                        )
+                        .join('')
                         : option.value.toString().trim() ?? ''
                 }</option>`
         )

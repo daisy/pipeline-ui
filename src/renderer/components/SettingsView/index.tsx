@@ -63,11 +63,11 @@ export function SettingsView() {
     }
     return (
         <form className="settings-form">
-            <div>
+            <div className="fields">
                 <div className="form-field">
                     <label htmlFor="resultsFolder">Results folder</label>
                     <span className="description">
-                        A folder where all jobs will be automatically downloaded
+                        A folder where all job results will be automatically downloaded
                     </span>
                     <FileOrFolderInput
                         type="open"
@@ -110,8 +110,7 @@ export function SettingsView() {
                     </label>
                     <span className="description">
                         Choose here if you want to keep the app running in the
-                        tray or close the application when closing the
-                        application's window.
+                        tray or close it when closing the application's window.
                     </span>
                     <select
                         id="onMainWindowClosing"

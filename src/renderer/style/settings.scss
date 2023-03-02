@@ -25,6 +25,12 @@
     button:hover {
         background-color: var(--select-mix);
     }
+
+    .fields {
+        display: flex;
+        flex-direction: column;
+        gap: calc(2.5 * var(--pad));
+    }
 }
 
 .save-settings {

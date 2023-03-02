@@ -9,3 +9,15 @@ export function pathExists(path) {
         })
     })
 }
+
+export function sniffEncoding(filepath) {
+    return new Promise<string>((resolve, reject) => {
+        ipcRenderer.send(events.IPC_EVENT_sniffEncoding, filepath)
+        ipcRenderer.once(
+            events.IPC_EVENT_sniffEncoding,
+            (event, res: string) => {
+                resolve(res)
+            }
+        )
+    })
+}

@@ -9,6 +9,7 @@ export function showOpenFileDialog(options: {
     return new Promise<string>((resolve, reject) => {
         // TODO look at item.mediaType to see if it's an anyFileURI or anyDirURI
         // also I think windows and mac do file vs folder browsing a little differently
+        // note that there are currently no scripts that use anyDirURI, so we can't test it very well
         ipcRenderer.send(events.IPC_EVENT_showOpenFileDialog, options)
         ipcRenderer.once(
             events.IPC_EVENT_showOpenFileDialog,

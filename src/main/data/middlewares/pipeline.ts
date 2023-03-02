@@ -108,7 +108,6 @@ async function downloadNamedResult(r: NamedResult, targetUrl: string) {
             newResult.href = targetUrl
             newResult.files = newResult.files.map((res) => {
                 let newResultFile: ResultFile = Object.assign({}, res)
-                // Rematch file urls with 
                 const urlFound = filesUrls.find((furl) =>
                     res.file.endsWith(furl.href.substring(targetUrl.length))
                 )
@@ -353,7 +352,7 @@ export function pipelineMiddleware({ getState, dispatch }) {
                     const result = dialog.showMessageBoxSync(
                         MainWindowInstance,
                         {
-                            message: `Some unsubmitted jobs are present and will be deleted when closing this window. Are you sure you want to delete them ?`,
+                            message: `Some unsubmitted jobs are present and will be deleted when closing this window. Are you sure you want to close the window ?`,
                             buttons: ['Yes', 'No'],
                         }
                     )
@@ -385,8 +384,8 @@ export function pipelineMiddleware({ getState, dispatch }) {
                     const result = dialog.showMessageBoxSync(
                         MainWindowInstance,
                         {
-                        message: `Are you sure you want to delete this job ?`,
-                        buttons: ['Yes', 'No'],
+                            message: `Are you sure you want to delete this job ?`,
+                            buttons: ['Yes', 'No'],
                         }
                     )
                     // Cancel action if no is selected

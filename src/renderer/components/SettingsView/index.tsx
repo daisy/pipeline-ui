@@ -77,7 +77,7 @@ export function SettingsView() {
                         name={'Results folder'}
                         onChange={resultsFolderChanged}
                         useSystemPath={false}
-                        initialValue={newSettings.downloadFolder}
+                        initialValue={decodeURI(newSettings.downloadFolder)}
                         buttonLabel="Browse"
                     />
                 </div>

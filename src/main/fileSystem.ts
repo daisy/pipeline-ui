@@ -31,9 +31,7 @@ function setupFileSystemEvents() {
         event.sender.send(IPC_EVENT_pathExists, res)
     })
     ipcMain.on(IPC_EVENT_sniffEncoding, async (event, payload) => {
-        console.log("encoding sniff requested", payload)
         let res = await sniffEncoding(payload)
-        console.log("encoding is ", res)
         event.sender.send(IPC_EVENT_sniffEncoding, res)
     })
 }

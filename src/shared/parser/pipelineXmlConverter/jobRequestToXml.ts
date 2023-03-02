@@ -51,7 +51,6 @@ function jobRequestToXml(jobRequest: JobRequest): string {
         )
         .join('')}
   </jobRequest>`
-    console.log('JSON to XML result', xmlString)
     return xmlString
 }
 

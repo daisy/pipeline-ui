@@ -65,9 +65,7 @@ export function SettingsView() {
         <form className="settings-form">
             <div>
                 <div className="form-field">
-                    <label htmlFor="resultsFolder">
-                        Default results folder
-                    </label>
+                    <label htmlFor="resultsFolder">Results folder</label>
                     <span className="description">
                         A folder where all jobs will be automatically downloaded
                     </span>

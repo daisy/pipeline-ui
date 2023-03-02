@@ -48,43 +48,54 @@ export function FormField({
 
     let matchType = (inputType, sequence, ordered) => {
         if (inputType == 'file') {
-            return sequence ? (
-                <MultiFileOrFolderInput
-                    type="open"
-                    dialogProperties={dialogOpts}
-                    elemId={controlId}
-                    mediaType={item.mediaType}
-                    name={item.name}
-                    onChange={(filename) => onFileFolderChange(filename, item)}
-                    useSystemPath={false}
-                    buttonLabel="Browse"
-                    required={item.required}
-                    initialValue={initialValue}
-                    ordered={item.ordered}
-                />
-            ) : (
-                <FileOrFolderInput
-                    type="open"
-                    dialogProperties={dialogOpts}
-                    elemId={controlId}
-                    mediaType={item.mediaType}
-                    name={item.name}
-                    onChange={(filename) => onFileFolderChange(filename, item)}
-                    useSystemPath={false}
-                    buttonLabel="Browse"
-                    required={item.required}
-                    initialValue={initialValue}
-                />
-            )
+            if (sequence) {
+                return (
+                    <MultiFileOrFolderInput
+                        type="open"
+                        dialogProperties={dialogOpts}
+                        elemId={controlId}
+                        mediaType={item.mediaType}
+                        name={item.name}
+                        onChange={(filename) =>
+                            onFileFolderChange(filename, item)
+                        }
+                        useSystemPath={false}
+                        buttonLabel="Browse"
+                        required={item.required}
+                        initialValue={initialValue}
+                        ordered={item.ordered}
+                    />
+                )
+            } else {
+                return (
+                    <FileOrFolderInput
+                        type="open"
+                        dialogProperties={dialogOpts}
+                        elemId={controlId}
+                        mediaType={item.mediaType}
+                        name={item.name}
+                        onChange={(filename) =>
+                            onFileFolderChange(filename, item)
+                        }
+                        useSystemPath={false}
+                        buttonLabel="Browse"
+                        required={item.required}
+                        initialValue={initialValue}
+                    />
+                )
+            }
         } else if (inputType == 'checkbox') {
             return (
-                <input
-                    type={inputType}
-                    required={item.required}
-                    onChange={(e) => onInputChange(e, item)}
-                    id={controlId}
-                    checked={value === 'true' || value === true}
-                ></input>
+                <>
+                    <input
+                        type={inputType}
+                        required={item.required}
+                        onChange={(e) => onInputChange(e, item)}
+                        id={controlId}
+                        checked={value === 'true' || value === true}
+                    ></input>
+                    <span className="field-errors"></span>
+                </>
             )
         } else if (inputType == 'custom') {
             return (
@@ -97,14 +108,17 @@ export function FormField({
             )
         } else {
             return (
-                <input
-                    type={inputType}
-                    required={item.required}
-                    // @ts-ignore
-                    value={initialValue ?? ''}
-                    id={controlId}
-                    onChange={(e) => onInputChange(e, item)}
-                ></input>
+                <>
+                    <input
+                        type={inputType}
+                        required={item.required}
+                        // @ts-ignore
+                        value={initialValue ?? ''}
+                        id={controlId}
+                        onChange={(e) => onInputChange(e, item)}
+                    ></input>
+                    <span className="field-errors"></span>
+                </>
             )
         }
     }
@@ -113,7 +127,13 @@ export function FormField({
             {item.desc ? (
                 <details>
                     <summary>
-                        <label htmlFor={controlId}>{item.nicename}</label>
+                        {item.sequence ? (
+                            <label id={`${controlId}-label`}>
+                                {item.nicename}
+                            </label>
+                        ) : (
+                            <label htmlFor={controlId}>{item.nicename}</label>
+                        )}
                     </summary>
 
                     <div className="description">
@@ -138,6 +158,8 @@ export function FormField({
                         </Markdown>
                     </div>
                 </details>
+            ) : item.sequence ? (
+                <label id={`${controlId}-label`}>{item.nicename}</label>
             ) : (
                 <label htmlFor={controlId}>{item.nicename}</label>
             )}

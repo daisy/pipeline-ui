@@ -37,6 +37,7 @@ function scriptElementToJson(scriptElm: Element): Script {
                 nicename: inputElm.getAttribute('nicename'),
                 type: 'anyFileURI',
                 kind: 'input',
+                ordered: false,
             }
         }
     )

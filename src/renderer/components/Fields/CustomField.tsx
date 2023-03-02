@@ -1,5 +1,6 @@
 import { useWindowStore } from 'renderer/store'
 import { CustomFieldDocumentation } from './CustomFieldDocumentation'
+import { Datatype } from 'shared/types'
 
 export function CustomField({ item, onChange, initialValue, controlId }) {
     const { pipeline } = useWindowStore()
@@ -23,7 +24,8 @@ export function CustomField({ item, onChange, initialValue, controlId }) {
                 item,
                 onChange,
                 initialValue,
-                controlId
+                controlId,
+                datatype
             )
         } else {
             // if our choices are just a list of string values
@@ -40,14 +42,18 @@ export function CustomField({ item, onChange, initialValue, controlId }) {
 
     // catch-all return value
     return (
-        <input
-            type="text"
-            required={item.required}
-            // @ts-ignore
-            value={initialValue ?? ''}
-            id={controlId}
-            onChange={onChange}
-        ></input>
+        <>
+            <input
+                type="text"
+                required={item.required}
+                // @ts-ignore
+                value={initialValue ?? null}
+                id={controlId}
+                onChange={onChange}
+                pattern={item.pattern ?? null}
+            ></input>
+            <span className="field-errors"></span>
+        </>
     )
 }
 
@@ -56,8 +62,10 @@ function makeCustomDatatypeInput(
     item,
     onChange,
     initialValue,
-    controlId
+    controlId,
+    datatype: Datatype
 ) {
+    console.log('custom datatype', datatype)
     return (
         <div className="customDatatypeField">
             <CustomFieldDocumentation datatypes={options} />
@@ -69,7 +77,14 @@ function makeCustomDatatypeInput(
                 value={initialValue ?? ''}
                 id={controlId}
                 onChange={onChange}
+                pattern={
+                    datatype.choices.length == 1
+                        ? // @ts-ignore
+                          datatype.choices[0]?.pattern ?? ''
+                        : ''
+                }
             ></input>
+            <span className="field-errors"></span>
         </div>
     )
 }

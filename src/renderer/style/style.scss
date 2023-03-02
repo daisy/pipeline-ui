@@ -247,8 +247,10 @@ input[type=checkbox] {
         width: 25rem;
     }
     div.multi-file-or-folder {
-        display: flex;
-        gap: var(--pad);
+        .controls-row {
+            display: flex;
+            gap: var(--pad);
+        }
     }
     button.multi-file-or-folder {
         height: 2rem;
@@ -256,6 +258,15 @@ input[type=checkbox] {
         padding: 3px;
     }
 
+    input:invalid + span.field-errors::before, 
+    div:has(input:invalid) ~ span.field-errors::before {
+        content: "Invalid value";
+        color: red;
+    }
+    .field-errors {
+        display: block;
+        align-self: center;
+    }
     .select-script {
         display: flex;
         flex-direction: row;

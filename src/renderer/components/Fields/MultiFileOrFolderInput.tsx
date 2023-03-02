@@ -1,9 +1,6 @@
 import { useState, useEffect } from 'react'
-import { mediaTypesFileFilters } from 'shared/constants'
-import { Datatype } from 'shared/types'
 import { FileOrFolderInput } from './FileOrFolderInput'
-
-const { App } = window
+import { Plus, Minus } from '../SvgIcons'
 
 // this function provides a button to browse and a text display of the path
 // we can't use the HTML input element (see this project's developer documentation for more info)
@@ -55,7 +52,6 @@ export function MultiFileOrFolderInput({
     }
 
     let onFileFolderChange = (filename, idx) => {
-        console.log('onFileFolderChange', filename)
         let newValues = [...values]
         newValues[idx] = filename
         setValues(newValues)
@@ -64,43 +60,48 @@ export function MultiFileOrFolderInput({
     return (
         <>
             {values.map((v, idx) => (
-                <div className="multi-file-or-folder">
-                    <FileOrFolderInput
-                        type="open"
-                        dialogProperties={dialogProperties}
-                        elemId={elemId}
-                        mediaType={mediaType}
-                        name={name}
-                        onChange={(filename) =>
-                            onFileFolderChange(filename, idx)
-                        }
-                        useSystemPath={false}
-                        buttonLabel="Browse"
-                        required={required}
-                        initialValue={values[idx]}
-                    />
-                    {idx > 0 ? (
-                        <button
-                            onClick={(e) => removeValue(idx)}
-                            className="multi-file-or-folder"
-                            title="Remove file"
-                        >
-                            -
-                        </button>
-                    ) : (
-                        ''
-                    )}
-                    {idx == values.length - 1 ? (
-                        <button
-                            onClick={(e) => addValue('')}
-                            className="multi-file-or-folder"
-                            title="Add file"
-                        >
-                            +
-                        </button>
-                    ) : (
-                        ''
-                    )}
+                <div className="multi-file-or-folder" key={idx}>
+                    <div className="controls-row">
+                        <FileOrFolderInput
+                            type="open"
+                            dialogProperties={dialogProperties}
+                            elemId={`${elemId}-${idx}`}
+                            mediaType={mediaType}
+                            name={name}
+                            onChange={(filename) =>
+                                onFileFolderChange(filename, idx)
+                            }
+                            useSystemPath={false}
+                            buttonLabel="Browse"
+                            required={required}
+                            initialValue={values[idx]}
+                            makeSlotForErrors={false}
+                            labelledBy={elemId + '-label'}
+                        />
+                        {idx > 0 ? (
+                            <button
+                                onClick={(e) => removeValue(idx)}
+                                className="multi-file-or-folder"
+                                title="Remove file"
+                            >
+                                <Minus width="12" height="12" />
+                            </button>
+                        ) : (
+                            ''
+                        )}
+                        {idx == values.length - 1 ? (
+                            <button
+                                onClick={(e) => addValue('')}
+                                className="multi-file-or-folder"
+                                title="Add file"
+                            >
+                                <Plus width="12" height="12" />
+                            </button>
+                        ) : (
+                            ''
+                        )}
+                    </div>
+                    <span className="field-errors"></span>
                 </div>
             ))}
         </>

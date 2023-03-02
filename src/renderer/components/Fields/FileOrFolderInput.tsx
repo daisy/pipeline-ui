@@ -17,6 +17,8 @@ export function FileOrFolderInput({
     useSystemPath = false,
     required = false,
     initialValue = '',
+    makeSlotForErrors = true,
+    labelledBy = '',
 }: {
     dialogProperties: string[] // electron dialog properties for open or save, depending on which one you're doing (see 'type')
     elemId: string // ID for the control widget
@@ -29,6 +31,8 @@ export function FileOrFolderInput({
     buttonLabel?: string // the label for the control (not the label on the dialog)
     useSystemPath?: boolean // i forget what this is for but it defaults to 'true' and everywhere seems to set it to 'false'
     required?: boolean
+    makeSlotForErrors?: boolean // create a span for error messages; if false, it is assumed that this will appear elsewhere
+    labelledBy?: string // id of the label for this element, if present use aria-labelledby, if absent, assume the label will have an htmlFor on it
 }) {
     // the value is stored internally as it can be set 2 ways
     // and also broadcast via onChange so that a parent component can subscribe
@@ -80,21 +84,26 @@ export function FileOrFolderInput({
     // all items that make it to this function have type of 'anyFileURI' or 'anyDirURI'`
     return (
         <>
-        <div className="file-or-folder">
-            <input
-                type="text"
-                tabIndex={0}
-                className="filename"
-                value={value ?? ''}
-                onChange={onTextInput}
-                id={elemId}
-                required={required}
-            ></input>
-            <button type="button" onClick={(e) => onClick(e, name)}>
-                {buttonLabel}
-            </button>
-            
-        </div>
+            <div className="file-or-folder">
+                <input
+                    type="text"
+                    tabIndex={0}
+                    className="filename"
+                    value={value ?? ''}
+                    onChange={onTextInput}
+                    id={elemId}
+                    required={required}
+                    aria-labelledby={labelledBy ?? ''}
+                ></input>
+                <button type="button" onClick={(e) => onClick(e, name)}>
+                    {buttonLabel}
+                </button>
+                {makeSlotForErrors ? (
+                    <span className="field-errors"></span>
+                ) : (
+                    ''
+                )}
+            </div>
         </>
     )
 }

@@ -34,17 +34,15 @@ import { setupFileSystemEvents } from './fileSystem'
 import { setupOpenInBrowserEvents } from './browser'
 import { APP_CONFIG } from '~/app.config'
 import { getPipelineInstance } from './data/middlewares/pipeline'
-import { selectColorScheme, selectSettings } from 'shared/data/slices/settings'
+import { selectColorScheme } from 'shared/data/slices/settings'
 import {
     addJob,
     editJob,
     newJob,
     runJob,
     removeJob,
-    pipeline,
     selectJob,
     selectPipeline,
-    selectJobs,
     selectNextJob,
     selectPrevJob,
 } from 'shared/data/slices/pipeline'
@@ -70,7 +68,7 @@ makeAppWithSingleInstanceLock(async () => {
 
     let tray: PipelineTray = null
     try {
-        tray = new PipelineTray(mainWindow)
+        tray = new PipelineTray()
     } catch (err) {
         error(err)
         // quit app for now but we might need to think for a better handling for the user
@@ -80,10 +78,10 @@ makeAppWithSingleInstanceLock(async () => {
     setupShowInFolderEvents()
     setupOpenInBrowserEvents()
     setupFileSystemEvents()
-    buildMenu(mainWindow, pipelineInstance)
+    buildMenu()
 
     store.subscribe(() => {
-        buildMenu(mainWindow, pipelineInstance)
+        buildMenu()
     })
     // Reopen the main window when trying to launch
     // the app when it is already launched
@@ -100,7 +98,7 @@ makeAppWithSingleInstanceLock(async () => {
     )
 })
 
-function buildMenu(mainWindow, pipelineInstance) {
+function buildMenu() {
     let jobs = selectPipeline(store.getState()).jobs
 
     //@ts-ignore
@@ -112,12 +110,12 @@ function buildMenu(mainWindow, pipelineInstance) {
             const job = newJob(selectPipeline(store.getState()))
             store.dispatch(addJob(job))
             store.dispatch(selectJob(job))
-            try {
-                mainWindow.show()
-            } catch (error) {
-                mainWindow = await MainWindow()
-                bindWindowToPipeline(mainWindow, pipelineInstance)
-            }
+            MainWindow().then((window) => {
+                if (window.isMinimized()) {
+                    window.restore()
+                }
+                window.focus()
+            })
         },
         onShowSettings: async () => {
             // Open the settings window

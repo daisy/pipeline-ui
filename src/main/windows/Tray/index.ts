@@ -1,6 +1,6 @@
 import { app, Menu, Tray, BrowserWindow, ipcMain, nativeImage } from 'electron'
 import { closeApplication, MainWindow } from 'main/windows'
-import { IPC } from 'shared/constants'
+import { IPC, PLATFORM } from 'shared/constants'
 import { PipelineState, PipelineStatus } from 'shared/types'
 import { resolveUnpacked } from 'shared/utils'
 import { store } from 'main/data/store'
@@ -16,17 +16,15 @@ import { getPipelineInstance } from 'main/data/middlewares/pipeline'
 
 export class PipelineTray {
     tray: Tray
-    mainWindow: BrowserWindow
     menuBaseTemplate: Array<Electron.MenuItemConstructorOptions> = []
     pipelineMenu: Array<Electron.MenuItemConstructorOptions> = []
     state: PipelineState
 
-    constructor(mainWindow: BrowserWindow) {
+    constructor() {
         const icon = nativeImage.createFromPath(
             resolveUnpacked('resources', 'icons', 'logo_32x32.png')
         )
         this.tray = new Tray(icon)
-        this.mainWindow = mainWindow
 
         const instance = getPipelineInstance(store.getState())
         this.menuBaseTemplate = [
@@ -79,13 +77,16 @@ export class PipelineTray {
                 ])
             )
         }
-        this.tray.on('click', async (e) => {
-            try {
-                this.mainWindow.show()
-            } catch (error) {
-                this.mainWindow = await MainWindow()
-            }
-        })
+        if (!PLATFORM.IS_MAC) {
+            this.tray.on('click', async (e) => {
+                MainWindow().then((window) => {
+                    if (window.isMinimized()) {
+                        window.restore()
+                    }
+                    window.focus()
+                })
+            })
+        }
     }
 
     /**
@@ -113,20 +114,13 @@ export class PipelineTray {
                 click: async (item, window, event) => {
                     const job = newJob(selectPipeline(store.getState()))
                     store.dispatch(addJob(job))
-                    try {
-                        this.mainWindow.show()
-                    } catch (error) {
-                        this.mainWindow = await MainWindow()
-                    }
+                    MainWindow().then((window) => {
+                        if (window.isMinimized()) {
+                            window.restore()
+                        }
+                        window.focus()
+                    })
                     store.dispatch(selectJob(job))
-                    // Note : this triggers a refresh
-                    // ENVIRONMENT.IS_DEV
-                    //     ? this.mainWindow.loadURL(
-                    //           `${APP_CONFIG.RENDERER.DEV_SERVER.URL}#/main`
-                    //       )
-                    //     : this.mainWindow.loadFile('index.html', {
-                    //           hash: `/main`,
-                    //       })
                 },
             },
         ]

@@ -300,6 +300,7 @@ export const selectors = {
         state.pipeline.jobs.filter(
             (j) =>
                 !(
+                    !j.invisible &&
                     j.jobData &&
                     j.jobData.status &&
                     (j.jobData.status == JobStatus.RUNNING ||
@@ -309,6 +310,7 @@ export const selectors = {
     selectRunningJobs: (state: RootState) =>
         state.pipeline.jobs.filter(
             (j) =>
+                !j.invisible &&
                 j.jobData &&
                 j.jobData.status &&
                 (j.jobData.status == JobStatus.RUNNING ||

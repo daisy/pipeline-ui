@@ -5,7 +5,7 @@ import { ENVIRONMENT, IPC } from 'shared/constants'
 import { createWindow } from 'main/factories'
 import { APP_CONFIG } from '~/app.config'
 import { store } from 'main/data/store'
-import { ClosingMainWindowActionForApp } from 'shared/types'
+import { ClosingMainWindowActionForApp, JobState } from 'shared/types'
 import {
     save,
     selectClosingActionForApp,
@@ -18,6 +18,8 @@ import {
     selectRunningJobs,
     stop,
 } from 'shared/data/slices/pipeline'
+
+import { info } from 'electron-log'
 
 let closingInterval = null
 export function closeApplication() {
@@ -35,20 +37,37 @@ export function closeApplication() {
             })
             .then((result) => {
                 if (result.response == 0) {
-                    // and request if the user wants to wait for the jobs to complete
+                    // user wants to wait for the jobs to complete : wait until there is no more running jobs
                     closingInterval = setInterval(() => {
                         const runningJobs = selectRunningJobs(store.getState())
                         if (runningJobs.length == 0) {
+                            setTimeout(() => {
+                                info(
+                                    'Stopping the pipeline has timedout, force quitting.'
+                                )
+                                app.quit()
+                            }, 5000)
                             store.dispatch(stop())
                             app.quit()
                         }
                     }, 1000)
                 } else {
+                    // quit now, with a time out on app closing if stopping the pipeline takes too long
+                    setTimeout(() => {
+                        info(
+                            'Stopping the pipeline has timedout, force quitting'
+                        )
+                        app.quit()
+                    }, 5000)
                     store.dispatch(stop(true))
                     app.quit()
                 }
             })
     } else {
+        setTimeout(() => {
+            info('Stopping the pipeline has timedout, force quitting')
+            app.quit()
+        }, 5000)
         store.dispatch(stop(true))
         app.quit()
     }
@@ -90,17 +109,27 @@ export async function MainWindow() {
                 store.getState()
             )
             if (!closingActionForJobs || closingActionForJobs == 'close') {
-                // dispatch the removal of non-running jobs
                 const jobsToRemove = selectNonRunningJobs(store.getState())
-                store.dispatch(removeJobs(jobsToRemove))
-                // If all targetted jobs have been deleted
-                // (meaning the action has completed)
-                const remaingNonRunningJobs = selectNonRunningJobs(
-                    store.getState()
-                )
-                if (remaingNonRunningJobs.length > 0) {
-                    // abort closing
-                    return
+                if (
+                    jobsToRemove.filter(
+                        (j) => j.state == JobState.NEW && j.jobRequest
+                    ).length > 0
+                ) {
+                    // ask confirmation if there are non-submitted job requests
+                    const result = dialog.showMessageBoxSync(
+                        MainWindowInstance,
+                        {
+                            message: `Some unsubmitted jobs are present and will be deleted when closing this window. Are you sure you want to close the window ?`,
+                            buttons: ['Yes', 'No'],
+                        }
+                    )
+                    if (result == 1) {
+                        // Aborting closing
+                        return
+                    } else {
+                        // Remove jobs before closing the window
+                        store.dispatch(removeJobs(jobsToRemove))
+                    }
                 }
             }
             // Close the main window

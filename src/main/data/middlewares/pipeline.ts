@@ -341,38 +341,20 @@ export function pipelineMiddleware({ getState, dispatch }) {
                         )
                 }
                 break
-            case removeJobs.type:
+            case removeJobs.type: // Batch removal of jobs in engine (no state check on removal)
                 const removedJobs = action.payload as Job[]
-                if (
-                    removedJobs.filter(
-                        (j) => j.state == JobState.NEW && j.jobRequest
-                    ).length > 0
-                ) {
-                    // ask confirmation if there are non-submitted job requests
-                    const result = dialog.showMessageBoxSync(
-                        MainWindowInstance,
-                        {
-                            message: `Some unsubmitted jobs are present and will be deleted when closing this window. Are you sure you want to close the window ?`,
-                            buttons: ['Yes', 'No'],
-                        }
-                    )
-                    // Cancel action if no is selected
-                    action = result === 1 ? null : action
-                }
-                if (action) {
-                    for (const jobToRemove of removedJobs) {
-                        // Remove server-side job using API
-                        if (jobToRemove.jobData && jobToRemove.jobData.href) {
-                            const deleteJob = pipelineAPI.deleteJob(jobToRemove)
-                            deleteJob().then((response) => {
-                                console.log(
-                                    jobToRemove.jobData.jobId,
-                                    'delete response',
-                                    response.status,
-                                    response.statusText
-                                )
-                            })
-                        }
+                for (const jobToRemove of removedJobs) {
+                    // Remove server-side job using API
+                    if (jobToRemove.jobData && jobToRemove.jobData.href) {
+                        const deleteJob = pipelineAPI.deleteJob(jobToRemove)
+                        deleteJob().then((response) => {
+                            console.log(
+                                jobToRemove.jobData.jobId,
+                                'delete response',
+                                response.status,
+                                response.statusText
+                            )
+                        })
                     }
                 }
                 break

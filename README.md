@@ -16,13 +16,19 @@ A user interface for the DAISY Pipeline 2
 * Choose a script and fill out the appropriate fields
 * Run the job and observe its progress and results
 
+
 ## Keyboard shortcuts
 
-Use these shortcuts with `Alt + Shift` on Windows or `Control + Opt` on Mac
+* `Command` or `Control` + `N` to add a new job
+* `Command` or `Control` + `R` to run a job
+* `Control` + `Tab` and `Shift` + `Control` + `Tab` to move between jobs
+* `Command` or `Control` + `0-9` to access the first 10 tabs quickly (1 = first tab, 0 = tenth tab)
+* `Shift` + `Command` or `Control` + `I` to get job status
+* `Command` or `Control` + `D` to close a job
+* `Command` or `Control` + `W` to close the window
+* `Command` or `Control` + `,` to open the settings dialog
+* `Command` or `Control` + `E` to edit a job
 
-* `0-9` to access the first 10 tabs quickly (1 = first tab, 0 = tenth tab)
-* `R` to run a job
-* `N` to add a new job
 
 ## Other
 

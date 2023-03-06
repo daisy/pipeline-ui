@@ -9,18 +9,20 @@ $mix-bold-pct: 80%;
 // light theme = black text on light background
 $light-color: white;
 $light-select-color:#0072B2;
-$light-error-color: #AD0000;
+$light-error-color-bg: #AD0000;
+$light-error-color-fg: white;
 $light-warning-color: purple;
 
 
 // dark theme = white text on dark background
 $dark-color: black;
 $dark-select-color:#56B4E9;
-$dark-error-color: #D55E00;
+$dark-error-color-bg: #D55E00;
+$dark-error-color-fg: white;
 $dark-warning-color: #E69F00;
 
 
-@function themeColors($base-color, $select-color, $error-color, $warning-color) {
+@function themeColors($base-color, $select-color, $error-color-bg, $error-color-fg, $warning-color) {
     $retval: (
         "color": color.invert($base-color),
         "inverted": $base-color, 
@@ -29,13 +31,14 @@ $dark-warning-color: #E69F00;
         "mix-bold": color.mix(color.invert($base-color), $base-color, $mix-bold-pct), // mixed more with the foreground color
         "select": $select-color,
         "select-mix": color.mix($select-color, $base-color, $mix-pct),
-        "error": $error-color,
+        "error-fg": $error-color-fg,
+        "error-bg": $error-color-bg,
         "warning": $warning-color
     );
     @return $retval;
 }
-$light-theme: themeColors($light-color, $dark-select-color, $light-error-color, $light-warning-color);
-$dark-theme: themeColors($dark-color, $dark-select-color, $dark-error-color, $dark-warning-color);
+$light-theme: themeColors($light-color, $dark-select-color, $light-error-color-bg, $light-error-color-fg, $light-warning-color);
+$dark-theme: themeColors($dark-color, $dark-select-color, $dark-error-color-bg, $dark-error-color-fg, $dark-warning-color);
 
 // define some variables
 // default to light theme
@@ -47,7 +50,8 @@ $dark-theme: themeColors($dark-color, $dark-select-color, $dark-error-color, $da
     --border-radius: 4px;
     --tab-panel-height: 90vh;
 
-    --error: #{map.get($light-theme, 'error')};
+    --error-fg: #{map.get($dark-theme, 'error-fg')};
+    --error-bg: #{map.get($light-theme, 'error-bg')};
     --warning: #{map.get($light-theme, 'warning')};
 
     // theme-specific colors
@@ -71,7 +75,8 @@ $dark-theme: themeColors($dark-color, $dark-select-color, $dark-error-color, $da
 @media (prefers-color-scheme: dark) {
     :root {
         // theme-specific colors
-        --error: #{map.get($dark-theme, 'error')};
+        --error-fg: #{map.get($dark-theme, 'error-fg')};
+        --error-bg: #{map.get($dark-theme, 'error-bg')};
         --warning: #{map.get($dark-theme, 'warning')};
         // text color
         --fg: #{map.get($dark-theme, 'color')};

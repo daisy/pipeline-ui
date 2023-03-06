@@ -40,7 +40,7 @@ input {
     height:calc(1.5 * var(--font-size)); 
 }
 input:invalid {
-    border-color: var(--error);
+    border-color: var(--error-bg);
 }
 input[type=checkbox] {
     width: calc(1.5 * var(--font-size));
@@ -180,7 +180,10 @@ input[type=checkbox] {
                 font-family: var(--fw-font-family);
                 
                 .error {
-                    background-color: var(--error);
+                    background-color: var(--error-bg);
+                    color: var(--error-fg);
+                    padding: 3px;
+                    margin: -3px;
                 }
                 .info {
                     color: var(--fg);

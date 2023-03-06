@@ -40,6 +40,9 @@ export function buildMenuTemplate({
         currentJob.state == JobState.NEW &&
         currentJob.jobRequest != null
 
+    // take off the suffix '- App' -- we only want that to appear on the window title
+    let adjustedAppName = appName.replace(' - App', '')
+
     // @ts-ignore
     const template: MenuItemConstructorOptions = [
         // { role: 'appMenu' }
@@ -48,18 +51,26 @@ export function buildMenuTemplate({
                   {
                       label: appName,
                       submenu: [
+                          {
+                              label: 'Settings',
+                              click: onShowSettings,
+                              accelerator: 'CommandOrControl+,',
+                          },
+                          { type: 'separator' },
                           { role: 'services' },
                           { type: 'separator' },
-                          { role: 'hide' },
+                          { role: 'hide', label: `Hide ${adjustedAppName}` },
                           { role: 'hideOthers' },
-                          { role: 'unhide' },
+                          {
+                              role: 'unhide',
+                              label: `Unhide ${adjustedAppName}`,
+                          },
                           { type: 'separator' },
-                          { role: 'quit' },
+                          { role: 'quit', label: `Quit ${adjustedAppName}` },
                       ],
                   },
               ]
             : []),
-        // { role: 'fileMenu' }
         {
             label: '&File',
             submenu: [
@@ -68,11 +79,14 @@ export function buildMenuTemplate({
                     click: onCreateJob,
                     accelerator: 'CommandOrControl+N',
                 },
-                {
-                    label: 'Settings',
-                    click: onShowSettings,
-                    accelerator: isMac ? 'CommandOrControl+,' : '',
-                },
+                ...(!isMac
+                    ? [
+                          {
+                              label: 'Settings',
+                              click: onShowSettings,
+                          },
+                      ]
+                    : []),
                 { type: 'separator' },
                 {
                     label: 'Run job',

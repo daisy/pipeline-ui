@@ -26,15 +26,6 @@ export function Results({ job }: { job: Job }) {
                     )}
                 </ul>
             </li>
-            {job?.jobData?.log ? (
-                <li>
-                    <a href={job.jobData.log} onClick={handleWebLink}>
-                        Log
-                    </a>
-                </li>
-            ) : (
-                ''
-            )}
         </ul>
     )
 }

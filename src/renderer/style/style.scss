@@ -254,8 +254,8 @@ input[type=checkbox] {
         padding: 3px;
     }
 
-    input:not(.initial):invalid ~ span.field-errors::before,
-    div:has(input:not(.initial):invalid) ~ span.field-errors::before {
+    input.interacted:invalid ~ span.field-errors::before,
+    div:has(input.interacted:invalid) ~ span.field-errors::before {
         content: "Invalid value";
         color: var(--warning);
     }
@@ -304,7 +304,7 @@ input[type=checkbox] {
                 select {
                     width: min-content;
                 }
-                .customDatatypeField {
+                .custom-field {
                     // display: flex;
                     // flex-direction: row;
                     gap: var(--pad);

@@ -20,10 +20,10 @@ export function CustomFieldDocumentation({ datatypes }) {
         <details className="documentation">
             <summary>Allowed values</summary>
             <ul>
-                {allDocumentation.map((d) => {
+                {allDocumentation.map((d, idx) => {
                     return (
                         <>
-                            <li>
+                            <li key={idx}>
                                 {d.summary}
                                 <div className="details">
                                     {d.details ? (

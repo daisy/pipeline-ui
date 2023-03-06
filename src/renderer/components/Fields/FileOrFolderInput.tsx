@@ -37,7 +37,7 @@ export function FileOrFolderInput({
     // the value is stored internally as it can be set 2 ways
     // and also broadcast via onChange so that a parent component can subscribe
     const [value, setValue] = useState('')
-    const [initial, setInitial] = useState(true) // false if the user started typing
+    const [userInteracted, setUserInteracted] = useState(false) // false if the user started typing
 
     useEffect(() => {
         setValue(initialValue)
@@ -79,7 +79,7 @@ export function FileOrFolderInput({
     }
 
     let onTextInput = (e) => {
-        setInitial(false)
+        setUserInteracted(true)
         updateFilename(e.target.value)
     }
 
@@ -91,7 +91,7 @@ export function FileOrFolderInput({
                     <input
                         type="text"
                         tabIndex={0}
-                        className={`filename ${initial ? 'initial' : ''}`}
+                        className={`filename ${userInteracted ? 'interacted' : ''}`}
                         value={value ?? ''}
                         onChange={onTextInput}
                         id={elemId}

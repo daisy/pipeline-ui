@@ -1,4 +1,4 @@
-import { Job, Message, MessageLevel } from 'shared/types'
+import { Job, Message, MessageLevel, JobStatus } from 'shared/types'
 const { App } = window
 
 let messageSort = (a, b) => (a.sequence < b.sequence ? b : a)
@@ -25,7 +25,8 @@ function MessageDisplay(m: Message, key) {
 
 export function Messages({ job }: { job: Job }) {
     console.log(job.jobData)
-    
+    let probableLogLink = job?.jobData?.href ? `${job.jobData.href}/log` : ''
+
     return (
         <>
             {job?.jobData?.log ? (
@@ -34,6 +35,8 @@ export function Messages({ job }: { job: Job }) {
                         View detailed log
                     </a>
                 </p>
+            ) : job?.jobData?.status == JobStatus.ERROR && probableLogLink ? (
+                <a href={probableLogLink} onClick={handleWebLink}>View detailed log</a>
             ) : (
                 ''
             )}

@@ -11,7 +11,7 @@ export function SettingsWindow() {
         id: 'settings',
         title: `${APP_CONFIG.TITLE} - Settings`,
         width: 800,
-        height: 600,
+        height: 800,
         resizable: true,
         alwaysOnTop: true,
 

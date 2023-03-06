@@ -24,7 +24,6 @@ function MessageDisplay(m: Message, key) {
 }
 
 export function Messages({ job }: { job: Job }) {
-    console.log(job.jobData)
     let probableLogLink = job?.jobData?.href ? `${job.jobData.href}/log` : ''
 
     return (
@@ -36,7 +35,9 @@ export function Messages({ job }: { job: Job }) {
                     </a>
                 </p>
             ) : job?.jobData?.status == JobStatus.ERROR && probableLogLink ? (
-                <a href={probableLogLink} onClick={handleWebLink}>View detailed log</a>
+                <a href={probableLogLink} onClick={handleWebLink}>
+                    View detailed log
+                </a>
             ) : (
                 ''
             )}

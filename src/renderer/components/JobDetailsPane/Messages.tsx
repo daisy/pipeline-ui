@@ -29,7 +29,7 @@ export function Messages({ job }: { job: Job }) {
             {job?.jobData?.log ? (
                 <p>
                     <a href={job.jobData.log} onClick={handleWebLink}>
-                        View log
+                        View detailed log
                     </a>
                 </p>
             ) : (

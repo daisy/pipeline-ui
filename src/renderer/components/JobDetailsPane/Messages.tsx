@@ -24,6 +24,8 @@ function MessageDisplay(m: Message, key) {
 }
 
 export function Messages({ job }: { job: Job }) {
+    console.log(job.jobData)
+    
     return (
         <>
             {job?.jobData?.log ? (

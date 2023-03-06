@@ -71,5 +71,8 @@ export function findInputType(type) {
 
 export function externalLinkClick(e, app) {
     e.preventDefault()
-    app.openInBrowser(e.target.href)
+    let closest = e.target.closest('a')
+    if (closest) {
+        app.openInBrowser(closest.href)
+    }
 }

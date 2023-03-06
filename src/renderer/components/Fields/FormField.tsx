@@ -142,9 +142,9 @@ export function FormField({
                                     return (
                                         <a
                                             href={props.href}
-                                            onClick={(e) =>
+                                            onClick={(e) => {
                                                 externalLinkClick(e, App)
-                                            }
+                                            }}
                                         >
                                             {props.children}
                                         </a>

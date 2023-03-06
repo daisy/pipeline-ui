@@ -22,12 +22,15 @@ A user interface for the DAISY Pipeline 2
 * `Command` or `Control` + `N` to add a new job
 * `Command` or `Control` + `R` to run a job
 * `Control` + `Tab` and `Shift` + `Control` + `Tab` to move between jobs
-* `Command` or `Control` + `0-9` to access the first 10 tabs quickly (1 = first tab, 0 = tenth tab)
+* `Command` or `Control` + `Alt` + `0-9` to access the first 10 tabs quickly (1 = first tab, 0 = tenth tab)
 * `Shift` + `Command` or `Control` + `I` to get job status
 * `Command` or `Control` + `D` to close a job
 * `Command` or `Control` + `W` to close the window
 * `Command` or `Control` + `,` to open the settings dialog
 * `Command` or `Control` + `E` to edit a job
+* `Command` or `Control` + `+` to zoom in
+* `Command` or `Control` + `-` to zoom out
+* `Command` or `Control` + `0` to reset the zoom level
 
 
 ## Other

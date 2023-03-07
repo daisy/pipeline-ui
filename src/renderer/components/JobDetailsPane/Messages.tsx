@@ -10,8 +10,7 @@ let handleWebLink = (e) => {
 function MessageDisplay(m: Message, key) {
     return (
         <li key={key} className={MessageLevel[m.level].toLowerCase()}>
-            {/* {m.timestamp} - {m.level}:  */}
-            {m.level} - {m.content}
+            {m.level == 'INFO' ? m.content : `${m.level} - ${m.content}`}
             {m.messages && m.messages.length > 0 && (
                 <ul>
                     {m.messages.map((m, idx) =>

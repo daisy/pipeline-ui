@@ -21,7 +21,7 @@ endif
 ENGINE_VERSION := $(shell println(xpath(new File("engine/pom.xml"), "/*/*[local-name()='version']/text()"));)
 
 .PHONY : dmg
-dmg : src/resources/daisy-pipeline
+dmg : src/resources/daisy-pipeline src/resources/icons/logo_mac_40x40_Template@2x.png
 	exec("yarn");
 	exec("yarn", "dist", "--mac");
 

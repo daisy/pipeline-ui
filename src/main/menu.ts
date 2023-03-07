@@ -1,6 +1,9 @@
 import { BrowserWindow, dialog, MenuItem } from 'electron'
+import { setClosingMainWindowActionForApp } from 'shared/data/slices/settings'
 import { calculateJobName, readableStatus } from 'shared/jobName'
 import { Job, JobState, JobStatus } from 'shared/types'
+import { store } from './data/store'
+import { closeApplication } from './windows'
 
 export function buildMenuTemplate({
     appName,
@@ -146,8 +149,25 @@ export function buildMenuTemplate({
                 ...(!isMac
                     ? [
                           {
-                              role: 'quit',
+                              label: 'Exit',
                               accelerator: 'Alt+F4',
+                              click: (
+                                  origin: MenuItem,
+                                  window: BrowserWindow,
+                                  event: any
+                              ) => {
+                                  if (!window.isDestroyed()) {
+                                      // Overload the usual behavior to quit after closing window
+                                      store.dispatch(
+                                          setClosingMainWindowActionForApp(
+                                              'close'
+                                          )
+                                      )
+                                      window.close()
+                                  } else {
+                                      closeApplication()
+                                  }
+                              },
                           },
                       ]
                     : []),

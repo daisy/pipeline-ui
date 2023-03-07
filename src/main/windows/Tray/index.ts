@@ -22,7 +22,7 @@ export class PipelineTray {
 
     constructor() {
         const icon = nativeImage.createFromPath(
-            resolveUnpacked('resources', 'icons', 'logo_32x32.png')
+            resolveUnpacked('resources', 'icons', PLATFORM.IS_MAC ? 'logo_mac_40x40_Template.png' : 'logo_32x32.png')
         )
         this.tray = new Tray(icon)
 

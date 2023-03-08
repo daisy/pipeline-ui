@@ -22,22 +22,14 @@ export function FormField({
     item: ScriptItemBase
     idprefix: string
     onChange: (string, ScriptItemBase) => void // function to set the value in a parent-level collection.
-    initialValue: any // the initialValue
+    initialValue: any // the initial value for the field
 }) {
     const [value, setValue] = useState(initialValue)
     let controlId = `${idprefix}-${item.name}`
 
-    let onFileFolderChange = (filename, data) => {
-        console.log('onFileFolderChange', filename)
-        onChange(filename, data)
-    }
-    let onInputChange = (e, data) => {
-        let newValue =
-            e.target.getAttribute('type') == 'checkbox'
-                ? e.target.checked
-                : e.target.value
+    let onChangeValue = (newValue, scriptItem) => {
         setValue(newValue)
-        onChange(newValue, data)
+        onChange(newValue, scriptItem)
     }
     let dialogOpts =
         item.type == 'anyFileURI'
@@ -56,9 +48,7 @@ export function FormField({
                         elemId={controlId}
                         mediaType={item.mediaType}
                         name={item.name}
-                        onChange={(filename) =>
-                            onFileFolderChange(filename, item)
-                        }
+                        onChange={(filenames) => onChangeValue(filenames, item)}
                         useSystemPath={false}
                         buttonLabel="Browse"
                         required={item.required}
@@ -74,9 +64,7 @@ export function FormField({
                         elemId={controlId}
                         mediaType={item.mediaType}
                         name={item.name}
-                        onChange={(filename) =>
-                            onFileFolderChange(filename, item)
-                        }
+                        onChange={(filename) => onChangeValue(filename, item)}
                         useSystemPath={false}
                         buttonLabel="Browse"
                         required={item.required}
@@ -90,7 +78,7 @@ export function FormField({
                     <input
                         type={inputType}
                         required={item.required}
-                        onChange={(e) => onInputChange(e, item)}
+                        onChange={(e) => onChangeValue(e.target.checked, item)}
                         id={controlId}
                         checked={value === 'true' || value === true}
                     ></input>
@@ -100,7 +88,7 @@ export function FormField({
             return (
                 <CustomField
                     item={item}
-                    onChange={(e) => onInputChange(e, item)}
+                    onChange={(newValue) => onChangeValue(newValue, item)}
                     initialValue={initialValue ?? ''}
                     controlId={controlId}
                 />
@@ -114,7 +102,7 @@ export function FormField({
                         // @ts-ignore
                         value={initialValue ?? ''}
                         id={controlId}
-                        onChange={(e) => onInputChange(e, item)}
+                        onChange={(e) => onChangeValue(e.target.value, item)}
                     ></input>
                 </>
             )

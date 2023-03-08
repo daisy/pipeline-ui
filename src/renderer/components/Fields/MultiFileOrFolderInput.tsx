@@ -72,7 +72,7 @@ export function MultiFileOrFolderInput({
                                 onFileFolderChange(filename, idx)
                             }
                             useSystemPath={false}
-                            buttonLabel="Browse"
+                            buttonLabel={buttonLabel}
                             required={required}
                             initialValue={values[idx]}
                             makeSlotForErrors={false}

@@ -10,9 +10,9 @@ export function CustomField({ item, onChange, initialValue, controlId }) {
     // find the datatype in the pipeline.datatypes store
     let datatype = pipeline.datatypes.find((dt) => dt.id == item.type)
 
-    let onChangeValue = (e) => {
+    let onChangeValue = (newValue) => {
         setUserInteracted(true)
-        onChange(e)
+        onChange(newValue)
     }
 
     if (datatype) {
@@ -26,29 +26,60 @@ export function CustomField({ item, onChange, initialValue, controlId }) {
 
         // if different datatypes are supported
         if (typeChoices.length) {
-            return CustomDatatypeInput(
-                typeChoices,
-                item,
-                onChangeValue,
-                initialValue,
-                controlId,
-                datatype,
-                userInteracted
+            return (
+                <div className="custom-field">
+                    <CustomFieldDocumentation datatypes={typeChoices} />
+                    <input
+                        type="text"
+                        required={item.required}
+                        // @ts-ignore
+                        value={initialValue ?? ''}
+                        id={controlId}
+                        onChange={(e) => onChangeValue(e.target.value)}
+                        className={userInteracted ? 'interacted' : null}
+                        pattern={
+                            datatype.choices.length == 1
+                                ? // @ts-ignore
+                                  datatype.choices[0]?.pattern ?? ''
+                                : ''
+                        }
+                    ></input>
+                    <span className="field-errors" aria-live="polite"></span>
+                </div>
             )
         } else {
             // if our choices are just a list of string values
             if (valueChoices.length) {
-                return CustomSelect(
-                    valueChoices,
-                    onChangeValue,
-                    initialValue,
-                    controlId
+                return (
+                    <select
+                        id={controlId}
+                        onChange={(e) => onChange(e)}
+                        value={initialValue ?? ''}
+                    >
+                        {valueChoices.map((option, idx) => {
+                            let displayString =
+                                // @ts-ignore
+                                option.documentation ?? option.value
+                            // documentation strings can be split into short and long descriptions, one per line
+                            if (displayString.split('\n').length > 1) {
+                                displayString = displayString.split('\n')[0]
+                            }
+                            return (
+                                // @ts-ignore
+                                <option key={idx} value={option.value}>
+                                    {option.documentation
+                                        ? option.documentation.split('\n')[0]
+                                        : // @ts-ignore : option.value}
+                                          option.value}
+                                </option>
+                            )
+                        })}
+                    </select>
                 )
             }
         }
     }
 
-    
     // catch-all return value
     return (
         <>
@@ -58,65 +89,11 @@ export function CustomField({ item, onChange, initialValue, controlId }) {
                 // @ts-ignore
                 value={initialValue ?? null}
                 id={controlId}
-                onChange={onChangeValue}
+                onChange={(e) => onChangeValue(e.target.value)}
                 pattern={item.pattern ?? null}
                 className={userInteracted ? 'interacted' : null}
             ></input>
             <span className="field-errors" aria-live="polite"></span>
         </>
-    )
-}
-
-function CustomDatatypeInput(
-    options,
-    item,
-    onChange,
-    initialValue,
-    controlId,
-    datatype: Datatype,
-    userInteracted
-) {
-    return (
-        <div className="custom-field">
-            <CustomFieldDocumentation datatypes={options} />
-
-            <input
-                type="text"
-                required={item.required}
-                // @ts-ignore
-                value={initialValue ?? ''}
-                id={controlId}
-                onChange={onChange}
-                className={userInteracted ? 'interacted' : null}
-                pattern={
-                    datatype.choices.length == 1
-                        ? // @ts-ignore
-                          datatype.choices[0]?.pattern ?? ''
-                        : ''
-                }
-            ></input>
-            <span className="field-errors" aria-live="polite"></span>
-        </div>
-    )
-}
-
-function CustomSelect(options, onChange, initialValue, controlId) {
-    return (
-        <select id={controlId} onChange={onChange} value={initialValue ?? ''}>
-            {options.map((option, idx) => {
-                let displayString = option.documentation ?? option.value
-                // documentation strings can be split into short and long descriptions, one per line
-                if (displayString.split('\n').length > 1) {
-                    displayString = displayString.split('\n')[0]
-                }
-                return (
-                    <option key={idx} value={option.value}>
-                        {option.documentation
-                            ? option.documentation.split('\n')[0]
-                            : option.value}
-                    </option>
-                )
-            })}
-        </select>
     )
 }

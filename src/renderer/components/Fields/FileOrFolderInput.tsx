@@ -91,9 +91,11 @@ export function FileOrFolderInput({
                     <input
                         type="text"
                         tabIndex={0}
-                        className={`filename ${userInteracted ? 'interacted' : ''}`}
+                        className={`filename ${
+                            userInteracted ? 'interacted' : ''
+                        }`}
                         value={value ?? ''}
-                        onChange={onTextInput}
+                        onChange={(e) => onTextInput(e)}
                         id={elemId}
                         required={required}
                         aria-labelledby={labelledBy ?? ''}

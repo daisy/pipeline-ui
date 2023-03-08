@@ -55,7 +55,7 @@ export function buildMenuTemplate({
                       label: appName,
                       submenu: [
                           {
-                              label: 'Settings',
+                              label: 'Settings…',
                               click: onShowSettings,
                               accelerator: 'CommandOrControl+,',
                           },

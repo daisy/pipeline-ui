@@ -80,6 +80,7 @@ export function SettingsView() {
     const handleSave = () => {
         App.store.dispatch(setSettings(newSettings))
         App.store.dispatch(save())
+        window.close()
         setSaved(true)
     }
     return (

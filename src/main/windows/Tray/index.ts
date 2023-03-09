@@ -9,6 +9,7 @@ import {
     newJob,
     selectJob,
     selectPipeline,
+    selectStatus,
     start,
     stop,
 } from 'shared/data/slices/pipeline'
@@ -18,7 +19,7 @@ export class PipelineTray {
     tray: Tray
     menuBaseTemplate: Array<Electron.MenuItemConstructorOptions> = []
     pipelineMenu: Array<Electron.MenuItemConstructorOptions> = []
-    state: PipelineState
+    pipelineStatus: PipelineStatus
 
     constructor() {
         const icon = nativeImage.createFromPath(
@@ -56,11 +57,11 @@ export class PipelineTray {
         ]
 
         if (instance) {
-            this.state = selectPipeline(store.getState())
+            this.pipelineStatus = selectStatus(store.getState())
             const unsubscibe = store.subscribe(() => {
-                let newState = selectPipeline(store.getState())
-                if (newState != this.state) {
-                    this.state = newState
+                let newState = selectStatus(store.getState())
+                if (newState != this.pipelineStatus) {
+                    this.pipelineStatus = newState
                     this.refreshElectronTray()
                 }
             })

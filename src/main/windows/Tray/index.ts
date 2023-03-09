@@ -22,7 +22,13 @@ export class PipelineTray {
 
     constructor() {
         const icon = nativeImage.createFromPath(
-            resolveUnpacked('resources', 'icons', PLATFORM.IS_MAC ? 'logo_mac_40x40_Template.png' : 'logo_32x32.png')
+            resolveUnpacked(
+                'resources',
+                'icons',
+                PLATFORM.IS_MAC
+                    ? 'logo_mac_40x40_Template.png'
+                    : 'logo_32x32.png'
+            )
         )
         this.tray = new Tray(icon)
 
@@ -108,22 +114,34 @@ export class PipelineTray {
                 enabled: pipelineState.status == PipelineStatus.STOPPED,
                 click: async (item, window, event) => store.dispatch(start()),
             },
-            {
-                label: 'New job',
-                enabled: pipelineState.status == PipelineStatus.RUNNING,
-                click: async (item, window, event) => {
-                    const job = newJob(selectPipeline(store.getState()))
-                    store.dispatch(addJob(job))
-                    MainWindow().then((window) => {
-                        if (window.isMinimized()) {
-                            window.restore()
-                        }
-                        window.focus()
-                    })
-                    store.dispatch(selectJob(job))
-                },
-            },
         ]
+        this.pipelineMenu.push({
+            label: 'Open window',
+            enabled: true,
+            click: async (item, window, event) => {
+                MainWindow().then((window) => {
+                    if (window.isMinimized()) {
+                        window.restore()
+                    }
+                    window.focus()
+                })
+            },
+        })
+        this.pipelineMenu.push({
+            label: 'New job',
+            enabled: pipelineState.status == PipelineStatus.RUNNING,
+            click: async (item, window, event) => {
+                const job = newJob(selectPipeline(store.getState()))
+                store.dispatch(addJob(job))
+                MainWindow().then((window) => {
+                    if (window.isMinimized()) {
+                        window.restore()
+                    }
+                    window.focus()
+                })
+                store.dispatch(selectJob(job))
+            },
+        })
         this.tray.setToolTip(`DAISY Pipeline 2`)
         // Update tray
         this.tray.setContextMenu(

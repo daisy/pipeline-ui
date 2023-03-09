@@ -14,6 +14,9 @@ import {
     stop,
 } from 'shared/data/slices/pipeline'
 import { getPipelineInstance } from 'main/data/middlewares/pipeline'
+import { APP_CONFIG } from '~/app.config'
+
+const { TRAY_TITLE } = APP_CONFIG
 
 export class PipelineTray {
     tray: Tray
@@ -76,7 +79,7 @@ export class PipelineTray {
                     enabled: false,
                 },
             ]
-            this.tray.setToolTip('DAISY Pipeline 2')
+            this.tray.setToolTip(TRAY_TITLE)
             this.tray.setContextMenu(
                 Menu.buildFromTemplate([
                     ...this.pipelineMenu,
@@ -143,7 +146,7 @@ export class PipelineTray {
                 store.dispatch(selectJob(job))
             },
         })
-        this.tray.setToolTip(`DAISY Pipeline 2`)
+        this.tray.setToolTip(TRAY_TITLE)
         // Update tray
         this.tray.setContextMenu(
             Menu.buildFromTemplate([

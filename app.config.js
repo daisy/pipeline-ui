@@ -11,6 +11,7 @@ const {
 exports.APP_CONFIG = {
     APP_ID: `org.daisy.${NAME}`.toLowerCase(),
     NAME,
+    TRAY_TITLE: TITLE,
     TITLE: `${TITLE} - App`,
     AUTHOR,
     VERSION,

@@ -384,9 +384,11 @@ export function pipelineMiddleware({ getState, dispatch }) {
                         dispatch(addJob(newJob(selectPipeline(state))))
                     } else {
                         // choice 1 : avoid deleting last job present
-                        action = null
+                        // action = null
                         // choice 2 : Close the window
-                        // ipcMain.emit(IPC.WINDOWS.MAIN.CLOSE)
+                        if (MainWindowInstance != null) {
+                            MainWindowInstance.close()
+                        }
                     }
                 }
                 // Remove linked invisible jobs

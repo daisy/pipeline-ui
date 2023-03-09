@@ -161,7 +161,7 @@ export function SettingsView() {
                     </label>
                     <span className="description">
                         By default, when closing the app window while the engine
-                        runs, all non-running jobs are deleted.
+                        runs, all non-running jobs are closed.
                         <br />
                         Here you can choose to keep the jobs in memory when
                         closing the window so that they reload on reopening the

@@ -366,7 +366,7 @@ export function pipelineMiddleware({ getState, dispatch }) {
                     const result = dialog.showMessageBoxSync(
                         MainWindowInstance,
                         {
-                            message: `Are you sure you want to delete this job ?`,
+                            message: `Are you sure you want to close this job ?`,
                             buttons: ['Yes', 'No'],
                         }
                     )

@@ -28,12 +28,12 @@ export function closeApplication() {
         // Alert that some jobs are still running and ask if the engine should finish before closing
         dialog
             .showMessageBox(null, {
-                message: `The application can keep running in the tray to keep the engine running and reload the application faster.
-
-    Do you want to stop the engine and quit the application on closing this window ?`,
+                message: `Some jobs are still running in the engine.
+                
+Do you want to wait for the jobs to complete, or quit the application immediately ?`,
                 title: 'Jobs are still running',
                 type: 'info',
-                buttons: ['Wait before closing', 'Force close the application'],
+                buttons: ['Complete jobs and quit', 'Quit the application now'],
             })
             .then((result) => {
                 if (result.response == 0) {

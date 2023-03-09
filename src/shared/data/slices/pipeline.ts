@@ -329,7 +329,6 @@ export const selectors = {
             job.jobRequest && job.jobRequest.scriptHref == script.href
         return {
             scriptHref: script.href,
-            nicename: (job.jobData && job.jobData.nicename) || script.nicename,
             inputs: script.inputs.map((item, index) => {
                 return {
                     name: item.name,

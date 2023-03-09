@@ -9,8 +9,9 @@ const readableStatus = {
 }
 
 function calculateJobName(job: Job) {
-    let jobName =
-        job?.jobData?.nicename ?? job?.jobRequest?.nicename ?? 'Untitled job'
+    const jobRequestedName = job && job.jobRequest && job.jobRequest.nicename
+    const jobDataName = job && job.jobData && job.jobData.nicename
+    let jobName = jobRequestedName || jobDataName || 'Untitled job'
     let jobStatus = ''
     if (job.state == JobState.NEW) {
         jobStatus = ''
@@ -20,6 +21,5 @@ function calculateJobName(job: Job) {
 
     return `${jobName} ${jobStatus ? `(${jobStatus})` : ''}`
 }
-
 
 export { calculateJobName, readableStatus }

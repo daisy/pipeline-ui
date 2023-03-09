@@ -25,6 +25,10 @@ export function NewJobPane({ job }: { job: Job }) {
             updateJob({
                 ...job,
                 script: selection,
+                jobData: {
+                    ...job.jobData,
+                    nicename: selection.nicename,
+                },
                 jobRequest: prepareJobRequest(job, selection),
             })
         )
@@ -63,22 +67,20 @@ export function NewJobPane({ job }: { job: Job }) {
                         id={`${ID(job.internalId)}-change-name`}
                         htmlFor={`${ID(job.internalId)}-nicename`}
                     >
-                        Job's name:
+                        Custom job's name:
                     </label>
                     <input
                         id={`${ID(job.internalId)}-nicename`}
                         type="text"
                         value={
-                            (job.jobData && job.jobData.nicename) ||
-                            (job.jobRequest && job.jobRequest.nicename) ||
-                            ''
+                            (job.jobRequest && job.jobRequest.nicename) || ''
                         }
+                        aria-description="Here you can change the current tab's name and its associated job's name."
                         onChange={(e) => {
                             const updatedJob: Job = {
                                 ...job,
                                 jobData: {
                                     ...job.jobData,
-                                    nicename: e.target.value,
                                 },
                                 jobRequest: {
                                     ...job.jobRequest,

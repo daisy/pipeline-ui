@@ -91,7 +91,11 @@ export const pipelineAPI = {
             (text) => jobXmlToJson(text),
             {
                 method: 'POST',
-                body: jobRequestToXml(j.jobRequest),
+                body: jobRequestToXml({
+                    ...j.jobRequest,
+                    nicename:
+                        j.jobRequest.nicename || j.jobData.nicename || 'Job',
+                }),
             }
         ),
     deleteJob: (j: Job) =>

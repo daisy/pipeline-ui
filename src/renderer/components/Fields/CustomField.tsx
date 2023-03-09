@@ -2,6 +2,7 @@ import { useWindowStore } from 'renderer/store'
 import { CustomFieldDocumentation } from './CustomFieldDocumentation'
 import { Datatype } from 'shared/types'
 import { useState } from 'react'
+import { ControlledInput } from './ControlledInput'
 
 export function CustomField({ item, onChange, initialValue, controlId }) {
     const { pipeline } = useWindowStore()
@@ -29,7 +30,7 @@ export function CustomField({ item, onChange, initialValue, controlId }) {
             return (
                 <div className="custom-field">
                     <CustomFieldDocumentation datatypes={typeChoices} />
-                    <input
+                    <ControlledInput
                         type="text"
                         required={item.required}
                         // @ts-ignore
@@ -43,7 +44,7 @@ export function CustomField({ item, onChange, initialValue, controlId }) {
                                   datatype.choices[0]?.pattern ?? ''
                                 : ''
                         }
-                    ></input>
+                    ></ControlledInput>
                     <span className="field-errors" aria-live="polite"></span>
                 </div>
             )

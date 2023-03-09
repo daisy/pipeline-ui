@@ -130,6 +130,8 @@ export async function MainWindow() {
                         // Remove jobs before closing the window
                         store.dispatch(removeJobs(jobsToRemove))
                     }
+                } else {
+                    store.dispatch(removeJobs(jobsToRemove))
                 }
             }
             // Close the main window

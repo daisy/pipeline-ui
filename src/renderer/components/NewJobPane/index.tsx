@@ -67,7 +67,7 @@ export function NewJobPane({ job }: { job: Job }) {
                         id={`${ID(job.internalId)}-change-name`}
                         htmlFor={`${ID(job.internalId)}-nicename`}
                     >
-                        Custom job's name:
+                        Custom job name:
                     </label>
                     <input
                         id={`${ID(job.internalId)}-nicename`}

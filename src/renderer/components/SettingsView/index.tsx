@@ -158,11 +158,10 @@ export function SettingsView() {
                 </div>
                 <div className="form-field">
                     <label htmlFor="jobsStateOnMainWindowClosing">
-                        Jobs conservation on closing the app window
+                        Keep jobs open when closing the app window
                     </label>
                     <span className="description">
-                        By default, when closing the app window while the engine
-                        runs, all non-running jobs are closed.
+                        By default, when closing the app window, all non-running jobs are closed.
                         <br />
                         Here you can choose to keep the jobs in memory when
                         closing the window so that they reload on reopening the

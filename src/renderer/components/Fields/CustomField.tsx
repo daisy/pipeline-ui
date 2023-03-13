@@ -36,7 +36,7 @@ export function CustomField({ item, onChange, initialValue, controlId }) {
                         // @ts-ignore
                         value={initialValue ?? ''}
                         id={controlId}
-                        onChange={(e) => onChangeValue(e.target.value)}
+                        onChange={(e) => onChangeValue(e)}
                         className={userInteracted ? 'interacted' : null}
                         pattern={
                             datatype.choices.length == 1

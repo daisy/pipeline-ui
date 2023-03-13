@@ -36,18 +36,18 @@ export function FileOrFolderInput({
 }) {
     // the value is stored internally as it can be set 2 ways
     // and also broadcast via onChange so that a parent component can subscribe
-    const [value, setValue] = useState('')
+    const [value, setValue] = useState(initialValue)
     const [userInteracted, setUserInteracted] = useState(false) // false if the user started typing
 
+    // Test propagation update by effect
     useEffect(() => {
-        setValue(initialValue)
-    }, [initialValue])
+        if (onChange) {
+            onChange(value)
+        }
+    }, [value])
 
     let updateFilename = (filename) => {
         setValue(filename)
-        if (onChange) {
-            onChange(filename)
-        }
     }
 
     let onClick = async (e, name) => {

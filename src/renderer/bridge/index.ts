@@ -42,6 +42,7 @@ const API = {
     pathExists: ipcs.pathExists,
     whenAboutWindowClosed: ipcs.whenAboutWindowClose,
     sniffEncoding: ipcs.sniffEncoding,
+    copyToClipboard: ipcs.copyToClipboard,
     // we can add on to this API and restructure it as we move more commands to the redux side
     store: {
         dispatch,

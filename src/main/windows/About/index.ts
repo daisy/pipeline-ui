@@ -9,9 +9,10 @@ export function AboutWindow() {
         id: 'about',
         title: `${APP_CONFIG.TITLE} - About`,
         width: 450,
-        height: 350,
+        height: 450,
         resizable: false,
         alwaysOnTop: true,
+        frame: false,
 
         webPreferences: {
             preload: join(__dirname, 'bridge.js'),

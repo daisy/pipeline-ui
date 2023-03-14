@@ -9,13 +9,8 @@ const copyToClipboard = (str) => {
 }
 
 function setupClipboardEvents() {
-    //  event.sender is Electron.WebContents
-    //  const win = BrowserWindow.fromWebContents(event.sender) || undefined;
-    //  const webcontent = webContents.fromId(payload.webContentID); // webcontents.id is identical
-
     ipcMain.on(IPC_EVENT_copyToClipboard, (event, payload) => {
-        // TODO
-        // but we don't need clipboard just yet
+        copyToClipboard(payload)
     })
 }
 export { setupClipboardEvents }

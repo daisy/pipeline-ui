@@ -1,13 +1,12 @@
-import React from 'react'
-import { useWindowStore } from 'renderer/store'
-
-// import styles from './styles.module.sass'
+import { AboutView } from 'renderer/components/AboutView'
 
 export function AboutScreen() {
+    // TODO get this info dynamically
     return (
-        <>
-            <header>About screen to be designed</header>
-            <main></main>
-        </>
+        <AboutView
+            title="DAISY Pipeline (2023)"
+            version="1.0.0"
+            engineVersion="1.14.11"
+        />
     )
 }

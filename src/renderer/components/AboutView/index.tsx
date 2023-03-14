@@ -21,15 +21,19 @@ export function AboutView({ title, version, engineVersion }) {
         }
     }
 
+    let engineStatus = pipelineEngineStatus()
+
     let copyToClipboard = (e) => {
         let info = `App version: ${version}, 
         Engine version: ${engineVersion}, 
-        Engine is <PipelineEngineStatus />
+        Engine is ${engineStatus.status} ${
+            engineStatus.status == PipelineStatus.RUNNING
+                ? ` on ${engineStatus.address}`
+                : ''
+        }
         `
         App.copyToClipboard(info)
     }
-
-    let engineStatus = pipelineEngineStatus()
 
     useEffect(() => {
         document.addEventListener('keydown', (e) => {
@@ -52,7 +56,7 @@ export function AboutView({ title, version, engineVersion }) {
                     <li>App version: {version}</li>
                     <li>Engine version: {engineVersion}</li>
                     <li>
-                        Engine is
+                        Engine is{'  '}
                         <span>
                             {engineStatus.status == PipelineStatus.RUNNING ? (
                                 <>

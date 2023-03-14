@@ -191,11 +191,26 @@ export function buildMenuTemplate({
         },
         {
             label: '&View',
-            submenu: [
-                { role: 'resetZoom' },
-                { role: 'zoomIn' },
-                { role: 'zoomOut' },
-            ],
+            submenu: isMac
+                ? [
+                      { role: 'resetZoom' },
+                      { role: 'zoomIn' },
+                      { role: 'zoomOut' },
+                  ]
+                : [
+                      {
+                          role: 'resetZoom',
+                          accelerator: 'Alt+Shift+CommandOrControl+=',
+                      },
+                      {
+                          role: 'zoomIn',
+                          accelerator: 'CommandOrControl+=',
+                      },
+                      {
+                          role: 'zoomOut',
+                          accelerator: 'Shift+CommandOrControl+=',
+                      },
+                  ],
         },
         {
             label: '&Goto',

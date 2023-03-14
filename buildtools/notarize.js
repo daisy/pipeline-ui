@@ -16,6 +16,12 @@ exports.default = async function notarizing(context) {
         )
         return
     }
+    if (process.env.GITHUB_REF) {
+        console.log(
+            'skipped notarizing: credentials have not been set up on Github yet'
+        )
+        return
+    }
 
     const appName = context.packager.appInfo.productFilename
 

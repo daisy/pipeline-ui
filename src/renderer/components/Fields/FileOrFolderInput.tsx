@@ -56,7 +56,7 @@ export function FileOrFolderInput({
     // Props update effect
     useEffect(() => {
         // Field value has changed from the parent
-        if(initialValue != value){
+        if (initialValue != value) {
             // Deactivate propagation
             doPropagation(false)
             // Update the field

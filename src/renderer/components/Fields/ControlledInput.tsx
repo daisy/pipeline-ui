@@ -7,19 +7,19 @@ export function ControlledInput(props) {
 
     useEffect(() => {
         // Field has changed internally, propagate update
-        if(propagate && onChange){
+        if (propagate && onChange) {
             onChange && onChange(query)
         } else {
             // last Update came from parent,
             // reactivate propagation
             doPropagation(true)
-        }        
+        }
     }, [query])
 
     // Props update effect
     useEffect(() => {
         // Field value has changed from the parent
-        if(query != value){
+        if (query != value) {
             // Deactivate propagation
             doPropagation(false)
             // Update the field

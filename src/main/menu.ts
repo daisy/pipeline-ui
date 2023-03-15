@@ -19,6 +19,7 @@ export function buildMenuTemplate({
     onRunJob,
     onRemoveJob,
     onEditJob,
+    onShowAbout,
 }) {
     const isMac = process.platform === 'darwin'
 
@@ -54,6 +55,11 @@ export function buildMenuTemplate({
                   {
                       label: appName,
                       submenu: [
+                          {
+                              label: `About ${adjustedAppName}`,
+                              click: onShowAbout,
+                          },
+                          { type: 'separator' },
                           {
                               label: 'Settings…',
                               click: onShowSettings,
@@ -184,7 +190,7 @@ export function buildMenuTemplate({
                     accelerator: 'CommandOrControl+E',
                     enabled: canDelete,
                 },
-                { role: 'separator' },
+                { type: 'separator' },
                 { role: 'copy' },
                 { role: 'paste' },
             ],
@@ -269,6 +275,15 @@ export function buildMenuTemplate({
                         onUserGuide()
                     },
                 },
+                ...(!isMac
+                    ? [
+                          { type: 'separator' },
+                          {
+                              label: `About ${adjustedAppName}`,
+                              click: onShowAbout,
+                          },
+                      ]
+                    : []),
             ],
         },
     ]

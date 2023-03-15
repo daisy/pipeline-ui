@@ -70,7 +70,7 @@ input[type=checkbox] {
     color: var(--fg);
 }
 
-[role=tabpanel] {
+[role=tabpanel], main.about {
     border-radius: var(--border-radius);
     // i.e. a button that's not a tab but rater in the main body of the tab panel
     button {
@@ -343,4 +343,27 @@ input[type=checkbox] {
 .confirm-save {
     font-size: smaller;
     font-style: italic;
+}
+
+/* about box */
+main.about {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1em;
+
+    p {
+        display: flex;
+        flex-direction: row;
+        gap: 0.25em;
+        width: 80%;
+    }    
+    button.copy {
+        border: none;
+        align-self: center;
+    }
+    button.copy:hover {
+        background-color: var(--bg);
+        color: var(--select-mix);
+    }
 }

@@ -46,6 +46,7 @@ import {
     selectNextJob,
     selectPrevJob,
 } from 'shared/data/slices/pipeline'
+import { setupClipboardEvents } from './clipboard'
 
 makeAppWithSingleInstanceLock(async () => {
     app.setName(APP_CONFIG.TITLE)
@@ -78,6 +79,7 @@ makeAppWithSingleInstanceLock(async () => {
     setupShowInFolderEvents()
     setupOpenInBrowserEvents()
     setupFileSystemEvents()
+    setupClipboardEvents()
     buildMenu()
 
     store.subscribe(() => {
@@ -150,6 +152,10 @@ function buildMenu() {
         },
         onEditJob: async (job) => {
             store.dispatch(editJob(job))
+        },
+        onShowAbout: async () => {
+            // Open the settings window
+            ipcMain.emit(IPC.WINDOWS.ABOUT.CREATE)
         },
     })
     // @ts-ignore

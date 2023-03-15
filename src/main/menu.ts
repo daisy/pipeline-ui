@@ -11,8 +11,7 @@ export function buildMenuTemplate({
     selectedJobId,
     onCreateJob,
     onShowSettings,
-    onLearnMore,
-    onUserGuide,
+    onGetHelp,
     onNextTab,
     onPrevTab,
     onGotoTab,
@@ -263,16 +262,9 @@ export function buildMenuTemplate({
             label: '&Help',
             submenu: [
                 {
-                    label: 'Learn more',
+                    label: 'Get help',
                     click: () => {
-                        onLearnMore()
-                    },
-                },
-                {
-                    label: 'User guide',
-                    accelerator: isMac ? 'Shift+Cmd+?' : 'Alt+F1',
-                    click: () => {
-                        onUserGuide()
+                        onGetHelp()
                     },
                 },
                 ...(!isMac

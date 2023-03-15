@@ -123,13 +123,8 @@ function buildMenu() {
             // Open the settings window
             ipcMain.emit(IPC.WINDOWS.SETTINGS.CREATE)
         },
-        onLearnMore: async () => {
-            await shell.openExternal('https://daisy.github.io/pipeline/')
-        },
-        onUserGuide: async () => {
-            await shell.openExternal(
-                'https://daisy.github.io/pipeline/Get-Help/'
-            )
+        onGetHelp: async () => {
+            await shell.openExternal('https://daisy.org/pipelineapphelp')
         },
         onNextTab: async () => {
             store.dispatch(selectNextJob())

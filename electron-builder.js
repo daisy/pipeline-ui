@@ -3,10 +3,12 @@ const { APP_CONFIG } = require('./app.config')
 const { APP_ID, AUTHOR, TITLE, DESCRIPTION, FOLDERS } = APP_CONFIG
 
 const CURRENT_YEAR = new Date().getFullYear()
+// take off the suffix '- App' -- we only want that to appear on the window title
+let adjustedAppName = TITLE.replace(' - App', '')
 
 module.exports = {
     appId: APP_ID,
-    productName: TITLE,
+    productName: adjustedAppName,
     copyright: `Copyright © ${CURRENT_YEAR} — ${AUTHOR.name}`,
 
     directories: {

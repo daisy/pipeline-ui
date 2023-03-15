@@ -13,8 +13,13 @@ import {
     selectClosingActionForJobs,
 } from 'shared/data/slices/settings'
 import {
+    addJob,
+    newJob,
     removeJobs,
+    selectJobs,
+    selectJob,
     selectNonRunningJobs,
+    selectPipeline,
     selectRunningJobs,
     stop,
 } from 'shared/data/slices/pipeline'
@@ -134,15 +139,13 @@ export async function MainWindow() {
                     store.dispatch(removeJobs(jobsToRemove))
                 }
             }
-            // Close the main window
-            MainWindowInstance.destroy()
             // Check for confirmation on closing the app or not
             const closingActionForApp = selectClosingActionForApp(
                 store.getState()
             )
             if (!closingActionForApp || closingActionForApp == 'ask') {
                 dialog
-                    .showMessageBox(null, {
+                    .showMessageBox(MainWindowInstance, {
                         message: `The application can keep running in the tray to keep the engine running and reload the application faster.
 
 Do you want to stop the engine and quit the application on closing this window ?`,
@@ -168,13 +171,24 @@ Do you want to stop the engine and quit the application on closing this window ?
                                 store.dispatch(save())
                                 // Save result
                             }
+                            MainWindowInstance.destroy()
                             if (action == 'close') {
                                 closeApplication()
                             }
+                        } else if (
+                            (!closingActionForJobs || closingActionForJobs == 'close') && 
+                            selectJobs(store.getState()).length == 0
+                        ) {
+                            const _emptyJob = newJob(selectPipeline(store.getState()))
+                            store.dispatch(addJob(_emptyJob))
+                            store.dispatch(selectJob(_emptyJob))
                         }
                     })
-            } else if (closingActionForApp == 'close') {
-                closeApplication()
+            } else  {
+                MainWindowInstance.destroy()
+                if (closingActionForApp == 'close') {                
+                    closeApplication()
+                }
             }
         })
 

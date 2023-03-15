@@ -85,7 +85,7 @@ export function AboutView({ title, version, engineVersion }) {
 function pipelineEngineStatus() {
     const { pipeline } = useWindowStore()
     let address = pipeline.webservice
-        ? `${pipeline.webservice.host}${pipeline.webservice.path}:${pipeline.webservice.port}`
+        ? `${pipeline.webservice.host}:${pipeline.webservice.port}${pipeline.webservice.path}`
         : ``
     return { status: pipeline.status, address }
 }

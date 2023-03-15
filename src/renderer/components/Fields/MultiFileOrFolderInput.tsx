@@ -72,6 +72,8 @@ export function MultiFileOrFolderInput({
                         />
                         {values.length > 1 ? (
                             <button
+                                type="button"
+                                id={`remove-file-or-folder-${idx}`}
                                 onClick={(e) => removeValue(idx)}
                                 className="multi-file-or-folder"
                                 title="Remove file"
@@ -83,6 +85,8 @@ export function MultiFileOrFolderInput({
                         )}
                         {idx == values.length - 1 ? (
                             <button
+                                type="button"
+                                id={`add-file-or-folder`}
                                 onClick={(e) => addValue('')}
                                 className="multi-file-or-folder"
                                 title="Add file"

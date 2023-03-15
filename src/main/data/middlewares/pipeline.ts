@@ -200,7 +200,7 @@ function startMonitor(j: Job, ws: Webservice, getState, dispatch) {
                             ...j,
                             jobData: {
                                 ...j.jobData,
-                                status:JobStatus.ERROR,
+                                status: JobStatus.ERROR,
                             },
                             errors: [
                                 {
@@ -448,10 +448,28 @@ export function pipelineMiddleware({ getState, dispatch }) {
                                 )
                             })
                             .catch((e) => {
+                                clearInterval(runJobInterval)
                                 error(
                                     'error launching job',
                                     jobToRun.internalId,
                                     e
+                                )
+                                dispatch(
+                                    updateJob({
+                                        ...jobToRun,
+                                        jobData: {
+                                            ...jobToRun.jobData,
+                                            status: JobStatus.ERROR,
+                                        },
+                                        errors: [
+                                            {
+                                                error:
+                                                    e instanceof ParserException
+                                                        ? e.parsedText
+                                                        : String(e),
+                                            },
+                                        ],
+                                    })
                                 )
                             })
                     }

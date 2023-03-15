@@ -198,6 +198,10 @@ function startMonitor(j: Job, ws: Webservice, getState, dispatch) {
                     dispatch(
                         updateJob({
                             ...j,
+                            jobData: {
+                                ...j.jobData,
+                                status:JobStatus.ERROR,
+                            },
                             errors: [
                                 {
                                     error:

@@ -5,7 +5,7 @@ export function AboutScreen() {
     return (
         <AboutView
             title="DAISY Pipeline (2023)"
-            version="1.0.0"
+            version="1.0.0-RC2"
             engineVersion="1.14.11"
         />
     )

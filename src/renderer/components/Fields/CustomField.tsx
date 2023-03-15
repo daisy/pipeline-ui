@@ -84,16 +84,16 @@ export function CustomField({ item, onChange, initialValue, controlId }) {
     // catch-all return value
     return (
         <>
-            <input
+            <ControlledInput
                 type="text"
                 required={item.required}
                 // @ts-ignore
                 value={initialValue ?? null}
                 id={controlId}
-                onChange={(e) => onChangeValue(e.target.value)}
-                pattern={item.pattern ?? null}
+                onChange={(e) => onChangeValue(e)}
                 className={userInteracted ? 'interacted' : null}
-            ></input>
+                pattern={item.pattern ?? null}
+            ></ControlledInput>
             <span className="field-errors" aria-live="polite"></span>
         </>
     )

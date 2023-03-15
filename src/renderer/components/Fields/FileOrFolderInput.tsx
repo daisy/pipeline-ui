@@ -37,14 +37,32 @@ export function FileOrFolderInput({
     // the value is stored internally as it can be set 2 ways
     // and also broadcast via onChange so that a parent component can subscribe
     const [value, setValue] = useState(initialValue)
+    // Propagation state
+    const [propagate, doPropagation] = useState(true)
     const [userInteracted, setUserInteracted] = useState(false) // false if the user started typing
 
-    // Test propagation update by effect
+    // Propagation effect
     useEffect(() => {
-        if (onChange) {
+        // Propagate change
+        if (propagate && onChange) {
             onChange(value)
+        } else {
+            // change came from props,
+            // reactivate the propagation after updating value
+            doPropagation(true)
         }
     }, [value])
+
+    // Props update effect
+    useEffect(() => {
+        // Field value has changed from the parent
+        if(initialValue != value){
+            // Deactivate propagation
+            doPropagation(false)
+            // Update the field
+            setValue(initialValue)
+        }
+    }, [initialValue])
 
     let updateFilename = (filename) => {
         setValue(filename)

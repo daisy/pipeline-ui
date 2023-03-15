@@ -30,15 +30,7 @@ export function MultiFileOrFolderInput({
     required?: boolean
     ordered?: boolean
 }) {
-    const [values, setValues] = useState<Array<string>>([])
-
-    useEffect(() => {
-        if (initialValue == null) {
-            setValues([''])
-        } else {
-            setValues(initialValue)
-        }
-    }, [initialValue])
+    const [values, setValues] = useState<Array<string>>(initialValue || [''])
 
     let addValue = (value) => {
         let newValues = [...values]
@@ -78,7 +70,7 @@ export function MultiFileOrFolderInput({
                             makeSlotForErrors={false}
                             labelledBy={elemId + '-label'}
                         />
-                        {idx > 0 ? (
+                        {values.length > 1 ? (
                             <button
                                 onClick={(e) => removeValue(idx)}
                                 className="multi-file-or-folder"

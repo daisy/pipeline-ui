@@ -38,19 +38,19 @@ export class PipelineTray {
 
         const instance = getPipelineInstance(store.getState())
         this.menuBaseTemplate = [
-            // Note : uncomment if we want those window
-            // {
-            //     label: 'About',
-            //     click: async (item, window, event) => {
-            //         ipcMain.emit(IPC.WINDOWS.ABOUT.CREATE)
-            //     },
-            // },
             {
                 label: 'Settings',
                 click: async (item, window, event) => {
                     ipcMain.emit(IPC.WINDOWS.SETTINGS.CREATE)
                 },
             },
+            {
+                label: 'About',
+                click: async (item, window, event) => {
+                    ipcMain.emit(IPC.WINDOWS.ABOUT.CREATE)
+                },
+            },
+            { type: 'separator' },
             {
                 label: 'Quit',
                 click: (item, window, event) => {
@@ -110,14 +110,11 @@ export class PipelineTray {
                 label:
                     pipelineState.status == PipelineStatus.STOPPED
                         ? 'Start the engine'
-                        : `Engine is ${pipelineState.status}${
-                              pipelineState.webservice
-                                  ? ' on port ' + pipelineState.webservice.port
-                                  : ''
-                          }`,
+                        : `Engine is ${pipelineState.status}`,
                 enabled: pipelineState.status == PipelineStatus.STOPPED,
                 click: async (item, window, event) => store.dispatch(start()),
             },
+            { type: 'separator' },
         ]
         this.pipelineMenu.push({
             label: 'Open window',

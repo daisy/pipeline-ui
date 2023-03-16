@@ -44,7 +44,10 @@ export function buildMenuTemplate({
         currentJob.jobRequest != null
 
     // take off the suffix '- App' -- we only want that to appear on the window title
-    let adjustedAppName = appName.replace(' - App', '')
+    let adjustedAppName = appName
+        .replace(' - App', '')
+        .replace('(2023)', '')
+        .trim()
 
     // @ts-ignore
     const template: MenuItemConstructorOptions = [
@@ -52,7 +55,7 @@ export function buildMenuTemplate({
         ...(isMac
             ? [
                   {
-                      label: appName,
+                      label: adjustedAppName,
                       submenu: [
                           {
                               label: `About ${adjustedAppName}`,

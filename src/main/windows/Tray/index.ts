@@ -1,5 +1,5 @@
 import { app, Menu, Tray, BrowserWindow, ipcMain, nativeImage } from 'electron'
-import { closeApplication, MainWindow } from 'main/windows'
+import { closeApplication, MainWindow, MainWindowInstance } from 'main/windows'
 import { IPC, PLATFORM } from 'shared/constants'
 import { PipelineState, PipelineStatus } from 'shared/types'
 import { resolveUnpacked } from 'shared/utils'
@@ -15,6 +15,7 @@ import {
 } from 'shared/data/slices/pipeline'
 import { getPipelineInstance } from 'main/data/middlewares/pipeline'
 import { APP_CONFIG } from '~/app.config'
+import { setClosingMainWindowActionForApp } from 'shared/data/slices/settings'
 
 const { TRAY_TITLE } = APP_CONFIG
 
@@ -54,7 +55,16 @@ export class PipelineTray {
             {
                 label: 'Quit',
                 click: (item, window, event) => {
-                    closeApplication()
+                    if (!MainWindowInstance.isDestroyed()) {
+                        store.dispatch(
+                            setClosingMainWindowActionForApp(
+                                'close'
+                            )
+                        )
+                        MainWindowInstance.close()
+                      } else {
+                        closeApplication()
+                      }
                 },
             },
         ]

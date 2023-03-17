@@ -5,7 +5,7 @@ import { calculateJobName, readableStatus } from 'shared/jobName'
 import { Job, JobState, JobStatus, PipelineStatus } from 'shared/types'
 import { getPipelineInstance } from './data/middlewares/pipeline'
 import { store } from './data/store'
-import { closeApplication } from './windows'
+import { closeApplication, MainWindowInstance } from './windows'
 
 export function buildMenuTemplate({
     appName,
@@ -91,7 +91,21 @@ export function buildMenuTemplate({
                               label: `Unhide ${adjustedAppName}`,
                           },
                           { type: 'separator' },
-                          { role: 'quit', label: `Quit ${adjustedAppName}` },
+                          { label: `Quit ${adjustedAppName}`,
+                            accelerator: 'Command+Q',
+                            click: () => {
+                                  if (!MainWindowInstance.isDestroyed()) {
+                                    store.dispatch(
+                                        setClosingMainWindowActionForApp(
+                                            'close'
+                                        )
+                                    )
+                                    MainWindowInstance.close()
+                                  } else {
+                                    closeApplication()
+                                  }
+                              } 
+                          },
                       ],
                   },
               ]
@@ -179,17 +193,17 @@ export function buildMenuTemplate({
                                   window: BrowserWindow,
                                   event: any
                               ) => {
-                                  if (!window.isDestroyed()) {
-                                      // Overload the usual behavior to quit after closing window
-                                      store.dispatch(
-                                          setClosingMainWindowActionForApp(
-                                              'close'
-                                          )
-                                      )
-                                      window.close()
-                                  } else {
-                                      closeApplication()
-                                  }
+                                if (!window.isDestroyed()) {
+                                    // Overload the usual behavior to quit after closing window
+                                    store.dispatch(
+                                        setClosingMainWindowActionForApp(
+                                            'close'
+                                        )
+                                    )
+                                    window.close()
+                                } else {
+                                    closeApplication()
+                                }
                               },
                           },
                       ]

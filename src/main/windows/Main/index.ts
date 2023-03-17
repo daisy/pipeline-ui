@@ -28,17 +28,16 @@ import { info } from 'electron-log'
 
 let closingInterval = null
 export function closeApplication() {
-    BrowserWindow.getAllWindows().forEach((window) => window.destroy())
     if (selectRunningJobs(store.getState()).length > 0) {
         // Alert that some jobs are still running and ask if the engine should finish before closing
         dialog
-            .showMessageBox(null, {
+            .showMessageBox(MainWindowInstance.isDestroyed() ? null : MainWindowInstance, {
                 message: `Some jobs are still running in the engine.
                 
 Do you want to wait for the jobs to complete, or quit the application immediately ?`,
                 title: 'Jobs are still running',
                 type: 'info',
-                buttons: ['Complete jobs and quit', 'Quit the application now'],
+                buttons: ['Complete jobs and quit', 'Quit the application now', 'Cancel'],
             })
             .then((result) => {
                 if (result.response == 0) {
@@ -52,11 +51,12 @@ Do you want to wait for the jobs to complete, or quit the application immediatel
                                 )
                                 app.quit()
                             }, 5000)
+                            BrowserWindow.getAllWindows().forEach((window) => window.destroy())
                             store.dispatch(stop())
                             app.quit()
                         }
                     }, 1000)
-                } else {
+                } else if (result.response == 1) {
                     // quit now, with a time out on app closing if stopping the pipeline takes too long
                     setTimeout(() => {
                         info(
@@ -64,6 +64,7 @@ Do you want to wait for the jobs to complete, or quit the application immediatel
                         )
                         app.quit()
                     }, 5000)
+                    BrowserWindow.getAllWindows().forEach((window) => window.destroy())
                     store.dispatch(stop(true))
                     app.quit()
                 }
@@ -73,6 +74,7 @@ Do you want to wait for the jobs to complete, or quit the application immediatel
             info('Stopping the pipeline has timedout, force quitting')
             app.quit()
         }, 5000)
+        BrowserWindow.getAllWindows().forEach((window) => window.destroy())
         store.dispatch(stop(true))
         app.quit()
     }
@@ -113,7 +115,12 @@ export async function MainWindow() {
             const closingActionForJobs = selectClosingActionForJobs(
                 store.getState()
             )
-            if (!closingActionForJobs || closingActionForJobs == 'close') {
+            // Check for confirmation on closing the app or not
+            const closingActionForApp = selectClosingActionForApp(
+                store.getState()
+            )
+
+            if (!closingActionForJobs || closingActionForJobs == 'close' || closingActionForApp == 'close' ) {
                 const jobsToRemove = selectNonRunningJobs(store.getState())
                 if (
                     jobsToRemove.filter(
@@ -139,10 +146,7 @@ export async function MainWindow() {
                     store.dispatch(removeJobs(jobsToRemove))
                 }
             }
-            // Check for confirmation on closing the app or not
-            const closingActionForApp = selectClosingActionForApp(
-                store.getState()
-            )
+            
             if (!closingActionForApp || closingActionForApp == 'ask') {
                 dialog
                     .showMessageBox(MainWindowInstance, {
@@ -171,9 +175,10 @@ Do you want to stop the engine and quit the application on closing this window ?
                                 store.dispatch(save())
                                 // Save result
                             }
-                            MainWindowInstance.destroy()
                             if (action == 'close') {
                                 closeApplication()
+                            } else {
+                                MainWindowInstance.destroy()
                             }
                         } else if (
                             (!closingActionForJobs || closingActionForJobs == 'close') && 
@@ -185,9 +190,10 @@ Do you want to stop the engine and quit the application on closing this window ?
                         }
                     })
             } else  {
-                MainWindowInstance.destroy()
                 if (closingActionForApp == 'close') {                
                     closeApplication()
+                } else {
+                    MainWindowInstance.destroy()
                 }
             }
         })

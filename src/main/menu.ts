@@ -1,7 +1,9 @@
 import { BrowserWindow, dialog, MenuItem } from 'electron'
+import { selectStatus } from 'shared/data/slices/pipeline'
 import { setClosingMainWindowActionForApp } from 'shared/data/slices/settings'
 import { calculateJobName, readableStatus } from 'shared/jobName'
-import { Job, JobState, JobStatus } from 'shared/types'
+import { Job, JobState, JobStatus, PipelineStatus } from 'shared/types'
+import { getPipelineInstance } from './data/middlewares/pipeline'
 import { store } from './data/store'
 import { closeApplication } from './windows'
 
@@ -20,28 +22,41 @@ export function buildMenuTemplate({
     onEditJob,
     onShowAbout,
 }) {
+    let pipelineStatus = PipelineStatus.UNKNOWN
+    const instance = getPipelineInstance(store.getState())
+    if (instance) {
+        pipelineStatus = selectStatus(store.getState())
+    }
+
     const isMac = process.platform === 'darwin'
 
     let multipleJobs = jobs.length > 1
-
+    let status = 'new job'
     let currentJob = jobs.find((j) => j.internalId == selectedJobId)
-    let status = currentJob?.jobData
-        ? readableStatus[currentJob.jobData.status]
-        : `new job`
+
+    if (currentJob?.jobData?.status) {
+        status = readableStatus[currentJob.jobData.status]
+    }
+    if (pipelineStatus != PipelineStatus.RUNNING) {
+        status = 'unavailable'
+    }
 
     let canDelete =
         currentJob &&
         currentJob.state == JobState.SUBMITTED &&
         currentJob.jobData &&
         currentJob.jobData.status != JobStatus.RUNNING &&
-        currentJob.jobData.status != JobStatus.IDLE
-
-    let canCancel = currentJob && currentJob.state == JobState.NEW
+        currentJob.jobData.status != JobStatus.IDLE &&
+        pipelineStatus == PipelineStatus.RUNNING
 
     let canRun =
         currentJob &&
         currentJob.state == JobState.NEW &&
-        currentJob.jobRequest != null
+        currentJob.jobRequest != null &&
+        pipelineStatus == PipelineStatus.RUNNING
+
+    let canCreateJob = pipelineStatus == PipelineStatus.RUNNING
+    let canStatus = pipelineStatus == PipelineStatus.RUNNING
 
     // take off the suffix '- App' -- we only want that to appear on the window title
     let adjustedAppName = appName
@@ -89,6 +104,7 @@ export function buildMenuTemplate({
                     label: 'New job',
                     click: onCreateJob,
                     accelerator: 'CommandOrControl+N',
+                    enabled: canCreateJob,
                 },
                 ...(!isMac
                     ? [
@@ -118,6 +134,7 @@ export function buildMenuTemplate({
                                       message: `Status: ${status}`,
                                   })
                               },
+                              enabled: canStatus,
                           },
                       ]
                     : []),

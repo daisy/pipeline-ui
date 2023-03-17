@@ -52,10 +52,12 @@ export class PipelineInstance {
     constructor(props?: PipelineInstanceProperties) {
         this.props = {
             localPipelineHome:
-                (props && props.localPipelineHome) ??
+                // Add `(props && props.pipelineType == 'system' && props.localPipelineHome) ||` if system wide pipeline control requested
+                // (!props || props.pipelineType == 'embedded') &&
                 resolveUnpacked('resources', 'daisy-pipeline'),
             jrePath:
-                (props && props.jrePath) ??
+                // Add `(props && props.pipelineType == 'system' && props.jrePath) ||` if system wide pipeline control requested
+                // (!props || props.pipelineType == 'embedded') &&
                 resolveUnpacked('resources', 'daisy-pipeline', 'jre'),
             // Note : [49152 ; 65535] is the range of dynamic port,  0 is reserved for error case
             webservice: (props &&
@@ -65,9 +67,9 @@ export class PipelineInstance {
                 path: '/ws',
             },
             appDataFolder:
-                (props && props.appDataFolder) ?? app.getPath('userData'),
+                (props && props.appDataFolder) || app.getPath('userData'),
             logsFolder:
-                (props && props.logsFolder) ??
+                (props && props.logsFolder) ||
                 resolve(app.getPath('userData'), 'pipeline-logs'),
             onError: (props && props.onError) || error,
             onMessage: (props && props.onMessage) || info,

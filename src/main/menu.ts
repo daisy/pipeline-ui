@@ -42,21 +42,20 @@ export function buildMenuTemplate({
     }
 
     let canDelete =
+        pipelineStatus == PipelineStatus.RUNNING &&
         currentJob &&
         currentJob.state == JobState.SUBMITTED &&
         currentJob.jobData &&
         currentJob.jobData.status != JobStatus.RUNNING &&
-        currentJob.jobData.status != JobStatus.IDLE &&
-        pipelineStatus == PipelineStatus.RUNNING
+        currentJob.jobData.status != JobStatus.IDLE
 
     let canRun =
+        pipelineStatus == PipelineStatus.RUNNING &&
         currentJob &&
         currentJob.state == JobState.NEW &&
-        currentJob.jobRequest != null &&
-        pipelineStatus == PipelineStatus.RUNNING
+        currentJob.jobRequest != null
 
     let canCreateJob = pipelineStatus == PipelineStatus.RUNNING
-    let canStatus = pipelineStatus == PipelineStatus.RUNNING
 
     // take off the suffix '- App' -- we only want that to appear on the window title
     let adjustedAppName = appName
@@ -134,7 +133,6 @@ export function buildMenuTemplate({
                                       message: `Status: ${status}`,
                                   })
                               },
-                              enabled: canStatus,
                           },
                       ]
                     : []),

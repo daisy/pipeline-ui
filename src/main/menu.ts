@@ -91,20 +91,12 @@ export function buildMenuTemplate({
                               label: `Unhide ${adjustedAppName}`,
                           },
                           { type: 'separator' },
-                          { label: `Quit ${adjustedAppName}`,
-                            accelerator: 'Command+Q',
-                            click: () => {
-                                  if (!MainWindowInstance.isDestroyed()) {
-                                    store.dispatch(
-                                        setClosingMainWindowActionForApp(
-                                            'close'
-                                        )
-                                    )
-                                    MainWindowInstance.close()
-                                  } else {
-                                    closeApplication()
-                                  }
-                              } 
+                          {
+                              label: `Quit ${adjustedAppName}`,
+                              accelerator: 'Command+Q',
+                              click: () => {
+                                  closeApplication()
+                              },
                           },
                       ],
                   },
@@ -193,17 +185,7 @@ export function buildMenuTemplate({
                                   window: BrowserWindow,
                                   event: any
                               ) => {
-                                if (!window.isDestroyed()) {
-                                    // Overload the usual behavior to quit after closing window
-                                    store.dispatch(
-                                        setClosingMainWindowActionForApp(
-                                            'close'
-                                        )
-                                    )
-                                    window.close()
-                                } else {
-                                    closeApplication()
-                                }
+                                  closeApplication()
                               },
                           },
                       ]

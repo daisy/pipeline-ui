@@ -26,19 +26,47 @@ import {
 
 import { info } from 'electron-log'
 
+function removeNonRunningJobs() {
+    const jobsToRemove = selectNonRunningJobs(store.getState())
+    const result = dialog.showMessageBoxSync(MainWindowInstance, {
+        title: 'Remove non-empty jobs ?',
+        message: `Jobs are going to be removed from the application.
+
+Do you want to proceed ?`,
+        buttons: ['Yes', 'No'],
+    })
+    if (result == 1) {
+        return false
+    } else {
+        // Remove jobs before closing the window
+        store.dispatch(removeJobs(jobsToRemove))
+    }
+    return true
+}
+
 let closingInterval = null
 export function closeApplication() {
+    if (!removeNonRunningJobs()) {
+        return
+    }
     if (selectRunningJobs(store.getState()).length > 0) {
         // Alert that some jobs are still running and ask if the engine should finish before closing
         dialog
-            .showMessageBox(MainWindowInstance.isDestroyed() ? null : MainWindowInstance, {
-                message: `Some jobs are still running in the engine.
-                
-Do you want to wait for the jobs to complete, or quit the application immediately ?`,
-                title: 'Jobs are still running',
-                type: 'info',
-                buttons: ['Complete jobs and quit', 'Quit the application now', 'Cancel'],
-            })
+            .showMessageBox(
+                MainWindowInstance.isDestroyed() ? null : MainWindowInstance,
+                {
+                    message: `Some jobs are still running in the engine.
+                    
+    Do you want to wait for the jobs to complete, or quit the application immediately ?`,
+                    title: 'Jobs are still running',
+                    type: 'info',
+                    buttons: [
+                        'Complete jobs and quit',
+                        'Quit the application now',
+                        'Cancel',
+                    ],
+                }
+            )
             .then((result) => {
                 if (result.response == 0) {
                     // user wants to wait for the jobs to complete : wait until there is no more running jobs
@@ -51,7 +79,9 @@ Do you want to wait for the jobs to complete, or quit the application immediatel
                                 )
                                 app.quit()
                             }, 5000)
-                            BrowserWindow.getAllWindows().forEach((window) => window.destroy())
+                            BrowserWindow.getAllWindows().forEach((window) =>
+                                window.destroy()
+                            )
                             store.dispatch(stop())
                             app.quit()
                         }
@@ -64,7 +94,9 @@ Do you want to wait for the jobs to complete, or quit the application immediatel
                         )
                         app.quit()
                     }, 5000)
-                    BrowserWindow.getAllWindows().forEach((window) => window.destroy())
+                    BrowserWindow.getAllWindows().forEach((window) =>
+                        window.destroy()
+                    )
                     store.dispatch(stop(true))
                     app.quit()
                 }
@@ -119,34 +151,6 @@ export async function MainWindow() {
             const closingActionForApp = selectClosingActionForApp(
                 store.getState()
             )
-
-            if (!closingActionForJobs || closingActionForJobs == 'close' || closingActionForApp == 'close' ) {
-                const jobsToRemove = selectNonRunningJobs(store.getState())
-                if (
-                    jobsToRemove.filter(
-                        (j) => j.state == JobState.NEW && j.jobRequest
-                    ).length > 0
-                ) {
-                    // ask confirmation if there are non-submitted job requests
-                    const result = dialog.showMessageBoxSync(
-                        MainWindowInstance,
-                        {
-                            message: `Some unsubmitted jobs are present and will be deleted when closing this window. Are you sure you want to close the window ?`,
-                            buttons: ['Yes', 'No'],
-                        }
-                    )
-                    if (result == 1) {
-                        // Aborting closing
-                        return
-                    } else {
-                        // Remove jobs before closing the window
-                        store.dispatch(removeJobs(jobsToRemove))
-                    }
-                } else {
-                    store.dispatch(removeJobs(jobsToRemove))
-                }
-            }
-            
             if (!closingActionForApp || closingActionForApp == 'ask') {
                 dialog
                     .showMessageBox(MainWindowInstance, {
@@ -181,18 +185,25 @@ Do you want to stop the engine and quit the application on closing this window ?
                                 MainWindowInstance.destroy()
                             }
                         } else if (
-                            (!closingActionForJobs || closingActionForJobs == 'close') && 
+                            (!closingActionForJobs ||
+                                closingActionForJobs == 'close') &&
                             selectJobs(store.getState()).length == 0
                         ) {
-                            const _emptyJob = newJob(selectPipeline(store.getState()))
+                            const _emptyJob = newJob(
+                                selectPipeline(store.getState())
+                            )
                             store.dispatch(addJob(_emptyJob))
                             store.dispatch(selectJob(_emptyJob))
                         }
                     })
-            } else  {
-                if (closingActionForApp == 'close') {                
-                    closeApplication()
-                } else {
+            } else if (closingActionForApp == 'close') {
+                closeApplication()
+            } else {
+                if (
+                    (!closingActionForJobs ||
+                        closingActionForJobs == 'close') &&
+                    removeNonRunningJobs()
+                ) {
                     MainWindowInstance.destroy()
                 }
             }

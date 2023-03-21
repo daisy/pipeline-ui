@@ -55,16 +55,7 @@ export class PipelineTray {
             {
                 label: 'Quit',
                 click: (item, window, event) => {
-                    if (!MainWindowInstance.isDestroyed()) {
-                        store.dispatch(
-                            setClosingMainWindowActionForApp(
-                                'close'
-                            )
-                        )
-                        MainWindowInstance.close()
-                      } else {
-                        closeApplication()
-                      }
+                    closeApplication()
                 },
             },
         ]

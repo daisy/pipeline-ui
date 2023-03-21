@@ -198,14 +198,13 @@ Do you want to stop the engine and quit the application on closing this window ?
                     })
             } else if (closingActionForApp == 'close') {
                 closeApplication()
+            } else if (
+                !closingActionForJobs ||
+                closingActionForJobs == 'close'
+            ) {
+                if (removeNonRunningJobs()) MainWindowInstance.destroy()
             } else {
-                if (
-                    (!closingActionForJobs ||
-                        closingActionForJobs == 'close') &&
-                    removeNonRunningJobs()
-                ) {
-                    MainWindowInstance.destroy()
-                }
+                MainWindowInstance.destroy()
             }
         })
 

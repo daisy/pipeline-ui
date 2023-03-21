@@ -47,6 +47,11 @@ input[type=checkbox] {
     height: calc(1.5 * var(--font-size));
 }
 
+select {
+    background-color: var(--bg);
+    color:var(--fg);
+}
+
 
 .form-field {
     display: flex;

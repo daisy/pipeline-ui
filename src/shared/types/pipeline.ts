@@ -50,61 +50,26 @@ export type PipelineState = {
     // errors: Array<string>
 }
 
-/**
- * Properties for initializing ipc with the daisy pipeline 2
- *
- */
-export type PipelineInstanceProperties = {
-    /**
-     * optional path of the local installation of the pipeline,
-     *
-     * defaults to the application resources/daisy-pipeline
-     */
-    localPipelineHome?: string
-
-    appDataFolder?: string
-
-    logsFolder?: string
-    /**
-     * optional path to the java runtime
-     *
-     * defaults to the application resource/jre folder
-     */
-    jrePath?: string
-
-    /**
-     * Webservice configuration to use for embedded pipeline,
-     *
-     * defaults to a localhost managed configuration :
-     * ```js
-     * {
-     *      host: "localhost"
-     *      port: 0, // will search for an available port on the current host when calling launch() the first time
-     *      path: "/ws"
-     * }
-     * ```
-     *
-     */
-    webservice?: Webservice
-
-    /**
-     *
-     */
-    onError?: (error: string) => void
-
-    onMessage?: (message: string) => void
+export enum PipelineType {
+    embedded = 'Use embedded DAISY Pipeline 2',
+    // For later use : system wide already installed pipeline 2, and remotely installed pipeline
+    // system = 'Use and manage an other installed DAISY Pipeline 2 (with webservice module)',
+    // remote = 'Use a remote DAISY Pipeline 2',
 }
 
 /**
- * Properties for running a DAISY pipeline instance.
+ * Properties for initializing ipc with the daisy pipeline 2
+ * - also include the type of instance managed by IPC (embedded, system, or remote)
+ *
  */
-export interface PipelineInstanceProps {
+export type PipelineInstanceProperties = {
+    pipelineType?: keyof typeof PipelineType
     /**
      * optional path of the local installation of the pipeline,
      *
      * defaults to the application resources/daisy-pipeline
      */
-    localPipelineHome?: string
+    pipelineHome?: string
 
     appDataFolder?: string
 
@@ -130,13 +95,6 @@ export interface PipelineInstanceProps {
      *
      */
     webservice?: Webservice
-
-    /**
-     *
-     */
-    onError?: (error: string) => void
-
-    onMessage?: (message: string) => void
 }
 
 export type Alive = {

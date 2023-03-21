@@ -1,24 +1,17 @@
-import { app, ipcMain, dialog } from 'electron'
+import { app, dialog } from 'electron'
 import { resolve, delimiter, relative } from 'path'
 import {
     Webservice,
     PipelineStatus,
     PipelineState,
-    ApplicationSettings,
     PipelineInstanceProperties,
 } from 'shared/types'
-import { IPC } from 'shared/constants'
 import { spawn, ChildProcessWithoutNullStreams } from 'child_process'
 import { existsSync, mkdirSync, rmSync } from 'fs'
-
 import { getAvailablePort, Pipeline2Error, walk } from './utils'
-
 import { resolveUnpacked } from 'shared/utils'
-
 import { info, error } from 'electron-log'
-
 import { pathToFileURL } from 'url'
-
 import { store } from 'main/data/store'
 import {
     selectPipeline,
@@ -44,6 +37,16 @@ export class PipelineInstance {
         (data: string) => void
     >()
 
+    /**
+     * On error message handler
+     */
+    onError = error
+
+    /**
+     * on simple message handler
+     */
+    onMessage = info
+
     private instance?: ChildProcessWithoutNullStreams
     /**
      *
@@ -51,13 +54,13 @@ export class PipelineInstance {
      */
     constructor(props?: PipelineInstanceProperties) {
         this.props = {
-            localPipelineHome:
+            pipelineHome:
                 // Add `(props && props.pipelineType == 'system' && props.localPipelineHome) ||` if system wide pipeline control requested
-                // (!props || props.pipelineType == 'embedded') &&
+                (!props || props.pipelineType == 'embedded') &&
                 resolveUnpacked('resources', 'daisy-pipeline'),
             jrePath:
                 // Add `(props && props.pipelineType == 'system' && props.jrePath) ||` if system wide pipeline control requested
-                // (!props || props.pipelineType == 'embedded') &&
+                (!props || props.pipelineType == 'embedded') &&
                 resolveUnpacked('resources', 'daisy-pipeline', 'jre'),
             // Note : [49152 ; 65535] is the range of dynamic port,  0 is reserved for error case
             webservice: (props &&
@@ -71,8 +74,6 @@ export class PipelineInstance {
             logsFolder:
                 (props && props.logsFolder) ||
                 resolve(app.getPath('userData'), 'pipeline-logs'),
-            onError: (props && props.onError) || error,
-            onMessage: (props && props.onMessage) || info,
         }
         this.instance = null
         this.errors = []
@@ -93,21 +94,15 @@ export class PipelineInstance {
 
     pushMessage(message: string) {
         this.messages.push(message)
-        if (this.props.onMessage) {
-            this.props.onMessage(message)
+        if (this.onMessage) {
+            this.onMessage(message)
         }
-        this.messagesListeners.forEach((callback) => {
-            callback(message)
-        })
     }
     pushError(message: string) {
         this.errors.push(message)
-        if (this.props.onError) {
-            this.props.onError(message)
+        if (this.onError) {
+            this.onError(message)
         }
-        this.errorsListeners.forEach((callback) => {
-            callback(message)
-        })
     }
 
     /**
@@ -129,7 +124,7 @@ export class PipelineInstance {
         }
 
         if (
-            this.props.localPipelineHome === null ||
+            this.props.pipelineHome === null ||
             !existsSync(this.props.jrePath)
         ) {
             throw new Pipeline2Error(
@@ -252,8 +247,8 @@ Then close the program using the port and restart this application.`,
                 `Launching pipeline on ${this.props.webservice.host}:${this.props.webservice.port}`
             )
             let ClassFolders = [
-                resolve(this.props.localPipelineHome, 'system'),
-                resolve(this.props.localPipelineHome, 'modules'),
+                resolve(this.props.pipelineHome, 'system'),
+                resolve(this.props.pipelineHome, 'modules'),
             ]
             let jarFiles = ClassFolders.reduce(
                 (acc: Array<string>, path: string) => {
@@ -270,7 +265,7 @@ Then close the program using the port and restart this application.`,
             let relativeJarFiles = jarFiles.reduce(
                 (acc: Array<string>, path: string) => {
                     let relativeDirPath = relative(
-                        this.props.localPipelineHome,
+                        this.props.pipelineHome,
                         path
                     )
                     if (!acc.includes(relativeDirPath)) {
@@ -300,7 +295,7 @@ Then close the program using the port and restart this application.`,
             let SystemProps = [
                 '-Dorg.daisy.pipeline.properties="' +
                     resolve(
-                        this.props.localPipelineHome,
+                        this.props.pipelineHome,
                         'etc',
                         'pipeline.properties'
                     ) +
@@ -308,11 +303,7 @@ Then close the program using the port and restart this application.`,
                 // Logback configuration file
                 '-Dlogback.configurationFile=' +
                     pathToFileURL(
-                        resolve(
-                            this.props.localPipelineHome,
-                            'etc',
-                            'logback.xml'
-                        )
+                        resolve(this.props.pipelineHome, 'etc', 'logback.xml')
                     ).href +
                     '',
                 // XMLCalabash base configuration file
@@ -326,17 +317,17 @@ Then close the program using the port and restart this application.`,
                 // Updater configuration
                 '-Dorg.daisy.pipeline.updater.bin="' +
                     resolve(
-                        this.props.localPipelineHome,
+                        this.props.pipelineHome,
                         'updater',
                         'pipeline-updater'
                     ).replaceAll('\\', '/') +
                     '"',
                 '-Dorg.daisy.pipeline.updater.deployPath="' +
-                    this.props.localPipelineHome.replaceAll('\\', '/') +
+                    this.props.pipelineHome.replaceAll('\\', '/') +
                     '/"',
                 '-Dorg.daisy.pipeline.updater.releaseDescriptor="' +
                     resolve(
-                        this.props.localPipelineHome,
+                        this.props.pipelineHome,
                         'etc',
                         'releaseDescriptor.xml'
                     ).replaceAll('\\', '/') +
@@ -401,7 +392,7 @@ Then close the program using the port and restart this application.`,
 ${command} ${args.join(' ')}`
             )
             this.instance = spawn(command, args, {
-                cwd: this.props.localPipelineHome,
+                cwd: this.props.pipelineHome,
             })
             // NP Replace stdout analysis by webservice monitoring
             this.instance.stdout.on('data', (data) => {
@@ -469,42 +460,5 @@ ${command} ${args.join(' ')}`
             }
             return
         }
-    }
-
-    /**
-     * Add a listener on the messages stack
-     * @param callerID the id of the element that register the listener
-     * @param callback the function to run when a new message is added on the stack
-     */
-    registerMessagesListener(
-        callerID: string,
-        callback: (data: string) => void
-    ) {
-        this.messagesListeners.set(callerID, callback)
-    }
-
-    /**
-     * Remove a listener on the messages stack
-     * @param callerID the id of the caller which had registered the listener
-     */
-    removeMessageListener(callerID: string) {
-        this.messagesListeners.delete(callerID)
-    }
-
-    /**
-     * Add a listener on the error messages stack
-     * @param callerID the id of the element that register the listener
-     * @param callback the function to run when a new error message is added on the stack
-     */
-    registerErrorsListener(callerID: string, callback: (data: string) => void) {
-        this.errorsListeners.set(callerID, callback)
-    }
-
-    /**
-     * Remove a listener on the error messages stack
-     * @param callerID the id of the caller which had registered the listener
-     */
-    removeErrorsListener(callerID: string) {
-        this.errorsListeners.delete(callerID)
     }
 }

@@ -2,8 +2,7 @@ import { createSlice } from '@reduxjs/toolkit'
 import type { PayloadAction } from '@reduxjs/toolkit'
 import {
     ApplicationSettings,
-    ClosingMainWindowActionForApp,
-    ClosingMainWindowActionForJobs,
+    ClosingMainWindowAction,
     ColorScheme,
     PipelineInstanceProperties,
 } from 'shared/types'
@@ -15,13 +14,19 @@ export const settings = createSlice({
         // Default settings requires some nodejs only methods
         // initialization and real default state is in the middleware readSettings()
         downloadFolder: undefined,
-        runLocalPipeline: false,
-        localPipelineProps: undefined,
-        useRemotePipeline: false,
-        remotePipelineWebservice: undefined,
+        // Local pipeline properties
+        pipelineInstanceProps: {
+            pipelineType: 'embedded',
+            webservice: {
+                // Note : localhost resolve as ipv6 ':::' in nodejs, but we need ipv4 for the pipeline
+                host: '127.0.0.1',
+                port: 0,
+                path: '/ws',
+            },
+        } as PipelineInstanceProperties,
         colorScheme: 'system',
-        appStateOnClosingMainWindow: undefined,
-        jobsStateOnClosingMainWindow: undefined,
+        onClosingMainWindow: undefined, // Undeterminate to display the app-opening dialog
+        editJobOnNewTab: true,
     } as ApplicationSettings,
     reducers: {
         // general state changer, not recommended based on how redux works
@@ -31,20 +36,15 @@ export const settings = createSlice({
         ) => {
             if (action.payload.downloadFolder)
                 state.downloadFolder = action.payload.downloadFolder
-            if (action.payload.runLocalPipeline)
-                state.runLocalPipeline = action.payload.runLocalPipeline
-            if (action.payload.localPipelineProps)
-                state.localPipelineProps = action.payload.localPipelineProps
-            if (action.payload.useRemotePipeline)
-                state.useRemotePipeline = action.payload.useRemotePipeline
+            if (action.payload.pipelineInstanceProps)
+                state.pipelineInstanceProps =
+                    action.payload.pipelineInstanceProps
             if (action.payload.colorScheme)
                 state.colorScheme = action.payload.colorScheme
-            if (action.payload.appStateOnClosingMainWindow)
-                state.appStateOnClosingMainWindow =
-                    action.payload.appStateOnClosingMainWindow
-            if (action.payload.jobsStateOnClosingMainWindow)
-                state.jobsStateOnClosingMainWindow =
-                    action.payload.jobsStateOnClosingMainWindow
+            if (action.payload.onClosingMainWindow)
+                state.onClosingMainWindow = action.payload.onClosingMainWindow
+            if (action.payload.editJobOnNewTab)
+                state.editJobOnNewTab = action.payload.editJobOnNewTab
         },
         save: (state: ApplicationSettings) => {
             // save action to trigger middleware save on disk
@@ -59,7 +59,7 @@ export const settings = createSlice({
             state: ApplicationSettings,
             action: PayloadAction<PipelineInstanceProperties>
         ) => {
-            state.localPipelineProps = action.payload
+            state.pipelineInstanceProps = action.payload
         },
         setColorScheme: (
             state: ApplicationSettings,
@@ -67,17 +67,11 @@ export const settings = createSlice({
         ) => {
             state.colorScheme = action.payload
         },
-        setClosingMainWindowActionForApp: (
+        setClosingMainWindowAction: (
             state: ApplicationSettings,
-            action: PayloadAction<keyof typeof ClosingMainWindowActionForApp>
+            action: PayloadAction<keyof typeof ClosingMainWindowAction>
         ) => {
-            state.appStateOnClosingMainWindow = action.payload
-        },
-        setClosingMainWindowActionForJobs: (
-            state: ApplicationSettings,
-            action: PayloadAction<keyof typeof ClosingMainWindowActionForJobs>
-        ) => {
-            state.jobsStateOnClosingMainWindow = action.payload
+            state.onClosingMainWindow = action.payload
         },
     },
 })
@@ -88,28 +82,23 @@ export const {
     setSettings,
     setPipelineProperties,
     setColorScheme,
-    setClosingMainWindowActionForApp,
-    setClosingMainWindowActionForJobs,
+    setClosingMainWindowAction,
 } = settings.actions
 
 export const selectors = {
     selectSettings: (s: RootState) => s.settings,
     selectDownloadPath: (state: RootState) => state.settings.downloadFolder,
-    selectPipelineProperties: (s: RootState) => s.settings.localPipelineProps,
-    shouldRunLocalPipeline: (s: RootState) => s.settings.runLocalPipeline,
+    selectPipelineProperties: (s: RootState) =>
+        s.settings.pipelineInstanceProps,
     selectColorScheme: (s: RootState) => s.settings.colorScheme,
-    selectClosingActionForApp: (s: RootState) =>
-        s.settings.appStateOnClosingMainWindow,
-    selectClosingActionForJobs: (s: RootState) =>
-        s.settings.jobsStateOnClosingMainWindow,
+    selectClosingAction: (s: RootState) => s.settings.onClosingMainWindow,
+    selectEditOnNewTab: (s: RootState) => s.settings.editJobOnNewTab,
 }
 // prettier-ignore
 export const {
     selectSettings,
     selectDownloadPath,
     selectPipelineProperties,
-    shouldRunLocalPipeline,
     selectColorScheme,
-    selectClosingActionForApp,
-    selectClosingActionForJobs
+    selectClosingAction,
 } = selectors

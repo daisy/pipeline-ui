@@ -292,6 +292,10 @@ export const selectors = {
     selectJobs: (state: RootState) => state.pipeline.jobs,
     selectVisibleJobs: (state: RootState) =>
         state.pipeline.jobs.filter((j) => !j.invisible),
+    selectEmptyJobs: (state: RootState) =>
+        state.pipeline.jobs.filter(
+            (j) => j.state == JobState.NEW && !j.jobRequest
+        ),
     selectIncompleteJobs: (state: RootState) =>
         state.pipeline.jobs.filter(
             (j) => !(j.state == JobState.NEW && j.jobRequest && !j.invisible)
@@ -362,6 +366,7 @@ export const {
     selectWebservice,
     selectJobs,
     selectVisibleJobs,
+    selectEmptyJobs,
     selectNonRunningJobs,
     selectRunningJobs,
     selectIncompleteJobs,

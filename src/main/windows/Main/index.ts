@@ -22,25 +22,31 @@ import {
     selectPipeline,
     selectRunningJobs,
     stop,
+    selectEmptyJobs,
 } from 'shared/data/slices/pipeline'
 
 import { info } from 'electron-log'
 
 function removeNonRunningJobs() {
+    // Remove non-running jobs ()
     const jobsToRemove = selectNonRunningJobs(store.getState())
-    const result = dialog.showMessageBoxSync(MainWindowInstance, {
-        title: 'Remove non-empty jobs ?',
-        message: `Jobs are going to be removed from the application.
-
+    if (jobsToRemove.length > 0) {
+        const result = dialog.showMessageBoxSync(MainWindowInstance, {
+            title: 'Remove non-empty jobs ?',
+            message: `Jobs are going to be removed from the application.
+    
 Do you want to proceed ?`,
-        buttons: ['Yes', 'No'],
-    })
-    if (result == 1) {
-        return false
-    } else {
-        // Remove jobs before closing the window
-        store.dispatch(removeJobs(jobsToRemove))
+            buttons: ['Yes', 'No'],
+        })
+        if (result == 1) {
+            return false
+        } else {
+            // Remove jobs before closing the window
+            store.dispatch(removeJobs(jobsToRemove))
+        }
     }
+    // Remove empty jobs
+    store.dispatch(removeJobs(selectEmptyJobs(store.getState())))
     return true
 }
 
@@ -57,7 +63,7 @@ export function closeApplication() {
                 {
                     message: `Some jobs are still running.
                     
-    Do you want to wait for the jobs to complete, or quit the application immediately ?`,
+Do you want to wait for the jobs to complete, or quit the application immediately ?`,
                     title: 'Jobs are still running',
                     type: 'info',
                     buttons: [

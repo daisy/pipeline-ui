@@ -55,7 +55,7 @@ export function closeApplication() {
             .showMessageBox(
                 MainWindowInstance.isDestroyed() ? null : MainWindowInstance,
                 {
-                    message: `Some jobs are still running in the engine.
+                    message: `Some jobs are still running.
                     
     Do you want to wait for the jobs to complete, or quit the application immediately ?`,
                     title: 'Jobs are still running',

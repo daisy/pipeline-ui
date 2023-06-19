@@ -1,15 +1,4 @@
-ifneq ($(firstword $(sort $(MAKE_VERSION) 3.82)), 3.82)
-$(error "GNU Make 3.82 is required to run this script")
-endif
-
-ifeq ($(OS),Windows_NT)
-SHELL := engine\\make\\eval-java.exe
-else
-SHELL := engine/make/eval-java
-endif
-.SHELLFLAGS :=
-
-OS := $(shell println(getOS());)
+include engine/make/enable-java-shell.mk
 
 .PHONY : default
 ifeq ($(OS), WINDOWS)
@@ -49,7 +38,6 @@ engine/target/assembly-$(ENGINE_VERSION)-$(zip_classifier).zip : \
 		$(shell Files.walk(Paths.get("engine/src")).filter(Files::isRegularFile).forEach(System.out::println);)
 	exec("$(MAKE)", "-C", "engine", "zip-$(zip_classifier)",         \
 	                                "--", "--without-osgi",          \
-			                        "--without-gui",                 \
 			                        "--without-cli",                 \
 			                        "--without-updater",             \
 			                        "--without-persistence");

@@ -50,7 +50,8 @@
     "clean": "rimraf dist",
     "prepare": "husky install",
     "r": "yarn run-s",
-    "permissions": "node ./bin/utils/fixPermissions.js"
+    "permissions": "node ./bin/utils/fixPermissions.js",
+    "dist-mac-dev": "SKIP_NOTARIZATION=true yarn run dist --mac -c.mac.identity=null"
   },
   "dependencies": {
     "@reduxjs/toolkit": "^1.9.1",

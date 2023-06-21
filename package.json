@@ -27,10 +27,11 @@
   "license": "MIT",
   "scripts": {
     "start": "electron .",
-    "prebuild": "yarn r predev pipeline:install",
+    "prebuild": "yarn r predev",
     "build": "cross-env NODE_ENV=production yarn r clean webpack:main webpack:renderer",
     "postbuild": "node ./bin/modules/postbuild/index.js",
-    "predev": "cross-var \"rimraf $npm_package_devTempBuildFolder\"",
+    "clean:dev": "cross-var \"rimraf $npm_package_devTempBuildFolder\"",
+    "predev": "yarn r clean:dev pipeline:install",
     "dev": "concurrently \"cross-env BROWSER=none yarn dev:renderer\" \"yarn r server:wait permissions nodemon:start\"",
     "dev:main": "cross-env NODE_ENV=development yarn r webpack:main start",
     "dev:renderer": "cross-env NODE_ENV=development yarn r webpack:renderer webpack:serve",

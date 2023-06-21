@@ -46,6 +46,7 @@ const refresh =
     process.argv.indexOf('--refresh') > -1 || !fs.existsSync(deployFolder)
 const update =
     process.argv.indexOf('--update') > -1 ||
+    !fs.existsSync('engine') ||
     fs.readdirSync('engine').length == 0
 
 const withCli = process.argv.indexOf('--with-cli') > -1

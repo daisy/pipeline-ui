@@ -43,11 +43,11 @@ export function findInputType(type) {
         inputType = 'file'
     } else if (type == 'anyDirURI') {
         inputType = 'file'
-    } else if (type == 'xsd:dateTime' || type == 'datetime') {
+    } else if (['xsd:dateTime', 'xs:dateTime', 'datetime'].includes(type)) {
         inputType = 'datetime-local'
-    } else if (type == 'xsd:boolean' || type == 'boolean') {
+    } else if (['xsd:boolean', 'xs:boolean', 'boolean'].includes(type)) {
         inputType = 'checkbox'
-    } else if (type == 'xsd:string' || type == 'string') {
+    } else if (['xsd:string', 'xs:string', 'string'].includes(type)) {
         inputType = 'text'
     } else if (
         [

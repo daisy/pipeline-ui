@@ -46,6 +46,7 @@ const refresh =
     process.argv.indexOf('--refresh') > -1 || !fs.existsSync(deployFolder)
 const update =
     process.argv.indexOf('--update') > -1 ||
+    !fs.existsSync('engine') ||
     fs.readdirSync('engine').length == 0
 
 const withCli = process.argv.indexOf('--with-cli') > -1
@@ -59,37 +60,19 @@ const getJDKPlatform = (platform) =>
 const getJDKArch = (arch) =>
     arch === 'x64' ? 'x64' : arch === 'arm64' ? 'aarch64' : 'x86-32'
 
-const execOpts = (java_home) => ({
-    cwd: path.resolve('engine'),
+const execOpts = (java_home, maven_home = '') => ({
+    //cwd: path.resolve('engine'),
     env: {
         JAVA_HOME: java_home,
-        PATH: process.env.PATH, // Required on MacOS : path is not forwarded as on windows
+        PATH: [
+            ...process.env.PATH.split(path.delimiter),
+            path.join(java_home, 'bin'),
+            ...(maven_home != '' ? [path.join(maven_home, 'bin')] : []),
+        ].join(path.delimiter), // Required on MacOS : path is not forwarded as on windows
     },
     stderr: 'inherit',
     stdio: 'inherit',
 })
-
-const jreBuildProfiles = {
-    mac: {
-        x64: 'build-jre-mac',
-    },
-    windows: {
-        x64: 'build-jre-win64',
-        'x86-32': 'build-jre-win32',
-    },
-    linux: {
-        x64: 'build-jre-linux',
-    },
-}
-
-const defaultProfiles = [
-    'generate-release-descriptor',
-    'copy-artifacts',
-    'without-gui',
-    'without-persistence',
-    'without-osgi',
-    'without-updater',
-].concat(!withCli ? ['without-cli'] : [])
 
 /**
  * Get a maven command.
@@ -171,7 +154,7 @@ Please install one manually and retry`,
             )[0]
         }
     }
-    return mavenCmd
+    return { cmd: mavenCmd, home: !mvnAvailabe ? path.dirname(mavenCmd) : '' }
 }
 
 /**
@@ -299,7 +282,7 @@ async function getJDK(platform = null, arch = null) {
  * @param {string|null} platform nodejs platform selector (as returned by os.platform()) for jdk version targetting.
  * @param {string|null} arch nodejs architecture selector (as returned by os.arch()) for jdk version targetting.
  */
-async function buildPipeline(platform = null, arch = null) {
+async function buildPipeline(platform = null) {
     // Check if 'engine' repository is not empty to ensure pipeline can be build
     if (update) {
         try {
@@ -313,84 +296,34 @@ async function buildPipeline(platform = null, arch = null) {
             return
         }
     }
-    let mvn = await getMaven()
+    const { cmd: mvn, home: mvnHome } = await getMaven()
     console.info(' > Using maven command : ', mvn)
     let java_home = await getJDK()
     console.info(' > Using java home : ', java_home)
-    //  pipeline build profiles
-    let profiles = [...defaultProfiles]
     const targetedPlatform = getJDKPlatform(platform ?? os.platform())
-    const targetedArch = getJDKArch(arch ?? os.arch())
-    if (
-        (platform && platform != os.platform()) ||
-        (arch && arch != os.arch())
-    ) {
-        // Download jdk for the target
-        getJDK(platform ?? os.platform(), arch ?? os.arch())
+    let makeCmd = 'make'
+    if (targetedPlatform == 'windows') {
+        makeCmd = path.resolve('make.exe')
     }
-    switch (targetedPlatform) {
-        case 'windows':
-            profiles.push('assemble-win-dir')
-            if (withCli) {
-                profiles.push('unpack-cli-win')
-            }
-            break
-        case 'mac':
-            profiles.push('assemble-mac-dir')
-            if (withCli) {
-                profiles.push('unpack-cli-mac')
-            }
-            break
-        case 'linux':
-        default:
-            profiles.push('assemble-linux-dir')
-            if (withCli) {
-                profiles.push('unpack-cli-linux')
-            }
-            break
-    }
-    profiles.push(jreBuildProfiles[targetedPlatform][targetedArch])
-    console.info(
-        ' > building DAISY Pipeline 2 engine for',
-        targetedPlatform,
-        targetedArch
-    )
     try {
         console.debug(
-            `launching command : ${mvn} clean package -P ${profiles.join(',')}`
+            `launching command : ${makeCmd} src/resources/daisy-pipeline`
         )
         console.debug('with execution options :', execOpts(java_home))
-        const mvnCall = spawnSync(
-            mvn,
-            ['clean', 'package', '-P', profiles.join(',')],
-            execOpts(java_home)
+        const makeCall = spawnSync(
+            makeCmd,
+            ['src/resources/daisy-pipeline'],
+            execOpts(java_home, mvnHome)
         )
-        if (mvnCall.error) throw mvnCall.error
+        if (makeCall.error) throw makeCall.error
     } catch (err) {
         console.error(err)
         throw err
     }
-    // update the pipeline under the src/resources/daysi-pipeline
-    const resultPath = path.resolve('engine', 'target')
-    const pipelineFolder = walk(
-        resultPath,
-        (file) => file.endsWith('daisy-pipeline'),
-        true
-    )[0]
-    // replace folder
-    if (fs.existsSync(deployFolder)) {
-        console.info(' > Deleting folder for update', deployFolder)
-        fs.rmSync(deployFolder, { recursive: true, force: true })
-    }
-    if (fs.existsSync(pipelineFolder)) {
-        console.info(' > Moving', pipelineFolder, 'to', deployFolder)
-        fs.renameSync(pipelineFolder, deployFolder)
-        if (targetedPlatform == 'mac') {
-            console.info(' > Update permissions for macOS')
-            execSync(`chmod -R +x "${deployFolder}"`)
-        }
-    } else console.error('No pipeline folder to deploy')
 }
+
+//// MAIN PROCESS ////
+
 // TODO : replace the refresh arg by a version check to verify if a newer version has been pulled from the submodule
 // and trigger the update if so
 if (refresh) {
@@ -406,21 +339,6 @@ if (refresh) {
                 'win32',
             ].indexOf(arg) >= 0
     )[0]
-    let arch = process.argv.filter(
-        (arg) =>
-            [
-                'arm',
-                'arm64',
-                'ia32',
-                'mips',
-                'mipsel',
-                'ppc',
-                'ppc64',
-                's390',
-                's390x',
-                'x64',
-            ].indexOf(arg) >= 0
-    )[0]
 
-    buildPipeline(platform ?? os.platform(), arch ?? os.arch())
+    buildPipeline(platform ?? os.platform())
 }

@@ -28,8 +28,9 @@ import {
 import { info } from 'electron-log'
 
 function removeNonRunningJobs() {
-    // Remove non-running jobs ()
+    // Remove non-running jobs
     const jobsToRemove = selectNonRunningJobs(store.getState())
+    console.log(jobsToRemove)
     if (jobsToRemove.length > 0) {
         const result = dialog.showMessageBoxSync(MainWindowInstance, {
             title: 'Remove non-empty jobs ?',
@@ -188,7 +189,16 @@ Do you want to stop the engine and quit the application on closing this window ?
                             if (action == 'close') {
                                 closeApplication()
                             } else {
-                                MainWindowInstance.destroy()
+                                if (
+                                    !closingActionForJobs ||
+                                    closingActionForJobs == 'close'
+                                ) {
+                                    if (removeNonRunningJobs()) {
+                                        MainWindowInstance.destroy()
+                                    }
+                                } else {
+                                    MainWindowInstance.destroy()
+                                }
                             }
                         } else if (
                             (!closingActionForJobs ||

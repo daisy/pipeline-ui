@@ -268,8 +268,6 @@ export function pipelineMiddleware({ getState, dispatch }) {
         const state = getState()
         const webservice = selectWebservice(state)
         const currentJobs = selectJobs(state)
-        // Note NP : instead of doing the alive check, testing to directly check for scripts
-        // and consider the pipeline alive as soon as we have the scripts list
         switch (action.type) {
             case start.type:
                 getPipelineInstance(state)?.launch()
@@ -278,8 +276,10 @@ export function pipelineMiddleware({ getState, dispatch }) {
                 getPipelineInstance(state)?.stop(action.payload)
                 break
             case useWebservice.type:
+                // Action dispatched when the pipeline instance is launched
                 const newWebservice = action.payload
                 let fetchScriptsInterval = null
+                const fetchAlive = pipelineAPI.fetchAlive()
                 const fetchScripts = pipelineAPI.fetchScripts()
                 fetchScriptsInterval = setInterval(() => {
                     if (selectStatus(getState()) == PipelineStatus.STOPPED) {
@@ -290,7 +290,11 @@ export function pipelineMiddleware({ getState, dispatch }) {
                         )
                         clearInterval(fetchScriptsInterval)
                     } else if (newWebservice) {
-                        fetchScripts(newWebservice)
+                        fetchAlive(newWebservice)
+                            .then((alive) => {
+                                dispatch(setAlive(alive))
+                            })
+                            .then(() => fetchScripts(newWebservice))
                             .then((scripts: Array<Script>) => {
                                 info(
                                     'useWebservice',
@@ -298,7 +302,6 @@ export function pipelineMiddleware({ getState, dispatch }) {
                                 )
                                 dispatch(setScripts(scripts))
                                 dispatch(setStatus(PipelineStatus.RUNNING))
-                                
                                 clearInterval(fetchScriptsInterval)
                                 return pipelineAPI.fetchDatatypes()(
                                     newWebservice
@@ -476,14 +479,6 @@ export function pipelineMiddleware({ getState, dispatch }) {
                             })
                     }
                 }, 1000)
-                break
-            case setAlive.type:
-                const getAlive = pipelineAPI.fetchAlive()
-                getAlive()
-                    .then((updated) => {
-                        dispatch(setAlive(updated))
-                    })
-                    .catch((e) => error('error updating alive info', e))
                 break
             default:
                 if (action.type.startsWith('settings/')) {

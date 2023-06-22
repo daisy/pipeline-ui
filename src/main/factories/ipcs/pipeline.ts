@@ -23,7 +23,6 @@ import { store } from 'main/data/store'
 import {
     selectPipeline,
     selectStatus,
-    setAlive,
     setStatus,
     useWebservice,
 } from 'shared/data/slices/pipeline'
@@ -445,9 +444,6 @@ ${command} ${args.join(' ')}`
                 }
             })
             store.dispatch(useWebservice(this.props.webservice))
-            // also update the alive info now that the ws is up and running
-            store.dispatch(setAlive)
-
         }
         return selectPipeline(store.getState())
     }

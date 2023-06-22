@@ -13,6 +13,7 @@ import {
     JobRequest,
     Datatype,
     JobStatus,
+    Alive,
 } from 'shared/types'
 
 import { RootState } from 'shared/types/store'
@@ -25,6 +26,7 @@ const initialState = {
     jobs: [],
     internalJobCounter: 0,
     selectedJobId: '',
+    alive: null,
 } as PipelineState
 
 export const pipeline = createSlice({
@@ -257,6 +259,9 @@ export const pipeline = createSlice({
             )
             state.selectedJobId = state.jobs[selectedJobIndex].internalId
         },
+        setAlive: (state: PipelineState, param: PayloadAction<Alive>) => {
+            state.alive = param.payload
+        },
     },
 })
 
@@ -283,6 +288,7 @@ export const {
     selectJob,
     selectNextJob,
     selectPrevJob,
+    setAlive,
 } = pipeline.actions
 
 export const selectors = {

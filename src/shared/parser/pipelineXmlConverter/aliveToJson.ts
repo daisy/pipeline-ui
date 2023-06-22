@@ -6,12 +6,12 @@ function aliveXmlToJson(xmlString: string): Alive {
         let aliveElm = parseXml(xmlString, 'alive')
         return {
             alive: true,
-            localfs: aliveElm[0].getAttribute('localfs') == 'true',
-            authentication:
-                aliveElm[0].getAttribute('authentication') == 'true',
-            version: aliveElm[0].getAttribute('version'),
+            localfs: aliveElm.getAttribute('localfs') == 'true',
+            authentication: aliveElm.getAttribute('authentication') == 'true',
+            version: aliveElm.getAttribute('version'),
         }
     } catch (err) {
+        console.debug('aliveXmlToJson', err)
         return {
             alive: false,
         }

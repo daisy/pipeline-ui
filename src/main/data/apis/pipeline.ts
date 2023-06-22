@@ -1,4 +1,5 @@
 import {
+    aliveXmlToJson,
     datatypesXmlToJson,
     datatypeXmlToJson,
     jobRequestToXml,
@@ -115,5 +116,10 @@ export const pipelineAPI = {
         createPipelineFetchFunction(
             (ws) => `${baseurl(ws)}/datatypes`,
             (text) => datatypesXmlToJson(text)
+        ),
+    fetchAlive: () =>
+        createPipelineFetchFunction(
+            (ws) => `${baseurl(ws)}/alive`,
+            (text) => aliveXmlToJson(text)
         ),
 }

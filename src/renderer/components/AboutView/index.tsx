@@ -5,9 +5,14 @@ import { PipelineStatus } from 'shared/types/pipeline'
 import { Copy } from '../SvgIcons'
 import daisyLogo from './daisy_high.jpg'
 import pipelineLogo from './logo_64x64.png'
+import packageJson from '../../../../package.json'
 
-export function AboutView({ title, version, engineVersion }) {
+export function AboutView({ title }) {
     const { App } = window
+
+    const { pipeline } = useWindowStore()
+    let version = packageJson.version
+    let engineVersion = pipeline.alive?.version
 
     let closeAboutBox = () => {
         window.close()

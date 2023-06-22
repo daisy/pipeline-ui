@@ -6,7 +6,6 @@ import { Copy } from '../SvgIcons'
 import daisyLogo from './daisy_high.jpg'
 import pipelineLogo from './logo_64x64.png'
 import packageJson from '../../../../package.json'
-import { setAlive } from 'shared/data/slices/pipeline'
 
 export function AboutView({ title }) {
     const { App } = window

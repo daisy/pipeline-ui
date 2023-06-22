@@ -19,6 +19,7 @@ import {
     selectJob,
     removeJobs,
     selectVisibleJobs,
+    setAlive,
 } from 'shared/data/slices/pipeline'
 
 import {
@@ -297,6 +298,7 @@ export function pipelineMiddleware({ getState, dispatch }) {
                                 )
                                 dispatch(setScripts(scripts))
                                 dispatch(setStatus(PipelineStatus.RUNNING))
+                                
                                 clearInterval(fetchScriptsInterval)
                                 return pipelineAPI.fetchDatatypes()(
                                     newWebservice
@@ -474,6 +476,14 @@ export function pipelineMiddleware({ getState, dispatch }) {
                             })
                     }
                 }, 1000)
+                break
+            case setAlive.type:
+                const getAlive = pipelineAPI.fetchAlive()
+                getAlive()
+                    .then((updated) => {
+                        dispatch(setAlive(updated))
+                    })
+                    .catch((e) => error('error updating alive info', e))
                 break
             default:
                 if (action.type.startsWith('settings/')) {

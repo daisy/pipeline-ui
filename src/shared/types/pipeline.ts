@@ -46,6 +46,7 @@ export type PipelineState = {
     internalJobCounter?: number
     selectedJobId: string
     datatypes?: Datatype[]
+    alive: Alive
     // messages: Array<string>
     // errors: Array<string>
 }

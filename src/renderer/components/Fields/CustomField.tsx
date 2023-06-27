@@ -54,7 +54,7 @@ export function CustomField({ item, onChange, initialValue, controlId }) {
                 return (
                     <select
                         id={controlId}
-                        onChange={(e) => onChange(e)}
+                        onChange={(e) => onChangeValue(e.target.value)}
                         value={initialValue ?? ''}
                     >
                         {valueChoices.map((option, idx) => {

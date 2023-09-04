@@ -22,6 +22,7 @@ export const settings = createSlice({
         colorScheme: 'system',
         appStateOnClosingMainWindow: undefined,
         jobsStateOnClosingMainWindow: undefined,
+        ttsConfig: undefined,
     } as ApplicationSettings,
     reducers: {
         // general state changer, not recommended based on how redux works

@@ -38,9 +38,10 @@ export function FormField({
             ? ['openDirectory']
             : ['openFile', 'openDirectory']
 
-    let matchType = (inputType, sequence, ordered) => {
+    let matchType = (item) => {
+        let inputType = findInputType(item.type)
         if (inputType == 'file') {
-            if (sequence) {
+            if (item.sequence) {
                 return (
                     <MultiFileOrFolderInput
                         type="open"
@@ -57,6 +58,18 @@ export function FormField({
                     />
                 )
             } else {
+                // TODO is it an array or a string
+                if (
+                    item.mediaType ==
+                        'application/vnd.pipeline.tts-config+xml' ||
+                    item.mediaType.includes(
+                        'application/vnd.pipeline.tts-config+xml'
+                    )
+                ) {
+                    // this parameter comes from a global setting
+                    // TODO what is it going to be
+                    initialValue = "ttsConfig.xml"
+                }
                 return (
                     <FileOrFolderInput
                         type="open"
@@ -64,7 +77,9 @@ export function FormField({
                         elemId={controlId}
                         mediaType={item.mediaType}
                         name={item.name}
-                        onChange={(filename) => onChangeValue(filename, item)}
+                        onChange={(filename) =>
+                            onChangeValue(filename, item)
+                        }
                         useSystemPath={false}
                         buttonLabel="Browse"
                         required={item.required}
@@ -142,6 +157,7 @@ export function FormField({
                         >
                             {item.desc}
                         </Markdown>
+                        {item.mediaType.includes('application/vnd.pipeline.tts-config+xml') ? 'Modify the global TTS configuration via Pipeline Settings, or choose your own file:' : ''}
                     </div>
                 </details>
             ) : item.sequence ? (
@@ -149,7 +165,7 @@ export function FormField({
             ) : (
                 <label htmlFor={controlId}>{item.nicename}</label>
             )}
-            {matchType(findInputType(item.type), item.sequence, item.ordered)}
+            {matchType(item)}
         </div>
     )
 }

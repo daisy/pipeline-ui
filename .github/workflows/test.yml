@@ -1,0 +1,19 @@
+# This is a basic workflow that is manually triggered
+
+name: Test build workflow
+
+on:
+  workflow_dispatch:
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  # This workflow contains a single job called "greet"
+  build-pipeline-mac:
+    # The type of runner that the job will run on
+    runs-on: macos-latest
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+    # Runs a single command using the runners shell
+    - name: yarn dist-mac-dev
+      run: yarn dist-mac-dev

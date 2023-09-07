@@ -47,7 +47,7 @@
     "nodemon:start": "nodemon --watch src/main --watch src/renderer/bridge --watch src/shared --ignore src/resources --ext \"*\" --exec yarn dev:main",
     "predist": "yarn build",
     "dist": "./node_modules/.bin/electron-builder",
-    "release": "electron-builder --publish never",
+    "release": "electron-builder --publish always",
     "clean": "rimraf dist",
     "prepare": "husky install",
     "r": "yarn run-s",

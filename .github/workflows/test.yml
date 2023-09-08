@@ -33,6 +33,13 @@ jobs:
           key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
           restore-keys: |
             ${{ runner.os }}-yarn-
-      - name: Build DMG if on macOS
-        if: ${{ matrix.os == 'macos-latest' }}
-        run: yarn dist-mac-dev
+      
+      - name: Run install
+        uses: borales/actions-yarn@v4
+        with:
+          cmd: install # will run `yarn install` command
+
+      - name: Run build
+        uses: borales/actions-yarn@v4
+        with:
+          cmd: dist-mac-dev

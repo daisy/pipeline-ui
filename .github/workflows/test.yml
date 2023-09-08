@@ -43,3 +43,5 @@ jobs:
         uses: borales/actions-yarn@v4
         with:
           cmd: dist-mac-dev
+        env:
+          GH_TOKEN: ${{ secrets.GH_PIPELINE_TOKEN }}

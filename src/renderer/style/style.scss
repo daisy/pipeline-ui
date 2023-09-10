@@ -334,6 +334,18 @@ select {
                         margin: var(--pad);
                     }
                 }
+
+                .optional-value {
+                    flex-direction: row;
+                    display: flex;
+                }
+                label button {
+                    border: none;
+                    text-decoration: underline;
+                    font-size: normal;
+                    padding: 0;
+                }
+                
             }
         }    
         .form-buttons {

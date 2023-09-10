@@ -3,6 +3,7 @@
 // anyFileURI, anyDirURI, xsd:string, xsd:dateTime, xsd:boolean, xsd:integer, xsd:float, xsd:double, xsd:decimal
 
 import { useState } from 'react'
+import { useWindowStore } from 'renderer/store'
 import { externalLinkClick, findInputType } from 'renderer/utils'
 import { ScriptItemBase } from 'shared/types'
 import Markdown from 'react-markdown'
@@ -10,6 +11,7 @@ import remarkGfm from 'remark-gfm'
 import { FileOrFolderInput } from './FileOrFolderInput'
 import { CustomField } from './CustomField'
 import { MultiFileOrFolderInput } from './MultiFileOrFolderInput'
+
 const { App } = window
 
 // item.mediaType is a file type e.g. application/x-dtbook+xml
@@ -25,6 +27,7 @@ export function FormField({
     initialValue: any // the initial value for the field
 }) {
     const [value, setValue] = useState(initialValue)
+    const [checked, setChecked] = useState(true)
     let controlId = `${idprefix}-${item.name}`
 
     let onChangeValue = (newValue, scriptItem) => {
@@ -37,6 +40,8 @@ export function FormField({
             : item.type == 'anyDirURI'
             ? ['openDirectory']
             : ['openFile', 'openDirectory']
+
+    const { settings } = useWindowStore()
 
     let matchType = (item) => {
         let inputType = findInputType(item.type)
@@ -58,34 +63,64 @@ export function FormField({
                     />
                 )
             } else {
-                // TODO is it an array or a string
                 if (
-                    item.mediaType ==
-                        'application/vnd.pipeline.tts-config+xml' ||
                     item.mediaType.includes(
                         'application/vnd.pipeline.tts-config+xml'
                     )
                 ) {
-                    // this parameter comes from a global setting
-                    // TODO what is it going to be
-                    initialValue = "ttsConfig.xml"
+                    return (
+                        <>
+                            <div className="optional-value">
+                                <input
+                                    type="checkbox"
+                                    id={controlId + 'opt'}
+                                    checked={checked}
+                                    onChange={(e) =>
+                                        setChecked(e.target.checked)
+                                    }
+                                />
+                                <label htmlFor={controlId + 'opts'}>
+                                    Use my TTS preferences
+                                </label>
+                            </div>
+                            <FileOrFolderInput
+                                type="open"
+                                dialogProperties={dialogOpts}
+                                elemId={controlId}
+                                mediaType={item.mediaType}
+                                name={item.name}
+                                onChange={(filename) =>
+                                    onChangeValue(filename, item)
+                                }
+                                useSystemPath={false}
+                                buttonLabel="Browse"
+                                required={item.required}
+                                initialValue={
+                                    checked
+                                        ? settings.ttsConfig.xmlFilepath
+                                        : ''
+                                }
+                            />
+                        </>
+                    )
+                } else {
+                    return (
+                        <FileOrFolderInput
+                            type="open"
+                            dialogProperties={dialogOpts}
+                            elemId={controlId}
+                            mediaType={item.mediaType}
+                            name={item.name}
+                            onChange={(filename) =>
+                                onChangeValue(filename, item)
+                            }
+                            useSystemPath={false}
+                            buttonLabel="Browse"
+                            required={item.required}
+                            initialValue={initialValue}
+                        />
+                    )
                 }
-                return (
-                    <FileOrFolderInput
-                        type="open"
-                        dialogProperties={dialogOpts}
-                        elemId={controlId}
-                        mediaType={item.mediaType}
-                        name={item.name}
-                        onChange={(filename) =>
-                            onChangeValue(filename, item)
-                        }
-                        useSystemPath={false}
-                        buttonLabel="Browse"
-                        required={item.required}
-                        initialValue={initialValue}
-                    />
-                )
             }
         } else if (inputType == 'checkbox') {
             return (
@@ -157,7 +192,6 @@ export function FormField({
                         >
                             {item.desc}
                         </Markdown>
-                        {item.mediaType.includes('application/vnd.pipeline.tts-config+xml') ? 'Modify the global TTS configuration via Pipeline Settings, or choose your own file:' : ''}
                     </div>
                 </details>
             ) : item.sequence ? (

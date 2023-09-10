@@ -50,9 +50,6 @@ export function SettingsView() {
         },
     ]
 
-    // the user's preferred voices, possibly in priority order
-    const [userPreferredVoices, setUserPreferredVoices] = useState([])
-
     useEffect(() => {
         // Reload settings from store if it has changed
         setNewSettings({
@@ -108,7 +105,15 @@ export function SettingsView() {
     }
 
     const onTtsPreferenceChange = (voices) => {
-        setUserPreferredVoices([...voices])
+        console.log("on tts pref change", voices)
+        setNewSettings({
+            ...newSettings,
+            ttsConfig: {
+                preferredVoices: [...voices],
+                xmlFilepath: newSettings.ttsConfig.xmlFilepath,
+            },
+        })
+        setSaved(false)
     }
 
     // send back the settings and save them on disk
@@ -117,7 +122,6 @@ export function SettingsView() {
         App.store.dispatch(save())
         window.close()
         setSaved(true)
-        // TODO make sure tts prefs get saved
     }
     return (
         <div className="settings">
@@ -288,16 +292,18 @@ export function SettingsView() {
                         <div className="tts-config">
                             <TtsConfigPane
                                 availableVoices={availableVoices}
-                                userPreferredVoices={userPreferredVoices}
+                                userPreferredVoices={
+                                    newSettings.ttsConfig.preferredVoices
+                                }
                                 onChangePreferredVoices={onTtsPreferenceChange}
                             />
-                            <pre>
+                            {/* <pre>
                                 E.g. this would be the output in ttsConfig.xml:
                                 <br />
                                 <br />
                                 <code>
                                     &lt;config&gt;
-                                    {userPreferredVoices
+                                    {newSettings.ttsConfig.preferredVoices
                                         .map(
                                             (v) =>
                                                 `\n\t<voice engine="${v.engine}" name="${v.name}" lang="${v.lang}" gender="${v.gender}">`
@@ -305,7 +311,7 @@ export function SettingsView() {
                                         .join('') + '\n'}
                                     &lt;/config&gt;
                                 </code>
-                            </pre>
+                            </pre> */}
                         </div>
                     )}
                 </div>

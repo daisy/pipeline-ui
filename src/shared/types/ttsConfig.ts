@@ -9,4 +9,5 @@ export type TtsVoice = {
 
 export type TtsConfig = {
     preferredVoices: Array<TtsVoice>
+    xmlFilepath?: string
 }

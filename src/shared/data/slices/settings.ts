@@ -6,6 +6,7 @@ import {
     ClosingMainWindowActionForJobs,
     ColorScheme,
     PipelineInstanceProperties,
+    TtsConfig,
 } from 'shared/types'
 import { RootState } from 'shared/types/store'
 
@@ -46,6 +47,8 @@ export const settings = createSlice({
             if (action.payload.jobsStateOnClosingMainWindow)
                 state.jobsStateOnClosingMainWindow =
                     action.payload.jobsStateOnClosingMainWindow
+            if (action.payload.ttsConfig)
+                state.ttsConfig = action.payload.ttsConfig
         },
         save: (state: ApplicationSettings) => {
             // save action to trigger middleware save on disk
@@ -80,6 +83,12 @@ export const settings = createSlice({
         ) => {
             state.jobsStateOnClosingMainWindow = action.payload
         },
+        setTtsConfig: (
+            state: ApplicationSettings,
+            action: PayloadAction<TtsConfig>
+        ) => {
+            state.ttsConfig = action.payload
+        },
     },
 })
 
@@ -91,6 +100,7 @@ export const {
     setColorScheme,
     setClosingMainWindowActionForApp,
     setClosingMainWindowActionForJobs,
+    setTtsConfig,
 } = settings.actions
 
 export const selectors = {
@@ -103,6 +113,7 @@ export const selectors = {
         s.settings.appStateOnClosingMainWindow,
     selectClosingActionForJobs: (s: RootState) =>
         s.settings.jobsStateOnClosingMainWindow,
+    selectTtsConfig: (s: RootState) => s.settings.ttsConfig,
 }
 // prettier-ignore
 export const {
@@ -112,5 +123,6 @@ export const {
     shouldRunLocalPipeline,
     selectColorScheme,
     selectClosingActionForApp,
-    selectClosingActionForJobs
+    selectClosingActionForJobs,
+    selectTtsConfig,
 } = selectors

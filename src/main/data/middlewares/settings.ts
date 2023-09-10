@@ -103,7 +103,7 @@ export function settingsMiddleware({ getState }) {
                         () => {}
                     )
                     writeFile(
-                        settings.localPipelineProps.appDataFolder + 'ttsConfig.xml',
+                        settings.ttsConfig.xmlFilepath,
                         ttsConfigToXml(settings.ttsConfig),
                         () => {}
                     )

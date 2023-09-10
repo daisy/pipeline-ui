@@ -97,9 +97,10 @@ export function FormField({
                                 required={item.required}
                                 initialValue={
                                     checked
-                                        ? settings.ttsConfig.xmlFilepath
-                                        : ''
+                                        ? "file://" + encodeURI(settings.ttsConfig.xmlFilepath)
+                                        : value
                                 }
+                                enabled={!checked}
                             />
                         </>
                     )

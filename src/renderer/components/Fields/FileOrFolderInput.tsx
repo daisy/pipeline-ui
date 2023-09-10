@@ -19,6 +19,7 @@ export function FileOrFolderInput({
     initialValue = '',
     makeSlotForErrors = true,
     labelledBy = '',
+    enabled = true,
 }: {
     dialogProperties: string[] // electron dialog properties for open or save, depending on which one you're doing (see 'type')
     elemId: string // ID for the control widget
@@ -33,6 +34,7 @@ export function FileOrFolderInput({
     required?: boolean
     makeSlotForErrors?: boolean // create a span for error messages; if false, it is assumed that this will appear elsewhere
     labelledBy?: string // id of the label for this element, if present use aria-labelledby, if absent, assume the label will have an htmlFor on it
+    enabled?: boolean // should the control be given the 'grayedout' classname
 }) {
     // the value is stored internally as it can be set 2 ways
     // and also broadcast via onChange so that a parent component can subscribe
@@ -111,14 +113,15 @@ export function FileOrFolderInput({
                         tabIndex={0}
                         className={`filename ${
                             userInteracted ? 'interacted' : ''
-                        }`}
+                        } ${enabled ? '' : 'grayedout'}`}
                         value={value ?? ''}
                         onChange={(e) => onTextInput(e)}
                         id={elemId}
                         required={required}
                         aria-labelledby={labelledBy ?? ''}
+                        disabled={!enabled}
                     ></input>
-                    <button type="button" onClick={(e) => onClick(e, name)}>
+                    <button type="button" onClick={(e) => onClick(e, name)} disabled={!enabled} className={enabled ? '' : 'grayedout'}>
                         {buttonLabel}
                     </button>
                 </div>

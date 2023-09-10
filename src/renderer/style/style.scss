@@ -384,3 +384,16 @@ main.about {
         color: var(--select-mix);
     }
 }
+
+input.grayedout {
+    color: gray;
+    background: white;
+}
+button.grayedout {
+    color: gray;
+    background: inherit;
+}
+
+button.grayedout:hover {
+    background: none !important;
+}

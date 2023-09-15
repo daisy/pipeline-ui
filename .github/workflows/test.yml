@@ -1,30 +1,44 @@
-# This is a basic workflow that is manually triggered
-
-name: Test build workflow
+# this is pre-set to run on a specific revision, for troubleshooting purposes
+name: Test copy of Build macOS/Windows distributions
 
 on:
   workflow_dispatch:
+    inputs:
+      refToBuild:
+        description: 'Branch, tag or commit SHA1 to build'
+        required: true
+        type: string
+  push:
+    tags:
+      - '*'
 
-env:
-  GH_TOKEN: ${{ secrets.GH_PIPELINE_TOKEN }}
-
-# A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
   build:
     runs-on: ${{ matrix.os }}
 
     strategy:
       matrix:
-        os: [macos-latest]
+        os: [macos-latest, windows-latest]
 
     steps:
       - name: Check out Git repository
-        uses: actions/checkout@v1
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ inputs.refToBuild }}
 
       - name: Install Node.js, NPM and Yarn
         uses: actions/setup-node@v1
         with:
           node-version: 16
+
+      - name: Install Java and Maven
+        uses: actions/setup-java@v2
+        with:
+          distribution: 'adopt'
+          java-version: '11'
+
+      - name: Check out submodule
+        run: git submodule update --init --recursive
 
       - name: Get yarn cache directory path
         id: yarn-cache-dir-path
@@ -36,13 +50,99 @@ jobs:
           key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
           restore-keys: |
             ${{ runner.os }}-yarn-
-      
-      - name: Run install
-        uses: borales/actions-yarn@v4
-        with:
-          cmd: install # will run `yarn install` command
 
-      - name: Run build
-        uses: borales/actions-yarn@v4
+      - name: Cache downloaded Maven dependencies
+        uses: actions/cache@v3
         with:
-          cmd: dist-mac-dev
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-
+
+      - name: Cache downloaded JRE
+        uses: actions/cache@v3
+        with:
+          path: engine/src/main/jre
+          # always update cache using this trick:
+          # https://github.com/actions/cache/blob/main/tips-and-workarounds.md#update-a-cache
+          key: ${{ runner.os }}-jre-${{ github.run_id }}
+          restore-keys: |
+            ${{ runner.os }}-jre-
+
+      - name: Install GNU Make on macOS
+        if: ${{ matrix.os == 'macos-latest' }}
+        run: |
+          brew update
+          brew install make
+
+      - name: Build DMG if on macOS
+        if: ${{ matrix.os == 'macos-latest' }}
+        run: gmake dmg
+
+      - name: Build EXE if on Windows
+        if: ${{ matrix.os == 'windows-latest' }}
+        shell: cmd
+        run: engine\\make.exe exe
+
+      - name: Upload the DMG
+        if: ${{ matrix.os == 'macos-latest' }}
+        uses: actions/upload-artifact@v3
+        with:
+          name: "daisy-pipeline.dmg"
+          path: dist/*.dmg
+
+      - name: Upload the EXE
+        if: ${{ matrix.os == 'windows-latest' }}
+        uses: actions/upload-artifact@v3
+        with:
+          name: "daisy-pipeline.exe"
+          path: dist/*.exe
+
+# # This is a basic workflow that is manually triggered
+
+# name: Test build workflow
+
+# on:
+#   workflow_dispatch:
+
+# env:
+#   GH_TOKEN: ${{ secrets.GH_PIPELINE_TOKEN }}
+
+# # A workflow run is made up of one or more jobs that can run sequentially or in parallel
+# jobs:
+#   build:
+#     runs-on: ${{ matrix.os }}
+
+#     strategy:
+#       matrix:
+#         os: [macos-latest]
+
+#     steps:
+#       - name: Check out Git repository
+#         uses: actions/checkout@v1
+
+#       - name: Install Node.js, NPM and Yarn
+#         uses: actions/setup-node@v1
+#         with:
+#           node-version: 16
+
+#       - name: Get yarn cache directory path
+#         id: yarn-cache-dir-path
+#         run: echo "::set-output name=dir::$(yarn cache dir)"
+#       - name: Cache yarn
+#         uses: actions/cache@v3
+#         with:
+#           path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
+#           key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
+#           restore-keys: |
+#             ${{ runner.os }}-yarn-
+      
+#       - name: Run install
+#         uses: borales/actions-yarn@v4
+#         with:
+#           cmd: install # will run `yarn install` command
+
+#       - name: Run build
+#         uses: borales/actions-yarn@v4
+#         with:
+#           cmd: dist-mac-dev

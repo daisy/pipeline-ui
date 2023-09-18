@@ -173,6 +173,7 @@ export type NamedResult = {
     mimeType: string
     name: string
     nicename: string
+    desc: string
     files: Array<ResultFile>
 }
 

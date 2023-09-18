@@ -221,6 +221,29 @@ select {
         .job-results {
             width: min-content;
             white-space: nowrap;
+
+            /* the outer list item, e.g. "Results folder" */
+            .file-list > li {
+                display: flex;
+                flex-direction: column;
+                gap: var(--pad);
+            }
+
+            /* the inner list e.g. .filelist > ul > li.named-result */
+            li.named-result {
+                display: flex;
+                flex-direction: row;
+                gap: var(--pad);
+
+                .nicename {
+                    font-weight: bold;
+                }
+                .description {
+                    font-style: italic;
+                    font-size: medium;
+                    
+                }
+            }
         }
         .form-buttons {
             display: flex;

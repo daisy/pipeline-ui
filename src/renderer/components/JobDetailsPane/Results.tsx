@@ -17,10 +17,16 @@ export function Results({ job }: { job: Job }) {
                 <ul>
                     {job.jobData.results?.namedResults.map(
                         (item, itemIndex) => (
-                            <li key={`result-${itemIndex}`}>
+                            <li
+                                key={`result-${itemIndex}`}
+                                className="named-result"
+                            >
                                 <FileLink fileHref={item.href}>
-                                    {item.nicename}
+                                    <span className="nicename">
+                                        {item.nicename}
+                                    </span>
                                 </FileLink>
+                                <span className="description">{item.desc}</span>
                             </li>
                         )
                     )}

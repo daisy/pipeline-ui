@@ -60,6 +60,7 @@ function jobElementToJson(jobElm: Element): JobData {
                     mimeType: resultElm.getAttribute('mime-type'),
                     name: resultElm.getAttribute('name'),
                     nicename: resultElm.getAttribute('nicename'),
+                    desc: resultElm.getAttribute('desc'),
                     files: [],
                 }
                 // the results are structured so that a "result" element is nested inside another "result" element

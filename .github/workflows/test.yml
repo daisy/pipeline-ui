@@ -1,4 +1,4 @@
-name: Build macOS/Windows distributions
+name: Build macOS/Windows distributions from branch/tag/commit
 
 on:
   workflow_dispatch:

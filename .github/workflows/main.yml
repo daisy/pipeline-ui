@@ -23,7 +23,7 @@ jobs:
         os: [macos-latest, windows-latest]
 
     steps:
-     - name: Check out Git repository
+      - name: Check out Git repository
         uses: actions/checkout@v3
         with:
           ref: ${{ inputs.refToBuild }}

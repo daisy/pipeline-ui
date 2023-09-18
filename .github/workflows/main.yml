@@ -5,6 +5,9 @@ on:
   push:
     tags:
       - '*'
+  
+  env:
+    GH_TOKEN: ${{ secrets.GH_PIPELINE_TOKEN }}
 
 jobs:
   build:

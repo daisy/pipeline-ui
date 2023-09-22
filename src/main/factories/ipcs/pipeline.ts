@@ -395,7 +395,7 @@ Then close the program using the port and restart this application.`,
                 ...SystemProps,
                 '-classpath',
                 `"${delimiter}${relativeJarFiles.join(delimiter)}${delimiter}"`,
-                'org.daisy.pipeline.webservice.impl.PipelineWebService',
+                'org.daisy.pipeline.webservice.restlet.impl.PipelineWebService',
             ]
             this.pushMessage(
                 `Launching the local pipeline with the following command :

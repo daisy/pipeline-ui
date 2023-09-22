@@ -2,6 +2,11 @@ name: Build macOS/Windows distributions
 
 on:
   workflow_dispatch:
+    inputs:
+        refToBuild:
+          description: 'Branch, tag or commit SHA1 to build'
+          required: true
+          type: string
   push:
     tags:
       - '*'
@@ -19,7 +24,9 @@ jobs:
 
     steps:
       - name: Check out Git repository
-        uses: actions/checkout@v1
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ inputs.refToBuild }}
 
       - name: Install Node.js, NPM and Yarn
         uses: actions/setup-node@v1

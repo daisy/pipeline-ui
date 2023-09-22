@@ -31,6 +31,7 @@ src/resources/daisy-pipeline : engine/target/assembly-$(ENGINE_VERSION)-$(zip_cl
 ifeq ($(OS), MACOSX)
 	// FIXME: unzip() currently does not preserve file permissions \
 	exec("chmod", "+x", "$@/jre/bin/java");
+	exec("chmod", "+x", "$@/jre/lib/jspawnhelper");
 endif
 
 engine/target/assembly-$(ENGINE_VERSION)-$(zip_classifier).zip : \

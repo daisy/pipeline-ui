@@ -1,13 +1,13 @@
-export type TtsVoice = {
+export type Voice = {
     engine: string
     name: string
     lang: string
     gender: string
-    priority: number
+    priority?: number
     id?: string
 }
 
 export type TtsConfig = {
-    preferredVoices: Array<TtsVoice>
+    preferredVoices: Array<Voice>
     xmlFilepath?: string
 }

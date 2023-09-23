@@ -1,3 +1,5 @@
+import { Voice } from "./ttsConfig"
+
 /**
  * Webservice connexion data to compute url for fetch:
  *
@@ -43,6 +45,7 @@ export type PipelineState = {
     status: PipelineStatus
     jobs?: Job[]
     scripts?: Script[]
+    voices?: Voice[]
     internalJobCounter?: number
     selectedJobId: string
     datatypes?: Datatype[]

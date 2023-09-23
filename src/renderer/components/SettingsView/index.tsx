@@ -13,7 +13,8 @@ const { App } = window // The "App" comes from the bridge
 
 export function SettingsView() {
     // Current registered settings
-    const { settings } = useWindowStore()
+    const { settings, pipeline } = useWindowStore()
+
     // Copy settings in new settings for update
     // (without affecting the rest of the app)
     const [newSettings, setNewSettings] = useState<ApplicationSettings>({
@@ -24,31 +25,6 @@ export function SettingsView() {
             settings.jobsStateOnClosingMainWindow ?? 'close', // defaults to ask in form
     })
     const [saved, setSaved] = useState(true)
-
-    // TODO this will come from the API
-    const availableVoices = [
-        {
-            engine: 'Acapela',
-            name: 'Claire',
-            lang: 'fr',
-            gender: 'female-adult',
-            id: 'acapela-claire',
-        },
-        {
-            engine: 'Sapi',
-            name: 'Fred',
-            lang: 'en',
-            gender: 'neutral',
-            id: 'sapi-fred',
-        },
-        {
-            engine: 'Xyz',
-            name: 'Sam',
-            lang: 'fr',
-            gender: 'male',
-            id: 'xyz-sam',
-        },
-    ]
 
     useEffect(() => {
         // Reload settings from store if it has changed
@@ -291,27 +267,12 @@ export function SettingsView() {
                     ) : (
                         <div className="tts-config">
                             <TtsConfigPane
-                                availableVoices={availableVoices}
+                                availableVoices={pipeline.voices}
                                 userPreferredVoices={
                                     newSettings.ttsConfig.preferredVoices
                                 }
                                 onChangePreferredVoices={onTtsPreferenceChange}
                             />
-                            {/* <pre>
-                                E.g. this would be the output in ttsConfig.xml:
-                                <br />
-                                <br />
-                                <code>
-                                    &lt;config&gt;
-                                    {newSettings.ttsConfig.preferredVoices
-                                        .map(
-                                            (v) =>
-                                                `\n\t<voice engine="${v.engine}" name="${v.name}" lang="${v.lang}" gender="${v.gender}">`
-                                        )
-                                        .join('') + '\n'}
-                                    &lt;/config&gt;
-                                </code>
-                            </pre> */}
                         </div>
                     )}
                 </div>

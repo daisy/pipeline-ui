@@ -20,6 +20,7 @@ import {
     removeJobs,
     selectVisibleJobs,
     setAlive,
+    setVoices,
 } from 'shared/data/slices/pipeline'
 
 import {
@@ -31,6 +32,7 @@ import {
     PipelineStatus,
     ResultFile,
     Script,
+    Voice,
     Webservice,
 } from 'shared/types'
 
@@ -309,6 +311,11 @@ export function pipelineMiddleware({ getState, dispatch }) {
                             })
                             .then((datatypes) => {
                                 dispatch(setDatatypes(datatypes))
+                                return pipelineAPI.fetchVoices()(newWebservice)
+                            })
+                            .then((voices: Array<Voice>) => {
+                                console.log('Voices', voices)
+                                dispatch(setVoices(voices))
                             })
                             .catch((e) => {
                                 error('useWebservice', e)

@@ -2,7 +2,7 @@
   "displayName": "DAISY Pipeline (2023)",
   "name": "pipeline-ui",
   "description": "User interface for the DAISY Pipeline",
-  "version": "1.1.0",
+  "version": "1.2.0-BETA",
   "main": "./node_modules/.dev-temp-build/main.js",
   "devTempBuildFolder": "./node_modules/.dev-temp-build",
   "devServer": "http://localhost:4927",

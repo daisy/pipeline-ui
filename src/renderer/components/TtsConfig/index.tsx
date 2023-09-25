@@ -3,7 +3,7 @@ Select a script and submit a new job
 */
 import { useState, useEffect } from 'react'
 import { useWindowStore } from 'renderer/store'
-import { TtsConfig, TtsVoice } from 'shared/types/ttsConfig'
+import { TtsConfig, Voice } from 'shared/types/ttsConfig'
 import { Down, Up } from '../SvgIcons'
 
 export function TtsConfigPane({
@@ -31,7 +31,7 @@ export function TtsConfigPane({
         selected: 'prefer',
     })
 
-    let changePreferredVoices = (e, voice: TtsVoice) => {
+    let changePreferredVoices = (e, voice: Voice) => {
         if (e.target.checked) {
             let tmpVoices = [...preferredVoices, voice]
             setPreferredVoices(tmpVoices)
@@ -67,7 +67,7 @@ export function TtsConfigPane({
         let sortSettings_ = { ...sortSettings }
         // reverse the sort direction in the settings
         sortSettings_[sortBy] = sortSettings_[sortBy] == 1 ? -1 : 1
-        sortSettings_.active = sortBy
+        sortSettings_.selected = sortBy
         // reverse the actual data
         if (sortSettings_[sortBy] == -1) {
             sortedVoices.reverse()
@@ -82,7 +82,8 @@ export function TtsConfigPane({
             voiceList_.map((v) => (v.show = true))
         } else {
             voiceList_.map((v) => {
-                if ( // look in all the text searchable fields
+                if (
+                    // look in all the text searchable fields
                     v.name.toLowerCase().indexOf(search) != -1 ||
                     v.engine.toLowerCase().indexOf(search) != -1 ||
                     v.lang.toLowerCase().indexOf(search) != -1 ||
@@ -131,11 +132,11 @@ export function TtsConfigPane({
                     }}
                 />
             </div>
-            {voiceList.filter(v => v.show).length > 0 ? (
+            {voiceList.filter((v) => v.show).length > 0 ? (
                 <div
                     role="region"
                     aria-labelledby="available-voices-label"
-                    tabIndex="0"
+                    tabIndex={0}
                 >
                     <table aria-labelledby="available-voices-label">
                         <thead>
@@ -226,7 +227,10 @@ export function TtsConfigPane({
                     <p>
                         No voices found{' '}
                         {searchString != '' ? (
-                            <button className="inline-button" onClick={(e) => clearSearch()}>
+                            <button
+                                className="inline-button"
+                                onClick={(e) => clearSearch()}
+                            >
                                 Clear search
                             </button>
                         ) : (

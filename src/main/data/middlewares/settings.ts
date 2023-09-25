@@ -5,6 +5,7 @@ import { existsSync, readFileSync, writeFile } from 'fs'
 import { resolve } from 'path'
 import { ENVIRONMENT } from 'shared/constants'
 import { save } from 'shared/data/slices/settings'
+import { ttsConfigToXml } from 'shared/parser/pipelineXmlConverter/ttsConfigToXml'
 import { ApplicationSettings } from 'shared/types'
 import { RootState } from 'shared/types/store'
 import { resolveUnpacked } from 'shared/utils'
@@ -45,6 +46,10 @@ export function readSettings() {
         colorScheme: 'system',
         appStateOnClosingMainWindow: undefined,
         jobsStateOnClosingMainWindow: 'close',
+        ttsConfig: {
+            preferredVoices: [],
+            xmlFilepath: resolve(app.getPath('userData'), 'ttsConfig.xml'),
+        },
     } as ApplicationSettings
     try {
         if (existsSync(settingsFile)) {
@@ -59,6 +64,10 @@ export function readSettings() {
                         ...settings.localPipelineProps.webservice,
                         ...loaded?.localPipelineProps?.webservice,
                     },
+                },
+                ttsConfig: {
+                    ...settings.ttsConfig,
+                    ...loaded?.ttsConfig,
                 },
             }
         }
@@ -91,6 +100,11 @@ export function settingsMiddleware({ getState }) {
                     writeFile(
                         settingsFile,
                         JSON.stringify(settings, null, 4),
+                        () => {}
+                    )
+                    writeFile(
+                        settings.ttsConfig.xmlFilepath,
+                        ttsConfigToXml(settings.ttsConfig),
                         () => {}
                     )
                     break

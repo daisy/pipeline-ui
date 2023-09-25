@@ -1,4 +1,5 @@
 import { PipelineInstanceProps, Webservice } from './pipeline'
+import { TtsConfig } from './ttsConfig'
 
 export enum ColorScheme {
     system = 'System default mode',
@@ -35,4 +36,6 @@ export type ApplicationSettings = {
     // Actions to perform when closing the main window
     appStateOnClosingMainWindow?: keyof typeof ClosingMainWindowActionForApp
     jobsStateOnClosingMainWindow?: keyof typeof ClosingMainWindowActionForJobs
+    // tts preferred voices
+    ttsConfig?: TtsConfig
 }

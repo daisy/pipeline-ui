@@ -12,7 +12,7 @@ ENGINE_VERSION := $(shell println(xpath(new File("engine/pom.xml"), "/*/*[local-
 .PHONY : dmg
 dmg : src/resources/daisy-pipeline src/resources/icons/logo_mac_40x40_Template@2x.png
 	exec("yarn");
-	exec("yarn", "dist", "--mac");
+	exec("yarn", "dist-mac-dev", "--mac");
 
 .PHONY : exe
 exe : src/resources/daisy-pipeline
@@ -48,3 +48,5 @@ clean :
 	rm("src/resources/daisy-pipeline");
 	rm("node_modules/.dev-temp-build");
 	exec("$(MAKE)", "-C", "engine", "clean");
+
+

@@ -23,6 +23,7 @@ const initialState = {
     webservice: null,
     scripts: [],
     datatypes: [],
+    voices: [],
     jobs: [],
     internalJobCounter: 0,
     selectedJobId: '',
@@ -42,6 +43,7 @@ export const pipeline = createSlice({
             if (param.payload.status) state.status = param.payload.status
             if (param.payload.jobs) state.jobs = param.payload.jobs
             if (param.payload.scripts) state.scripts = param.payload.scripts
+            if (param.payload.voices) state.voices = param.payload.voices
         },
         /**
          * Start the pipeline.
@@ -106,6 +108,12 @@ export const pipeline = createSlice({
             state.datatypes = state.datatypes.map((d: Datatype) =>
                 d.id == param.payload.id ? param.payload : d
             )
+        },
+        setVoices: (
+            state: PipelineState,
+            param: PayloadAction<Array<Voice>>
+        ) => {
+            state.voices = param.payload
         },
         setJobs: (state: PipelineState, param: PayloadAction<Array<Job>>) => {
             state.jobs = param.payload
@@ -289,6 +297,7 @@ export const {
     selectNextJob,
     selectPrevJob,
     setAlive,
+    setVoices,
 } = pipeline.actions
 
 export const selectors = {
@@ -328,6 +337,7 @@ export const selectors = {
         ),
     selectScripts: (state: RootState) => state.pipeline.scripts,
     selectDatatypes: (state: RootState) => state.pipeline.datatypes,
+    selectVoices: (state: RootState) => state.pipeline.voices,
     newJob: (pipeline: PipelineState) =>
         ({
             internalId: `job-${pipeline.internalJobCounter}`,

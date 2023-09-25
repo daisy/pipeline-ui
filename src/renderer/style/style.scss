@@ -357,6 +357,19 @@ select {
                         margin: var(--pad);
                     }
                 }
+
+                .optional-value {
+                    flex-direction: row;
+                    display: flex;
+                    align-items: center;
+                }
+                label button {
+                    border: none;
+                    text-decoration: underline;
+                    font-size: normal;
+                    padding: 0;
+                }
+                
             }
         }    
         .form-buttons {
@@ -394,4 +407,17 @@ main.about {
         background-color: var(--bg);
         color: var(--select-mix);
     }
+}
+
+input.grayedout {
+    color: gray;
+    background: white;
+}
+button.grayedout {
+    color: gray;
+    background: inherit;
+}
+
+button.grayedout:hover {
+    background: none !important;
 }

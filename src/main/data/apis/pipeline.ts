@@ -7,6 +7,7 @@ import {
     jobXmlToJson,
     scriptsXmlToJson,
     scriptXmlToJson,
+    voicesToJson,
 } from 'shared/parser/pipelineXmlConverter'
 import {
     Datatype,
@@ -121,5 +122,10 @@ export const pipelineAPI = {
         createPipelineFetchFunction(
             (ws) => `${baseurl(ws)}/alive`,
             (text) => aliveXmlToJson(text)
+        ),
+    fetchVoices: () =>
+        createPipelineFetchFunction(
+            (ws) => `${baseurl(ws)}/voices`,
+            (text) => voicesToJson(text)
         ),
 }

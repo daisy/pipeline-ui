@@ -44,25 +44,10 @@ export function TtsConfigPane({
             onChangePreferredVoices(tmpVoices)
         }
     }
-    // dir: 1 or -1
-    let sortVoices = (sortBy) => {
-        let alphasort = (a, b) => (a > b ? 1 : a == b ? 0 : -1)
 
-        let sortedVoices = voiceList.sort((a, b) => {
-            if (sortBy == 'prefer') {
-                let prefersA = preferredVoices.map((v) => v.id).includes(a.id)
-                let prefersB = preferredVoices.map((v) => v.id).includes(b.id)
-                return prefersA ? 1 : prefersB ? -1 : 0
-            } else if (sortBy == 'name') {
-                return alphasort(a.name, b.name)
-            } else if (sortBy == 'engine') {
-                return alphasort(a.engine, b.engine)
-            } else if (sortBy == 'lang') {
-                return alphasort(a.lang, b.lang)
-            } else if (sortBy == 'gender') {
-                return alphasort(a.gender, b.gender)
-            }
-        })
+    
+    let sortVoices = (sortBy) => {
+        let sortedVoices = sortVoicesArray(voiceList, preferredVoices, sortBy)
 
         let sortSettings_ = { ...sortSettings }
         // reverse the sort direction in the settings
@@ -97,6 +82,11 @@ export function TtsConfigPane({
         }
         setVoiceList([...voiceList_])
     }, [searchString])
+
+    useEffect(() => {
+        // sort on startup
+        sortVoices(sortSettings.selected)
+    }, [])
 
     let clearSearch = () => {
         setSearchString('')
@@ -241,4 +231,26 @@ export function TtsConfigPane({
             )}
         </>
     )
+}
+
+function sortVoicesArray (voiceList, preferredVoices, sortBy) {
+    let alphasort = (a, b) => (a > b ? 1 : a == b ? 0 : -1)
+
+    let sortedVoices = voiceList.sort((a, b) => {
+        if (sortBy == 'prefer') {
+            let prefersA = preferredVoices.map((v) => v.id).includes(a.id)
+            let prefersB = preferredVoices.map((v) => v.id).includes(b.id)
+            return prefersA ? 1 : prefersB ? -1 : 0
+        } else if (sortBy == 'name') {
+            return alphasort(a.name, b.name)
+        } else if (sortBy == 'engine') {
+            return alphasort(a.engine, b.engine)
+        } else if (sortBy == 'lang') {
+            return alphasort(a.lang, b.lang)
+        } else if (sortBy == 'gender') {
+            return alphasort(a.gender, b.gender)
+        }
+    })
+
+    return sortedVoices
 }

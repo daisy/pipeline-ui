@@ -115,7 +115,7 @@ export function TtsConfigPane({
             </p>
             <p>
                 Select your preferred voices, saved as your default TTS
-                confiuration.
+                configuration.
             </p>
             <div id="voice-table-controls">
                 <label htmlFor="voicesearch">Search</label>

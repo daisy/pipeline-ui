@@ -45,7 +45,6 @@ export function TtsConfigPane({
         }
     }
 
-    
     let sortVoices = (sortBy) => {
         let sortedVoices = sortVoicesArray(voiceList, preferredVoices, sortBy)
 
@@ -99,6 +98,13 @@ export function TtsConfigPane({
     //     setVoiceList(tmpVoices)
     // }
 
+    let getAriaSortValue = (colName) => {
+        return sortSettings.selected == colName
+            ? sortSettings[colName] == 1
+                ? 'ascending'
+                : 'descending'
+            : 'none'
+    }
     return (
         <>
             <p id="available-voices-label" className="label">
@@ -131,20 +137,50 @@ export function TtsConfigPane({
                     <table aria-labelledby="available-voices-label">
                         <thead>
                             <tr>
-                                <th onClick={(e) => sortVoices('prefer')}>
-                                    Prefer
+                                <th
+                                    onClick={(e) => sortVoices('prefer')}
+                                    aria-sort={getAriaSortValue('prefer')}
+                                    title="Sort by preference"
+                                >
+                                    <span tabIndex={0} role="button">
+                                        Prefer
+                                    </span>
                                 </th>
-                                <th onClick={(e) => sortVoices('name')}>
-                                    Name
+                                <th
+                                    onClick={(e) => sortVoices('name')}
+                                    aria-sort={getAriaSortValue('name')}
+                                    title="Sort by name"
+                                >
+                                    <span tabIndex={0} role="button">
+                                        Name
+                                    </span>
                                 </th>
-                                <th onClick={(e) => sortVoices('engine')}>
-                                    Engine
+                                <th
+                                    onClick={(e) => sortVoices('engine')}
+                                    aria-sort={getAriaSortValue('engine')}
+                                    title="Sort by engine"
+                                >
+                                    <span tabIndex={0} role="button">
+                                        Engine
+                                    </span>
                                 </th>
-                                <th onClick={(e) => sortVoices('lang')}>
-                                    Language
+                                <th
+                                    onClick={(e) => sortVoices('lang')}
+                                    aria-sort={getAriaSortValue('lang')}
+                                    title="Sort by language"
+                                >
+                                    <span tabIndex={0} role="button">
+                                        Language
+                                    </span>
                                 </th>
-                                <th onClick={(e) => sortVoices('gender')}>
-                                    Gender
+                                <th
+                                    onClick={(e) => sortVoices('gender')}
+                                    aria-sort={getAriaSortValue('gender')}
+                                    title="Sort by gender"
+                                >
+                                    <span tabIndex={0} role="button">
+                                        Gender
+                                    </span>
                                 </th>
                                 {/* <th>Move</th> */}
                             </tr>
@@ -233,7 +269,7 @@ export function TtsConfigPane({
     )
 }
 
-function sortVoicesArray (voiceList, preferredVoices, sortBy) {
+function sortVoicesArray(voiceList, preferredVoices, sortBy) {
     let alphasort = (a, b) => (a > b ? 1 : a == b ? 0 : -1)
 
     let sortedVoices = voiceList.sort((a, b) => {

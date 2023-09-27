@@ -157,6 +157,20 @@ $engineColWidth: 8rem;
             top: 0;
             padding: 5px;
         }
+
+        /* sorting */
+        thead th {
+            cursor: pointer;
+        }
+        thead th::after {
+            margin-left: 5px;
+        }
+        thead th[aria-sort='ascending']::after {
+            content: '▲';
+        }
+        thead th[aria-sort='descending']::after {
+            content: '▼';
+        }
     }
 }
 

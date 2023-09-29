@@ -1,4 +1,4 @@
-import { Voice } from "./ttsConfig"
+import { Voice } from './ttsConfig'
 
 /**
  * Webservice connexion data to compute url for fetch:
@@ -231,6 +231,7 @@ export type Job = {
 }
 // JobData is the JSON representation of Pipeline WS data for a single job
 export type JobData = {
+    type: 'JobRequestSuccess'
     jobId: string // the ID from the pipeline
     priority?: Priority
     status?: JobStatus
@@ -248,6 +249,13 @@ export type JobData = {
     nicename?: string
     scriptHref?: string
     href: string
+}
+
+// thrown by the pipeline when a job request could not be processed
+export type JobRequestError = {
+    type: 'JobRequestError'
+    description?: string
+    trace?: string
 }
 
 export enum JobState {

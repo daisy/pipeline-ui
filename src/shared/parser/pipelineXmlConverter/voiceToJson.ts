@@ -1,4 +1,4 @@
-import { Voice } from 'shared/types/pipeline'
+import { Voice } from 'shared/types'
 
 function voiceElementToJson(voiceElm: Element): Voice {
     let voice: Voice = {

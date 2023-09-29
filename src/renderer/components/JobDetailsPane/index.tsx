@@ -14,7 +14,19 @@ import { readableStatus } from 'shared/jobName'
 const { App } = window
 
 export function JobDetailsPane({ job }) {
-    return (
+    return job.jobData.type == 'JobRequestError' ? (
+        <>
+            <h1>Error</h1>
+            <p>{job.jobData.description}</p>
+            <button
+                onClick={(e) => {
+                    App.store.dispatch(removeJob(job))
+                }}
+            >
+                Close job
+            </button>
+        </>
+    ) : (
         <>
             <section
                 className="header"

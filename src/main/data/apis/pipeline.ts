@@ -22,6 +22,7 @@ import {
 import fetch, { Response, RequestInit } from 'node-fetch'
 
 import { info, error } from 'electron-log'
+import { jobResponseXmlToJson } from 'shared/parser/pipelineXmlConverter/jobResponseToJson'
 
 /**
  * Create a fetch function on the pipeline webservice
@@ -90,7 +91,7 @@ export const pipelineAPI = {
     launchJob: (j: Job) =>
         createPipelineFetchFunction(
             (ws) => `${baseurl(ws)}/jobs`,
-            (text) => jobXmlToJson(text),
+            (text) => jobResponseXmlToJson(text),
             {
                 method: 'POST',
                 body: jobRequestToXml({

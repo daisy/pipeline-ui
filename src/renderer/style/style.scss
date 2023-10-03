@@ -407,6 +407,30 @@ main.about {
         background-color: var(--bg);
         color: var(--select-mix);
     }
+    .actions {
+        width: 100%;
+        display: flex;
+        flex-direction: row;
+        flex-wrap: wrap;
+        justify-content: space-around;
+    }
+    
+    .actions p {
+        display: block;
+        margin: 0;
+        margin-bottom: 1em;
+        margin-left: 10%;
+        margin-right: 10%;
+        width: 80%;
+    }
+    .actions > progress {
+        margin-left: 10%;
+        margin-right: 10%;
+        width: 80%;
+    }
+    .actions:last-child{
+        margin-right: 0em;
+    }
 }
 
 input.grayedout {

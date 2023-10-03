@@ -6,11 +6,70 @@ import { Copy } from '../SvgIcons'
 import daisyLogo from './daisy_high.jpg'
 import pipelineLogo from './logo_64x64.png'
 import packageJson from '../../../../package.json'
+import { UpdateState } from 'shared/types'
+import {
+    startInstall,
+    cancelInstall,
+    checkForUpdate,
+} from 'shared/data/slices/update'
+
+const { App } = window
+
+const UpdateButton = (update: UpdateState) => {
+    if (update.downloadProgress) {
+        console.log(update.downloadProgress)
+        return (
+            <>
+                <progress max="100" value={update.downloadProgress.percent}>
+                    {update.downloadProgress.percent}%
+                </progress>
+                {update.downloadProgress.percent < 100 && (
+                    <button
+                        id="cancel-download"
+                        title="Cancel download"
+                        onClick={() => {
+                            App.store.dispatch(cancelInstall())
+                        }}
+                    >
+                        Cancel
+                    </button>
+                )}
+            </>
+        )
+    } else if (update.updateAvailable) {
+        return (
+            <button
+                id="start-install"
+                title={`${
+                    !update.updateDownloaded ? 'Download and i' : 'I'
+                }nstall ${update.updateAvailable.version}`}
+                onClick={() => {
+                    App.store.dispatch(startInstall(true))
+                }}
+            >
+                {(!update.updateDownloaded ? 'Download and i' : 'I') +
+                    `nstall ${update.updateAvailable.version}`}
+            </button>
+        )
+    } else {
+        return (
+            <button
+                id="check-update"
+                title="Check for updates"
+                onClick={() => {
+                    App.store.dispatch(checkForUpdate(true))
+                }}
+            >
+                Check for updates
+            </button>
+        )
+    }
+}
 
 export function AboutView({ title }) {
     const { App } = window
 
-    const { pipeline } = useWindowStore()
+    const { pipeline, update } = useWindowStore()
     let version = packageJson.version
     let engineVersion = pipeline.alive?.version
 
@@ -82,7 +141,11 @@ export function AboutView({ title }) {
                     <Copy width="30" height="30" />
                 </button>
             </p>
-            <button onClick={(e) => closeAboutBox()}>Close</button>
+            <div className="actions">
+                {update.updateMessage && <p>{update.updateMessage}</p>}
+                {UpdateButton(update)}
+                <button onClick={(e) => closeAboutBox()}>Close</button>
+            </div>
         </main>
     )
 }

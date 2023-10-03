@@ -8,10 +8,10 @@ export function AboutWindow() {
     const window = createWindow({
         id: 'about',
         title: `${APP_CONFIG.TITLE} - About`,
-        width: 450,
-        height: 450,
+        width: 550,
+        height: 550,
         resizable: false,
-        alwaysOnTop: true,
+        alwaysOnTop: false,
         frame: false,
 
         webPreferences: {

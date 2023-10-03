@@ -68,6 +68,14 @@ export function SettingsView() {
         setSaved(false)
     }
 
+    const autoCheckUpdateChanged = (e) => {
+        setNewSettings({
+            ...newSettings,
+            autoCheckUpdate: e.target.checked,
+        })
+        setSaved(false)
+    }
+
     const JobsClosingActionChanged = (e) => {
         setNewSettings({
             ...newSettings,
@@ -81,7 +89,7 @@ export function SettingsView() {
     }
 
     const onTtsPreferenceChange = (voices) => {
-        console.log("on tts pref change", voices)
+        console.log('on tts pref change', voices)
         setNewSettings({
             ...newSettings,
             ttsConfig: {
@@ -137,6 +145,15 @@ export function SettingsView() {
                     >
                         <button onClick={(e) => setSelectedSection(3)}>
                             Text-to-speech
+                        </button>
+                    </li>
+                    <li
+                        className={
+                            selectedSection == 4 ? 'selected-menu-item' : ''
+                        }
+                    >
+                        <button onClick={(e) => setSelectedSection(4)}>
+                            Updates
                         </button>
                     </li>
                 </ul>
@@ -264,7 +281,7 @@ export function SettingsView() {
                             {/* insert local pipeline settings form part here */}
                             {/* insert remote pipeline settings form part here */}
                         </>
-                    ) : (
+                    ) : selectedSection == 3 ? (
                         <div className="tts-config">
                             <TtsConfigPane
                                 availableVoices={pipeline.voices}
@@ -273,6 +290,22 @@ export function SettingsView() {
                                 }
                                 onChangePreferredVoices={onTtsPreferenceChange}
                             />
+                        </div>
+                    ) : (
+                        <div className="form-field">
+                            <label className="oneline">
+                                <input
+                                    id="autoCheckUpdate"
+                                    type="checkbox"
+                                    checked={newSettings.autoCheckUpdate}
+                                    onChange={autoCheckUpdateChanged}
+                                />
+                                <span>Check for updates in background</span>
+                            </label>
+                            <span className="description">
+                                Choose here if you want to keep the application
+                                checking for updates in the background.
+                            </span>
                         </div>
                     )}
                 </div>

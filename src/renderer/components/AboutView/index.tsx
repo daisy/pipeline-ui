@@ -17,7 +17,6 @@ const { App } = window
 
 const UpdateButton = (update: UpdateState) => {
     if (update.downloadProgress) {
-        console.log(update.downloadProgress)
         return (
             <>
                 <progress max="100" value={update.downloadProgress.percent}>
@@ -40,15 +39,12 @@ const UpdateButton = (update: UpdateState) => {
         return (
             <button
                 id="start-install"
-                title={`${
-                    !update.updateDownloaded ? 'Download and i' : 'I'
-                }nstall ${update.updateAvailable.version}`}
+                title={`Update to ${update.updateAvailable.version}`}
                 onClick={() => {
                     App.store.dispatch(startInstall(true))
                 }}
             >
-                {(!update.updateDownloaded ? 'Download and i' : 'I') +
-                    `nstall ${update.updateAvailable.version}`}
+                Update to {update.updateAvailable.version}
             </button>
         )
     } else {

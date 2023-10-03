@@ -56,7 +56,20 @@ select {
 .form-field {
     display: flex;
     flex-flow: column;
-    gap: calc(var(--pad)/2);    
+    gap: calc(var(--pad)/2);
+    // aligned label and input
+    .oneline {
+        display: inline-block;
+        
+        input {
+            vertical-align: middle;
+            display: inline
+        }
+
+        span {
+            vertical-align: middle;
+        }
+    }
 }
 .file-or-folder {
     input {

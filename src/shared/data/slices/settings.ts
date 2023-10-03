@@ -24,6 +24,7 @@ export const settings = createSlice({
         appStateOnClosingMainWindow: undefined,
         jobsStateOnClosingMainWindow: undefined,
         ttsConfig: undefined,
+        autoCheckUpdate: true,
     } as ApplicationSettings,
     reducers: {
         // general state changer, not recommended based on how redux works
@@ -33,11 +34,11 @@ export const settings = createSlice({
         ) => {
             if (action.payload.downloadFolder)
                 state.downloadFolder = action.payload.downloadFolder
-            if (action.payload.runLocalPipeline)
+            if (action.payload.runLocalPipeline !== undefined)
                 state.runLocalPipeline = action.payload.runLocalPipeline
             if (action.payload.localPipelineProps)
                 state.localPipelineProps = action.payload.localPipelineProps
-            if (action.payload.useRemotePipeline)
+            if (action.payload.useRemotePipeline !== undefined)
                 state.useRemotePipeline = action.payload.useRemotePipeline
             if (action.payload.colorScheme)
                 state.colorScheme = action.payload.colorScheme
@@ -49,6 +50,9 @@ export const settings = createSlice({
                     action.payload.jobsStateOnClosingMainWindow
             if (action.payload.ttsConfig)
                 state.ttsConfig = action.payload.ttsConfig
+            if (action.payload.autoCheckUpdate !== undefined) {
+                state.autoCheckUpdate = action.payload.autoCheckUpdate
+            }
         },
         save: (state: ApplicationSettings) => {
             // save action to trigger middleware save on disk
@@ -58,6 +62,12 @@ export const settings = createSlice({
             action: PayloadAction<string>
         ) => {
             state.downloadFolder = action.payload
+        },
+        setAutoCheckUpdate: (
+            state: ApplicationSettings,
+            action: PayloadAction<boolean>
+        ) => {
+            state.autoCheckUpdate = action.payload
         },
         setPipelineProperties: (
             state: ApplicationSettings,
@@ -101,6 +111,7 @@ export const {
     setClosingMainWindowActionForApp,
     setClosingMainWindowActionForJobs,
     setTtsConfig,
+    setAutoCheckUpdate,
 } = settings.actions
 
 export const selectors = {
@@ -114,6 +125,7 @@ export const selectors = {
     selectClosingActionForJobs: (s: RootState) =>
         s.settings.jobsStateOnClosingMainWindow,
     selectTtsConfig: (s: RootState) => s.settings.ttsConfig,
+    selectAutoCheckUpdate: (s: RootState) => s.settings.autoCheckUpdate,
 }
 // prettier-ignore
 export const {
@@ -125,4 +137,5 @@ export const {
     selectClosingActionForApp,
     selectClosingActionForJobs,
     selectTtsConfig,
+    selectAutoCheckUpdate,
 } = selectors

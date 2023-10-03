@@ -19,6 +19,16 @@ exe : src/resources/daisy-pipeline
 	exec("yarn.cmd");
 	exec("yarn.cmd", "dist", "--win");
 
+.PHONY : release
+release: src/resources/daisy-pipeline
+ifeq ($(OS), WINDOWS)
+	exec("yarn.cmd");
+	exec("yarn.cmd", "release");
+else
+	exec("yarn");
+	exec("yarn", "release");
+endif
+
 ifeq ($(OS), WINDOWS)
 zip_classifier := win
 else ifeq ($(OS), MACOSX)
@@ -44,7 +54,11 @@ engine/target/assembly-$(ENGINE_VERSION)-$(zip_classifier).zip : \
 			                        "--without-persistence");
 
 clean :
+ifeq ($(OS), WINDOWS)
+	exec("yarn.cmd", "clean");
+else
 	exec("yarn", "clean");
+endif
 	rm("src/resources/daisy-pipeline");
 	rm("node_modules/.dev-temp-build");
 	exec("$(MAKE)", "-C", "engine", "clean");

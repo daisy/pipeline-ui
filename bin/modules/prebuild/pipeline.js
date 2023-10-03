@@ -304,6 +304,8 @@ async function buildPipeline(platform = null) {
     let makeCmd = 'make'
     if (targetedPlatform == 'windows') {
         makeCmd = path.resolve('make.exe')
+    } else if (targetedPlatform == 'mac') {
+        makeCmd = "gmake"
     }
     try {
         console.debug(`launching command : ${makeCmd} clean`)

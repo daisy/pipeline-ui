@@ -12,7 +12,7 @@ import {
     setUpdateDownloaded,
 } from 'shared/data/slices/update'
 
-import { CancellationToken, autoUpdater } from 'electron-updater'
+import { CancellationToken, ProgressInfo, autoUpdater } from 'electron-updater'
 
 /**
  * Middleware to manage updates
@@ -44,6 +44,7 @@ export function updateMiddleware({ getState, dispatch }) {
         try {
             switch (action.type) {
                 case checkForUpdate.type:
+                    dispatch(setUpdateMessage('Checking for updates ...'))
                     if (action.payload === true) {
                         userIsWarnedAboutUpdate = false
                     }
@@ -59,10 +60,20 @@ export function updateMiddleware({ getState, dispatch }) {
                             }
                         })
                         .catch((v) => {
-                            console.log('error during version check : ', v)
+                            dispatch(
+                                setUpdateMessage(
+                                    'error during update check : ' +
+                                        JSON.stringify(v)
+                                )
+                            )
                         })
                     break
                 case setUpdateAvailable.type:
+                    dispatch(
+                        setUpdateMessage(
+                            `A new version (${update.updateAvailable.version}) is available`
+                        )
+                    )
                     if (!userIsWarnedAboutUpdate) {
                         userIsWarnedAboutUpdate = true
                         dialog
@@ -133,7 +144,7 @@ export function updateMiddleware({ getState, dispatch }) {
                                 }
                             })
                     } else if (cancelationToken === null) {
-                        console.log('started dispatch without payload')
+                        dispatch(setUpdateMessage(`Downloading ...`))
                         cancelationToken = new CancellationToken()
                         autoUpdater
                             .downloadUpdate(cancelationToken)
@@ -154,12 +165,31 @@ export function updateMiddleware({ getState, dispatch }) {
                             .catch((e) => {
                                 dispatch(setUpdateError(e))
                             })
-                        break
                     }
+                    break
+                case setDownloadProgress.type:
+                    console.log(action.payload)
+                    const progress = action.payload as ProgressInfo
+                    if (progress != null) {
+                        dispatch(
+                            setUpdateMessage(
+                                `Downloading ... ${(
+                                    progress.bytesPerSecond / 1024
+                                ).toFixed()} KB/s - ${(
+                                    progress.transferred / 1024
+                                ).toFixed()} / ${(
+                                    progress.total / 1024
+                                ).toFixed()} KB`
+                            )
+                        )
+                    }
+                    break
                 case cancelInstall.type:
+                    dispatch(setUpdateMessage(''))
                     if (cancelationToken != null) {
                         cancelationToken.cancel()
                         cancelationToken = null
+                        dispatch(setDownloadProgress(null))
                     }
                     break
                 default:

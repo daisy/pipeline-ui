@@ -19,7 +19,11 @@ const UpdateButton = (update: UpdateState) => {
     if (update.downloadProgress) {
         return (
             <>
-                <progress max="100" value={update.downloadProgress.percent}>
+                <progress
+                    id="update-download-progress"
+                    max="100"
+                    value={update.downloadProgress.percent}
+                >
                     {update.downloadProgress.percent}%
                 </progress>
                 {update.downloadProgress.percent < 100 && (
@@ -96,6 +100,10 @@ export function AboutView({ title }) {
     }
 
     useEffect(() => {
+        App.store.dispatch(checkForUpdate())
+    }, [])
+
+    useEffect(() => {
         document.addEventListener('keydown', (e) => {
             handleKeyPress(e)
         })
@@ -138,7 +146,17 @@ export function AboutView({ title }) {
                 </button>
             </p>
             <div className="actions">
-                {update.updateMessage && <p>{update.updateMessage}</p>}
+                {update.updateMessage && (
+                    <p>
+                        <label
+                            {...(update.downloadProgress
+                                ? { htmlFor: 'update-download-progress' }
+                                : {})}
+                        >
+                            {update.updateMessage}
+                        </label>
+                    </p>
+                )}
                 {UpdateButton(update)}
                 <button onClick={(e) => closeAboutBox()}>Close</button>
             </div>

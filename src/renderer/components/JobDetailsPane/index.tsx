@@ -59,7 +59,7 @@ export function JobDetailsPane({ job }) {
                         id={`${ID(job.internalId)}-job-settings`}
                         className="job-settings"
                     >
-                        <summary>Settings</summary>
+                        <summary>Job Settings</summary>
                         <Settings job={job} />
                     </details>
                 </div>

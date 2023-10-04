@@ -110,7 +110,7 @@ select {
 .fixed-height-layout {
     display: flex;
     flex-direction: column;
-    gap: var(--pad);
+    gap: calc(1.5 * var(--pad));
     max-height: var(--tab-panel-height);
     min-height: var(--tab-panel-height);
 }
@@ -122,6 +122,10 @@ select {
     grid-template-columns: 60% auto;
     font-size: large;
 
+    // indent the contents not the heading
+    div > *:not(h1) {
+        margin-left: var(--pad);
+    }
     h1 {
         white-space: nowrap;
     }
@@ -175,15 +179,19 @@ select {
         display: flex;
         flex-direction: column;
         overflow-y: scroll;
+        
 
         .scrolling-area {
             overflow-y: scroll;
+            gap: var(--pad);
+            display: flex;
+            flex-direction: column;
         }
 
         .job-messages {
             ul {
                 font-family: var(--fw-font-family);
-                
+                margin-left: var(--pad);
                 .error {
                     background-color: var(--error-bg);
                     color: var(--error-fg);
@@ -222,6 +230,9 @@ select {
             width: min-content;
             white-space: nowrap;
 
+            .file-list {
+                margin-left: var(--pad);
+            }
             /* the outer list item, e.g. "Results folder" */
             .file-list > li {
                 display: flex;

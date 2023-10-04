@@ -79,6 +79,9 @@ $engineColWidth: 8rem;
     justify-self: flex-end;
 }
 
+.fields:has(.tts-config) {
+    gap: 0;
+}
 .tts-config {
     display: flex;
     flex-direction: column;
@@ -115,19 +118,32 @@ $engineColWidth: 8rem;
         border-radius: 10px;
     }
     #voice-table-controls {
-        display: flex;
-        flex-direction: row;
+        // display: flex;
+        // flex-direction: row;
         gap: var(--pad);
         align-items: center;
 
         input {
             width: 80%;
         }
+
+        .includeEngines, .includeEngines ul, .includeEngines li {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            border: none;
+
+            label {
+                font-weight: normal;
+                width: min-content;
+                white-space: nowrap;
+            }
+        }
     }
     /* the table scrolling container */
     div[role="region"][aria-labelledby][tabindex] {
         overflow: auto;
-        max-height: $fieldHeight - 15vh;
+        max-height: $fieldHeight - 28vh;
     }
 
     table {
@@ -171,6 +187,11 @@ $engineColWidth: 8rem;
         thead th[aria-sort='descending']::after {
             content: '▼';
         }
+    }
+
+    .selection-summary {
+        font-size: smaller;
+        font-style: italic;
     }
 }
 

@@ -1,4 +1,7 @@
 import { Job } from 'shared/types'
+import remarkGfm from 'remark-gfm'
+import { externalLinkClick } from 'renderer/utils'
+import Markdown from 'react-markdown'
 
 export function Results({ job }: { job: Job }) {
     let handleWebLink = (e) => {
@@ -26,7 +29,31 @@ export function Results({ job }: { job: Job }) {
                                         {item.nicename}
                                     </span>
                                 </FileLink>
-                                <span className="description">{item.desc}</span>
+                                <div className="description">
+                                    <Markdown
+                                        remarkPlugins={[remarkGfm]}
+                                        components={{
+                                            // override the rendering of link elements with a link element that opens in an external browser
+                                            a: (props) => {
+                                                return (
+                                                    <a
+                                                        href={props.href}
+                                                        onClick={(e) =>
+                                                            externalLinkClick(
+                                                                e,
+                                                                App
+                                                            )
+                                                        }
+                                                    >
+                                                        {props.children}
+                                                    </a>
+                                                )
+                                            },
+                                        }}
+                                    >
+                                        {item.desc}
+                                    </Markdown>
+                                </div>
                             </li>
                         )
                     )}

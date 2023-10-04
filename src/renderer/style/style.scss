@@ -70,6 +70,11 @@ select {
 .description {
     font-style: italic;
     font-size: smaller;
+
+    // the markdown descriptions coming from the scripts can use paragraph tags, this lines them up at the top
+    p:first-child {
+        margin-top: 0 !important;
+    }
 }
 .filelink {
     color: var(--fg);

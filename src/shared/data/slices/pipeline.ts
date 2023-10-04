@@ -14,6 +14,7 @@ import {
     Datatype,
     JobStatus,
     Alive,
+    Voice,
 } from 'shared/types'
 
 import { RootState } from 'shared/types/store'

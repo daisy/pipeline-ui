@@ -256,6 +256,21 @@ select {
                 }
             }
         }
+
+        .job-results, .job-messages {
+            div:first-child:has(h2) {
+                display: flex;
+                flex-direction: row;
+                gap: var(--pad);
+                align-items: center;
+
+                h2 + a.filelink, h2 + a.loglink {
+                    font-size: smaller;
+                    margin-bottom: -3px;
+                }
+            }
+           
+        }
         .form-buttons {
             display: flex;
             flex-direction: line;

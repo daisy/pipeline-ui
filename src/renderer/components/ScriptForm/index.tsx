@@ -9,7 +9,6 @@ import {
     getAllRequired,
     ID,
 } from 'renderer/utils/utils'
-import { Section } from '../Section'
 import { restoreJob, runJob } from 'shared/data/slices/pipeline'
 import {
     addJob,
@@ -83,8 +82,8 @@ export function ScriptForm({ job, script }: { job: Job; script: Script }) {
                     <h1 id={`${ID(job.internalId)}-script-hd`}>
                         {script?.nicename}
                     </h1>
+                    <p>{script?.description}</p>
                     <p>
-                        {script?.description}{' '}
                         {script?.homepage ? (
                             <a
                                 href={script.homepage}
@@ -97,17 +96,19 @@ export function ScriptForm({ job, script }: { job: Job; script: Script }) {
                         )}
                     </p>
                 </div>
-                {error ? <p>Error</p> : ''}
+                {error && <p>Error</p>}
             </section>
 
             {!submitInProgress ? (
                 <form onSubmit={onSubmit} id={`${ID(job.internalId)}-form`}>
                     <div className="form-sections">
-                        <Section
+                        <section
                             className="required-fields"
-                            id={`${ID(job.internalId)}-required`}
-                            label="Required information"
+                            aria-labelledby={`${ID(job.internalId)}-required`}
                         >
+                            <h2 id={`${ID(job.internalId)}-required`}>
+                                Required information
+                            </h2>
                             <ul className="fields">
                                 {required.map((item, idx) => (
                                     <li key={idx}>
@@ -127,13 +128,17 @@ export function ScriptForm({ job, script }: { job: Job; script: Script }) {
                                     </li>
                                 ))}
                             </ul>
-                        </Section>
+                        </section>
                         {optional.length > 0 ? (
-                            <Section
+                            <section
                                 className="optional-fields"
-                                id={`${ID(job.internalId)}-optional`}
-                                label="Options"
+                                aria-labelledby={`${ID(
+                                    job.internalId
+                                )}-optional`}
                             >
+                                <h2 id={`${ID(job.internalId)}-optional`}>
+                                    Options
+                                </h2>
                                 <ul className="fields">
                                     {optional.map((item, idx) => (
                                         <li key={idx}>
@@ -153,7 +158,7 @@ export function ScriptForm({ job, script }: { job: Job; script: Script }) {
                                         </li>
                                     ))}
                                 </ul>
-                            </Section>
+                            </section>
                         ) : (
                             ''
                         )}
@@ -180,7 +185,7 @@ export function ScriptForm({ job, script }: { job: Job; script: Script }) {
             ) : (
                 <>
                     <p>Submitting...</p>
-                    {error ? <p>Error</p> : ''}
+                    {error && <p>Error</p>}
                 </>
             )}
         </>

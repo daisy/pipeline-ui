@@ -5,15 +5,17 @@ import { JobStatus } from '/shared/types'
 import { Messages } from './Messages'
 import { Settings } from './Settings'
 import { Results } from './Results'
-import { Section } from '../Section'
 
-import { ID } from '../../utils/utils'
+import { ID, externalLinkClick } from '../../utils/utils'
 import { editJob, removeJob, runJob } from 'shared/data/slices/pipeline'
 import { readableStatus } from 'shared/jobName'
+import { FileLink } from '../FileLink'
 
 const { App } = window
 
 export function JobDetailsPane({ job }) {
+    //let probableLogLink = job?.jobData?.href ? `${job.jobData.href}/log` : ''
+
     return job.jobData.type == 'JobRequestError' ? (
         <>
             <h1>Error</h1>
@@ -67,20 +69,45 @@ export function JobDetailsPane({ job }) {
 
             <div className="details">
                 <div className="scrolling-area">
-                    <Section
-                        label="Results"
+                    <section
                         className="job-results"
-                        id={`${ID(job.internalId)}-job-results`}
+                        aria-labelledby={`${ID(job.internalId)}-job-results`}
                     >
+                        <div>
+                            <h2 id={`${ID(job.internalId)}-job-results`}>
+                                Results
+                            </h2>
+                            {job.jobData.downloadedFolder && (
+                                <FileLink
+                                    fileHref={job.jobData.downloadedFolder}
+                                >
+                                    Open results folder
+                                </FileLink>
+                            )}
+                        </div>
                         <Results job={job} />
-                    </Section>
-                    <Section
-                        label="Messages"
+                    </section>
+                    <section
                         className="job-messages"
-                        id={`${ID(job.internalId)}-job-messages`}
+                        aria-labelledby={`${ID(job.internalId)}-job-messages`}
                     >
+                        <div>
+                            <h2 id={`${ID(job.internalId)}-job-messages`}>
+                                Messages
+                            </h2>
+                            {job?.jobData?.log && (
+                                <a
+                                    className="loglink"
+                                    href={job.jobData.log}
+                                    onClick={(e) => externalLinkClick(e, App)}
+                                >
+                                    View detailed log
+                                </a>
+                            )}
+                        </div>
+
                         <Messages job={job} />
-                    </Section>
+                    </section>
                 </div>
                 {job.jobData.status != JobStatus.RUNNING &&
                 job.jobData.status != JobStatus.IDLE ? (

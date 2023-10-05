@@ -18,6 +18,9 @@ export function TtsConfigPane({
     const [preferredVoices, setPreferredVoices] = useState([
         ...userPreferredVoices,
     ])
+    const [engines, setEngines] = useState([])
+    const [langs, setLangs] = useState([])
+    const [enginesChecked, setEnginesChecked] = useState([])
 
     // table filter search
     const [searchString, setSearchString] = useState('')
@@ -83,12 +86,28 @@ export function TtsConfigPane({
     }, [searchString])
 
     useEffect(() => {
+        let tmpVoices = [...voiceList]
+        for (let v of tmpVoices) {
+            v.show = enginesChecked.includes(v.engine)
+        }
+        setVoiceList(tmpVoices)
+    }, [enginesChecked])
+
+    useEffect(() => {
+        let langs_ = Array.from(new Set(voiceList.map((v) => v.lang)))
+        let engines_ = Array.from(new Set(voiceList.map((v) => v.engine)))
         // sort on startup
         sortVoices(sortSettings.selected)
+        // see what engines and languages are included in this voices array
+        setLangs(langs_)
+        setEngines(engines_)
+        // start with all engines selected
+        setEnginesChecked(engines_)
     }, [])
 
     let clearSearch = () => {
         setSearchString('')
+        setEnginesChecked([...engines])
     }
     // let moveVoice = (currPos, newPos) => {
     //     console.log('Move', currPos, newPos)
@@ -98,6 +117,18 @@ export function TtsConfigPane({
     //     setVoiceList(tmpVoices)
     // }
 
+    let changeEngineFilter = (e, engine) => {
+        let tmpEngines
+        if (e.target.checked) {
+            tmpEngines = [...enginesChecked, engine]
+            setEnginesChecked(tmpEngines)
+        } else {
+            tmpEngines = [...enginesChecked]
+            let idx = tmpEngines.findIndex((eng) => eng == engine)
+            tmpEngines.splice(idx, 1)
+            setEnginesChecked(tmpEngines)
+        }
+    }
     let getAriaSortValue = (colName) => {
         return sortSettings.selected == colName
             ? sortSettings[colName] == 1
@@ -115,18 +146,43 @@ export function TtsConfigPane({
                 configuration.
             </p>
             <div id="voice-table-controls">
-                <label htmlFor="voicesearch">Search</label>
-                <input
-                    id="voicesearch"
-                    type="text"
-                    value={searchString}
-                    onChange={(e) => {
-                        setSearchString(e.target.value)
-                    }}
-                    onKeyDown={(e) => {
-                        e.key === 'Enter' && e.preventDefault()
-                    }}
-                />
+                <div className="search">
+                    <label htmlFor="voicesearch">Search</label>
+                    <input
+                        id="voicesearch"
+                        type="text"
+                        value={searchString}
+                        onChange={(e) => {
+                            setSearchString(e.target.value)
+                        }}
+                        onKeyDown={(e) => {
+                            e.key === 'Enter' && e.preventDefault()
+                        }}
+                    />
+                </div>
+                <div className="includeEngines">
+                    <span>Show engines: </span>
+                    <ul>
+                        {engines.map((engine, idx) => (
+                            <li key={idx}>
+                                <input
+                                    type="checkbox"
+                                    id={`filter-engine-${engine}`}
+                                    checked={enginesChecked.includes(engine)}
+                                    onClick={(e) =>
+                                        changeEngineFilter(e, engine)
+                                    }
+                                    onChange={(e) =>
+                                        changeEngineFilter(e, engine)
+                                    }
+                                />
+                                <label htmlFor={`filter-engine-${engine}`}>
+                                    {engine}
+                                </label>
+                            </li>
+                        ))}
+                    </ul>
+                </div>
             </div>
             {voiceList.filter((v) => v.show).length > 0 ? (
                 <div
@@ -134,7 +190,10 @@ export function TtsConfigPane({
                     aria-labelledby="available-voices-label"
                     tabIndex={0}
                 >
-                    <table aria-labelledby="available-voices-label">
+                    <table
+                        aria-labelledby="available-voices-label"
+                        aria-live="polite"
+                    >
                         <thead>
                             <tr>
                                 <th
@@ -252,7 +311,7 @@ export function TtsConfigPane({
                 <>
                     <p>
                         No voices found{' '}
-                        {searchString != '' ? (
+                        {searchString != '' || enginesChecked.length == 0 ? (
                             <button
                                 className="inline-button"
                                 onClick={(e) => clearSearch()}
@@ -265,6 +324,10 @@ export function TtsConfigPane({
                     </p>
                 </>
             )}
+            <p className="selection-summary" aria-live="polite">
+                {preferredVoices.length} selected:{' '}
+                {preferredVoices.map((v) => v.name).join(', ')}
+            </p>
         </>
     )
 }

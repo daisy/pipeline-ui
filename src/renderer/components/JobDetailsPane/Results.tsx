@@ -3,6 +3,7 @@ import { FileLink } from '../FileLink'
 import remarkGfm from 'remark-gfm'
 import { externalLinkClick } from 'renderer/utils'
 import Markdown from 'react-markdown'
+const { App } = window
 
 export function Results({ job }: { job: Job }) {
     return (

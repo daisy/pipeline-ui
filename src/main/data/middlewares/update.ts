@@ -13,6 +13,7 @@ import {
 } from 'shared/data/slices/update'
 
 import { CancellationToken, ProgressInfo, autoUpdater } from 'electron-updater'
+import { ENVIRONMENT } from 'shared/constants'
 
 /**
  * Middleware to manage updates
@@ -22,7 +23,9 @@ import { CancellationToken, ProgressInfo, autoUpdater } from 'electron-updater'
 export function updateMiddleware({ getState, dispatch }) {
     autoUpdater.autoDownload = false
     autoUpdater.autoInstallOnAppQuit = false
-    autoUpdater.forceDevUpdateConfig = true
+    if (ENVIRONMENT.IS_DEV) {
+        autoUpdater.forceDevUpdateConfig = true
+    }
     autoUpdater.on('download-progress', (progress) => {
         dispatch(setUpdateDownloaded(false))
         dispatch(setDownloadProgress(progress))

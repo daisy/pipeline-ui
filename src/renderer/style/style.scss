@@ -56,7 +56,20 @@ select {
 .form-field {
     display: flex;
     flex-flow: column;
-    gap: calc(var(--pad)/2);    
+    gap: calc(var(--pad)/2);
+    // aligned label and input
+    .oneline {
+        display: inline-block;
+        
+        input {
+            vertical-align: middle;
+            display: inline
+        }
+
+        span {
+            vertical-align: middle;
+        }
+    }
 }
 .file-or-folder {
     input {
@@ -437,6 +450,30 @@ main.about {
     button.copy:hover {
         background-color: var(--bg);
         color: var(--select-mix);
+    }
+    .actions {
+        width: 100%;
+        display: flex;
+        flex-direction: row;
+        flex-wrap: wrap;
+        justify-content: space-around;
+    }
+    
+    .actions p {
+        display: block;
+        margin: 0;
+        margin-bottom: 1em;
+        margin-left: 10%;
+        margin-right: 10%;
+        width: 80%;
+    }
+    .actions > progress {
+        margin-left: 10%;
+        margin-right: 10%;
+        width: 80%;
+    }
+    .actions:last-child{
+        margin-right: 0em;
     }
 }
 

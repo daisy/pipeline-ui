@@ -304,6 +304,21 @@ async function buildPipeline(platform = null) {
     let makeCmd = 'make'
     if (targetedPlatform == 'windows') {
         makeCmd = path.resolve('make.exe')
+    } else if (targetedPlatform == 'mac') {
+        makeCmd = "gmake"
+    }
+    try {
+        console.debug(`launching command : ${makeCmd} clean`)
+        console.debug('with execution options :', execOpts(java_home))
+        const makeCall = spawnSync(
+            makeCmd,
+            ['clean'],
+            execOpts(java_home, mvnHome)
+        )
+        if (makeCall.error) throw makeCall.error
+    } catch (err) {
+        console.error(err)
+        throw err
     }
     try {
         console.debug(

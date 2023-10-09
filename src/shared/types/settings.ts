@@ -38,4 +38,5 @@ export type ApplicationSettings = {
     jobsStateOnClosingMainWindow?: keyof typeof ClosingMainWindowActionForJobs
     // tts preferred voices
     ttsConfig?: TtsConfig
+    autoCheckUpdate?: boolean
 }

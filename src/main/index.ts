@@ -47,6 +47,7 @@ import {
     selectPrevJob,
 } from 'shared/data/slices/pipeline'
 import { setupClipboardEvents } from './clipboard'
+import { checkForUpdate } from 'shared/data/slices/update'
 
 makeAppWithSingleInstanceLock(async () => {
     app.setName(APP_CONFIG.TITLE)
@@ -98,6 +99,9 @@ makeAppWithSingleInstanceLock(async () => {
             })
         }
     )
+    if (store.getState().settings.autoCheckUpdate) {
+        store.dispatch(checkForUpdate())
+    }
 })
 
 function buildMenu() {

@@ -10,7 +10,7 @@ module.exports = {
     appId: APP_ID,
     productName: adjustedAppName,
     copyright: `Copyright © ${CURRENT_YEAR} — ${AUTHOR.name}`,
-
+    artifactName: 'daisy-pipeline-2023-${version}-${os}.${ext}',
     directories: {
         app: FOLDERS.DEV_TEMP_BUILD,
         output: 'dist',
@@ -25,6 +25,7 @@ module.exports = {
 
     dmg: {
         icon: false,
+        artifactName: 'daisy-pipeline-2023-setup-${version}.${ext}',
     },
 
     linux: {
@@ -41,5 +42,6 @@ module.exports = {
     asarUnpack: ['resources/daisy-pipeline'],
     nsis: {
         runAfterFinish: true,
+        artifactName: 'daisy-pipeline-2023-setup-${version}.${ext}',
     },
 }

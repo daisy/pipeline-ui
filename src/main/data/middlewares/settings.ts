@@ -4,7 +4,8 @@ import { info } from 'electron-log'
 import { existsSync, readFileSync, writeFile } from 'fs'
 import { resolve } from 'path'
 import { ENVIRONMENT } from 'shared/constants'
-import { save } from 'shared/data/slices/settings'
+import { save, setAutoCheckUpdate } from 'shared/data/slices/settings'
+import { checkForUpdate } from 'shared/data/slices/update'
 import { ttsConfigToXml } from 'shared/parser/pipelineXmlConverter/ttsConfigToXml'
 import { ApplicationSettings } from 'shared/types'
 import { RootState } from 'shared/types/store'
@@ -50,6 +51,7 @@ export function readSettings() {
             preferredVoices: [],
             xmlFilepath: resolve(app.getPath('userData'), 'ttsConfig.xml'),
         },
+        autoCheckUpdate: true,
     } as ApplicationSettings
     try {
         if (existsSync(settingsFile)) {
@@ -83,15 +85,38 @@ export function readSettings() {
     return settings
 }
 
+function startCheckingUpdates(dispatch) {
+    return setInterval(() => {
+        dispatch(checkForUpdate())
+    }, 20000)
+}
+
 /**
  * Middleware to save settings on disks on save request
+ * and monitor for updates if autocheck is defined in settings
  * @param param0
  * @returns
  */
-export function settingsMiddleware({ getState }) {
+export function settingsMiddleware({ getState, dispatch }) {
+    const initialSettings = (getState() as RootState).settings
+    let updateCheckInterval = initialSettings.autoCheckUpdate
+        ? startCheckingUpdates(dispatch)
+        : null
     return (next) => (action: PayloadAction<any>) => {
         const returnValue = next(action)
         const { settings } = getState() as RootState
+
+        // stop autoCheck action if it has been disabled
+        if (!settings.autoCheckUpdate && updateCheckInterval !== null) {
+            console.log('stop auto checking updates')
+            clearInterval(updateCheckInterval)
+            updateCheckInterval = null
+        }
+        if (settings.autoCheckUpdate && updateCheckInterval === null) {
+            console.log('start auto checking updates')
+            updateCheckInterval = startCheckingUpdates(dispatch)
+        }
+
         try {
             switch (action.type) {
                 case save.type:
@@ -107,6 +132,23 @@ export function settingsMiddleware({ getState }) {
                         ttsConfigToXml(settings.ttsConfig),
                         () => {}
                     )
+                    break
+                case setAutoCheckUpdate.type:
+                    if (
+                        action.payload === true &&
+                        updateCheckInterval === null
+                    ) {
+                        console.log('start auto checking updates')
+                        updateCheckInterval = startCheckingUpdates(dispatch)
+                    }
+                    if (
+                        action.payload === false &&
+                        updateCheckInterval !== null
+                    ) {
+                        console.log('stop auto checking updates')
+                        clearInterval(updateCheckInterval)
+                        updateCheckInterval = null
+                    }
                     break
                 default:
                     break

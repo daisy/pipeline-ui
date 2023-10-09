@@ -19,3 +19,4 @@ export interface WindowCreationByIPC {
 export * from './pipeline'
 export * from './settings'
 export * from './ttsConfig'
+export * from './update'

@@ -13,6 +13,9 @@ on:
   
 env:
   GH_TOKEN: ${{ secrets.GH_PIPELINE_TOKEN }}
+  APPLE_ID: ${{ secrets.APPLE_ID }}
+  APPLE_ID_PASS: ${{ secrets.APPLE_ID_PASS }}
+  APPLE_ID_TEAM: ${{ secrets.APPLE_ID_TEAM }}
 
 jobs:
   build:

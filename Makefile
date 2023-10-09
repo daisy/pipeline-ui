@@ -12,7 +12,7 @@ ENGINE_VERSION := $(shell println(xpath(new File("engine/pom.xml"), "/*/*[local-
 .PHONY : dmg
 dmg : src/resources/daisy-pipeline src/resources/icons/logo_mac_40x40_Template@2x.png
 	exec("yarn");
-	exec("yarn", "dist-mac-dev", "--mac");
+	exec("yarn", "dist", "--mac");
 
 .PHONY : exe
 exe : src/resources/daisy-pipeline

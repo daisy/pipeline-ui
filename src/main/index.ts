@@ -6,7 +6,9 @@ import {
     MenuItemConstructorOptions,
     shell,
     nativeTheme,
+    dialog,
 } from 'electron'
+import fs from 'fs-extra'
 
 import { error } from 'electron-log'
 
@@ -26,7 +28,7 @@ import {
 import { buildMenuTemplate } from './menu'
 
 import { registerStoreIPC, store } from './data/store'
-import { setupFileDialogEvents } from './fileDialogs'
+import { setupFileDialogEvents, showOpenFileDialog } from './fileDialogs'
 import { ENVIRONMENT, IPC } from 'shared/constants'
 import { setupShowInFolderEvents } from './folder'
 import { registerFileIPC } from './factories/ipcs/file'
@@ -48,6 +50,7 @@ import {
 } from 'shared/data/slices/pipeline'
 import { setupClipboardEvents } from './clipboard'
 import { checkForUpdate } from 'shared/data/slices/update'
+import path from 'path'
 
 makeAppWithSingleInstanceLock(async () => {
     app.setName(APP_CONFIG.TITLE)
@@ -155,6 +158,41 @@ function buildMenu() {
         onShowAbout: async () => {
             // Open the settings window
             ipcMain.emit(IPC.WINDOWS.ABOUT.CREATE)
+        },
+        onImportConfiguration: async () => {
+            let openFile = new Promise<string>((resolve, reject) => {
+                showOpenFileDialog(
+                    (filepath) => {
+                        resolve(filepath)
+                    },
+                    {
+                        title: `Select configuration file`,
+                        //defaultPath: value?.replace('file://', '') ?? '',
+                        buttonLabel: 'Select', // this is a different buttonLabel, it's the one for the actual file browse dialog
+                        filters: [{ name: 'Settings', extensions: ['*.json'] }],
+                        // @ts-ignore
+                        properties: ['openFile'],
+                    }
+                )
+            })
+            let configFile = await openFile
+            // @ts-ignore
+            configFile = configFile.replace('file://', '')
+            if (fs.existsSync(configFile)) {
+                fs.copyFileSync(
+                    configFile,
+                    path.join(
+                        app.getPath('userData'),
+                        'tts-engine-properties.json'
+                    )
+                )
+                await dialog.showMessageBox({
+                    type: 'info',
+                    title: 'Restart required',
+                    message:
+                        'Please restart the DAISY Pipeline to reload the configuration.',
+                })
+            }
         },
     })
     // @ts-ignore

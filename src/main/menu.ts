@@ -21,6 +21,7 @@ export function buildMenuTemplate({
     onRemoveJob,
     onEditJob,
     onShowAbout,
+    onImportConfiguration,
 }) {
     let pipelineStatus = PipelineStatus.UNKNOWN
     const instance = getPipelineInstance(store.getState())
@@ -162,7 +163,12 @@ export function buildMenuTemplate({
                               accelerator: 'CommandOrControl+D',
                           },
                       ]),
-
+                {
+                    label: 'Import configuration...',
+                    click: () => {
+                        onImportConfiguration()
+                    },
+                },
                 { type: 'separator' },
                 {
                     label: 'Close window',

@@ -24,7 +24,7 @@ export function updateMiddleware({ getState, dispatch }) {
     autoUpdater.autoDownload = false
     autoUpdater.autoInstallOnAppQuit = false
     if (ENVIRONMENT.IS_DEV) {
-        autoUpdater.forceDevUpdateConfig = true
+        //autoUpdater.forceDevUpdateConfig = true
     }
     autoUpdater.on('download-progress', (progress) => {
         dispatch(setUpdateDownloaded(false))
@@ -47,29 +47,34 @@ export function updateMiddleware({ getState, dispatch }) {
         try {
             switch (action.type) {
                 case checkForUpdate.type:
-                    dispatch(setUpdateMessage('Checking for updates ...'))
                     if (action.payload === true) {
                         userIsWarnedAboutUpdate = false
                     }
-                    autoUpdater
-                        .checkForUpdates()
-                        .then((res) => {
-                            if (res && res.updateInfo) {
-                                dispatch(setUpdateAvailable(res.updateInfo))
-                            } else {
+                    if (
+                        !ENVIRONMENT.IS_DEV ||
+                        autoUpdater.forceDevUpdateConfig
+                    ) {
+                        dispatch(setUpdateMessage('Checking for updates ...'))
+                        autoUpdater
+                            .checkForUpdates()
+                            .then((res) => {
+                                if (res && res.updateInfo) {
+                                    dispatch(setUpdateAvailable(res.updateInfo))
+                                } else {
+                                    dispatch(
+                                        setUpdateMessage('No updates available')
+                                    )
+                                }
+                            })
+                            .catch((v) => {
                                 dispatch(
-                                    setUpdateMessage('No updates available')
+                                    setUpdateMessage(
+                                        'error during update check : ' +
+                                            JSON.stringify(v)
+                                    )
                                 )
-                            }
-                        })
-                        .catch((v) => {
-                            dispatch(
-                                setUpdateMessage(
-                                    'error during update check : ' +
-                                        JSON.stringify(v)
-                                )
-                            )
-                        })
+                            })
+                    }
                     break
                 case setUpdateAvailable.type:
                     dispatch(

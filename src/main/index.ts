@@ -169,7 +169,10 @@ function buildMenu() {
                         title: `Select configuration file`,
                         //defaultPath: value?.replace('file://', '') ?? '',
                         buttonLabel: 'Select', // this is a different buttonLabel, it's the one for the actual file browse dialog
-                        filters: [{ name: 'Settings', extensions: ['*.json'] }],
+                        filters: [
+                            { name: 'JSON', extensions: ['json'] },
+                            { name: 'All files', extensions: ['*'] },
+                        ],
                         // @ts-ignore
                         properties: ['openFile'],
                     }

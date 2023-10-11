@@ -175,12 +175,13 @@ function buildMenu() {
                         ],
                         // @ts-ignore
                         properties: ['openFile'],
-                    }
+                    },
+                    false
                 )
             })
             let configFile = await openFile
             // @ts-ignore
-            configFile = configFile.replace('file://', '')
+            //configFile = configFile.replace('file://', '')
             if (fs.existsSync(configFile)) {
                 fs.copyFileSync(
                     configFile,
@@ -194,6 +195,14 @@ function buildMenu() {
                     title: 'Restart required',
                     message:
                         'Please restart the DAISY Pipeline to reload the configuration.',
+                })
+            } else {
+                await dialog.showMessageBox({
+                    type: 'warning',
+                    title: 'Could not copy file',
+                    message: `The file ${configFile} could not be copied to ${app.getPath(
+                        'userData'
+                    )}`,
                 })
             }
         },

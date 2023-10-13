@@ -8,10 +8,10 @@ export function AboutWindow() {
     const window = createWindow({
         id: 'about',
         title: `${APP_CONFIG.TITLE} - About`,
-        width: 550,
-        height: 550,
+        width: 500,
+        height: 450,
         resizable: false,
-        alwaysOnTop: false,
+        alwaysOnTop: false, // if true, this will hide alert dialogs
         frame: false,
 
         webPreferences: {

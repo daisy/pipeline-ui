@@ -436,45 +436,52 @@ main.about {
     flex-direction: column;
     align-items: center;
     gap: 1em;
+    height: 100%;
+    .info {
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        height: 100%;
+        margin-bottom: var(--pad);
+        p {
+            display: flex;
+            flex-direction: row;
+            gap: 0.25em;
+            width: 90%;
+            margin: 0;
+        }    
+        button.copy {
+            border: none;
+            align-self: center;
+        }
+        button.copy:hover {
+            background-color: var(--bg);
+            color: var(--select-mix);
+        }
+        .actions {
+            width: 100%;
+            display: flex;
+            flex-direction: row;
+            flex-wrap: wrap;
+            justify-content: space-around;
+        }
+        
+        .actions p {
+            display: block;
+            margin: 0;
+            margin-bottom: 1em;
+            margin-bottom: 0;
+            width: 80%;
+        }
+        .actions > progress {
+            width: 100%;
+        }
+        .actions:last-child{
+            margin-right: 0em;
+        }
+    }
 
-    p {
-        display: flex;
-        flex-direction: row;
-        gap: 0.25em;
-        width: 80%;
-    }    
-    button.copy {
-        border: none;
-        align-self: center;
-    }
-    button.copy:hover {
-        background-color: var(--bg);
-        color: var(--select-mix);
-    }
-    .actions {
-        width: 100%;
-        display: flex;
-        flex-direction: row;
-        flex-wrap: wrap;
-        justify-content: space-around;
-    }
     
-    .actions p {
-        display: block;
-        margin: 0;
-        margin-bottom: 1em;
-        margin-left: 10%;
-        margin-right: 10%;
-        width: 80%;
-    }
-    .actions > progress {
-        margin-left: 10%;
-        margin-right: 10%;
-        width: 80%;
-    }
-    .actions:last-child{
-        margin-right: 0em;
-    }
 }
 
 input.grayedout {

@@ -119,46 +119,49 @@ export function AboutView({ title }) {
             >
                 Visit the DAISY Pipeline homepage
             </a>
-            <p>
-                <ul>
-                    <li>App version: {version}</li>
-                    <li>Engine version: {engineVersion}</li>
-                    <li>
-                        Engine is{'  '}
-                        <span>
-                            {engineStatus.status == PipelineStatus.RUNNING ? (
-                                <>
-                                    <b>{engineStatus.status}</b> on{' '}
-                                    <code>{engineStatus.address}</code>
-                                </>
-                            ) : (
-                                <>{engineStatus.status}</>
-                            )}
-                        </span>
-                    </li>
-                </ul>
-                <button
-                    className="copy"
-                    title="Copy information to clipboard"
-                    onClick={(e) => copyToClipboard(e)}
-                >
-                    <Copy width="30" height="30" />
-                </button>
-            </p>
-            <div className="actions">
-                {update.updateMessage && (
-                    <p>
-                        <label
-                            {...(update.downloadProgress
-                                ? { htmlFor: 'update-download-progress' }
-                                : {})}
-                        >
-                            {update.updateMessage}
-                        </label>
-                    </p>
-                )}
-                {UpdateButton(update)}
-                <button onClick={(e) => closeAboutBox()}>Close</button>
+            <div className="info">
+                <p>
+                    <ul>
+                        <li>App version: {version}</li>
+                        <li>Engine version: {engineVersion}</li>
+                        <li>
+                            Engine is{'  '}
+                            <span>
+                                {engineStatus.status ==
+                                PipelineStatus.RUNNING ? (
+                                    <>
+                                        <b>{engineStatus.status}</b> on{' '}
+                                        <code>{engineStatus.address}</code>
+                                    </>
+                                ) : (
+                                    <>{engineStatus.status}</>
+                                )}
+                            </span>
+                        </li>
+                    </ul>
+                    <button
+                        className="copy"
+                        title="Copy information to clipboard"
+                        onClick={(e) => copyToClipboard(e)}
+                    >
+                        <Copy width="30" height="30" />
+                    </button>
+                </p>
+                <div className="actions">
+                    {update.updateMessage && (
+                        <p>
+                            <label
+                                {...(update.downloadProgress
+                                    ? { htmlFor: 'update-download-progress' }
+                                    : {})}
+                            >
+                                {update.updateMessage}
+                            </label>
+                        </p>
+                    )}
+                    {UpdateButton(update)}
+                    <button onClick={(e) => closeAboutBox()}>Close</button>
+                </div>
             </div>
         </main>
     )

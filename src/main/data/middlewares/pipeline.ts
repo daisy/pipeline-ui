@@ -26,6 +26,7 @@ import {
 import {
     Datatype,
     Job,
+    JobData,
     JobState,
     JobStatus,
     NamedResult,
@@ -166,16 +167,17 @@ function startMonitor(j: Job, ws: Webservice, getState, dispatch) {
             clearInterval(monitor)
         } else
             fetchJobData(ws)
-                .then((value) => {
+                .then((value: JobData) => {
                     info('received job data ', value)
                     if (
                         [
                             JobStatus.ERROR,
                             JobStatus.FAIL,
                             JobStatus.SUCCESS,
-                        ].includes(value.status)
+                        ].includes(value.status) ||
+                        value.type == 'JobRequestError'
                     ) {
-                        // Job is finished, stop monitor
+                        // Job is finished or in error, stop monitor
                         clearInterval(monitor)
                     }
                     let updatedJob = { ...j }
@@ -198,6 +200,9 @@ function startMonitor(j: Job, ws: Webservice, getState, dispatch) {
                 })
                 .catch((e) => {
                     error('Error fetching data for job', j, e)
+                    if (j.jobData.type == 'JobRequestError') {
+                        clearInterval(monitor)
+                    }
                     dispatch(
                         updateJob({
                             ...j,

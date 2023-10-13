@@ -16,22 +16,31 @@ const { App } = window
 
 export function NewJobPane({ job }: { job: Job }) {
     const { pipeline } = useWindowStore()
-
     let onSelectChange = (e) => {
         let selection = pipeline.scripts.find(
             (script) => script.id == e.target.value
         )
-        App.store.dispatch(
-            updateJob({
-                ...job,
-                script: selection,
-                jobData: {
-                    ...job.jobData,
-                    nicename: selection.nicename,
-                },
-                jobRequest: prepareJobRequest(job, selection),
-            })
-        )
+        if (selection) {
+            App.store.dispatch(
+                updateJob({
+                    ...job,
+                    script: selection,
+                    jobData: {
+                        ...job.jobData,
+                        nicename: selection.nicename,
+                    },
+                    jobRequest: prepareJobRequest(job, selection),
+                })
+            )
+        } else {
+            App.store.dispatch(
+                updateJob({
+                    internalId: job.internalId,
+                    state: 0,
+                    jobRequest: null,
+                })
+            )
+        }
     }
 
     return (
@@ -96,6 +105,7 @@ export function NewJobPane({ job }: { job: Job }) {
                 <ScriptForm job={job} script={job.script} />
             ) : (
                 <button
+                    className="cancel-creation"
                     id={`cancel-job-${job.internalId}`}
                     onClick={(e) => {
                         App.store.dispatch(removeJob(job))

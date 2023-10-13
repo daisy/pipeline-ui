@@ -13,7 +13,7 @@ export function MainScreen() {
     return (
         <QueryClientProvider client={queryClient}>
             <>
-                <main>
+                <main className="mainScreen">
                     {pipeline.status == PipelineStatus.RUNNING ? (
                         <MainView />
                     ) : pipeline.status == PipelineStatus.STARTING ? (

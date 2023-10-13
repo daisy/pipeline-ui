@@ -75,9 +75,15 @@ export function FormField({
                                     type="checkbox"
                                     id={controlId + 'opt'}
                                     checked={checked}
-                                    onChange={(e) =>
+                                    onChange={(e) => {
                                         setChecked(e.target.checked)
-                                    }
+                                        if (e.target.checked) {
+                                            onChangeValue(
+                                                settings.ttsConfig.xmlFilepath,
+                                                item
+                                            )
+                                        }
+                                    }}
                                 />
                                 <label htmlFor={controlId + 'opts'}>
                                     Use my TTS preferences
@@ -97,7 +103,7 @@ export function FormField({
                                 required={item.required}
                                 initialValue={
                                     checked
-                                        ? "file://" + encodeURI(settings.ttsConfig.xmlFilepath)
+                                        ? settings.ttsConfig.xmlFilepath
                                         : value
                                 }
                                 enabled={!checked}

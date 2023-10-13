@@ -10,7 +10,7 @@ import { ttsConfigToXml } from 'shared/parser/pipelineXmlConverter/ttsConfigToXm
 import { ApplicationSettings } from 'shared/types'
 import { RootState } from 'shared/types/store'
 import { resolveUnpacked } from 'shared/utils'
-import { pathToFileURL } from 'url'
+import { fileURLToPath, pathToFileURL } from 'url'
 
 const settingsFile = resolve(app.getPath('userData'), 'settings.json')
 
@@ -49,7 +49,9 @@ export function readSettings() {
         jobsStateOnClosingMainWindow: 'close',
         ttsConfig: {
             preferredVoices: [],
-            xmlFilepath: resolve(app.getPath('userData'), 'ttsConfig.xml'),
+            xmlFilepath: pathToFileURL(
+                resolve(app.getPath('userData'), 'ttsConfig.xml')
+            ).href,
         },
         autoCheckUpdate: true,
     } as ApplicationSettings
@@ -70,8 +72,23 @@ export function readSettings() {
                 ttsConfig: {
                     ...settings.ttsConfig,
                     ...loaded?.ttsConfig,
+                    xmlFilepath: !loaded.xmlFilepath
+                        ? settings.ttsConfig.xmlFilepath
+                        : loaded.xmlFilepath.startsWith('file:')
+                        ? loaded.xmlFilepath
+                        : pathToFileURL(loaded.xmlFilepath).href,
                 },
             }
+        }
+        // Create the file if it does not exist
+        // to ensure it is sent to pipeline
+        const ttsConfigPath = fileURLToPath(settings.ttsConfig.xmlFilepath)
+        if (!existsSync(ttsConfigPath)) {
+            writeFile(
+                ttsConfigPath,
+                ttsConfigToXml(settings.ttsConfig),
+                () => {}
+            )
         }
     } catch (e) {
         info('Error when trying to parse settings file')
@@ -128,7 +145,7 @@ export function settingsMiddleware({ getState, dispatch }) {
                         () => {}
                     )
                     writeFile(
-                        settings.ttsConfig.xmlFilepath,
+                        new URL(settings.ttsConfig.xmlFilepath),
                         ttsConfigToXml(settings.ttsConfig),
                         () => {}
                     )

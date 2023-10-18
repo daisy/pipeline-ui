@@ -54,16 +54,16 @@ export function TtsEnginesConfigPane({
                 they will be available under 'Voices'.
             </p>
             <ul>
-                {Object.keys(engineNames).map((engineKeyPrefix) => (
-                    <li>
+                {Object.keys(engineNames).map((engineKeyPrefix, idx) => (
+                    <li key={idx}>
                         {engineNames[engineKeyPrefix]}
                         <ul>
                             {enginePropertyKeys
                                 .filter((propkey) =>
                                     propkey.includes(engineKeyPrefix)
                                 )
-                                .map((propkey) => (
-                                    <li>
+                                .map((propkey, idx) => (
+                                    <li key={idx}>
                                         <label htmlFor={propkey}>
                                             {(() => {
                                                 // the propkey looks like org.daisy.pipeline.tts.enginename.propkeyname

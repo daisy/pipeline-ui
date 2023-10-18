@@ -355,7 +355,7 @@ Then close the program using the port and restart this application.`,
                 '-Dorg.daisy.pipeline.ws.host=' + this.props.webservice.host,
                 '-Dorg.daisy.pipeline.ws.cors=true',
                 '-Dorg.daisy.pipeline.home=' + this.props.localPipelineHome,
-                '-Dorg.daisy.pipeline.host.protection=false', // so we can send TTS engine properties
+                '-Dorg.daisy.pipeline.tts.host.protection=false', // so we can send TTS engine properties
             ]
             if (this.props.webservice.path) {
                 SystemProps.push(

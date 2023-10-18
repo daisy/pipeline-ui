@@ -131,9 +131,9 @@ export const pipelineAPI = {
         createPipelineFetchFunction(
             (ws) => `${baseurl(ws)}/voices`,
             (text) => voicesToJson(text),
-            // {
-            //     method: 'POST',
-            //     body: ttsConfigToXml(selectTtsConfig(store.getState())),
-            // }
+            {
+                method: 'POST',
+                body: ttsConfigToXml(selectTtsConfig(store.getState())),
+            }
         ),
 }

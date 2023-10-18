@@ -387,33 +387,6 @@ Then close the program using the port and restart this application.`,
                     `Using existing ${this.props.logsFolder} for pipeline logs`
                 )
             }
-            // this file would contain TTS settings to pass to the pipeline on startup
-            // e.g. it could contain credentials for cloud-based TTS engines, without which the voices
-            // for that engine wouldn't be listed as available to the user
-            // additional TTS settings are passed in with jobs (e.g. voice selection but currently not engine properties)
-            let ttsEnginePropertiesFilepath = path.join(
-                this.props.appDataFolder,
-                'tts-engine-properties.json'
-            )
-            // if this TTS config file exists, then add its properties to SystemProps
-            if (existsSync(ttsEnginePropertiesFilepath)) {
-                try {
-                    let f = fs.readFileSync(ttsEnginePropertiesFilepath)
-                    let ttsEngineProperties = JSON.parse(f.toString())
-                    // @ts-ignore
-                    ttsEngineProperties.map((property) =>
-                        SystemProps.push(`-D${property.key}=${property.value}`)
-                    )
-                } catch (err) {
-                    this.pushMessage(
-                        `Could not set TTS engine properties on startup from file ${ttsEnginePropertiesFilepath}`
-                    )
-                }
-            } else {
-                this.pushMessage(
-                    `File not found for additional TTS engine properties (checking default location: ${ttsEnginePropertiesFilepath})`
-                )
-            }
             // avoid using bat to control the runner ?
             // Spawn pipeline process
             let command = resolve(this.props.jrePath, 'bin', 'java')

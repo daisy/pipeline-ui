@@ -159,53 +159,6 @@ function buildMenu() {
             // Open the settings window
             ipcMain.emit(IPC.WINDOWS.ABOUT.CREATE)
         },
-        onImportConfiguration: async () => {
-            let openFile = new Promise<string>((resolve, reject) => {
-                showOpenFileDialog(
-                    (filepath) => {
-                        resolve(filepath)
-                    },
-                    {
-                        title: `Select configuration file`,
-                        //defaultPath: value?.replace('file://', '') ?? '',
-                        buttonLabel: 'Select', // this is a different buttonLabel, it's the one for the actual file browse dialog
-                        filters: [
-                            { name: 'JSON', extensions: ['json'] },
-                            { name: 'All files', extensions: ['*'] },
-                        ],
-                        // @ts-ignore
-                        properties: ['openFile'],
-                    },
-                    false
-                )
-            })
-            let configFile = await openFile
-            // @ts-ignore
-            //configFile = configFile.replace('file://', '')
-            if (fs.existsSync(configFile)) {
-                fs.copyFileSync(
-                    configFile,
-                    path.join(
-                        app.getPath('userData'),
-                        'tts-engine-properties.json'
-                    )
-                )
-                await dialog.showMessageBox({
-                    type: 'info',
-                    title: 'Restart required',
-                    message:
-                        'Please restart the DAISY Pipeline to reload the configuration.',
-                })
-            } else {
-                await dialog.showMessageBox({
-                    type: 'warning',
-                    title: 'Could not copy file',
-                    message: `The file ${configFile} could not be copied to ${app.getPath(
-                        'userData'
-                    )}`,
-                })
-            }
-        },
     })
     // @ts-ignore
     const menu = Menu.buildFromTemplate(template)

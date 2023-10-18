@@ -1,7 +1,7 @@
-import { Voice } from 'shared/types'
+import { TtsVoice } from 'shared/types'
 
-function voiceElementToJson(voiceElm: Element): Voice {
-    let voice: Voice = {
+function voiceElementToJson(voiceElm: Element): TtsVoice {
+    let voice: TtsVoice = {
         name: voiceElm.getAttribute('name'),
         gender: voiceElm.getAttribute('gender'),
         lang: voiceElm.getAttribute('lang'),

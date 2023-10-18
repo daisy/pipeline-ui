@@ -20,7 +20,7 @@ import {
     removeJobs,
     selectVisibleJobs,
     setAlive,
-    setVoices,
+    setTtsVoices,
 } from 'shared/data/slices/pipeline'
 
 import {
@@ -32,7 +32,8 @@ import {
     PipelineStatus,
     ResultFile,
     Script,
-    Voice,
+    TtsVoice,
+    TtsEngineProperty,
     Webservice,
 } from 'shared/types'
 
@@ -315,11 +316,11 @@ export function pipelineMiddleware({ getState, dispatch }) {
                             })
                             .then((datatypes) => {
                                 dispatch(setDatatypes(datatypes))
-                                return pipelineAPI.fetchVoices()(newWebservice)
+                                return pipelineAPI.fetchTtsVoices()(newWebservice)
                             })
-                            .then((voices: Array<Voice>) => {
-                                console.log('Voices', voices)
-                                dispatch(setVoices(voices))
+                            .then((voices: Array<TtsVoice>) => {
+                                console.log('TTS Voices', voices)
+                                dispatch(setTtsVoices(voices))
                             })
                             .catch((e) => {
                                 error('useWebservice', e)

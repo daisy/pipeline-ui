@@ -8,6 +8,7 @@ import {
     scriptsXmlToJson,
     scriptXmlToJson,
     voicesToJson,
+    ttsConfigToXml,
 } from 'shared/parser/pipelineXmlConverter'
 import {
     Datatype,
@@ -23,6 +24,8 @@ import fetch, { Response, RequestInit } from 'node-fetch'
 
 import { info, error } from 'electron-log'
 import { jobResponseXmlToJson } from 'shared/parser/pipelineXmlConverter/jobResponseToJson'
+import { selectTtsConfig } from 'shared/data/slices/settings'
+import { store } from '../store'
 
 /**
  * Create a fetch function on the pipeline webservice
@@ -124,9 +127,13 @@ export const pipelineAPI = {
             (ws) => `${baseurl(ws)}/alive`,
             (text) => aliveXmlToJson(text)
         ),
-    fetchVoices: () =>
+    fetchTtsVoices: () =>
         createPipelineFetchFunction(
             (ws) => `${baseurl(ws)}/voices`,
-            (text) => voicesToJson(text)
+            (text) => voicesToJson(text),
+            // {
+            //     method: 'POST',
+            //     body: ttsConfigToXml(selectTtsConfig(store.getState())),
+            // }
         ),
 }

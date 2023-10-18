@@ -1,4 +1,4 @@
-export type Voice = {
+export type TtsVoice = {
     engine: string
     name: string
     lang: string
@@ -6,8 +6,13 @@ export type Voice = {
     priority?: number
     id?: string
 }
+export type TtsEngineProperty = {
+    key: string
+    value: string
+}
 
 export type TtsConfig = {
-    preferredVoices: Array<Voice>
+    preferredVoices: Array<TtsVoice>
+    ttsEngineProperties: Array<TtsEngineProperty>
     xmlFilepath?: string
 }

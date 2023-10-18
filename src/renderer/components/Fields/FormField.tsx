@@ -68,48 +68,7 @@ export function FormField({
                         'application/vnd.pipeline.tts-config+xml'
                     )
                 ) {
-                    return (
-                        <>
-                            <div className="optional-value">
-                                <input
-                                    type="checkbox"
-                                    id={controlId + 'opt'}
-                                    checked={checked}
-                                    onChange={(e) => {
-                                        setChecked(e.target.checked)
-                                        if (e.target.checked) {
-                                            onChangeValue(
-                                                settings.ttsConfig.xmlFilepath,
-                                                item
-                                            )
-                                        }
-                                    }}
-                                />
-                                <label htmlFor={controlId + 'opts'}>
-                                    Use my TTS preferences
-                                </label>
-                            </div>
-                            <FileOrFolderInput
-                                type="open"
-                                dialogProperties={dialogOpts}
-                                elemId={controlId}
-                                mediaType={item.mediaType}
-                                name={item.name}
-                                onChange={(filename) =>
-                                    onChangeValue(filename, item)
-                                }
-                                useSystemPath={false}
-                                buttonLabel="Browse"
-                                required={item.required}
-                                initialValue={
-                                    checked
-                                        ? settings.ttsConfig.xmlFilepath
-                                        : value
-                                }
-                                enabled={!checked}
-                            />
-                        </>
-                    )
+                    return '' // this case is handled in ScriptForm
                 } else {
                     return (
                         <FileOrFolderInput

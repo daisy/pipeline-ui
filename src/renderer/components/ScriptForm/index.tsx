@@ -3,6 +3,7 @@ Fill out fields for a new job and submit it
 */
 import { Job, Script } from 'shared/types'
 import { useState, useEffect } from 'react'
+import { useWindowStore } from 'renderer/store'
 import {
     findValue,
     getAllOptional,
@@ -21,14 +22,47 @@ import { externalLinkClick } from 'renderer/utils/utils'
 import { FormField } from '../Fields/FormField'
 const { App } = window
 
+// update the array and return a new copy of it
+let updateArrayValue = (value, data, arr) => {
+    let arr2 = arr.map((i) => (i.name == data.name ? { ...i, value } : i))
+    return arr2
+}
+
 export function ScriptForm({ job, script }: { job: Job; script: Script }) {
     const [submitInProgress, setSubmitInProgress] = useState(false)
     const [error, setError] = useState(false)
 
     let required = getAllRequired(script)
     let optional = getAllOptional(script)
+    const { settings } = useWindowStore()
 
-    // take input from the form and add it to the job request
+    useEffect(() => {
+        // if this script has a TTS config field, fill it in with the value from the user's settings
+        // as xml files, tts config files are inputs though they are typically optional
+        let ttsConfigOpt = optional.find((o) =>
+            o.mediaType.includes('application/vnd.pipeline.tts-config+xml')
+        )
+
+        if (ttsConfigOpt) {
+            let inputs = [...job.jobRequest.inputs]
+            let inputs_ = updateArrayValue(
+                settings.ttsConfig.xmlFilepath,
+                ttsConfigOpt,
+                inputs
+            )
+
+            App.store.dispatch(
+                updateJob({
+                    ...job,
+                    jobRequest: {
+                        ...job.jobRequest,
+                        inputs: [...inputs_],
+                    },
+                })
+            )
+        }
+    }, [])
+
     let saveValueInJobRequest = (value, data) => {
         if (!job.jobRequest) {
             return
@@ -36,17 +70,10 @@ export function ScriptForm({ job, script }: { job: Job; script: Script }) {
         let inputs = [...job.jobRequest.inputs]
         let options = [...job.jobRequest.options]
 
-        // update the array and return a new copy of it
-        let updateValue = (value, data, arr) => {
-            let arr2 = arr.map((i) =>
-                i.name == data.name ? { ...i, value } : i
-            )
-            return arr2
-        }
         if (data.kind == 'input') {
-            inputs = updateValue(value, data, inputs)
+            inputs = updateArrayValue(value, data, inputs)
         } else {
-            options = updateValue(value, data, options)
+            options = updateArrayValue(value, data, options)
         }
         App.store.dispatch(
             updateJob({
@@ -140,23 +167,31 @@ export function ScriptForm({ job, script }: { job: Job; script: Script }) {
                                     Options
                                 </h2>
                                 <ul className="fields">
-                                    {optional.map((item, idx) => (
-                                        <li key={idx}>
-                                            <FormField
-                                                item={item}
-                                                key={idx}
-                                                idprefix={`${ID(
-                                                    job.internalId
-                                                )}-optional`}
-                                                onChange={saveValueInJobRequest}
-                                                initialValue={findValue(
-                                                    item.name,
-                                                    item.kind,
-                                                    job.jobRequest
-                                                )}
-                                            />
-                                        </li>
-                                    ))}
+                                    {optional.map((item, idx) =>
+                                        item.mediaType.includes(
+                                            'application/vnd.pipeline.tts-config+xml'
+                                        ) ? (
+                                            '' // skip it, we don't need to provide a visual field for this option, it's set in the settings
+                                        ) : (
+                                            <li key={idx}>
+                                                <FormField
+                                                    item={item}
+                                                    key={idx}
+                                                    idprefix={`${ID(
+                                                        job.internalId
+                                                    )}-optional`}
+                                                    onChange={
+                                                        saveValueInJobRequest
+                                                    }
+                                                    initialValue={findValue(
+                                                        item.name,
+                                                        item.kind,
+                                                        job.jobRequest
+                                                    )}
+                                                />
+                                            </li>
+                                        )
+                                    )}
                                 </ul>
                             </section>
                         ) : (

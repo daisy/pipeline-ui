@@ -9,12 +9,10 @@ function jobResponseXmlToJson(xmlString: string) {
     let rootElm = sniffRoot(xmlString)
     if (rootElm == 'error') {
         return errorXmlToJson(xmlString)
-    }
-    else if (rootElm == 'job') {
+    } else if (rootElm == 'job') {
         return jobXmlToJson(xmlString)
-    }
-    else {
-        return {error: true, description: "Unrecognized response"}
+    } else {
+        return { error: true, description: 'Unrecognized response' }
     }
 }
 

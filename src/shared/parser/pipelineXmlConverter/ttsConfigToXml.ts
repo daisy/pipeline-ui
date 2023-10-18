@@ -10,6 +10,9 @@ function ttsConfigToXml(ttsConfig: TtsConfig): string {
                 `<voice engine="${v.engine}" name="${v.name}" lang="${v.lang}" gender="${v.gender}" priority="1"/>`
         )
         .join('')}
+    ${ttsConfig.ttsEngineProperties
+        .map((prop) => `<property key="${prop.key}" value="${prop.value}" />`)
+        .join('')}
   </config>`
     return xmlString
 }

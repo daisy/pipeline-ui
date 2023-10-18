@@ -52,6 +52,7 @@ export function readSettings() {
             xmlFilepath: pathToFileURL(
                 resolve(app.getPath('userData'), 'ttsConfig.xml')
             ).href,
+            ttsEngineProperties: [],
         },
         autoCheckUpdate: true,
     } as ApplicationSettings

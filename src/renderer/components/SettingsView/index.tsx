@@ -8,7 +8,8 @@ import {
 } from 'shared/types'
 import { FileOrFolderInput } from '../Fields/FileOrFolderInput'
 import { setSettings, save } from 'shared/data/slices/settings'
-import { TtsConfigPane } from '../TtsConfig'
+import { TtsVoicesConfigPane } from '../TtsVoicesConfig'
+import { TtsEnginesConfigPane } from '../TtsEnginesConfig'
 const { App } = window // The "App" comes from the bridge
 
 export function SettingsView() {
@@ -88,16 +89,30 @@ export function SettingsView() {
         setSaved(false)
     }
 
-    const onTtsPreferenceChange = (voices) => {
-        console.log('on tts pref change', voices)
+    const onTtsVoicesPreferenceChange = (voices) => {
+        console.log('on tts voices pref change', voices)
         setNewSettings({
             ...newSettings,
             ttsConfig: {
                 preferredVoices: [...voices],
+                ttsEngineProperties: [
+                    ...settings.ttsConfig.ttsEngineProperties,
+                ],
                 xmlFilepath: newSettings.ttsConfig.xmlFilepath,
             },
         })
         setSaved(false)
+    }
+    const onTtsEnginePropertiesChange = (ttsEngineProperties) => {
+        console.log('on tts engine properties change')
+        setNewSettings({
+            ...newSettings,
+            ttsConfig: {
+                preferredVoices: [...settings.ttsConfig.preferredVoices],
+                ttsEngineProperties: [...ttsEngineProperties],
+                xmlFilepath: newSettings.ttsConfig.xmlFilepath,
+            },
+        })
     }
 
     // send back the settings and save them on disk
@@ -144,7 +159,7 @@ export function SettingsView() {
                         }
                     >
                         <button onClick={(e) => setSelectedSection(3)}>
-                            Text-to-speech
+                            Voices
                         </button>
                     </li>
                     <li
@@ -153,6 +168,15 @@ export function SettingsView() {
                         }
                     >
                         <button onClick={(e) => setSelectedSection(4)}>
+                            TTS engines
+                        </button>
+                    </li>
+                    <li
+                        className={
+                            selectedSection == 5 ? 'selected-menu-item' : ''
+                        }
+                    >
+                        <button onClick={(e) => setSelectedSection(5)}>
                             Updates
                         </button>
                     </li>
@@ -282,13 +306,26 @@ export function SettingsView() {
                             {/* insert remote pipeline settings form part here */}
                         </>
                     ) : selectedSection == 3 ? (
-                        <div className="tts-config">
-                            <TtsConfigPane
-                                availableVoices={pipeline.voices}
+                        <div className="tts-voices-config">
+                            <TtsVoicesConfigPane
+                                availableVoices={pipeline.ttsVoices}
                                 userPreferredVoices={
                                     newSettings.ttsConfig.preferredVoices
                                 }
-                                onChangePreferredVoices={onTtsPreferenceChange}
+                                onChangePreferredVoices={
+                                    onTtsVoicesPreferenceChange
+                                }
+                            />
+                        </div>
+                    ) : selectedSection == 4 ? (
+                        <div className="tts-engines-config">
+                            <TtsEnginesConfigPane
+                                ttsEngineProperties={
+                                    newSettings.ttsConfig.ttsEngineProperties
+                                }
+                                onChangeTtsEngineProperties={
+                                    onTtsEnginePropertiesChange
+                                }
                             />
                         </div>
                     ) : (

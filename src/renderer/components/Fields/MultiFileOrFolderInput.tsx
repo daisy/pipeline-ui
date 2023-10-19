@@ -41,6 +41,7 @@ export function MultiFileOrFolderInput({
         let newValues = [...values]
         newValues.splice(idx, 1)
         setValues(newValues)
+        onChange(newValues)
     }
 
     let onFileFolderChange = (filename, idx) => {

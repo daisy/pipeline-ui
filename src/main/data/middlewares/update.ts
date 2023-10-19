@@ -74,6 +74,18 @@ export function updateMiddleware({ getState, dispatch }) {
                                     )
                                 )
                             })
+                    } else {
+                        dispatch(setUpdateMessage('Updates are deactivated.'))
+                        //// uncomment the followin block to test progress bar
+                        // dispatch(
+                        //     setDownloadProgress({
+                        //         bytesPerSecond: 125256,
+                        //         percent: 50,
+                        //         total: 145256192,
+                        //         transferred: 72628,
+                        //         delta: 1,
+                        //     })
+                        // )
                     }
                     break
                 case setUpdateAvailable.type:

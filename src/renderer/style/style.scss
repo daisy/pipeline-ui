@@ -16,6 +16,25 @@ h2, h3 {
     font-weight: normal;
 }
 
+/* make the app take the full window*/
+app {
+    position: absolute;
+    top:0.25em;
+    bottom:0.25em;
+    right:0.25em;
+    left:0.25em;
+}
+
+main {
+    display: flex;
+    flex-direction: column;
+}
+
+main.mainScreen {
+    overflow: hidden;
+    height: 100%;
+}
+
 button {
     color: inherit;
     background-color: inherit;
@@ -131,6 +150,7 @@ select {
     gap: calc(1.5 * var(--pad));
     max-height: var(--tab-panel-height);
     min-height: var(--tab-panel-height);
+    overflow: auto;
 }
 
 // the tab panel "header" 
@@ -139,12 +159,18 @@ select {
     display: grid;
     grid-template-columns: 60% auto;
     font-size: large;
+    margin-bottom: 0;
+    margin-top: calc(0.5 * var(--pad));
+    border-bottom: 1px solid black;
 
     // indent the contents not the heading
     div > *:not(h1) {
         margin-left: var(--pad);
+        margin-top: 0;
     }
     h1 {
+        margin-top: 0;
+        margin-bottom: calc(var(--pad));
         white-space: nowrap;
     }
     h1 span {
@@ -161,6 +187,7 @@ select {
 }
 
 .job {
+    overflow: hidden;
     .status {
         font-size: large;
         font-weight: bold;
@@ -169,6 +196,7 @@ select {
     }
 
     .job-settings {
+        margin-bottom:calc(0.5*var(--pad));
         ul {
             padding: calc(var(--pad)/2);
             border-radius: var(--border-radius);
@@ -192,113 +220,126 @@ select {
     }
 
     .details {
-        flex-grow: 2;
-        gap: calc(var(--pad) * 2);
         display: flex;
         flex-direction: column;
-        overflow-y: scroll;
-        
+        gap: calc(var(--pad));
+        overflow: auto;
 
         .scrolling-area {
-            overflow-y: scroll;
+            overflow: auto;
             gap: var(--pad);
             display: flex;
             flex-direction: column;
-        }
 
-        .job-messages {
-            ul {
-                font-family: var(--fw-font-family);
-                margin-left: var(--pad);
-                .error {
-                    background-color: var(--error-bg);
-                    color: var(--error-fg);
-                    padding: 3px;
-                    margin: -3px;
+            .job-results {
+                width: min-content;
+                white-space: nowrap;
+    
+                .file-list {
+                    margin-left: var(--pad);
                 }
-                .info {
-                    color: var(--fg);
+                /* the outer list item, e.g. "Results folder" */
+                .file-list > li {
+                    display: flex;
+                    flex-direction: column;
+                    gap: var(--pad);
                 }
-                .warning {
-                    color: var(--warning);
-                }
-                .debug {
-                    color: var(--fg);
-                }
-                .trace {
-                    color: var(--fg);
+    
+                /* the inner list e.g. .filelist > ul > li.named-result */
+                li.named-result {
+                    display: flex;
+                    flex-direction: row;
+                    gap: var(--pad);
+    
+                    .nicename {
+                        font-weight: bold;
+                    }
+                    .description {
+                        font-style: italic;
+                        font-size: medium;
+                        
+                    }
                 }
             }
-            
-            ul ul {
+
+            .job-messages {
+                ul {
+                    font-family: var(--fw-font-family);
+                    margin-left: var(--pad);
+                    .error {
+                        background-color: var(--error-bg);
+                        color: var(--error-fg);
+                        padding: 3px;
+                        margin: -3px;
+                    }
+                    .info {
+                        color: var(--fg);
+                    }
+                    .warning {
+                        color: var(--warning);
+                    }
+                    .debug {
+                        color: var(--fg);
+                    }
+                    .trace {
+                        color: var(--fg);
+                    }
+                }
                 
-                padding-left: var(--pad);
-                border-left: 1px solid var(--fg-mix);
-                border-bottom: 1px solid var(--fg-mix);
-                margin-bottom: calc(var(--pad) * 0.5);
-                margin-top:  calc(var(--pad) * 0.5);
-                margin-left: var(--pad);
-                :last-child {
-                    margin-bottom: calc(var(--pad));
-                }
-            }
-        }
-
-        .job-results {
-            width: min-content;
-            white-space: nowrap;
-
-            .file-list {
-                margin-left: var(--pad);
-            }
-            /* the outer list item, e.g. "Results folder" */
-            .file-list > li {
-                display: flex;
-                flex-direction: column;
-                gap: var(--pad);
-            }
-
-            /* the inner list e.g. .filelist > ul > li.named-result */
-            li.named-result {
-                display: flex;
-                flex-direction: row;
-                gap: var(--pad);
-
-                .nicename {
-                    font-weight: bold;
-                }
-                .description {
-                    font-style: italic;
-                    font-size: medium;
+                ul ul {
                     
+                    padding-left: var(--pad);
+                    border-left: 1px solid var(--fg-mix);
+                    border-bottom: 1px solid var(--fg-mix);
+                    margin-bottom: calc(var(--pad) * 0.5);
+                    margin-top:  calc(var(--pad) * 0.5);
+                    margin-left: var(--pad);
+                    :last-child {
+                        margin-bottom: calc(var(--pad));
+                    }
                 }
+            }
+    
+            
+    
+            .job-results, .job-messages {
+                div:first-child:has(h2) {
+                    display: flex;
+                    flex-direction: row;
+                    gap: var(--pad);
+                    align-items: center;
+    
+                    h2 + a.filelink, h2 + a.loglink {
+                        font-size: smaller;
+                        margin-bottom: -3px;
+                    }
+                }
+               
             }
         }
 
-        .job-results, .job-messages {
-            div:first-child:has(h2) {
-                display: flex;
-                flex-direction: row;
-                gap: var(--pad);
-                align-items: center;
-
-                h2 + a.filelink, h2 + a.loglink {
-                    font-size: smaller;
-                    margin-bottom: -3px;
-                }
-            }
-           
-        }
-        .form-buttons {
-            display: flex;
-            flex-direction: line;
-            gap: var(--pad);
-            margin-bottom: calc(var(--pad) * 0.5);
-        }
+        
+        // .form-buttons {
+        //     position: absolute;
+        //     bottom: 0em;
+        //     display: flex;
+        //     flex-direction: line;
+        //     gap: var(--pad);
+        //     margin-bottom: calc(var(--pad) * 0.5);
+        // }
     }
+    .form-buttons {
+            display: flex;
+            flex-direction: row;
+            gap: var(--pad);
+        }
 }
 
 .new-job {
+    overflow: hidden;
+    .cancel-creation {
+        margin-top: calc(var(--pad));
+    }
     input[type=text] {
         width: 25rem;
         font-size: large;
@@ -347,8 +388,8 @@ select {
         
         
         border-bottom: thin solid var(--fg-mix);
-        padding-top: calc(var(--pad));
-        padding-bottom: calc(var(--pad));
+        padding-top: calc(0.25 * var(--pad));
+        padding-bottom: calc(0.75 * var(--pad));
         padding-left: 2px;
         align-items: center;
 
@@ -361,8 +402,8 @@ select {
     form {
         display: flex;
         flex-direction: column;
-        gap: calc(var(--pad) * 2);
-        overflow-y: scroll;
+        gap: calc(var(--pad));
+        overflow: auto;
 
         .form-sections {
             display: flex;
@@ -370,10 +411,15 @@ select {
             gap: 8%;
             section {
                 width: 70%;
+                > h2 {
+                    margin-top: calc(0.5 * var(--pad));
+                    margin-bottom: calc(0.5 * var(--pad));
+                }
             }
             overflow-y: scroll;
 
             ul.fields {
+                margin: calc(0.5 * var(--pad));
                 gap: var(--pad);
                 
                 select {
@@ -420,7 +466,7 @@ select {
             display: flex;
             flex-direction: row;
             gap: var(--pad);
-        }    
+        }
     }
 }
 

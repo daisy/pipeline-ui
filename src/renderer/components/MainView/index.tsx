@@ -148,8 +148,12 @@ export function MainView() {
                     return (
                         <div
                             key={idx}
-                            className={`"tabPanel" ${
+                            className={`tabPanel ${
                                 job.state == JobState.NEW ? 'new-job' : 'job'
+                            } ${
+                                pipeline.selectedJobId != job.internalId
+                                    ? 'invisible'
+                                    : ''
                             }`}
                             id={`${ID(job.internalId)}-tabpanel`}
                             role="tabpanel"
@@ -157,19 +161,11 @@ export function MainView() {
                             aria-labelledby={`${ID(job.internalId)}-tab`}
                             tabIndex={0}
                         >
-                            <div
-                                className={`fixed-height-layout ${
-                                    job.state == JobState.NEW
-                                        ? 'new-job'
-                                        : 'job'
-                                }`}
-                            >
-                                {job.state == JobState.NEW ? (
-                                    <NewJobPane job={job} />
-                                ) : (
-                                    <JobDetailsPane job={job} />
-                                )}
-                            </div>
+                            {job.state == JobState.NEW ? (
+                                <NewJobPane job={job} />
+                            ) : (
+                                <JobDetailsPane job={job} />
+                            )}
                         </div>
                     )
                 })}

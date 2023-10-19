@@ -91,6 +91,7 @@ export function ScriptForm({ job, script }: { job: Job; script: Script }) {
     let onSubmit = (e) => {
         e.preventDefault()
         setSubmitInProgress(true)
+        console.log('submit', job)
         App.store.dispatch(
             runJob({
                 ...job,
@@ -101,34 +102,34 @@ export function ScriptForm({ job, script }: { job: Job; script: Script }) {
 
     return (
         <>
-            <section
-                className="header"
-                aria-labelledby={`${ID(job.internalId)}-script-hd`}
-            >
-                <div>
-                    <h1 id={`${ID(job.internalId)}-script-hd`}>
-                        {script?.nicename}
-                    </h1>
-                    <p>{script?.description}</p>
-                    <p>
-                        {script?.homepage ? (
-                            <a
-                                href={script.homepage}
-                                onClick={(e) => externalLinkClick(e, App)}
-                            >
-                                Read the script documentation.
-                            </a>
-                        ) : (
-                            ''
-                        )}
-                    </p>
-                </div>
-                {error && <p>Error</p>}
-            </section>
-
             {!submitInProgress ? (
                 <form onSubmit={onSubmit} id={`${ID(job.internalId)}-form`}>
                     <div className="form-sections">
+                        <section
+                            className="header"
+                            aria-labelledby={`${ID(job.internalId)}-script-hd`}
+                        >
+                            <div>
+                                <h1 id={`${ID(job.internalId)}-script-hd`}>
+                                    {script?.nicename}
+                                </h1>
+                                <p>{script?.description}</p>
+                                <p>
+                                    {script?.homepage ? (
+                                        <a
+                                            href={script.homepage}
+                                            onClick={(e) =>
+                                                externalLinkClick(e, App)
+                                            }
+                                        >
+                                            Read the script documentation.
+                                        </a>
+                                    ) : (
+                                        ''
+                                    )}
+                                </p>
+                            </div>
+                        </section>
                         <section
                             className="required-fields"
                             aria-labelledby={`${ID(job.internalId)}-required`}
@@ -219,6 +220,32 @@ export function ScriptForm({ job, script }: { job: Job; script: Script }) {
                 </form>
             ) : (
                 <>
+                    <section
+                        className="header"
+                        aria-labelledby={`${ID(job.internalId)}-script-hd`}
+                    >
+                        <div>
+                            <h1 id={`${ID(job.internalId)}-script-hd`}>
+                                {script?.nicename}
+                            </h1>
+                            <p>{script?.description}</p>
+                            <p>
+                                {script?.homepage ? (
+                                    <a
+                                        href={script.homepage}
+                                        onClick={(e) =>
+                                            externalLinkClick(e, App)
+                                        }
+                                    >
+                                        Read the script documentation.
+                                    </a>
+                                ) : (
+                                    ''
+                                )}
+                            </p>
+                            {error && <p>Error</p>}
+                        </div>
+                    </section>
                     <p>Submitting...</p>
                     {error && <p>Error</p>}
                 </>

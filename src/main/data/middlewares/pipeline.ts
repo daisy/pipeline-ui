@@ -26,7 +26,6 @@ import {
 import {
     Datatype,
     Job,
-    JobData,
     JobState,
     JobStatus,
     NamedResult,
@@ -168,7 +167,7 @@ function startMonitor(j: Job, ws: Webservice, getState, dispatch) {
             clearInterval(monitor)
         } else
             fetchJobData(ws)
-                .then((value: JobData) => {
+                .then((value) => {
                     info('received job data ', value)
                     if (
                         [

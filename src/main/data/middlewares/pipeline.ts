@@ -319,7 +319,7 @@ export function pipelineMiddleware({ getState, dispatch }) {
                                 return pipelineAPI.fetchTtsVoices()(newWebservice)
                             })
                             .then((voices: Array<TtsVoice>) => {
-                                console.log('TTS Voices', voices)
+                                // console.log('TTS Voices', voices)
                                 dispatch(setTtsVoices(voices))
                             })
                             .catch((e) => {

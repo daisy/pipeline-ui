@@ -7,10 +7,12 @@ import { ENVIRONMENT } from 'shared/constants'
 import { save, setAutoCheckUpdate } from 'shared/data/slices/settings'
 import { checkForUpdate } from 'shared/data/slices/update'
 import { ttsConfigToXml } from 'shared/parser/pipelineXmlConverter/ttsConfigToXml'
-import { ApplicationSettings } from 'shared/types'
+import { ApplicationSettings, TtsVoice } from 'shared/types'
 import { RootState } from 'shared/types/store'
 import { resolveUnpacked } from 'shared/utils'
 import { fileURLToPath, pathToFileURL } from 'url'
+import { pipelineAPI } from '../apis/pipeline'
+import { setTtsVoices } from 'shared/data/slices/pipeline'
 
 const settingsFile = resolve(app.getPath('userData'), 'settings.json')
 
@@ -150,6 +152,15 @@ export function settingsMiddleware({ getState, dispatch }) {
                         ttsConfigToXml(settings.ttsConfig),
                         () => {}
                     )
+                    // re-fetch the /voices endpoint
+                    pipelineAPI
+                        .fetchTtsVoices()(
+                            (getState() as RootState).pipeline.webservice
+                        )
+                        .then((voices: Array<TtsVoice>) => {
+                            console.log('TTS Voices', voices)
+                            dispatch(setTtsVoices(voices))
+                        })
                     break
                 case setAutoCheckUpdate.type:
                     if (

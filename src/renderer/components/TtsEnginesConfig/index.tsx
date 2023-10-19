@@ -51,7 +51,8 @@ export function TtsEnginesConfigPane({
             </p>
             <p className="desc">
                 After configuring these engines with the required credentials,
-                they will be available under 'Voices'.
+                they will be available under 'Voices'. Save and reopen the
+                settings dialog to see changes.
             </p>
             <ul>
                 {Object.keys(engineNames).map((engineKeyPrefix, idx) => (

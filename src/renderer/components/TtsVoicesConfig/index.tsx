@@ -13,7 +13,7 @@ export function TtsVoicesConfigPane({
 }) {
     const { pipeline } = useWindowStore()
     const [voiceList, setVoiceList] = useState(
-        availableVoices?.map((v) => ({ ...v, show: true }))
+        availableVoices.map((v) => ({ ...v, show: true }))
     )
     const [preferredVoices, setPreferredVoices] = useState([
         ...userPreferredVoices,

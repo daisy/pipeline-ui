@@ -25,7 +25,7 @@ const initialState = {
     webservice: null,
     scripts: [],
     datatypes: [],
-    voices: [],
+    ttsVoices: [],
     jobs: [],
     internalJobCounter: 0,
     selectedJobId: '',

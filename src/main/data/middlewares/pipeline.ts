@@ -46,6 +46,7 @@ import {
     selectDownloadPath,
     selectPipelineProperties,
     selectSettings,
+    selectTtsConfig,
 } from 'shared/data/slices/settings'
 import { ParserException } from 'shared/parser/pipelineXmlConverter/parser'
 import { PipelineInstance } from 'main/factories'
@@ -316,7 +317,9 @@ export function pipelineMiddleware({ getState, dispatch }) {
                             })
                             .then((datatypes) => {
                                 dispatch(setDatatypes(datatypes))
-                                return pipelineAPI.fetchTtsVoices()(newWebservice)
+                                return pipelineAPI.fetchTtsVoices(
+                                    selectTtsConfig(getState())
+                                )(newWebservice)
                             })
                             .then((voices: Array<TtsVoice>) => {
                                 // console.log('TTS Voices', voices)

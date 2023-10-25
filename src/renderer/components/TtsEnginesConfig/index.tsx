@@ -138,7 +138,7 @@ export function TtsEnginesConfigPane({
                     setEngineMessage({
                         ...engineMessage,
                         [engineKey]:
-                            'Could not connect to engine, please check yout credentials or the service status.',
+                            'Could not connect to engine, please check your credentials or the service status.',
                     })
                     // and return empty array to not update the voices array
                     return []

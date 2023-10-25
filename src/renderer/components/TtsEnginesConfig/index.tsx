@@ -122,6 +122,10 @@ export function TtsEnginesConfigPane({
                         ...enginePropsChanged,
                         [engineKey]: false,
                     })
+                    setEngineMessage({
+                        ...engineMessage,
+                        [engineKey]: 'Connected',
+                    })
                     // use those new settings to recompute
                     // the full voices list
                     return pipelineAPI.fetchTtsVoices({
@@ -141,10 +145,6 @@ export function TtsEnginesConfigPane({
                 }
             })
             .then((fullVoicesList: TtsVoice[]) => {
-                setEngineMessage({
-                    ...engineMessage,
-                    [engineKey]: 'Connected',
-                })
                 // Update the voices array if its not empty
                 if (fullVoicesList.length > 0)
                     App.store.dispatch(setTtsVoices(fullVoicesList))

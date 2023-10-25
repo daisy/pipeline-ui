@@ -4,7 +4,11 @@ import { info } from 'electron-log'
 import { existsSync, readFileSync, writeFile } from 'fs'
 import { resolve } from 'path'
 import { ENVIRONMENT } from 'shared/constants'
-import { save, setAutoCheckUpdate } from 'shared/data/slices/settings'
+import {
+    save,
+    selectTtsConfig,
+    setAutoCheckUpdate,
+} from 'shared/data/slices/settings'
 import { checkForUpdate } from 'shared/data/slices/update'
 import { ttsConfigToXml } from 'shared/parser/pipelineXmlConverter/ttsConfigToXml'
 import { ApplicationSettings, TtsVoice } from 'shared/types'
@@ -12,7 +16,7 @@ import { RootState } from 'shared/types/store'
 import { resolveUnpacked } from 'shared/utils'
 import { fileURLToPath, pathToFileURL } from 'url'
 import { pipelineAPI } from '../apis/pipeline'
-import { setTtsVoices } from 'shared/data/slices/pipeline'
+import { selectWebservice, setTtsVoices } from 'shared/data/slices/pipeline'
 
 const settingsFile = resolve(app.getPath('userData'), 'settings.json')
 
@@ -154,8 +158,8 @@ export function settingsMiddleware({ getState, dispatch }) {
                     )
                     // re-fetch the /voices endpoint
                     pipelineAPI
-                        .fetchTtsVoices()(
-                            (getState() as RootState).pipeline.webservice
+                        .fetchTtsVoices(selectTtsConfig(getState()))(
+                            selectWebservice(getState())
                         )
                         .then((voices: Array<TtsVoice>) => {
                             console.log('TTS Voices', voices)

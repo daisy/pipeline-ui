@@ -393,4 +393,5 @@ export const {
     selectDatatypes,
     newJob,
     prepareJobRequest,
+    selectTtsVoices,
 } = selectors

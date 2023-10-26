@@ -5,6 +5,7 @@ import { useState, useEffect } from 'react'
 import { useWindowStore } from 'renderer/store'
 import { PipelineAPI } from 'shared/data/apis/pipeline'
 import { selectTtsVoices, setTtsVoices } from 'shared/data/slices/pipeline'
+import { saveTtsConfig } from 'shared/data/slices/settings'
 import { TtsVoice } from 'shared/types/ttsConfig'
 
 const enginePropertyKeys = [
@@ -122,10 +123,6 @@ export function TtsEnginesConfigPane({
                         ...enginePropsChanged,
                         [engineKey]: false,
                     })
-                    setEngineMessage({
-                        ...engineMessage,
-                        [engineKey]: 'Connected',
-                    })
                     // use those new settings to recompute
                     // the full voices list
                     return pipelineAPI.fetchTtsVoices({
@@ -134,20 +131,26 @@ export function TtsEnginesConfigPane({
                     })(pipeline.webservice)
                 } else {
                     // could not connect
+                    // return empty array to not update the voices array
+                    return []
+                }
+            })
+            .then((fullVoicesList: TtsVoice[]) => {
+                // Update the voices array if its not empty
+                if (fullVoicesList.length > 0) {
+                    setEngineMessage({
+                        ...engineMessage,
+                        [engineKey]: 'Connected',
+                    })
+                    App.store.dispatch(setTtsVoices(fullVoicesList))
+                } else {
                     // indicate connection error
                     setEngineMessage({
                         ...engineMessage,
                         [engineKey]:
                             'Could not connect to engine, please check your credentials or the service status.',
                     })
-                    // and return empty array to not update the voices array
-                    return []
                 }
-            })
-            .then((fullVoicesList: TtsVoice[]) => {
-                // Update the voices array if its not empty
-                if (fullVoicesList.length > 0)
-                    App.store.dispatch(setTtsVoices(fullVoicesList))
             })
             .catch((e) => {
                 console.error(e)

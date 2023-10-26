@@ -6,6 +6,7 @@ import { resolve } from 'path'
 import { ENVIRONMENT } from 'shared/constants'
 import {
     save,
+    saveTtsConfig,
     selectTtsConfig,
     setAutoCheckUpdate,
 } from 'shared/data/slices/settings'
@@ -143,6 +144,24 @@ export function settingsMiddleware({ getState, dispatch }) {
 
         try {
             switch (action.type) {
+                case saveTtsConfig.type:
+                    writeFile(
+                        new URL(settings.ttsConfig.xmlFilepath),
+                        ttsConfigToXml(settings.ttsConfig),
+                        () => {}
+                    )
+                    if (action.payload) {
+                        // re-fetch the /voices endpoint
+                        pipelineAPI
+                            .fetchTtsVoices(selectTtsConfig(getState()))(
+                                selectWebservice(getState())
+                            )
+                            .then((voices: Array<TtsVoice>) => {
+                                console.log('TTS Voices', voices)
+                                dispatch(setTtsVoices(voices))
+                            })
+                    }
+                    break
                 case save.type:
                     // Parse new settings and dispatch updates if needed here
                     nativeTheme.themeSource = settings.colorScheme

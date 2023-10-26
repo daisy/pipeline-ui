@@ -7,7 +7,12 @@ import {
     ColorScheme,
 } from 'shared/types'
 import { FileOrFolderInput } from '../Fields/FileOrFolderInput'
-import { setSettings, save } from 'shared/data/slices/settings'
+import {
+    setSettings,
+    save,
+    setTtsConfig,
+    saveTtsConfig,
+} from 'shared/data/slices/settings'
 import { TtsVoicesConfigPane } from '../TtsVoicesConfig'
 import { TtsEnginesConfigPane } from '../TtsEnginesConfig'
 const { App } = window // The "App" comes from the bridge
@@ -91,28 +96,31 @@ export function SettingsView() {
 
     const onTtsVoicesPreferenceChange = (voices) => {
         console.log('on tts voices pref change', voices)
+        const newConfig = {
+            preferredVoices: [...voices],
+            ttsEngineProperties: [...settings.ttsConfig.ttsEngineProperties],
+            xmlFilepath: newSettings.ttsConfig.xmlFilepath,
+        }
         setNewSettings({
             ...newSettings,
-            ttsConfig: {
-                preferredVoices: [...voices],
-                ttsEngineProperties: [
-                    ...settings.ttsConfig.ttsEngineProperties,
-                ],
-                xmlFilepath: newSettings.ttsConfig.xmlFilepath,
-            },
+            ttsConfig: newConfig,
         })
+        App.store.dispatch(setTtsConfig(newConfig))
+        App.store.dispatch(saveTtsConfig())
         setSaved(false)
     }
     const onTtsEnginePropertiesChange = (ttsEngineProperties) => {
-        console.log('on tts engine properties change')
+        const newConfig = {
+            preferredVoices: [...settings.ttsConfig.preferredVoices],
+            ttsEngineProperties: [...ttsEngineProperties],
+            xmlFilepath: newSettings.ttsConfig.xmlFilepath,
+        }
         setNewSettings({
             ...newSettings,
-            ttsConfig: {
-                preferredVoices: [...settings.ttsConfig.preferredVoices],
-                ttsEngineProperties: [...ttsEngineProperties],
-                xmlFilepath: newSettings.ttsConfig.xmlFilepath,
-            },
+            ttsConfig: newConfig,
         })
+        App.store.dispatch(setTtsConfig(newConfig))
+        App.store.dispatch(saveTtsConfig())
     }
 
     // send back the settings and save them on disk

@@ -99,6 +99,12 @@ export const settings = createSlice({
         ) => {
             state.ttsConfig = action.payload
         },
+        saveTtsConfig: (
+            state: ApplicationSettings,
+            action: PayloadAction<boolean | undefined>
+        ) => {
+            // saveTtsConfig action to trigger middleware save on disk
+        },
     },
 })
 
@@ -112,6 +118,7 @@ export const {
     setClosingMainWindowActionForJobs,
     setTtsConfig,
     setAutoCheckUpdate,
+    saveTtsConfig,
 } = settings.actions
 
 export const selectors = {

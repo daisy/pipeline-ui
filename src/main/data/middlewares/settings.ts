@@ -1,6 +1,6 @@
 import { PayloadAction } from '@reduxjs/toolkit'
 import { app, nativeTheme } from 'electron'
-import { info } from 'electron-log'
+import { info, error } from 'electron-log'
 import { existsSync, readFileSync, writeFile } from 'fs'
 import { resolve } from 'path'
 import { ENVIRONMENT } from 'shared/constants'
@@ -87,11 +87,17 @@ export function readSettings() {
                         : pathToFileURL(loaded.xmlFilepath).href,
                 },
             }
+            info(`Settings loaded from ${settingsFile}`)
+            info(JSON.stringify(settings))
+        } else {
+            error(`${settingsFile} not found`)
+            throw new Error(`${settingsFile} not found`)
         }
         // Create the file if it does not exist
         // to ensure it is sent to pipeline
         const ttsConfigPath = fileURLToPath(settings.ttsConfig.xmlFilepath)
         if (!existsSync(ttsConfigPath)) {
+            info(`Writing initial TTS Config file ${ttsConfigPath}`)
             writeFile(
                 ttsConfigPath,
                 ttsConfigToXml(settings.ttsConfig),
@@ -102,6 +108,7 @@ export function readSettings() {
         info('Error when trying to parse settings file')
         info(e)
         info('Falling back to default settings')
+        info(JSON.stringify(settings, null, '  '))
     }
 
     // Remove pipeline props loading for dev

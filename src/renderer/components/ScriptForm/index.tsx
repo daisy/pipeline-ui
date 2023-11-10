@@ -20,6 +20,8 @@ import {
 
 import { externalLinkClick } from 'renderer/utils/utils'
 import { FormField } from '../Fields/FormField'
+import log from 'electron-log/renderer'
+
 const { App } = window
 
 // update the array and return a new copy of it
@@ -49,6 +51,13 @@ export function ScriptForm({ job, script }: { job: Job; script: Script }) {
                 settings.ttsConfig.xmlFilepath,
                 ttsConfigOpt,
                 inputs
+            )
+            log.info(
+                `Setting TTS config option ${JSON.stringify(
+                    ttsConfigOpt,
+                    null,
+                    '  '
+                )} in job inputs ${JSON.stringify(inputs_, null, '  ')}`
             )
 
             App.store.dispatch(

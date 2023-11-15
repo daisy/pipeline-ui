@@ -65,7 +65,9 @@ export function readSettings() {
     } as ApplicationSettings
     try {
         if (existsSync(settingsFile)) {
-            const loaded = JSON.parse(readFileSync(settingsFile, 'utf8'))
+            const loaded: ApplicationSettings = JSON.parse(
+                readFileSync(settingsFile, 'utf8')
+            ) as ApplicationSettings
             settings = {
                 ...settings,
                 ...loaded,
@@ -80,11 +82,11 @@ export function readSettings() {
                 ttsConfig: {
                     ...settings.ttsConfig,
                     ...loaded?.ttsConfig,
-                    xmlFilepath: !loaded.xmlFilepath
-                        ? settings.ttsConfig.xmlFilepath
-                        : loaded.xmlFilepath.startsWith('file:')
-                        ? loaded.xmlFilepath
-                        : pathToFileURL(loaded.xmlFilepath).href,
+                    xmlFilepath: loaded?.ttsConfig?.xmlFilepath
+                        ? loaded.ttsConfig.xmlFilepath.startsWith('file:')
+                            ? loaded.ttsConfig.xmlFilepath
+                            : pathToFileURL(loaded.ttsConfig.xmlFilepath).href
+                        : settings.ttsConfig.xmlFilepath,
                 },
             }
             info(`Settings loaded from ${settingsFile}`)

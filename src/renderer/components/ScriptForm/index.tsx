@@ -20,7 +20,6 @@ import {
 
 import { externalLinkClick } from 'renderer/utils/utils'
 import { FormField } from '../Fields/FormField'
-import log from 'electron-log/renderer'
 
 const { App } = window
 
@@ -39,6 +38,7 @@ export function ScriptForm({ job, script }: { job: Job; script: Script }) {
     const { settings } = useWindowStore()
 
     useEffect(() => {
+        App.log(`Script form for ${JSON.stringify(script, null, '  ')}`)
         // if this script has a TTS config field, fill it in with the value from the user's settings
         // as xml files, tts config files are inputs though they are typically optional
         let ttsConfigOpt = optional.find((o) =>
@@ -52,7 +52,7 @@ export function ScriptForm({ job, script }: { job: Job; script: Script }) {
                 ttsConfigOpt,
                 inputs
             )
-            log.info(
+            App.log(
                 `Setting TTS config option ${JSON.stringify(
                     ttsConfigOpt,
                     null,
@@ -69,8 +69,16 @@ export function ScriptForm({ job, script }: { job: Job; script: Script }) {
                     },
                 })
             )
+        } else {
+            App.log(
+                `TTS Config Option not found in ${JSON.stringify(
+                    script,
+                    null,
+                    '  '
+                )}`
+            )
         }
-    }, [])
+    }, [script])
 
     let saveValueInJobRequest = (value, data) => {
         if (!job.jobRequest) {

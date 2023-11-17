@@ -4,12 +4,7 @@ import { info, error } from 'electron-log'
 import { existsSync, readFileSync, writeFile } from 'fs'
 import { resolve } from 'path'
 import { ENVIRONMENT } from 'shared/constants'
-import {
-    save,
-    saveTtsConfig,
-    selectTtsConfig,
-    setAutoCheckUpdate,
-} from 'shared/data/slices/settings'
+import { save, setAutoCheckUpdate } from 'shared/data/slices/settings'
 import { checkForUpdate } from 'shared/data/slices/update'
 import { ttsConfigToXml } from 'shared/parser/pipelineXmlConverter/ttsConfigToXml'
 import { ApplicationSettings, TtsVoice } from 'shared/types'
@@ -153,24 +148,6 @@ export function settingsMiddleware({ getState, dispatch }) {
 
         try {
             switch (action.type) {
-                case saveTtsConfig.type:
-                    writeFile(
-                        new URL(settings.ttsConfig.xmlFilepath),
-                        ttsConfigToXml(settings.ttsConfig),
-                        () => {}
-                    )
-                    if (action.payload) {
-                        // re-fetch the /voices endpoint
-                        pipelineAPI
-                            .fetchTtsVoices(selectTtsConfig(getState()))(
-                                selectWebservice(getState())
-                            )
-                            .then((voices: Array<TtsVoice>) => {
-                                console.log('TTS Voices', voices)
-                                dispatch(setTtsVoices(voices))
-                            })
-                    }
-                    break
                 case save.type:
                     // Parse new settings and dispatch updates if needed here
                     nativeTheme.themeSource = settings.colorScheme
@@ -184,15 +161,6 @@ export function settingsMiddleware({ getState, dispatch }) {
                         ttsConfigToXml(settings.ttsConfig),
                         () => {}
                     )
-                    // re-fetch the /voices endpoint
-                    pipelineAPI
-                        .fetchTtsVoices(selectTtsConfig(getState()))(
-                            selectWebservice(getState())
-                        )
-                        .then((voices: Array<TtsVoice>) => {
-                            console.log('TTS Voices', voices)
-                            dispatch(setTtsVoices(voices))
-                        })
                     break
                 case setAutoCheckUpdate.type:
                     if (

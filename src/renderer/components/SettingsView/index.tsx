@@ -8,10 +8,13 @@ import {
 } from 'shared/types'
 import { FileOrFolderInput } from '../Fields/FileOrFolderInput'
 import {
-    setSettings,
     save,
     setTtsConfig,
-    saveTtsConfig,
+    setClosingMainWindowActionForApp,
+    setDownloadPath,
+    setColorScheme,
+    setAutoCheckUpdate,
+    setClosingMainWindowActionForJobs,
 } from 'shared/data/slices/settings'
 import { TtsVoicesConfigPane } from '../TtsVoicesConfig'
 import { TtsEnginesConfigPane } from '../TtsEnginesConfig'
@@ -29,9 +32,11 @@ export function SettingsView() {
             settings.appStateOnClosingMainWindow ?? 'ask', // defaults to ask in form
         jobsStateOnClosingMainWindow:
             settings.jobsStateOnClosingMainWindow ?? 'close', // defaults to ask in form
+        ttsConfig: {
+            ...settings.ttsConfig,
+        },
     })
-    const [saved, setSaved] = useState(true)
-
+    //const [saved, setSaved] = useState(true)
     useEffect(() => {
         // Reload settings from store if it has changed
         setNewSettings({
@@ -40,58 +45,58 @@ export function SettingsView() {
                 settings.appStateOnClosingMainWindow ?? 'ask', // defaults to ask in form
             jobsStateOnClosingMainWindow:
                 settings.jobsStateOnClosingMainWindow ?? 'close', // defaults to ask in form
+            ttsConfig: {
+                ...settings.ttsConfig,
+            },
         })
     }, [settings])
-
     const [selectedSection, setSelectedSection] = useState(0)
 
     // Changed folder
     const resultsFolderChanged = (filename) => {
-        setNewSettings({
-            ...newSettings,
-            downloadFolder: filename,
-        })
-        setSaved(false)
+        App.store.dispatch(setDownloadPath(filename))
+        App.store.dispatch(save())
+        //setSaved(true)
     }
     const colorModeChanged = (e) => {
-        setNewSettings({
-            ...newSettings,
-            colorScheme: Object.keys(ColorScheme)[
-                e.target.selectedIndex
-            ] as keyof typeof ColorScheme,
-        })
-        setSaved(false)
+        App.store.dispatch(
+            setColorScheme(
+                Object.keys(ColorScheme)[
+                    e.target.selectedIndex
+                ] as keyof typeof ColorScheme
+            )
+        )
+        App.store.dispatch(save())
+        //setSaved(true)
     }
     const AppClosingActionChanged = (e) => {
-        setNewSettings({
-            ...newSettings,
-            appStateOnClosingMainWindow: Object.keys(
-                ClosingMainWindowActionForApp
-            )[
-                e.target.selectedIndex
-            ] as keyof typeof ClosingMainWindowActionForApp,
-        })
-        setSaved(false)
+        App.store.dispatch(
+            setClosingMainWindowActionForApp(
+                Object.keys(ClosingMainWindowActionForApp)[
+                    e.target.selectedIndex
+                ] as keyof typeof ClosingMainWindowActionForApp
+            )
+        )
+        App.store.dispatch(save())
+        //setSaved(true)
     }
 
     const autoCheckUpdateChanged = (e) => {
-        setNewSettings({
-            ...newSettings,
-            autoCheckUpdate: e.target.checked,
-        })
-        setSaved(false)
+        App.store.dispatch(setAutoCheckUpdate(e.target.checked))
+        App.store.dispatch(save())
+        //setSaved(true)
     }
 
     const JobsClosingActionChanged = (e) => {
-        setNewSettings({
-            ...newSettings,
-            jobsStateOnClosingMainWindow: Object.keys(
-                ClosingMainWindowActionForJobs
-            )[
-                e.target.selectedIndex
-            ] as keyof typeof ClosingMainWindowActionForJobs,
-        })
-        setSaved(false)
+        App.store.dispatch(
+            setClosingMainWindowActionForJobs(
+                Object.keys(ClosingMainWindowActionForJobs)[
+                    e.target.selectedIndex
+                ] as keyof typeof ClosingMainWindowActionForJobs
+            )
+        )
+        App.store.dispatch(save())
+        //setSaved(true)
     }
 
     const onTtsVoicesPreferenceChange = (voices) => {
@@ -101,13 +106,9 @@ export function SettingsView() {
             ttsEngineProperties: [...settings.ttsConfig.ttsEngineProperties],
             xmlFilepath: newSettings.ttsConfig.xmlFilepath,
         }
-        setNewSettings({
-            ...newSettings,
-            ttsConfig: newConfig,
-        })
         App.store.dispatch(setTtsConfig(newConfig))
-        App.store.dispatch(saveTtsConfig())
-        setSaved(false)
+        App.store.dispatch(save())
+        //setSaved(true)
     }
     const onTtsEnginePropertiesChange = (ttsEngineProperties) => {
         const newConfig = {
@@ -115,20 +116,9 @@ export function SettingsView() {
             ttsEngineProperties: [...ttsEngineProperties],
             xmlFilepath: newSettings.ttsConfig.xmlFilepath,
         }
-        setNewSettings({
-            ...newSettings,
-            ttsConfig: newConfig,
-        })
         App.store.dispatch(setTtsConfig(newConfig))
-        App.store.dispatch(saveTtsConfig())
-    }
-
-    // send back the settings and save them on disk
-    const handleSave = () => {
-        App.store.dispatch(setSettings(newSettings))
         App.store.dispatch(save())
-        window.close()
-        setSaved(true)
+        //setSaved(true)
     }
     return (
         <div className="settings">
@@ -226,16 +216,12 @@ export function SettingsView() {
                             <select
                                 id="colorMode"
                                 onChange={(e) => colorModeChanged(e)}
+                                value={newSettings.colorScheme}
                             >
                                 {Object.entries(ColorScheme).map(
                                     ([k, v]: [string, string]) => {
                                         return (
-                                            <option
-                                                key={k}
-                                                selected={
-                                                    newSettings.colorScheme == k
-                                                }
-                                            >
+                                            <option key={k} value={k}>
                                                 {v}
                                             </option>
                                         )
@@ -257,18 +243,15 @@ export function SettingsView() {
                                 <select
                                     id="appStateOnMainWindowClosing"
                                     onChange={(e) => AppClosingActionChanged(e)}
+                                    value={
+                                        newSettings.appStateOnClosingMainWindow
+                                    }
                                 >
                                     {Object.entries(
                                         ClosingMainWindowActionForApp
                                     ).map(([k, v]: [string, string]) => {
                                         return (
-                                            <option
-                                                key={k}
-                                                selected={
-                                                    newSettings.appStateOnClosingMainWindow ==
-                                                    k
-                                                }
-                                            >
+                                            <option key={k} value={k}>
                                                 {v}
                                             </option>
                                         )
@@ -292,18 +275,15 @@ export function SettingsView() {
                                     onChange={(e) =>
                                         JobsClosingActionChanged(e)
                                     }
+                                    value={
+                                        newSettings.jobsStateOnClosingMainWindow
+                                    }
                                 >
                                     {Object.entries(
                                         ClosingMainWindowActionForJobs
                                     ).map(([k, v]: [string, string]) => {
                                         return (
-                                            <option
-                                                key={k}
-                                                selected={
-                                                    newSettings.jobsStateOnClosingMainWindow ==
-                                                    k
-                                                }
-                                            >
+                                            <option key={k} value={k}>
                                                 {v}
                                             </option>
                                         )
@@ -358,22 +338,22 @@ export function SettingsView() {
                     <button
                         id="save-settings"
                         type="submit"
-                        onClick={handleSave}
+                        onClick={() => window.close()}
                         className="save-button"
                         // disabled={
                         //     JSON.stringify({ ...settings }) !=
                         //     JSON.stringify({ ...newSettings })
                         // }
                     >
-                        Save and close
+                        Close
                     </button>
-                    {saved ? (
+                    {/* {saved ? (
                         <span className="confirm-save" aria-live="polite">
                             Saved
                         </span>
                     ) : (
                         ''
-                    )}
+                    )} */}
                 </div>
             </form>
         </div>

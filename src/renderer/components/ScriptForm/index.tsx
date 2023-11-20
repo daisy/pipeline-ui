@@ -2,7 +2,7 @@
 Fill out fields for a new job and submit it
 */
 import { Job, Script } from 'shared/types'
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useWindowStore } from 'renderer/store'
 import {
     findValue,
@@ -20,7 +20,6 @@ import {
 
 import { externalLinkClick } from 'renderer/utils/utils'
 import { FormField } from '../Fields/FormField'
-import log from 'electron-log/renderer'
 
 const { App } = window
 
@@ -37,40 +36,6 @@ export function ScriptForm({ job, script }: { job: Job; script: Script }) {
     let required = getAllRequired(script)
     let optional = getAllOptional(script)
     const { settings } = useWindowStore()
-
-    useEffect(() => {
-        // if this script has a TTS config field, fill it in with the value from the user's settings
-        // as xml files, tts config files are inputs though they are typically optional
-        let ttsConfigOpt = optional.find((o) =>
-            o.mediaType.includes('application/vnd.pipeline.tts-config+xml')
-        )
-
-        if (ttsConfigOpt) {
-            let inputs = [...job.jobRequest.inputs]
-            let inputs_ = updateArrayValue(
-                settings.ttsConfig.xmlFilepath,
-                ttsConfigOpt,
-                inputs
-            )
-            log.info(
-                `Setting TTS config option ${JSON.stringify(
-                    ttsConfigOpt,
-                    null,
-                    '  '
-                )} in job inputs ${JSON.stringify(inputs_, null, '  ')}`
-            )
-
-            App.store.dispatch(
-                updateJob({
-                    ...job,
-                    jobRequest: {
-                        ...job.jobRequest,
-                        inputs: [...inputs_],
-                    },
-                })
-            )
-        }
-    }, [])
 
     let saveValueInJobRequest = (value, data) => {
         if (!job.jobRequest) {
@@ -100,9 +65,28 @@ export function ScriptForm({ job, script }: { job: Job; script: Script }) {
     let onSubmit = (e) => {
         e.preventDefault()
         setSubmitInProgress(true)
+
+        // autofill tts config option if present
+        // if present, it will be an input to the script but an optional one
+        let ttsConfigOpt = optional.find((o) =>
+            o.mediaType.includes('application/vnd.pipeline.tts-config+xml')
+        )
+        let inputs = [...job.jobRequest.inputs]
+        if (ttsConfigOpt) {
+            inputs = updateArrayValue(
+                settings.ttsConfig.xmlFilepath,
+                ttsConfigOpt,
+                inputs
+            )
+        }
+
         App.store.dispatch(
             runJob({
                 ...job,
+                jobRequest: {
+                    ...job.jobRequest,
+                    inputs: [...inputs],
+                },
             })
         )
         setSubmitInProgress(false)

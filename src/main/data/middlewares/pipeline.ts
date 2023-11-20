@@ -169,7 +169,12 @@ function startMonitor(j: Job, ws: Webservice, getState, dispatch) {
         } else
             fetchJobData(ws)
                 .then((value) => {
-                    info('received job data ', value)
+                    // info('received job data ', value)
+                    // don't log the job messages, it's too verbose
+                    info('received job data ', {
+                        ...value,
+                        messages: ['removed to keep log cleaner'],
+                    })
                     if (
                         [
                             JobStatus.ERROR,

@@ -37,6 +37,7 @@ import { setupOpenInBrowserEvents } from './browser'
 import { APP_CONFIG } from '~/app.config'
 import { getPipelineInstance } from './data/middlewares/pipeline'
 import { selectColorScheme } from 'shared/data/slices/settings'
+import { setupLogEvents } from './log'
 import {
     addJob,
     editJob,
@@ -55,6 +56,7 @@ import path from 'path'
 makeAppWithSingleInstanceLock(async () => {
     app.setName(APP_CONFIG.TITLE)
     await app.whenReady()
+
     registerStoreIPC()
     // load theme from settings
     nativeTheme.themeSource = selectColorScheme(store.getState())
@@ -84,6 +86,7 @@ makeAppWithSingleInstanceLock(async () => {
     setupOpenInBrowserEvents()
     setupFileSystemEvents()
     setupClipboardEvents()
+    setupLogEvents()
     buildMenu()
 
     store.subscribe(() => {

@@ -1,11 +1,10 @@
 /*
 Select a script and submit a new job
 */
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useWindowStore } from 'renderer/store'
 import { PipelineAPI } from 'shared/data/apis/pipeline'
 import { selectTtsVoices, setTtsVoices } from 'shared/data/slices/pipeline'
-import { saveTtsConfig } from 'shared/data/slices/settings'
 import { TtsVoice } from 'shared/types/ttsConfig'
 
 const enginePropertyKeys = [

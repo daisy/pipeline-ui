@@ -76,7 +76,7 @@ export function TtsVoicesConfigPane({
                     v.lang.toLowerCase().indexOf(search) != -1 ||
                     v.gender.toLowerCase().indexOf(search) != -1
                 ) {
-                    v.show = true
+                    v.show = true && enginesChecked.includes(v.engine)
                 } else {
                     v.show = false
                 }
@@ -109,13 +109,6 @@ export function TtsVoicesConfigPane({
         setSearchString('')
         setEnginesChecked([...engines])
     }
-    // let moveVoice = (currPos, newPos) => {
-    //     console.log('Move', currPos, newPos)
-    //     let tmpVoices = [...voiceList]
-    //     let item = tmpVoices.splice(currPos, 1)[0]
-    //     tmpVoices.splice(newPos, 0, item)
-    //     setVoiceList(tmpVoices)
-    // }
 
     let changeEngineFilter = (e, engine) => {
         let tmpEngines
@@ -241,7 +234,6 @@ export function TtsVoicesConfigPane({
                                         Gender
                                     </span>
                                 </th>
-                                {/* <th>Move</th> */}
                             </tr>
                         </thead>
                         <tbody>
@@ -273,34 +265,6 @@ export function TtsVoicesConfigPane({
                                             <td>{v.engine}</td>
                                             <td>{v.lang}</td>
                                             <td>{v.gender}</td>
-                                            {/* <td>
-                                    {idx > 0 ? (
-                                        <button
-                                            className="voice-up"
-                                            onClick={(e) =>
-                                                moveVoice(idx, idx - 1)
-                                            }
-                                            title="Move up"
-                                        >
-                                            <Up width="12" height="12" />
-                                        </button>
-                                    ) : (
-                                        ''
-                                    )}
-                                    {idx < voiceList.length - 1 ? (
-                                        <button
-                                            className="voice-down"
-                                            onClick={(e) =>
-                                                moveVoice(idx, idx + 1)
-                                            }
-                                            title="Move down"
-                                        >
-                                            <Down width="12" height="12" />
-                                        </button>
-                                    ) : (
-                                        ''
-                                    )}
-                                </td> */}
                                         </tr>
                                     )
                                 })}

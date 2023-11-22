@@ -7,9 +7,9 @@ import {
     ApplicationSettings,
     PipelineInstanceProperties,
 } from 'shared/types'
-import { IPC } from 'shared/constants'
+import { ENVIRONMENT, IPC } from 'shared/constants'
 import { spawn, ChildProcessWithoutNullStreams } from 'child_process'
-import { existsSync, mkdirSync, rmSync } from 'fs'
+import { existsSync, mkdirSync, readFileSync, rmSync } from 'fs'
 
 import { getAvailablePort, Pipeline2Error, walk } from './utils'
 
@@ -296,7 +296,20 @@ Then close the program using the port and restart this application.`,
                 '--add-exports=java.base/sun.net.www.protocol.jar=ALL-UNNAMED',
                 '--add-exports=jdk.xml.dom/org.w3c.dom.html=ALL-UNNAMED',
                 '--add-exports=jdk.naming.rmi/com.sun.jndi.url.rmi=ALL-UNNAMED',
-            ]
+                ...(ENVIRONMENT.IS_DEV
+                    ? [
+                          '-Xdebug',
+                          '-XX:+CreateMinidumpOnCrash',
+                          existsSync(resolve(this.props.jrePath, 'release')) &&
+                          readFileSync(
+                              resolve(this.props.jrePath, 'release'),
+                              'utf8'
+                          ).includes('jdk.jdwp.agent')
+                              ? '-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005'
+                              : null,
+                      ]
+                    : []),
+            ].filter((o) => o != null)
 
             let SystemProps = [
                 '-Dorg.daisy.pipeline.properties="' +

@@ -3,7 +3,8 @@ const { APP_CONFIG } = require('../app.config')
 const { APP_ID } = APP_CONFIG
 
 require('dotenv').config()
-const { notarize } = require('electron-notarize')
+// const { notarize } = require('electron-notarize')
+const { notarize } = require('@electron/notarize')
 
 exports.default = async function notarizing(context) {
     const { electronPlatformName, appOutDir } = context

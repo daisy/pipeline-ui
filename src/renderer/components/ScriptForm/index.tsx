@@ -62,7 +62,7 @@ export function ScriptForm({ job, script }: { job: Job; script: Script }) {
     }
 
     // submit a job
-    let onSubmit = (e) => {
+    let onSubmit = async (e) => {
         e.preventDefault()
         setSubmitInProgress(true)
 
@@ -71,8 +71,9 @@ export function ScriptForm({ job, script }: { job: Job; script: Script }) {
         let ttsConfigOpt = optional.find((o) =>
             o.mediaType.includes('application/vnd.pipeline.tts-config+xml')
         )
+        let ttsConfigExists = await App.pathExists(settings.ttsConfig.xmlFilepath)
         let inputs = [...job.jobRequest.inputs]
-        if (ttsConfigOpt) {
+        if (ttsConfigOpt && ttsConfigExists) {
             inputs = updateArrayValue(
                 settings.ttsConfig.xmlFilepath,
                 ttsConfigOpt,

@@ -6,14 +6,28 @@ import {
     IPC_EVENT_pathExists,
     IPC_EVENT_sniffEncoding,
 } from '../shared/main-renderer-events'
+import { PLATFORM } from 'shared/constants'
 
-async function pathExists(path) {
-    await fs.access(path, (err) => {
-        if (err) {
-            return false
-        } else {
-            return true
+function pathExists(path) {
+    if (path.length == 0) return false
+
+    let path_ = decodeURI(path).replace('file://', '')
+    // make sure the path is formatted like a path
+    if (PLATFORM.IS_WINDOWS) {
+        if (path_[0] == '/') {
+            path_ = path_.slice(1)
+            path_ = path_.replaceAll('/', '\\')
         }
+    }
+
+    return new Promise((resolve, reject) => {
+        fs.access(path_, (err) => {
+            if (err) {
+                resolve(false)
+            } else {
+                resolve(true)
+            }
+        })
     })
 }
 

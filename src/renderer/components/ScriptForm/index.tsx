@@ -71,7 +71,9 @@ export function ScriptForm({ job, script }: { job: Job; script: Script }) {
         let ttsConfigOpt = optional.find((o) =>
             o.mediaType.includes('application/vnd.pipeline.tts-config+xml')
         )
-        let ttsConfigExists = await App.pathExists(settings.ttsConfig.xmlFilepath)
+        let ttsConfigExists = await App.pathExists(
+            settings.ttsConfig.xmlFilepath
+        )
         let inputs = [...job.jobRequest.inputs]
         if (ttsConfigOpt && ttsConfigExists) {
             inputs = updateArrayValue(
@@ -79,6 +81,8 @@ export function ScriptForm({ job, script }: { job: Job; script: Script }) {
                 ttsConfigOpt,
                 inputs
             )
+        } else if (!ttsConfigExists) {
+            App.log(`File does not exist ${settings.ttsConfig.xmlFilepath}`)
         }
 
         App.store.dispatch(

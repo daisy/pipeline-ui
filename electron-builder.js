@@ -10,7 +10,7 @@ module.exports = {
     appId: APP_ID,
     productName: adjustedAppName,
     copyright: `Copyright © ${CURRENT_YEAR} — ${AUTHOR.name}`,
-    artifactName: 'daisy-pipeline-2023-${version}-${os}.${ext}',
+    artifactName: 'daisy-pipeline-${version}-${os}.${ext}',
     directories: {
         app: FOLDERS.DEV_TEMP_BUILD,
         output: 'dist',
@@ -21,11 +21,15 @@ module.exports = {
         category: 'public.app-category.utilities',
         identity: 'US Fund for DAISY (SAMG8AWD69)',
         hardenedRuntime: true,
+        target: 'pkg',
     },
-
+    pkg: {
+        isRelocatable: false,
+        scripts: '../buildmac/pkg-scripts',
+    },
     dmg: {
         icon: false,
-        artifactName: 'daisy-pipeline-2023-setup-${version}.${ext}',
+        artifactName: 'daisy-pipeline-setup-${version}.${ext}',
     },
 
     linux: {
@@ -42,6 +46,6 @@ module.exports = {
     asarUnpack: ['resources/daisy-pipeline'],
     nsis: {
         runAfterFinish: true,
-        artifactName: 'daisy-pipeline-2023-setup-${version}.${ext}',
+        artifactName: 'daisy-pipeline-setup-${version}.${ext}',
     },
 }

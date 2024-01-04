@@ -3,18 +3,22 @@
 #   this file is automatically detected by electron-builder as a postinstall script
 #   due to its folder location and filename
 
-# remove DAISY Pipeline (2023)
-APP='DAISY Pipeline (2023)'
-# Get a list of all installed app's, filter to only have /Applications and /User/<username>/Applications, filter the requested app, select the first found app
-mdfind kMDItemContentTypeTree=com.apple.application-bundle -onlyin >/dev/null
-APP_TO_UNINSTALL=$(system_profiler SPApplicationsDataType 2>/dev/null | sed -n 's/^ *Location: \(.*\)/\1/p' | grep -E '^\/Applications.*|\/Users\/.+\/Applications.*' | grep "${APP}" | head -n 1)
-echo "Found ${APP_TO_UNINSTALL}"
-echo "Removing ${APP_TO_UNINSTALL}"
-# Remove app
-rm -rf "${APP_TO_UNINSTALL}"
-status=$?
-# Output result
-[ $status -eq 0 ] && echo "Removed ${APP_TO_UNINSTALL}" || echo "Failed to remove ${APP_TO_UNINSTALL}"
-# Return status
-exit $status
+remove_app () {
+    APP=$1
+    # Get a list of all installed app's, filter to only have /Applications and /User/<username>/Applications, filter the requested app, select the first found app
+    mdfind kMDItemContentTypeTree=com.apple.application-bundle -onlyin >/dev/null
+    APP_TO_UNINSTALL=$(system_profiler SPApplicationsDataType 2>/dev/null | sed -n 's/^ *Location: \(.*\)/\1/p' | grep -E '^\/Applications.*|\/Users\/.+\/Applications.*' | grep "${APP}" | head -n 1)
+    echo "Found ${APP_TO_UNINSTALL}"
+    echo "Removing ${APP_TO_UNINSTALL}"
+    # Remove app
+    rm -rf "${APP_TO_UNINSTALL}"
+    status=$?
+    # Output result
+    [ $status -eq 0 ] && echo "Removed ${APP_TO_UNINSTALL}" || echo "Failed to remove ${APP_TO_UNINSTALL}"
+    return $status
+}
 
+remove_app 'DAISY Pipeline (2023)'
+remove_app 'DAISY Pipeline 2'
+
+exit 0

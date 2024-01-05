@@ -1,16 +1,16 @@
 const { APP_CONFIG } = require('./app.config')
 
-const { APP_ID, AUTHOR, TITLE, DESCRIPTION, FOLDERS } = APP_CONFIG
+const { APP_ID, AUTHOR, TITLE, DESCRIPTION, FOLDERS, ARTIFACT_NAME } =
+    APP_CONFIG
 
 const CURRENT_YEAR = new Date().getFullYear()
 // take off the suffix '- App' -- we only want that to appear on the window title
 let adjustedAppName = TITLE.replace(' - App', '')
-
 module.exports = {
     appId: APP_ID,
     productName: adjustedAppName,
     copyright: `Copyright © ${CURRENT_YEAR} — ${AUTHOR.name}`,
-    artifactName: 'daisy-pipeline-${version}-${os}.${ext}',
+    artifactName: ARTIFACT_NAME + '-${version}-${os}.${ext}',
     directories: {
         app: FOLDERS.DEV_TEMP_BUILD,
         output: 'dist',
@@ -29,7 +29,7 @@ module.exports = {
     },
     dmg: {
         icon: false,
-        artifactName: 'daisy-pipeline-setup-${version}.${ext}',
+        artifactName: ARTIFACT_NAME + '-setup-${version}.${ext}',
     },
 
     linux: {
@@ -46,6 +46,6 @@ module.exports = {
     asarUnpack: ['resources/daisy-pipeline'],
     nsis: {
         runAfterFinish: true,
-        artifactName: 'daisy-pipeline-setup-${version}.${ext}',
+        artifactName: ARTIFACT_NAME + '-setup-${version}.${ext}',
     },
 }

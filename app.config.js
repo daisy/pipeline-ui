@@ -11,7 +11,8 @@ const {
 exports.APP_CONFIG = {
     APP_ID: `org.daisy.${NAME}`.toLowerCase(),
     NAME,
-    TRAY_TITLE: TITLE.replace(' (2023)', ''),
+    TRAY_TITLE: TITLE,
+    ARTIFACT_NAME: TITLE.replaceAll(' ', '-').toLowerCase(),
     TITLE: `${TITLE} - App`,
     AUTHOR,
     VERSION,

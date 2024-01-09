@@ -12,6 +12,7 @@ export const update = createSlice({
         updateDownloaded: false,
         updateError: null,
         updateMessage: null,
+        manualUpdateAvailable: false,
     } as UpdateState,
     reducers: {
         setUpdateAvailable: (
@@ -31,6 +32,15 @@ export const update = createSlice({
             action: PayloadAction<string | null>
         ) => {
             state.updateMessage = action.payload
+        },
+        setManualUpdateAvailable: (
+            state: UpdateState,
+            action: PayloadAction<boolean>
+        ) => {
+            state.manualUpdateAvailable = action.payload
+        },
+        openLastReleasePage: () => {
+            // openLastReleasePage action to trigger middleware action to open github release page
         },
         setDownloadProgress: (
             state: UpdateState,
@@ -73,6 +83,8 @@ export const {
     checkForUpdate,
     cancelInstall,
     startInstall,
+    setManualUpdateAvailable,
+    openLastReleasePage,
 } = update.actions
 
 export const selectors = {
@@ -82,6 +94,8 @@ export const selectors = {
     selectUpdateDownloaded: (s: RootState) => s.update.updateDownloaded,
     selectUpdateError: (s: RootState) => s.update.updateError,
     selectUpdateMessage: (s: RootState) => s.update.updateMessage,
+    selectManualUpdateAvailable: (s: RootState) =>
+        s.update.manualUpdateAvailable,
 }
 // prettier-ignore
 export const {
@@ -90,5 +104,6 @@ export const {
     selectDownloadProgress,
     selectUpdateDownloaded,
     selectUpdateError,
-    selectUpdateMessage
+    selectUpdateMessage,
+    selectManualUpdateAvailable
 } = selectors

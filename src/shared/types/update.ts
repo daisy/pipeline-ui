@@ -6,4 +6,5 @@ export type UpdateState = {
     updateDownloaded?: boolean
     updateError?: Error
     updateMessage?: string
+    manualUpdateAvailable?: boolean
 }

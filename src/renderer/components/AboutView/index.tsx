@@ -11,6 +11,7 @@ import {
     startInstall,
     cancelInstall,
     checkForUpdate,
+    openLastReleasePage,
 } from 'shared/data/slices/update'
 
 const { App } = window
@@ -49,6 +50,18 @@ const UpdateButton = (update: UpdateState) => {
                 }}
             >
                 Update to {update.updateAvailable.version}
+            </button>
+        )
+    } else if (update.manualUpdateAvailable === true) {
+        return (
+            <button
+                id="open-release-page"
+                title={`Open the release page`}
+                onClick={() => {
+                    App.store.dispatch(openLastReleasePage())
+                }}
+            >
+                Open the new release page
             </button>
         )
     } else {

@@ -1,4 +1,4 @@
-import { dialog } from 'electron'
+import { dialog, shell } from 'electron'
 import { PayloadAction } from '@reduxjs/toolkit'
 import { RootState } from 'shared/types/store'
 import {
@@ -10,10 +10,15 @@ import {
     setUpdateMessage,
     cancelInstall,
     setUpdateDownloaded,
+    setManualUpdateAvailable,
+    openLastReleasePage,
 } from 'shared/data/slices/update'
-
+import { error, info } from 'electron-log'
 import { CancellationToken, ProgressInfo, autoUpdater } from 'electron-updater'
 import { ENVIRONMENT } from 'shared/constants'
+import packageJson from '../../../../package.json'
+
+import fetch, { Response } from 'node-fetch'
 
 /**
  * Middleware to manage updates
@@ -67,14 +72,79 @@ export function updateMiddleware({ getState, dispatch }) {
                                 }
                             })
                             .catch((v) => {
-                                dispatch(
-                                    setUpdateMessage(
-                                        'error during update check : ' +
-                                            JSON.stringify(v)
-                                    )
+                                error(
+                                    'error during auto-update check : ' +
+                                        JSON.stringify(v)
                                 )
+                                info('checking updates manually on github')
+                                // Assuming releases tags will follow major.minor.patch
+                                // for official release
+                                // (while RC or beta version would remain marked as pre-release)
+                                const { major, minor, patch } =
+                                    packageJson.version.match(
+                                        /(?<major>\d+)\.(?<minor>\d+)\.(?<patch>\d+)/
+                                    ).groups
+                                // Quick version check assuming each part is unsigned byte
+                                const currentVersion =
+                                    (+major << 16) | (+minor << 8) | +patch
+                                fetch(
+                                    `https://github.com/daisy/${packageJson.name}/releases/latest`
+                                )
+                                    .then((response) => response.url)
+                                    .then((lastReleaseUrl) => {
+                                        // we assume the last part of the redirect url is
+                                        // the tag containing the major.minor.patch pattern
+                                        const parts = lastReleaseUrl.split('/')
+                                        const tag = parts[parts.length - 1]
+                                        const found = tag.match(
+                                            /(?<major>\d+)\.(?<minor>\d+)\.(?<patch>\d+)/
+                                        )
+                                        if (!found || !found.groups)
+                                            throw Error(
+                                                'last release url did not ended by a major.minor.patch formated tag'
+                                            )
+
+                                        const lastReleaseVersion =
+                                            (+found.groups.major << 16) |
+                                            (+found.groups.minor << 8) |
+                                            +found.groups.patch
+                                        if (
+                                            currentVersion < lastReleaseVersion
+                                        ) {
+                                            dispatch(
+                                                setManualUpdateAvailable(true)
+                                            )
+                                            dispatch(
+                                                setUpdateMessage(
+                                                    `A new version (${tag}) is available to download`
+                                                )
+                                            )
+                                        } else {
+                                            dispatch(
+                                                setUpdateMessage(
+                                                    'No updates available'
+                                                )
+                                            )
+                                        }
+                                    })
+                                    .catch((err) => {
+                                        error(
+                                            'Could notes retrieve updates',
+                                            err
+                                        )
+                                        dispatch(
+                                            setUpdateMessage(
+                                                'Updates could not be retrieved'
+                                            )
+                                        )
+                                    })
                             })
                     }
+                    break
+                case openLastReleasePage.type:
+                    shell.openExternal(
+                        `https://github.com/daisy/${packageJson.name}/releases/latest`
+                    )
                     break
                 case setUpdateAvailable.type:
                     dispatch(

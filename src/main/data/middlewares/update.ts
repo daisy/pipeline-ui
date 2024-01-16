@@ -19,6 +19,7 @@ import { ENVIRONMENT } from 'shared/constants'
 import packageJson from '../../../../package.json'
 
 import fetch, { Response } from 'node-fetch'
+import { setAutoCheckUpdate } from 'shared/data/slices/settings'
 
 /**
  * Middleware to manage updates
@@ -42,7 +43,7 @@ export function updateMiddleware({ getState, dispatch }) {
         dispatch(setUpdateDownloaded(false))
         dispatch(setDownloadProgress(null))
         dispatch(setUpdateError(error))
-        dispatch(setUpdateMessage(message))
+        dispatch(setAutoCheckUpdate(false))
     })
     let userIsWarnedAboutUpdate = false
     let cancelationToken: CancellationToken = null
@@ -55,11 +56,14 @@ export function updateMiddleware({ getState, dispatch }) {
                     if (action.payload === true) {
                         userIsWarnedAboutUpdate = false
                     }
-                    if (
-                        !ENVIRONMENT.IS_DEV ||
-                        autoUpdater.forceDevUpdateConfig
+                    if (action.payload === true ||
+                        (
+                            ( !ENVIRONMENT.IS_DEV ||
+                                autoUpdater.forceDevUpdateConfig) && 
+                            !update.updateError
+                        )
                     ) {
-                        dispatch(setUpdateMessage('Checking for updates ...'))
+                        dispatch(setUpdateMessage('Checking for automatic updates ...'))
                         autoUpdater
                             .checkForUpdates()
                             .then((res) => {
@@ -67,16 +71,12 @@ export function updateMiddleware({ getState, dispatch }) {
                                     dispatch(setUpdateAvailable(res.updateInfo))
                                 } else {
                                     dispatch(
-                                        setUpdateMessage('No updates available')
+                                        setUpdateMessage('No automatic updates available')
                                     )
                                 }
                             })
                             .catch((v) => {
-                                error(
-                                    'error during auto-update check : ' +
-                                        JSON.stringify(v)
-                                )
-                                info('checking updates manually on github')
+                                dispatch(setUpdateMessage('Checking for manual updates ...'))
                                 // Assuming releases tags will follow major.minor.patch
                                 // for official release
                                 // (while RC or beta version would remain marked as pre-release)
@@ -87,6 +87,7 @@ export function updateMiddleware({ getState, dispatch }) {
                                 // Quick version check assuming each part is unsigned byte
                                 const currentVersion =
                                     (+major << 16) | (+minor << 8) | +patch
+                                // TODO : might need to change this for forks (hardcoded github repo url), 
                                 fetch(
                                     `https://github.com/daisy/${packageJson.name}/releases/latest`
                                 )
@@ -122,16 +123,13 @@ export function updateMiddleware({ getState, dispatch }) {
                                         } else {
                                             dispatch(
                                                 setUpdateMessage(
-                                                    'No updates available'
+                                                    'No updates available on Github'
                                                 )
                                             )
                                         }
                                     })
                                     .catch((err) => {
-                                        error(
-                                            'Could notes retrieve updates',
-                                            err
-                                        )
+                                        dispatch(setUpdateError(err))
                                         dispatch(
                                             setUpdateMessage(
                                                 'Updates could not be retrieved'
@@ -269,6 +267,12 @@ export function updateMiddleware({ getState, dispatch }) {
                         cancelationToken = null
                         dispatch(setDownloadProgress(null))
                     }
+                    break
+                case setUpdateMessage.type:
+                    info('Update message : ' + action.payload)
+                    break
+                case setUpdateError.type:
+                    error('An error occured during the update process : ' + JSON.stringify(action.payload))
                     break
                 default:
                     break

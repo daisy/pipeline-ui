@@ -167,14 +167,14 @@ export function settingsMiddleware({ getState, dispatch }) {
                         action.payload === true &&
                         updateCheckInterval === null
                     ) {
-                        console.log('start auto checking updates')
+                        info('start auto checking updates')
                         updateCheckInterval = startCheckingUpdates(dispatch)
                     }
                     if (
                         action.payload === false &&
                         updateCheckInterval !== null
                     ) {
-                        console.log('stop auto checking updates')
+                        info('stop auto checking updates')
                         clearInterval(updateCheckInterval)
                         updateCheckInterval = null
                     }

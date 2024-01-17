@@ -176,4 +176,11 @@ export class PipelineAPI {
             }
         )
     }
+    // New /admin/properties endpoint : https://github.com/daisy/pipeline-ui/issues/178
+    fetchProperties() {
+        return this.createPipelineFetchFunction(
+            (ws) => `${baseurl(ws)}/admin/properties`,
+            (text) => propertiesXmlToJson(text)
+        )
+    }
 }

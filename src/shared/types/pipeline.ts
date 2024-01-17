@@ -143,6 +143,16 @@ export interface PipelineInstanceProps {
     onMessage?: (message: string) => void
 }
 
+/**
+ * Properties managed by the underlying pipeline engine itself
+ */
+export type EngineProperty = {
+    name: string
+    href: string
+    desc?: string
+    value?: string
+}
+
 export type Alive = {
     alive: boolean
     localfs?: boolean

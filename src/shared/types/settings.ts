@@ -1,4 +1,4 @@
-import { PipelineInstanceProps, Webservice } from './pipeline'
+import { PipelineInstanceProperties, Webservice } from './pipeline'
 import { TtsConfig } from './ttsConfig'
 
 export enum ColorScheme {
@@ -25,7 +25,7 @@ export type ApplicationSettings = {
     // - Run or not a local pipeline server
     runLocalPipeline?: boolean
     // - Local pipeline settings
-    localPipelineProps?: PipelineInstanceProps
+    localPipelineProps?: PipelineInstanceProperties
     // Remote pipeline settings
     // - Use a remote pipeline instead of the local one
     useRemotePipeline?: boolean

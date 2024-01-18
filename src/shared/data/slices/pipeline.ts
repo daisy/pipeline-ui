@@ -16,6 +16,7 @@ import {
     Alive,
     TtsVoice,
     TtsEngineProperty,
+    EngineProperty,
 } from 'shared/types'
 
 import { RootState } from 'shared/types/store'
@@ -30,6 +31,7 @@ const initialState = {
     internalJobCounter: 0,
     selectedJobId: '',
     alive: null,
+    properties: [],
 } as PipelineState
 
 export const pipeline = createSlice({
@@ -47,6 +49,8 @@ export const pipeline = createSlice({
             if (param.payload.scripts) state.scripts = param.payload.scripts
             if (param.payload.ttsVoices)
                 state.ttsVoices = param.payload.ttsVoices
+            if (param.payload.properties)
+                state.properties = param.payload.properties
         },
         /**
          * Start the pipeline.
@@ -117,6 +121,12 @@ export const pipeline = createSlice({
             param: PayloadAction<Array<TtsVoice>>
         ) => {
             state.ttsVoices = param.payload
+        },
+        setProperties: (
+            state: PipelineState,
+            param: PayloadAction<Array<EngineProperty>>
+        ) => {
+            state.properties = param.payload
         },
         setJobs: (state: PipelineState, param: PayloadAction<Array<Job>>) => {
             state.jobs = param.payload
@@ -301,6 +311,7 @@ export const {
     selectPrevJob,
     setAlive,
     setTtsVoices,
+    setProperties,
 } = pipeline.actions
 
 export const selectors = {
@@ -341,6 +352,7 @@ export const selectors = {
     selectScripts: (state: RootState) => state.pipeline.scripts,
     selectDatatypes: (state: RootState) => state.pipeline.datatypes,
     selectTtsVoices: (state: RootState) => state.pipeline.ttsVoices,
+    selectProperties: (state: RootState) => state.pipeline.properties,
     newJob: (pipeline: PipelineState) =>
         ({
             internalId: `job-${pipeline.internalJobCounter}`,
@@ -394,4 +406,5 @@ export const {
     newJob,
     prepareJobRequest,
     selectTtsVoices,
+    selectProperties,
 } = selectors

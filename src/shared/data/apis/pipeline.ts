@@ -19,9 +19,12 @@ import {
     Webservice,
     NamedResult,
     TtsConfig,
+    EngineProperty,
 } from 'shared/types'
 
 import { jobResponseXmlToJson } from 'shared/parser/pipelineXmlConverter/jobResponseToJson'
+import { propertiesXmlToJson } from 'shared/parser/pipelineXmlConverter/propertiesXmlToJson'
+import { propertyToXml } from 'shared/parser/pipelineXmlConverter/propertyToXml'
 
 //import fetch, { Response, RequestInit } from 'node-fetch'
 //import { info, error } from 'electron-log'
@@ -181,6 +184,16 @@ export class PipelineAPI {
         return this.createPipelineFetchFunction(
             (ws) => `${baseurl(ws)}/admin/properties`,
             (text) => propertiesXmlToJson(text)
+        )
+    }
+    setProperty(prop: EngineProperty) {
+        return this.createPipelineFetchFunction(
+            (ws) => prop.href,
+            (text) => console.log(text),
+            {
+                method: 'PUT',
+                body: propertyToXml(prop),
+            }
         )
     }
 }

@@ -443,7 +443,7 @@ main.about {
         justify-content: space-between;
         height: 100%;
         margin-bottom: var(--pad);
-        p {
+        p.versions {
             display: flex;
             flex-direction: row;
             gap: 0.25em;
@@ -461,9 +461,14 @@ main.about {
         .actions {
             width: 100%;
             display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        .actions > div {
+            display: flex;
             flex-direction: row;
-            flex-wrap: wrap;
             justify-content: space-around;
+            margin-top: 0.5rem;
         }
         
         .actions p {
@@ -480,8 +485,6 @@ main.about {
             margin-right: 0em;
         }
     }
-
-    
 }
 
 input.grayedout {

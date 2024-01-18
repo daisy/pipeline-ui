@@ -133,7 +133,7 @@ export function AboutView({ title }) {
                 Visit the DAISY Pipeline homepage
             </a>
             <div className="info">
-                <p>
+                <p className="versions">
                     <ul>
                         <li>App version: {version}</li>
                         <li>Engine version: {engineVersion}</li>
@@ -162,7 +162,7 @@ export function AboutView({ title }) {
                 </p>
                 <div className="actions">
                     {update.updateMessage && (
-                        <p>
+                        <p className="updateMessage">
                             <label
                                 {...(update.downloadProgress
                                     ? { htmlFor: 'update-download-progress' }
@@ -172,8 +172,10 @@ export function AboutView({ title }) {
                             </label>
                         </p>
                     )}
-                    {UpdateButton(update)}
-                    <button onClick={(e) => closeAboutBox()}>Close</button>
+                    <div>
+                        {UpdateButton(update)}
+                        <button onClick={(e) => closeAboutBox()}>Close</button>
+                    </div>
                 </div>
             </div>
         </main>

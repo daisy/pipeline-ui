@@ -19,14 +19,25 @@ export function JobDetailsPane({ job }: { job: Job }) {
     return job.jobRequestError ? (
         <>
             <h1>Error</h1>
-            <p>{job.jobRequestError.description}</p>
-            <button
-                onClick={(e) => {
-                    App.store.dispatch(removeJob(job))
-                }}
-            >
-                Close job
-            </button>
+            <div className="details">
+                <p>{job.jobRequestError.description}</p>
+                <div className="form-buttons">
+                    <button
+                        onClick={(e) => {
+                            App.store.dispatch(editJob(job))
+                        }}
+                    >
+                        Edit job
+                    </button>
+                    <button
+                        onClick={(e) => {
+                            App.store.dispatch(removeJob(job))
+                        }}
+                    >
+                        Close job
+                    </button>
+                </div>
+            </div>
         </>
     ) : (
         <>

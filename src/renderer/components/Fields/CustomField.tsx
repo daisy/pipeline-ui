@@ -6,6 +6,7 @@ import { ControlledInput } from './ControlledInput'
 
 export function CustomField({ item, onChange, initialValue, controlId }) {
     const { pipeline } = useWindowStore()
+    const [value, setValue] = useState(initialValue)
     const [userInteracted, setUserInteracted] = useState(false) // false if the user started typing
 
     // find the datatype in the pipeline.datatypes store
@@ -13,6 +14,7 @@ export function CustomField({ item, onChange, initialValue, controlId }) {
 
     let onChangeValue = (newValue) => {
         setUserInteracted(true)
+        setValue(newValue)
         onChange(newValue)
     }
 
@@ -34,7 +36,7 @@ export function CustomField({ item, onChange, initialValue, controlId }) {
                         type="text"
                         required={item.required}
                         // @ts-ignore
-                        value={initialValue ?? ''}
+                        value={value ?? ''}
                         id={controlId}
                         onChange={(e) => onChangeValue(e)}
                         className={userInteracted ? 'interacted' : null}
@@ -55,7 +57,7 @@ export function CustomField({ item, onChange, initialValue, controlId }) {
                     <select
                         id={controlId}
                         onChange={(e) => onChangeValue(e.target.value)}
-                        value={initialValue ?? ''}
+                        value={value ?? ''}
                     >
                         {valueChoices.map((option, idx) => {
                             let displayString =
@@ -88,7 +90,7 @@ export function CustomField({ item, onChange, initialValue, controlId }) {
                 type="text"
                 required={item.required}
                 // @ts-ignore
-                value={initialValue ?? null}
+                value={value ?? null}
                 id={controlId}
                 onChange={(e) => onChangeValue(e)}
                 className={userInteracted ? 'interacted' : null}

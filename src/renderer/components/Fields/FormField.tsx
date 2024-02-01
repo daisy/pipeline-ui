@@ -58,7 +58,7 @@ export function FormField({
                         useSystemPath={false}
                         buttonLabel="Browse"
                         required={item.required}
-                        initialValue={initialValue}
+                        initialValue={value}
                         ordered={item.ordered}
                     />
                 )
@@ -83,7 +83,7 @@ export function FormField({
                             useSystemPath={false}
                             buttonLabel="Browse"
                             required={item.required}
-                            initialValue={initialValue}
+                            initialValue={value}
                         />
                     )
                 }
@@ -105,7 +105,7 @@ export function FormField({
                 <CustomField
                     item={item}
                     onChange={(newValue) => onChangeValue(newValue, item)}
-                    initialValue={initialValue ?? ''}
+                    initialValue={value ?? ''}
                     controlId={controlId}
                 />
             )
@@ -116,7 +116,7 @@ export function FormField({
                         type={inputType}
                         required={item.required}
                         // @ts-ignore
-                        value={initialValue ?? ''}
+                        value={value ?? ''}
                         id={controlId}
                         onChange={(e) => onChangeValue(e.target.value, item)}
                     ></input>

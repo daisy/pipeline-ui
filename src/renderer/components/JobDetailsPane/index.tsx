@@ -1,7 +1,7 @@
 /*
 Details of a submitted job
 */
-import { JobStatus } from '/shared/types'
+import { Job, JobStatus } from '/shared/types'
 import { Messages } from './Messages'
 import { Settings } from './Settings'
 import { Results } from './Results'
@@ -13,13 +13,13 @@ import { FileLink } from '../FileLink'
 
 const { App } = window
 
-export function JobDetailsPane({ job }) {
+export function JobDetailsPane({ job }: { job: Job }) {
     //let probableLogLink = job?.jobData?.href ? `${job.jobData.href}/log` : ''
 
-    return job.jobData.type == 'JobRequestError' ? (
+    return job.jobRequestError ? (
         <>
             <h1>Error</h1>
-            <p>{job.jobData.description}</p>
+            <p>{job.jobRequestError.description}</p>
             <button
                 onClick={(e) => {
                     App.store.dispatch(removeJob(job))

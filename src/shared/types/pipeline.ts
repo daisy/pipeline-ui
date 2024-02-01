@@ -176,6 +176,7 @@ export type Job = {
     state: JobState
     jobData?: JobData
     jobRequest?: JobRequest
+    jobRequestError?: JobRequestError
     script?: Script
     errors?: Array<{
         fieldName?: string
@@ -199,7 +200,7 @@ export type Job = {
 }
 // JobData is the JSON representation of Pipeline WS data for a single job
 export type JobData = {
-    type: 'JobRequestSuccess'
+    type?: 'JobRequestSuccess' // returned by the pipeline on success
     jobId: string // the ID from the pipeline
     priority?: Priority
     status?: JobStatus
@@ -221,7 +222,7 @@ export type JobData = {
 
 // thrown by the pipeline when a job request could not be processed
 export type JobRequestError = {
-    type: 'JobRequestError'
+    type: 'JobRequestError' | 'JobUnknownResponse'
     description?: string
     trace?: string
 }

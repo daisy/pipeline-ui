@@ -35,6 +35,8 @@ import {
     TtsVoice,
     TtsEngineProperty,
     Webservice,
+    JobData,
+    JobRequestError,
 } from 'shared/types'
 
 import { info, error } from 'electron-log'
@@ -180,8 +182,7 @@ function startMonitor(j: Job, ws: Webservice, getState, dispatch) {
                             JobStatus.ERROR,
                             JobStatus.FAIL,
                             JobStatus.SUCCESS,
-                        ].includes(value.status) ||
-                        value.type == 'JobRequestError'
+                        ].includes(value.status)
                     ) {
                         // Job is finished or in error, stop monitor
                         clearInterval(monitor)
@@ -206,7 +207,7 @@ function startMonitor(j: Job, ws: Webservice, getState, dispatch) {
                 })
                 .catch((e) => {
                     error('Error fetching data for job', j, e)
-                    if (j.jobData.type == 'JobRequestError') {
+                    if (j.jobRequestError) {
                         clearInterval(monitor)
                     }
                     dispatch(
@@ -456,21 +457,29 @@ export function pipelineMiddleware({ getState, dispatch }) {
                 runJobInterval = setInterval(() => {
                     if (webservice) {
                         launchJobOn(webservice)
-                            .then((jobData) => {
+                            .then((jobResponse) => {
                                 const updatedJob = {
                                     ...jobToRun,
                                     state: JobState.SUBMITTED,
-                                    jobData: jobData,
                                 } as Job
-                                dispatch(updateJob(updatedJob))
-                                // start a job monitor
+                                if (
+                                    jobResponse.type == 'JobRequestError' ||
+                                    jobResponse.type == 'JobUnknownResponse'
+                                ) {
+                                    updatedJob.jobRequestError =
+                                        jobResponse as JobRequestError
+                                } else {
+                                    updatedJob.jobData = jobResponse as JobData
+                                    // start a job monitor
+                                    startMonitor(
+                                        updatedJob,
+                                        webservice,
+                                        getState,
+                                        dispatch
+                                    )
+                                }
                                 clearInterval(runJobInterval)
-                                startMonitor(
-                                    updatedJob,
-                                    webservice,
-                                    getState,
-                                    dispatch
-                                )
+                                dispatch(updateJob(updatedJob))
                             })
                             .catch((e) => {
                                 clearInterval(runJobInterval)

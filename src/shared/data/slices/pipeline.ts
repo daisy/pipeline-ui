@@ -159,6 +159,9 @@ export const pipeline = createSlice({
                     if (job.jobData && job.jobData.results) {
                         job.jobData.results = undefined
                     }
+                    if (job.jobRequestError) {
+                        job.jobRequestError = undefined
+                    }
                 }
                 return job
             })

@@ -154,8 +154,8 @@ $engineColWidth: 8rem;
             width: min-content;
         }
         // make this one a littie wider
-        td:nth-child(3) {
-            min-width: $engineColWidth;
+        td:nth-child(4) {
+            min-width: $engineColWidth + 3rem;
         }
         tr:has(:checked) {
             background-color: var(--select-mix);

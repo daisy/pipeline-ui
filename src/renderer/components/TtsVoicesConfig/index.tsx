@@ -33,6 +33,7 @@ export function TtsVoicesConfigPane({
         gender: -1,
         selected: 'prefer',
     })
+    let languageNames = new Intl.DisplayNames(['en'], { type: 'language' })
 
     let changePreferredVoices = (e, voice: TtsVoice) => {
         if (e.target.checked) {
@@ -263,7 +264,7 @@ export function TtsVoicesConfigPane({
                                             </td>
                                             <td>{v.name}</td>
                                             <td>{v.engine}</td>
-                                            <td>{v.lang}</td>
+                                            <td>{languageNames.of(v.lang)}</td>
                                             <td>{v.gender}</td>
                                         </tr>
                                     )

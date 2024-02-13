@@ -36,10 +36,7 @@ export function NewJobPane({ job }: { job: Job }) {
 
     return (
         <>
-            <section
-                className="select-script"
-                aria-labelledby={`${ID(job.internalId)}-select-script`}
-            >
+            <section className="select-script">
                 <div>
                     <label
                         id={`${ID(job.internalId)}-select-script`}

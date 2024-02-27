@@ -44,11 +44,18 @@ export function ScriptForm({ job, script }: { job: Job; script: Script }) {
         let inputs = [...job.jobRequest.inputs]
         let options = [...job.jobRequest.options]
 
+        if (data.mediaType.includes('text/css')) {
+            // the css filenames are already formatted as 'file:///'...
+            // so i don't think they need to be modified before getting sent to the engine
+            // but this block is a placeholder just in case we have to change it
+            // i haven't tested this on windows as of now
+        }
         if (data.kind == 'input') {
             inputs = updateArrayValue(value, data, inputs)
         } else {
             options = updateArrayValue(value, data, options)
         }
+
         App.store.dispatch(
             updateJob({
                 ...job,
@@ -66,32 +73,10 @@ export function ScriptForm({ job, script }: { job: Job; script: Script }) {
         e.preventDefault()
         setSubmitInProgress(true)
 
-        // autofill tts config option if present
-        // if present, it will be an input to the script but an optional one
-        let ttsConfigOpt = optional.find((o) =>
-            o.mediaType.includes('application/vnd.pipeline.tts-config+xml')
-        )
-        let ttsConfigExists = await App.pathExists(
-            settings.ttsConfig.xmlFilepath
-        )
-        let inputs = [...job.jobRequest.inputs]
-        if (ttsConfigOpt && ttsConfigExists) {
-            inputs = updateArrayValue(
-                settings.ttsConfig.xmlFilepath,
-                ttsConfigOpt,
-                inputs
-            )
-        } else if (!ttsConfigExists) {
-            App.log(`File does not exist ${settings.ttsConfig.xmlFilepath}`)
-        }
-
         App.store.dispatch(
             runJob({
                 ...job,
-                jobRequest: {
-                    ...job.jobRequest,
-                    inputs: [...inputs],
-                },
+                jobRequest: job.jobRequest,
             })
         )
         setSubmitInProgress(false)
@@ -169,24 +154,47 @@ export function ScriptForm({ job, script }: { job: Job; script: Script }) {
                                         item.mediaType.includes(
                                             'application/vnd.pipeline.tts-config+xml'
                                         ) ? (
-                                            '' // skip it, we don't need to provide a visual field for this option, it's set in the settings
+                                            '' // skip it, we don't need to provide a visual field for this option, it's set globally
                                         ) : (
                                             <li key={idx}>
-                                                <FormField
-                                                    item={item}
-                                                    key={idx}
-                                                    idprefix={`${ID(
-                                                        job.internalId
-                                                    )}-optional`}
-                                                    onChange={
-                                                        saveValueInJobRequest
-                                                    }
-                                                    initialValue={findValue(
-                                                        item.name,
-                                                        item.kind,
-                                                        job.jobRequest
-                                                    )}
-                                                />
+                                                {item.mediaType.includes(
+                                                    'text/css'
+                                                ) ? (
+                                                    <FormField
+                                                        item={{
+                                                            ...item,
+                                                            kind: 'anyFile',
+                                                        }}
+                                                        key={idx}
+                                                        idprefix={`${ID(
+                                                            job.internalId
+                                                        )}-optional`}
+                                                        onChange={
+                                                            saveValueInJobRequest
+                                                        }
+                                                        initialValue={findValue(
+                                                            item.name,
+                                                            'anyFile',
+                                                            job.jobRequest
+                                                        )}
+                                                    />
+                                                ) : (
+                                                    <FormField
+                                                        item={item}
+                                                        key={idx}
+                                                        idprefix={`${ID(
+                                                            job.internalId
+                                                        )}-optional`}
+                                                        onChange={
+                                                            saveValueInJobRequest
+                                                        }
+                                                        initialValue={findValue(
+                                                            item.name,
+                                                            item.kind,
+                                                            job.jobRequest
+                                                        )}
+                                                    />
+                                                )}
                                             </li>
                                         )
                                     )}

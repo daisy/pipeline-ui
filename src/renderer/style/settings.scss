@@ -32,6 +32,14 @@ $engineColWidth: 8rem;
                 width: min-content;
                 border-radius: 0;
             }
+            .list-subheading {
+                font-size: larger;
+            }
+            &>li > ul {
+                margin-top: var(--pad);
+            }
+            
+            
         }
     }
 }
@@ -235,7 +243,20 @@ $engineColWidth: 8rem;
         
     }
 }
+.tts-more-options {
+    display: flex;
+    flex-direction: column;
+    gap: var(--pad);
 
+    .note {
+        font-style: italic;
+        padding-top: 0;
+        margin-top: 2px;
+    }
+    label {
+        display: block;
+    }
+}
 pre {
     font-size: smaller;
     background-color: lightyellow;

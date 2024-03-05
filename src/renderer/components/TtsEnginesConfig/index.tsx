@@ -1,6 +1,3 @@
-/*
-Select a script and submit a new job
-*/
 import { useState } from 'react'
 import { useWindowStore } from 'renderer/store'
 import { PipelineAPI } from 'shared/data/apis/pipeline'

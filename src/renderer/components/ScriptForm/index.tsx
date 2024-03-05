@@ -45,7 +45,7 @@ export function ScriptForm({ job, script }: { job: Job; script: Script }) {
         let options = [...job.jobRequest.options]
 
         if (data.mediaType.includes('text/css')) {
-            // the css filenames are already formatted as 'file:///'...
+            // the css filenames are already formatted by our file widget as 'file:///'...
             // so i don't think they need to be modified before getting sent to the engine
             // but this block is a placeholder just in case we have to change it
             // i haven't tested this on windows as of now

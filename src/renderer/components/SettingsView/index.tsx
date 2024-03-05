@@ -18,7 +18,18 @@ import {
 } from 'shared/data/slices/settings'
 import { TtsVoicesConfigPane } from '../TtsVoicesConfig'
 import { TtsEnginesConfigPane } from '../TtsEnginesConfig'
+import { TtsMoreOptionsConfigPane } from '../TtsMoreOptionsConfig'
 const { App } = window // The "App" comes from the bridge
+
+enum SelectedMenuItem {
+    General,
+    Appearance,
+    Behavior,
+    Updates,
+    TTSVoices,
+    TTSEngines,
+    TTSMoreOptions,
+}
 
 export function SettingsView() {
     // Current registered settings
@@ -50,8 +61,10 @@ export function SettingsView() {
             },
         })
     }, [settings])
-    const [selectedSection, setSelectedSection] = useState(0)
 
+    const [selectedSection, setSelectedSection] = useState(
+        SelectedMenuItem.General
+    )
     // Changed folder
     const resultsFolderChanged = (filename) => {
         App.store.dispatch(setDownloadPath(filename))
@@ -120,69 +133,135 @@ export function SettingsView() {
         App.store.dispatch(save())
         //setSaved(true)
     }
+    
     return (
         <div className="settings">
             <nav className="settings-menu">
                 <ul>
                     <li
                         className={
-                            selectedSection == 0 ? 'selected-menu-item' : ''
+                            selectedSection == SelectedMenuItem.General
+                                ? 'selected-menu-item'
+                                : ''
                         }
                     >
-                        <button onClick={(e) => setSelectedSection(0)}>
+                        <button
+                            onClick={(e) =>
+                                setSelectedSection(SelectedMenuItem.General)
+                            }
+                        >
                             General
                         </button>
                     </li>
                     <li
                         className={
-                            selectedSection == 1 ? 'selected-menu-item' : ''
+                            selectedSection == SelectedMenuItem.Appearance
+                                ? 'selected-menu-item'
+                                : ''
                         }
                     >
-                        <button onClick={(e) => setSelectedSection(1)}>
+                        <button
+                            onClick={(e) =>
+                                setSelectedSection(SelectedMenuItem.Appearance)
+                            }
+                        >
                             Appearance
                         </button>
                     </li>
                     <li
                         className={
-                            selectedSection == 2 ? 'selected-menu-item' : ''
+                            selectedSection == SelectedMenuItem.Behavior
+                                ? 'selected-menu-item'
+                                : ''
                         }
                     >
-                        <button onClick={(e) => setSelectedSection(2)}>
+                        <button
+                            onClick={(e) =>
+                                setSelectedSection(SelectedMenuItem.Behavior)
+                            }
+                        >
                             Behavior
                         </button>
                     </li>
                     <li
                         className={
-                            selectedSection == 3 ? 'selected-menu-item' : ''
+                            selectedSection == SelectedMenuItem.Updates
+                                ? 'selected-menu-item'
+                                : ''
                         }
                     >
-                        <button onClick={(e) => setSelectedSection(3)}>
-                            Voices
-                        </button>
-                    </li>
-                    <li
-                        className={
-                            selectedSection == 4 ? 'selected-menu-item' : ''
-                        }
-                    >
-                        <button onClick={(e) => setSelectedSection(4)}>
-                            TTS engines
-                        </button>
-                    </li>
-                    <li
-                        className={
-                            selectedSection == 5 ? 'selected-menu-item' : ''
-                        }
-                    >
-                        <button onClick={(e) => setSelectedSection(5)}>
+                        <button
+                            onClick={(e) =>
+                                setSelectedSection(SelectedMenuItem.Updates)
+                            }
+                        >
                             Updates
                         </button>
+                    </li>
+                    <li>
+                        <span className="list-subheading">TTS</span>
+                        <ul>
+                            <li
+                                className={
+                                    selectedSection ==
+                                    SelectedMenuItem.TTSVoices
+                                        ? 'selected-menu-item'
+                                        : ''
+                                }
+                            >
+                                <button
+                                    onClick={(e) =>
+                                        setSelectedSection(
+                                            SelectedMenuItem.TTSVoices
+                                        )
+                                    }
+                                >
+                                    Voices
+                                </button>
+                            </li>
+                            <li
+                                className={
+                                    selectedSection ==
+                                    SelectedMenuItem.TTSEngines
+                                        ? 'selected-menu-item'
+                                        : ''
+                                }
+                            >
+                                <button
+                                    onClick={(e) =>
+                                        setSelectedSection(
+                                            SelectedMenuItem.TTSEngines
+                                        )
+                                    }
+                                >
+                                    Engines
+                                </button>
+                            </li>
+                            <li
+                                className={
+                                    selectedSection ==
+                                    SelectedMenuItem.TTSMoreOptions
+                                        ? 'selected-menu-item'
+                                        : ''
+                                }
+                            >
+                                <button
+                                    onClick={(e) =>
+                                        setSelectedSection(
+                                            SelectedMenuItem.TTSMoreOptions
+                                        )
+                                    }
+                                >
+                                    More options
+                                </button>
+                            </li>
+                        </ul>
                     </li>
                 </ul>
             </nav>
             <form className="settings-form">
                 <div className="fields">
-                    {selectedSection == 0 ? (
+                    {selectedSection == SelectedMenuItem.General ? (
                         <div className="form-field">
                             <label htmlFor="resultsFolder">
                                 Results folder
@@ -205,7 +284,7 @@ export function SettingsView() {
                                 buttonLabel="Browse"
                             />
                         </div>
-                    ) : selectedSection == 1 ? (
+                    ) : selectedSection == SelectedMenuItem.Appearance ? (
                         <div className="form-field">
                             <label htmlFor="colorMode">
                                 Interface color mode
@@ -229,7 +308,7 @@ export function SettingsView() {
                                 )}
                             </select>
                         </div>
-                    ) : selectedSection == 2 ? (
+                    ) : selectedSection == SelectedMenuItem.Behavior ? (
                         <>
                             <div className="form-field">
                                 <label htmlFor="appStateOnMainWindowClosing">
@@ -293,30 +372,7 @@ export function SettingsView() {
                             {/* insert local pipeline settings form part here */}
                             {/* insert remote pipeline settings form part here */}
                         </>
-                    ) : selectedSection == 3 ? (
-                        <div className="tts-voices-config">
-                            <TtsVoicesConfigPane
-                                availableVoices={pipeline.ttsVoices}
-                                userPreferredVoices={
-                                    newSettings.ttsConfig.preferredVoices
-                                }
-                                onChangePreferredVoices={
-                                    onTtsVoicesPreferenceChange
-                                }
-                            />
-                        </div>
-                    ) : selectedSection == 4 ? (
-                        <div className="tts-engines-config">
-                            <TtsEnginesConfigPane
-                                ttsEngineProperties={
-                                    newSettings.ttsConfig.ttsEngineProperties
-                                }
-                                onChangeTtsEngineProperties={
-                                    onTtsEnginePropertiesChange
-                                }
-                            />
-                        </div>
-                    ) : (
+                    ) : selectedSection == SelectedMenuItem.Updates ? (
                         <div className="form-field">
                             <label className="oneline">
                                 <input
@@ -332,6 +388,42 @@ export function SettingsView() {
                                 checking for updates in the background.
                             </span>
                         </div>
+                    ) : selectedSection == SelectedMenuItem.TTSVoices ? (
+                        <div className="tts-voices-config">
+                            <TtsVoicesConfigPane
+                                availableVoices={pipeline.ttsVoices}
+                                userPreferredVoices={
+                                    newSettings.ttsConfig.preferredVoices
+                                }
+                                onChangePreferredVoices={
+                                    onTtsVoicesPreferenceChange
+                                }
+                            />
+                        </div>
+                    ) : selectedSection == SelectedMenuItem.TTSEngines ? (
+                        <div className="tts-engines-config">
+                            <TtsEnginesConfigPane
+                                ttsEngineProperties={
+                                    newSettings.ttsConfig.ttsEngineProperties
+                                }
+                                onChangeTtsEngineProperties={
+                                    onTtsEnginePropertiesChange
+                                }
+                            />
+                        </div>
+                    ) : selectedSection == SelectedMenuItem.TTSMoreOptions ? (
+                        <div className="tts-more-options">
+                            <TtsMoreOptionsConfigPane
+                                ttsEngineProperties={
+                                    newSettings.ttsConfig.ttsEngineProperties
+                                }
+                                onChangeTtsEngineProperties={
+                                    onTtsEnginePropertiesChange
+                                }
+                            />
+                        </div>
+                    ) : (
+                        ''
                     )}
                 </div>
                 <div className="save-settings">

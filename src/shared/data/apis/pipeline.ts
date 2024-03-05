@@ -188,7 +188,7 @@ export class PipelineAPI {
     }
     setProperty(prop: EngineProperty) {
         return this.createPipelineFetchFunction(
-            (ws) => prop.href,
+            (ws) => `${baseurl(ws)}/admin/properties/${prop.name}`,
             (text) => console.log(text),
             {
                 method: 'PUT',

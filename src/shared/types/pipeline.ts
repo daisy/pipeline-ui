@@ -106,7 +106,7 @@ export type PipelineInstanceProperties = {
  */
 export type EngineProperty = {
     name: string
-    href: string
+    href?: string
     desc?: string
     value?: string
 }

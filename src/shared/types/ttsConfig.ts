@@ -16,3 +16,8 @@ export type TtsConfig = {
     ttsEngineProperties: Array<TtsEngineProperty>
     xmlFilepath?: string
 }
+
+export type TtsEngineState = {
+    status: 'disconnected' | 'connecting' | 'connected' | 'disconnecting'
+    message?: string
+}

@@ -1,8 +1,7 @@
 import { useState } from 'react'
 import { useWindowStore } from 'renderer/store'
 import { PipelineAPI } from 'shared/data/apis/pipeline'
-import { selectTtsVoices, setTtsVoices } from 'shared/data/slices/pipeline'
-import { TtsVoice } from 'shared/types/ttsConfig'
+import { setProperties } from 'shared/data/slices/pipeline'
 import { FileOrFolderInput } from '../Fields/FileOrFolderInput'
 
 const pipelineAPI = new PipelineAPI(
@@ -80,7 +79,10 @@ export function TtsMoreOptionsConfigPane({
                 (realProp && realProp.value != prop.value),
         })
         setEngineProperties([...engineProperties_])
-        // Connected, save the tts engine settings
+        App.store.dispatch(
+            setProperties([{ name: propName, value: propValue }])
+        )
+
         onChangeTtsEngineProperties([...engineProperties_])
     }
 

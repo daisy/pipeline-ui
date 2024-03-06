@@ -167,11 +167,6 @@ export function settingsMiddleware({ getState, dispatch }) {
                         ttsConfigToXml(settings.ttsConfig),
                         () => {}
                     )
-                    // this will update the engine with the new settings
-                    // TODO upon startup, does this get invoked, or is it only when a user makes a settings change?
-                    updateEngineProperties(
-                        settings.ttsConfig.ttsEngineProperties
-                    )
                     break
                 case setAutoCheckUpdate.type:
                     if (
@@ -197,17 +192,5 @@ export function settingsMiddleware({ getState, dispatch }) {
             console.log(e)
         }
         return returnValue
-    }
-}
-
-// post the engine properties to the pipeline /admin/properties endpoint
-function updateEngineProperties(ttsEngineProperties: TtsEngineProperty[]) {
-    console.log("updating engine properties", ttsEngineProperties)
-    for (let property of ttsEngineProperties) {
-        let engineProperty: EngineProperty = {
-            name: property.key,
-            value: property.value,
-        }
-        pipelineAPI.setProperty(engineProperty)
     }
 }

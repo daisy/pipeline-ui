@@ -1,8 +1,17 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useWindowStore } from 'renderer/store'
 import { PipelineAPI } from 'shared/data/apis/pipeline'
-import { selectTtsVoices, setTtsVoices } from 'shared/data/slices/pipeline'
-import { TtsVoice } from 'shared/types/ttsConfig'
+import {
+    selectTtsVoices,
+    setProperties,
+    setTtsEngineState,
+    setTtsVoices,
+} from 'shared/data/slices/pipeline'
+import {
+    TtsEngineProperty,
+    TtsEngineState,
+    TtsVoice,
+} from 'shared/types/ttsConfig'
 
 const enginePropertyKeys = [
     'org.daisy.pipeline.tts.azure.key',
@@ -30,9 +39,13 @@ const clone = (propsArray: Array<{ key: string; value: string }>) => [
 export function TtsEnginesConfigPane({
     ttsEngineProperties,
     onChangeTtsEngineProperties,
+}: {
+    ttsEngineProperties: Array<TtsEngineProperty>
+    onChangeTtsEngineProperties: (props: Array<TtsEngineProperty>) => void
 }) {
     const { pipeline } = useWindowStore()
     console.log('TTS engine props', ttsEngineProperties)
+
     // Clone array and objects in it to avoid updating the oriiginal props
     const [engineProperties, setEngineProperties] = useState<
         Array<{ key: string; value: string }>
@@ -45,6 +58,19 @@ export function TtsEnginesConfigPane({
     const [enginePropsChanged, setEnginePropsChanged] = useState<{
         [engineKey: string]: boolean
     }>({})
+
+    useEffect(() => {
+        let messages = { ...engineMessage }
+
+        for (let engineKey in pipeline.ttsEnginesStates) {
+            // Note : engineKey in template is the full one
+            // while in voices only the final name is given
+            messages['org.daisy.pipeline.tts.' + engineKey] =
+                pipeline.ttsEnginesStates[engineKey].message
+        }
+        setEngineMessage(messages)
+        console.log(messages)
+    }, [pipeline.ttsEnginesStates])
 
     let onPropertyChange = (e, propName) => {
         e.preventDefault()
@@ -89,118 +115,30 @@ export function TtsEnginesConfigPane({
         const ttsProps = [
             ...engineProperties.filter((k) => k.key.startsWith(engineKey)),
         ]
-        // Reset message or error for the engine
-        setEngineMessage({
-            ...engineMessage,
-            [engineKey]: 'Connecting ...',
-        })
-        pipelineAPI
-            .fetchTtsVoices({
-                preferredVoices: [],
-                ttsEngineProperties: ttsProps,
-            })(pipeline.webservice)
-            .then((voices: TtsVoice[]) => {
-                // If any voice of the engine is now available
-                if (
-                    voices.filter(
-                        (v) => v.engine == engineKey.split('.').slice(-1)[0]
-                    ).length > 0
-                ) {
-                    // Connected, save the tts engine settings
-                    const updatedSettings = [
-                        ...ttsEngineProperties.filter(
-                            (k) => !k.key.startsWith(engineKey)
-                        ),
-                        ...ttsProps,
-                    ]
-                    // Save back in the complete settings the new settings
-                    onChangeTtsEngineProperties(updatedSettings)
-                    setEnginePropsChanged({
-                        ...enginePropsChanged,
-                        [engineKey]: false,
-                    })
-                    // use those new settings to recompute
-                    // the full voices list
-                    return pipelineAPI.fetchTtsVoices({
-                        preferredVoices: [],
-                        ttsEngineProperties: updatedSettings,
-                    })(pipeline.webservice)
-                } else {
-                    // could not connect
-                    // return empty array to not update the voices array
-                    return []
-                }
-            })
-            .then((fullVoicesList: TtsVoice[]) => {
-                // Update the voices array if its not empty
-                if (fullVoicesList.length > 0) {
-                    setEngineMessage({
-                        ...engineMessage,
-                        [engineKey]: 'Connected',
-                    })
-                    App.store.dispatch(setTtsVoices(fullVoicesList))
-                } else {
-                    // indicate connection error
-                    setEngineMessage({
-                        ...engineMessage,
-                        [engineKey]:
-                            'Could not connect to engine, please check your credentials or the service status.',
-                    })
-                }
-            })
-            .catch((e) => {
-                console.error(e)
-                // Indicate an error
-                setEngineMessage({
-                    ...engineMessage,
-                    [engineKey]:
-                        'An error occured while trying to connect : ' + e,
-                })
-            })
+        // send the properties to the engine for voices reloading
+        App.store.dispatch(
+            setProperties(
+                ttsProps.map((p) => ({ name: p.key, value: p.value }))
+            )
+        )
+        const updatedSettings = [
+            ...ttsEngineProperties.filter((k) => !k.key.startsWith(engineKey)),
+            ...ttsProps,
+        ]
+        onChangeTtsEngineProperties(updatedSettings)
     }
 
     const disconnectFromTTSEngine = (engineKey: string) => {
-        setEngineMessage({
-            ...engineMessage,
-            [engineKey]: 'Disconnecting ...',
-        })
-        // Let user disconnect from a TTS engine
-        // For now, remove the API key setting provided for the engine selected
-        // (not ideal but not sure how to do it for now)
-        const updatedSettings = [
-            ...ttsEngineProperties.filter(
-                (kv) =>
-                    !(kv.key.startsWith(engineKey) && kv.key.endsWith('key'))
-            ),
+        const ttsProps = [
+            ...engineProperties.filter((k) => k.key.startsWith(engineKey)),
         ]
-        console.log(updatedSettings)
-        // Save back in the complete settings the new settings
-        onChangeTtsEngineProperties(updatedSettings)
-        // use those new settings to recompute
-        // the full voices list
-        pipelineAPI
-            .fetchTtsVoices({
-                preferredVoices: [],
-                ttsEngineProperties: updatedSettings,
-            })(pipeline.webservice)
-            .then((fullVoicesList: TtsVoice[]) => {
-                setEngineMessage({
-                    ...engineMessage,
-                    [engineKey]: 'Disconnected',
-                })
-                // Update the voices array if its not empty
-                if (fullVoicesList.length > 0)
-                    App.store.dispatch(setTtsVoices(fullVoicesList))
-            })
-            .catch((e) => {
-                console.error(e)
-                // Indicate an error
-                setEngineMessage({
-                    ...engineMessage,
-                    [engineKey]:
-                        'An error occured while trying to disconnect : ' + e,
-                })
-            })
+        // remove properties value on the engine side to disconnect
+        // but keep the settings in the app
+        App.store.dispatch(
+            setProperties(ttsProps.map((p) => ({ name: p.key, value: '' })))
+        )
+        // TODO : add a setting to let users disable autoconnect on startup
+        onChangeTtsEngineProperties(ttsProps)
     }
 
     return (
@@ -215,7 +153,7 @@ export function TtsEnginesConfigPane({
             </p>
             <ul>
                 {Object.keys(engineNames).map((engineKeyPrefix, idx) => (
-                    <li key={idx}>
+                    <li key={engineKeyPrefix + '-' + idx}>
                         {engineNames[engineKeyPrefix]}
                         <ul>
                             {enginePropertyKeys
@@ -223,7 +161,7 @@ export function TtsEnginesConfigPane({
                                     propkey.includes(engineKeyPrefix)
                                 )
                                 .map((propkey, idx) => (
-                                    <li key={idx}>
+                                    <li key={propkey + '-' + idx}>
                                         <label htmlFor={propkey}>
                                             {(() => {
                                                 // the propkey looks like org.daisy.pipeline.tts.enginename.propkeyname

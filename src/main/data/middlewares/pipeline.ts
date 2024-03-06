@@ -21,6 +21,8 @@ import {
     selectVisibleJobs,
     setAlive,
     setTtsVoices,
+    setProperties,
+    setTtsEngineState,
 } from 'shared/data/slices/pipeline'
 
 import {
@@ -37,6 +39,9 @@ import {
     Webservice,
     JobData,
     JobRequestError,
+    EngineProperty,
+    PipelineState,
+    TtsEngineState,
 } from 'shared/types'
 
 import { info, error } from 'electron-log'
@@ -323,6 +328,29 @@ export function pipelineMiddleware({ getState, dispatch }) {
                             })
                             .then((datatypes) => {
                                 dispatch(setDatatypes(datatypes))
+                                return pipelineAPI.fetchProperties()(
+                                    newWebservice
+                                )
+                            })
+                            .then((properties: EngineProperty[]) => {
+                                // Note : here we merge the instance properties
+                                // with the one extracted from settings
+                                let settingsTtsProperties: EngineProperty[] =
+                                    state.settings.ttsConfig.ttsEngineProperties.map(
+                                        (p) => ({ name: p.key, value: p.value })
+                                    )
+                                for (const p of properties) {
+                                    if (
+                                        settingsTtsProperties.find(
+                                            (p2) => p.name === p2.name
+                                        ) === undefined
+                                    ) {
+                                        settingsTtsProperties.push(p)
+                                    }
+                                }
+                                // dispatch to sync the properties
+                                // in the engine
+                                dispatch(setProperties(settingsTtsProperties))
                                 return pipelineAPI.fetchTtsVoices(
                                     selectTtsConfig(getState())
                                 )(newWebservice)
@@ -442,6 +470,142 @@ export function pipelineMiddleware({ getState, dispatch }) {
                         )
                     })
                 }
+                break
+            case setProperties.type: // Update properties in the engine
+                const newProperties = action.payload as EngineProperty[]
+                let ttsEnginesStatesStart = {
+                    ...(getState().pipeline.ttsEnginesStates as {
+                        [key: string]: TtsEngineState
+                    }),
+                }
+                //console.log('received new properties', newProperties)
+                //console.log('tts states', ttsEnginesStatesStart)
+                // for each new property, if the property is a TTS key or region
+                // change the corresponding TTS engine state (pipeline.state.ttsEnginesStates)
+                // to { connected = false, message = 'Connecting...' }
+                for (const prop of newProperties) {
+                    if (
+                        prop.name.indexOf('.tts.') >= 0 &&
+                        prop.name.indexOf('key') >= 0
+                    ) {
+                        const engineKey = prop.name.split('.').slice(-2)[0]
+                        if (ttsEnginesStatesStart[engineKey] === undefined) {
+                            if (prop.value === '') {
+                                // empty key provided, no connection
+                                ttsEnginesStatesStart[engineKey] = {
+                                    status: 'disconnected',
+                                    message: 'Disconnected',
+                                }
+                            } else {
+                                ttsEnginesStatesStart[engineKey] = {
+                                    status: 'connecting',
+                                    message: 'Connecting...',
+                                }
+                            }
+                        } else {
+                            switch (ttsEnginesStatesStart[engineKey].status) {
+                                case 'connected':
+                                case 'connecting':
+                                    if (prop.value === '') {
+                                        // key removal
+                                        ttsEnginesStatesStart[engineKey] = {
+                                            status: 'disconnecting',
+                                            message: 'Disconnecting...',
+                                        }
+                                    } else {
+                                        // possible key or region change
+                                        ttsEnginesStatesStart[engineKey] = {
+                                            status: 'connecting',
+                                            message: 'Reconnecting...',
+                                        }
+                                    }
+                                    break
+                                case 'disconnected':
+                                case 'disconnecting':
+                                default:
+                                    if (prop.value !== '') {
+                                        // new key provided for connection
+                                        ttsEnginesStatesStart[engineKey] = {
+                                            status: 'connecting',
+                                            message: 'Connecting...',
+                                        }
+                                    }
+                                    break
+                            }
+                        }
+                    }
+                }
+                //console.log('tts states starting', ttsEnginesStatesStart)
+                dispatch(setTtsEngineState(ttsEnginesStatesStart))
+                Promise.all(
+                    newProperties.map((prop) =>
+                        pipelineAPI.setProperty(prop)(webservice)
+                    )
+                )
+                    //.then(() => pipelineAPI.fetchProperties()(webservice))
+                    .then(() => {
+                        // If any of the properties updated is a TTS engine key
+                        // property, reload voice list
+                        if (
+                            newProperties.find(
+                                (p) =>
+                                    p.name.indexOf('.tts.') >= 0 &&
+                                    p.name.indexOf('key') >= 0
+                            ) !== undefined
+                        ) {
+                            //console.log('reset voices')
+                            pipelineAPI
+                                .fetchTtsVoices(selectTtsConfig(getState()))(
+                                    webservice
+                                )
+                                .then((voices: TtsVoice[]) => {
+                                    dispatch(setTtsVoices(voices))
+                                    let ttsEnginesStates = {
+                                        ...(getState().pipeline
+                                            .ttsEnginesStates as {
+                                            [key: string]: TtsEngineState
+                                        }),
+                                    }
+                                    // update working engines
+                                    for (const voice of voices) {
+                                        ttsEnginesStates[voice.engine] = {
+                                            status: 'connected',
+                                            message: 'Connected',
+                                        }
+                                    }
+                                    // update non active expected engines
+                                    for (const engineKey in ttsEnginesStates) {
+                                        switch (
+                                            ttsEnginesStates[engineKey].status
+                                        ) {
+                                            case 'connected':
+                                            case 'disconnected':
+                                                // success or no change
+                                                break
+                                            case 'disconnecting':
+                                                // confirm disconnection
+                                                ttsEnginesStates[engineKey] = {
+                                                    status: 'disconnected',
+                                                    message: 'Disconnected',
+                                                }
+                                            case 'connecting':
+                                            default:
+                                                // error case when trying to connect
+                                                ttsEnginesStates[engineKey] = {
+                                                    status: 'disconnected',
+                                                    message:
+                                                        'Could not connect to the engine, please check your credentials or the service status.',
+                                                }
+                                                break
+                                        }
+                                    }
+                                    //console.log('tts states starting', ttsEnginesStates)
+                                    dispatch(
+                                        setTtsEngineState(ttsEnginesStates)
+                                    )
+                                })
+                        }
+                    })
                 break
             case runJob.type:
                 // Launch the job with the API and start monitoring its execution

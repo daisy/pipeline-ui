@@ -17,6 +17,7 @@ import {
     TtsVoice,
     TtsEngineProperty,
     EngineProperty,
+    TtsEngineState,
 } from 'shared/types'
 
 import { RootState } from 'shared/types/store'
@@ -31,7 +32,8 @@ const initialState = {
     internalJobCounter: 0,
     selectedJobId: '',
     alive: null,
-    properties: [],
+    properties: {},
+    ttsEnginesStates: {},
 } as PipelineState
 
 export const pipeline = createSlice({
@@ -51,6 +53,8 @@ export const pipeline = createSlice({
                 state.ttsVoices = param.payload.ttsVoices
             if (param.payload.properties)
                 state.properties = param.payload.properties
+            if (param.payload.ttsEnginesStates)
+                state.ttsEnginesStates = param.payload.ttsEnginesStates
         },
         /**
          * Start the pipeline.
@@ -126,7 +130,14 @@ export const pipeline = createSlice({
             state: PipelineState,
             param: PayloadAction<Array<EngineProperty>>
         ) => {
-            state.properties = param.payload
+            // Merge EngineProperty array (retrieved from engine api) into properties map
+            state.properties = param.payload.reduce(
+                (acc, prop) => {
+                    acc[prop.name] = prop
+                    return acc
+                },
+                { ...state.properties }
+            )
         },
         setJobs: (state: PipelineState, param: PayloadAction<Array<Job>>) => {
             state.jobs = param.payload
@@ -286,6 +297,15 @@ export const pipeline = createSlice({
         setAlive: (state: PipelineState, param: PayloadAction<Alive>) => {
             state.alive = param.payload
         },
+        setTtsEngineState: (
+            state: PipelineState,
+            param: PayloadAction<{ [engineKey: string]: TtsEngineState }>
+        ) => {
+            state.ttsEnginesStates = {
+                ...state.ttsEnginesStates,
+                ...param.payload,
+            }
+        },
     },
 })
 
@@ -315,6 +335,7 @@ export const {
     setAlive,
     setTtsVoices,
     setProperties,
+    setTtsEngineState,
 } = pipeline.actions
 
 export const selectors = {

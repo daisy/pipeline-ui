@@ -1,4 +1,4 @@
-import { TtsEngineProperty, TtsVoice } from './ttsConfig'
+import { TtsEngineState, TtsVoice } from './ttsConfig'
 
 /**
  * Webservice connexion data to compute url for fetch:
@@ -50,7 +50,8 @@ export type PipelineState = {
     selectedJobId: string
     datatypes?: Datatype[]
     alive: Alive
-    properties?: Array<EngineProperty>
+    properties?: { [key: string]: EngineProperty }
+    ttsEnginesStates?: { [key: string]: TtsEngineState }
     // messages: Array<string>
     // errors: Array<string>
 }

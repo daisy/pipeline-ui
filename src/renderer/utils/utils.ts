@@ -39,9 +39,7 @@ export function findValue(name: string, kind: string, jobRequest: JobRequest) {
 
 export function findInputType(type) {
     let inputType = ''
-    if (type == 'anyFileURI') {
-        inputType = 'file'
-    } else if (type == 'anyDirURI') {
+    if (['anyFileURI', 'anyDirURI', 'anyURI'].includes(type)) {
         inputType = 'file'
     } else if (['xsd:dateTime', 'xs:dateTime', 'datetime'].includes(type)) {
         inputType = 'datetime-local'

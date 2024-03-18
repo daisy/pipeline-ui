@@ -32,12 +32,16 @@ const mediaTypesFileFilters = {
         extensions: ['xml'],
     },
     'text/html': {
-        name: '',
-        extensions: [''],
-    },
-    'text/css': {
         name: 'HTML Document',
         extensions: ['html'],
+    },
+    'text/css': {
+        name: 'CSS Document',
+        extensions: ['css'],
+    },
+    'text/x-scss': {
+        name: 'SCSS Document',
+        extensions: ['scss'],
     },
     'application/xslt+xml': {
         name: 'XSLT Document',

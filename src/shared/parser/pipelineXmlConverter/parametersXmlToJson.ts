@@ -5,25 +5,20 @@ import { parseXml } from './parser'
 function parametersXmlToJson(xmlString: string): ScriptOption[] {
     let parametersElm = parseXml(xmlString, 'parameters')
     const result: ScriptOption[] = []
-    for (const propElem of parametersElm.getElementsByTagName('parameter')) {
-        const name = propElem.getAttribute('name')
-        const value = propElem.getAttribute('default')
-        const kind = propElem.getAttribute('type')
-        const nicename = propElem.getAttribute('nicename')
-        const description = propElem.getAttribute('description')
-        result.push({
-            desc: propElem.getAttribute('description'),
-            name: propElem.getAttribute('name'),
-            sequence: propElem.getAttribute('sequence') == 'true', // should always be false
-            required: propElem.getAttribute('required') == 'true', // should always be false
-            nicename: propElem.getAttribute('nicename'),
-            ordered: propElem.getAttribute('ordered') == 'true', // should always be false
-            type: propElem.getAttribute('type'),
-            default: propElem.getAttribute('default'),
-            kind: 'option',
-        } as ScriptOption)
-    }
-    return result
+    return Array.from(parametersElm.getElementsByTagName('parameter')).map(
+        (propElem: any) =>
+            ({
+                desc: propElem.getAttribute('description'),
+                name: propElem.getAttribute('name'),
+                sequence: propElem.getAttribute('sequence') == 'true', // should always be false
+                required: propElem.getAttribute('required') == 'true', // should always be false
+                nicename: propElem.getAttribute('nicename'),
+                ordered: propElem.getAttribute('ordered') == 'true', // should always be false
+                type: propElem.getAttribute('type'),
+                default: propElem.getAttribute('default'),
+                kind: 'option',
+            } as ScriptOption)
+    )
 }
 
 export { parametersXmlToJson }

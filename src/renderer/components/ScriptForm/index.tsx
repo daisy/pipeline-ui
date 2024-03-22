@@ -47,32 +47,31 @@ export function ScriptForm({ job, script }: { job: Job; script: Script }) {
     let optional = getAllOptional(script)
     const { settings } = useWindowStore()
 
-    const filteredOptions = ['stylesheet', 'page-width', 'page-height']
-    const hiddenOptions = ['transform', 'stylesheet-parameters']
-    // for script that have stylesheet parameter available
+    // for to-pef scripts
     // the job request must be splitted in two step
     // First only display the following parameters
     // - inputs,
     // - stylesheet,
     // - page-width
     // - page-height
-    const isMultistep = optional.findIndex((item) => item.name === 'stylesheet')
-    if (isMultistep > -1) {
+
+    // Cannot use const isBrailleJob = optional.findIndex((item) => item.name === 'stylesheet')
+    // as other non braille steps have a stylesheet option
+    const isBrailleJob = (script && script.id.endsWith('to-pef')) || false
+    // Filter out the options that are to be defined in the first step of braille script
+    const filteredOptions = ['stylesheet', 'page-width', 'page-height']
+    const hiddenOptions = ['transform', 'stylesheet-parameters']
+    if (isBrailleJob) {
         optional = optional.filter((item) =>
             filteredOptions.includes(item.name)
         )
     }
-    // next will send back the partial jobRequest to the backend
-    // that will sent back a stylesheet-parameters request to the engine
-    let next = async (e) => {
-        e.preventDefault()
-        App.store.dispatch(requestStylesheetParameters(job))
-    }
+
     // After requestStylesheetParameters, the engine will return a list of new
     // script options. Those are stored separatly in the job.stylesheetParameters
     // properties
     // When this property is set
-    if (job.stylesheetParameters != null) {
+    if (isBrailleJob && job.stylesheetParameters != null) {
         required = []
         optional = [
             ...getAllOptional(script)
@@ -136,15 +135,18 @@ export function ScriptForm({ job, script }: { job: Job; script: Script }) {
     // submit a job
     let onSubmit = async (e) => {
         e.preventDefault()
-        setSubmitInProgress(true)
-
-        App.store.dispatch(
-            runJob({
-                ...job,
-                jobRequest: job.jobRequest,
-            })
-        )
-        setSubmitInProgress(false)
+        if (isBrailleJob && job.stylesheetParameters == null) {
+            App.store.dispatch(requestStylesheetParameters(job))
+        } else {
+            setSubmitInProgress(true)
+            App.store.dispatch(
+                runJob({
+                    ...job,
+                    jobRequest: job.jobRequest,
+                })
+            )
+            setSubmitInProgress(false)
+        }
     }
 
     return (
@@ -270,14 +272,13 @@ export function ScriptForm({ job, script }: { job: Job; script: Script }) {
                         )}
                     </div>
                     <div className="form-buttons">
-                        {job.stylesheetParameters != null && (
+                        {isBrailleJob && job.stylesheetParameters != null && (
                             <button className="run" onClick={previous}>
                                 Back
                             </button>
                         )}
-                        {isMultistep > -1 &&
-                        job.stylesheetParameters == null ? (
-                            <button className="run" onClick={next}>
+                        {isBrailleJob && job.stylesheetParameters == null ? (
+                            <button className="run" type="submit">
                                 Next
                             </button>
                         ) : (

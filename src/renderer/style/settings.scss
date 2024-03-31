@@ -1,6 +1,6 @@
 @use 'vars.scss' as *;
 
-$fieldHeight: 70vh;
+$fieldHeight: 75vh;
 $engineColWidth: 8rem;
 
 .settings {
@@ -50,7 +50,12 @@ $engineColWidth: 8rem;
     gap: calc(var(--pad) * 2);
     width: 100%;
     font-size: large;
-
+    
+    .file-or-folder > .controls-row {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
     .filename {
         width: 80%;
         overflow: scroll;
@@ -204,6 +209,7 @@ $engineColWidth: 8rem;
 }
 
 .tts-engines-config {
+    padding: 0;
     .desc {
         font-style: italic;
     }
@@ -246,7 +252,7 @@ $engineColWidth: 8rem;
 .tts-more-options {
     display: flex;
     flex-direction: column;
-    gap: var(--pad);
+    gap: calc(1.5 * var(--pad));
 
     .note {
         font-style: italic;
@@ -255,6 +261,14 @@ $engineColWidth: 8rem;
     }
     label {
         display: block;
+    }
+    div {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    input[type=range] {
+        width: 10rem;
     }
 }
 pre {

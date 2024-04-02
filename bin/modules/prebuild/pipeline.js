@@ -181,7 +181,7 @@ async function getJDK(platform = null, arch = null) {
     if (requestedJDKIsInstalled) {
         // Check if the current java_home points to a valid jdk
         try {
-            let stdout = execSync(jlinkCmd + ' --version').toString()
+            let stdout = execSync(`"${jlinkCmd}" --version`).toString()
             const versionSearch = /(\d+\.\d+\.\d+)(\.\d+)?/
             try {
                 const [major, minor, patch] = stdout
@@ -305,7 +305,7 @@ async function buildPipeline(platform = null) {
     if (targetedPlatform == 'windows') {
         makeCmd = path.resolve('make.exe')
     } else if (targetedPlatform == 'mac') {
-        makeCmd = "gmake"
+        makeCmd = 'gmake'
     }
     try {
         console.debug(`launching command : ${makeCmd} clean`)

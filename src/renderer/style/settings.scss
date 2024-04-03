@@ -95,6 +95,9 @@ $engineColWidth: 8rem;
 .fields:has(.tts-voices-config) {
     gap: 0;
 }
+.fields:has(.tts-engines-config) {
+    padding-top: 0;
+}
 .tts-voices-config {
     display: flex;
     flex-direction: column;
@@ -219,8 +222,8 @@ $engineColWidth: 8rem;
     &>ul {
         display: flex;
         flex-direction: column;
-        gap: calc(var(--pad) * 2);
-        margin-top: calc(var(--pad) * 2);
+        gap: calc(var(--pad) * 1.5);
+        margin-top: calc(var(--pad) * 1);
         padding: 0;
         &>li {
             font-weight: bold;
@@ -269,6 +272,17 @@ $engineColWidth: 8rem;
     }
     input[type=range] {
         width: 10rem;
+    }
+    .reset-speech-rate {
+        width: min-content;
+        height: min-content;
+        font-size: medium;
+        padding: 2px;
+        
+    }
+    .speech-rate-controls {
+        display: flex;
+        flex-direction: row;
     }
 }
 pre {

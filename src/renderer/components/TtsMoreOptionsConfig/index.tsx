@@ -38,12 +38,21 @@ export function TtsMoreOptionsConfigPane({
         [engineKey: string]: boolean
     }>({})
 
+    const [speechRateDisplay, setSpeechRateDisplay] = useState(
+        engineProperties['org.daisy.pipeline.tts.speech-rate'] ?? '100%'
+    )
+
     let onLexiconChange = (filename) => {
+        console.log('lexicon', filename)
         onPropertyChange('org.daisy.pipeline.tts.default-lexicon', filename)
     }
     let onInputChange = (e, propName) => {
         e.preventDefault()
         let propValue = e.target.value
+        if (propName == 'org.daisy.pipeline.tts.speech-rate') {
+            propValue = `${propValue}%`
+            setSpeechRateDisplay(propValue)
+        }
         onPropertyChange(propName, propValue)
     }
     let onSelectChange = (e, propName) => {
@@ -86,25 +95,52 @@ export function TtsMoreOptionsConfigPane({
         onChangeTtsEngineProperties([...engineProperties_])
     }
 
+    let resetSpeechRate = (e) => {
+        onPropertyChange('org.daisy.pipeline.tts.speech-rate', '100%')
+        setSpeechRateDisplay('100%')
+    }
+
     return (
         <>
             <div>
-                <label htmlFor="speechRate">Speech rate</label>
-                <input
-                    id="speechRate"
-                    type="range"
-                    max="200"
-                    min="25"
-                    value={
-                        engineProperties.find(
-                            (prop) =>
-                                prop.key == 'org.daisy.pipeline.tts.speech-rate'
-                        )?.value ?? '100'
-                    }
-                    onChange={(e) =>
-                        onInputChange(e, 'org.daisy.pipeline.tts.speech-rate')
-                    }
-                ></input>
+                <label htmlFor="speechRate">
+                    Speech rate: {speechRateDisplay}
+                </label>
+                <div className="speech-rate-controls">
+                    <input
+                        id="speechRate"
+                        type="range"
+                        max="200"
+                        min="25"
+                        value={
+                            engineProperties.find(
+                                (prop) =>
+                                    prop.key ==
+                                    'org.daisy.pipeline.tts.speech-rate'
+                            )?.value // if the value is non-null
+                                ? engineProperties
+                                      .find(
+                                          (prop) =>
+                                              prop.key ==
+                                              'org.daisy.pipeline.tts.speech-rate'
+                                      )
+                                      .value.slice(0, -1) // use the value minus the '%' at the end
+                                : '100' // otherwise default to 100
+                        }
+                        onChange={(e) =>
+                            onInputChange(
+                                e,
+                                'org.daisy.pipeline.tts.speech-rate'
+                            )
+                        }
+                    ></input>
+                    <button
+                        className="reset-speech-rate"
+                        onClick={(e) => resetSpeechRate(e)}
+                    >
+                        Reset
+                    </button>
+                </div>
                 <p className="note">
                     Setting the speech rate is currently supported on XYZ
                     voices/engines.

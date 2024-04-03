@@ -42,8 +42,9 @@ export function FileOrFolderInput({
     const [userInteracted, setUserInteracted] = useState(false) // false if the user started typing
 
     let updateFilename = (filename) => {
+        console.log("new filename", filename)
         setValue(filename)
-        onChange && onChange(value)
+        onChange && onChange(filename)
     }
 
     let onClick = async (e, name) => {

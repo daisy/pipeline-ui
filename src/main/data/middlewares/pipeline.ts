@@ -368,7 +368,7 @@ export function pipelineMiddleware({ getState, dispatch }) {
                                 dispatch(setTtsEngineFeatures(features))
                             })
                             .catch((e) => {
-                                error('useWebservice', e)
+                                error('useWebservice', e, e.parsedText)
                                 if (
                                     selectStatus(getState()) ==
                                     PipelineStatus.RUNNING
@@ -690,16 +690,54 @@ export function pipelineMiddleware({ getState, dispatch }) {
                 break
             case requestStylesheetParameters.type:
                 const job = action.payload as Job
-                pipelineAPI
-                    .fetchStylesheetParameters(job)(webservice)
-                    .then((parameters) => {
-                        dispatch(
-                            updateJob({
-                                ...job,
-                                stylesheetParameters: parameters,
-                            })
-                        )
-                    })
+                const stylesheet = job.jobRequest.options.filter(
+                    (option) => option.name === 'stylesheet'
+                )[0]
+                if (
+                    !stylesheet ||
+                    !stylesheet.value ||
+                    stylesheet.value == ''
+                ) {
+                    // No parameters provided, load defaults
+                    dispatch(
+                        updateJob({
+                            ...job,
+                            stylesheetParameters: [],
+                        })
+                    )
+                } else {
+                    pipelineAPI
+                        .fetchStylesheetParameters(job)(webservice)
+                        .then((parameters) => {
+                            console.log('received parameters', parameters)
+                            dispatch(
+                                updateJob({
+                                    ...job,
+                                    stylesheetParameters: parameters,
+                                })
+                            )
+                        })
+                        .catch((e) => {
+                            error('error fetching stylesheet parameters', e)
+                            dispatch(
+                                updateJob({
+                                    ...job,
+                                    jobData: {
+                                        ...job.jobData,
+                                        status: JobStatus.ERROR,
+                                    },
+                                    errors: [
+                                        {
+                                            error:
+                                                e instanceof ParserException
+                                                    ? e.parsedText
+                                                    : String(e),
+                                        },
+                                    ],
+                                })
+                            )
+                        })
+                }
                 break
             default:
                 if (action.type.startsWith('settings/')) {

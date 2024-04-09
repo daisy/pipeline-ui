@@ -21,12 +21,13 @@ function jobToStylesheetParametersXml(j: Job): string {
     const height = j.jobRequest.options.filter(
         (option) => option.name === 'page-height'
     )[0]
-    return `<parameters xmlns="http://www.daisy.org/ns/pipeline/data">
+    return `<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<parameters xmlns="http://www.daisy.org/ns/pipeline/data">
     <media value="embossed AND (width:${width.value}) AND (height:${
         height.value
     })"/>
     <userStylesheets>${
-        stylesheet !== undefined && `<file href="${stylesheet.value}"/>`
+        stylesheet && stylesheet.value && `<file href="${stylesheet.value}"/>`
     }</userStylesheets>
     <sourceDocument>${j.jobRequest.inputs
         .filter((input) => input.isFile && !input.name.endsWith('.scss'))

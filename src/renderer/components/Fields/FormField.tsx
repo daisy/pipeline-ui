@@ -23,23 +23,22 @@ export function FormField({
 }: {
     item: ScriptItemBase
     idprefix: string
-    onChange: (string, ScriptItemBase) => void // function to set the value in a parent-level collection.
+    onChange: (value: any, item: ScriptItemBase) => void // function to set the value in a parent-level collection.
     initialValue: any // the initial value for the field
 }) {
     const [value, setValue] = useState(initialValue)
     const [checked, setChecked] = useState(true)
     let controlId = `${idprefix}-${item.name}`
 
-    let onChangeValue = (newValue, scriptItem) => {
+    let onChangeValue = (newValue: any, scriptItem: ScriptItemBase) => {
         setValue(newValue)
         onChange(newValue, scriptItem)
     }
-    let dialogOpts =
-        item.type == 'anyFileURI'
-            ? ['openFile']
-            : item.type == 'anyDirURI'
-            ? ['openDirectory']
-            : ['openFile', 'openDirectory']
+    let dialogOpts = ['anyFileURI', 'anyURI'].includes(item.type)
+        ? ['openFile']
+        : item.type == 'anyDirURI'
+        ? ['openDirectory']
+        : ['openFile', 'openDirectory']
 
     const { settings } = useWindowStore()
 

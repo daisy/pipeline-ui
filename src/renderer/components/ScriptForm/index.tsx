@@ -1,7 +1,7 @@
 /*
 Fill out fields for a new job and submit it
 */
-import { Job, Script } from 'shared/types'
+import { Job, NameValue, Script, ScriptItemBase } from 'shared/types'
 import { useState } from 'react'
 import { useWindowStore } from 'renderer/store'
 import {
@@ -10,7 +10,11 @@ import {
     getAllRequired,
     ID,
 } from 'renderer/utils/utils'
-import { restoreJob, runJob } from 'shared/data/slices/pipeline'
+import {
+    requestStylesheetParameters,
+    restoreJob,
+    runJob,
+} from 'shared/data/slices/pipeline'
 import {
     addJob,
     removeJob,
@@ -24,7 +28,7 @@ import { FormField } from '../Fields/FormField'
 const { App } = window
 
 // update the array and return a new copy of it
-let updateArrayValue = (value, data, arr) => {
+let updateArrayValue = (value: any, data: ScriptItemBase, arr: NameValue[]) => {
     let arr2 = arr.map((i) => (i.name == data.name ? { ...i, value } : i))
     return arr2
 }
@@ -37,23 +41,62 @@ export function ScriptForm({ job, script }: { job: Job; script: Script }) {
     let optional = getAllOptional(script)
     const { settings } = useWindowStore()
 
-    let saveValueInJobRequest = (value, data) => {
+    // for script that have stylesheet parameter available
+    // the job request must be splitted in two step
+    // First only display the following parameters
+    // - inputs,
+    // - stylesheet,
+    // - page-width
+    // - page-height
+    const isMultistep = optional.findIndex((item) => item.name === 'stylesheet')
+    if (isMultistep > -1) {
+        optional = optional.filter((item) =>
+            ['stylesheet', 'page-width', 'page-height'].includes(item.name)
+        )
+    }
+    // next will send back the partial jobRequest to the backend
+    // that will sent back a stylesheet-parameters request to the engine
+    let next = async (e) => {
+        e.preventDefault()
+        App.store.dispatch(requestStylesheetParameters(job))
+    }
+    // After requestStylesheetParameters, the engine will return a list of new
+    // script options. Those are stored separatly in the job.stylesheetParameters
+    // properties
+    // When this property is set
+    if (job.stylesheetParameters != null) {
+        required = []
+        optional = [/*...optional,*/ ...job.stylesheetParameters]
+    }
+
+    // Allow the user to go back to first inputs and options set
+    let previous = async (e) => {
+        e.preventDefault()
+        App.store.dispatch(
+            updateJob({
+                ...job,
+                stylesheetParameters: null,
+            })
+        )
+    }
+
+    let saveValueInJobRequest = (value: any, item: ScriptItemBase) => {
         if (!job.jobRequest) {
             return
         }
         let inputs = [...job.jobRequest.inputs]
         let options = [...job.jobRequest.options]
 
-        if (data.mediaType.includes('text/css')) {
+        if (item.mediaType?.includes('text/css')) {
             // the css filenames are already formatted by our file widget as 'file:///'...
             // so i don't think they need to be modified before getting sent to the engine
             // but this block is a placeholder just in case we have to change it
             // i haven't tested this on windows as of now
         }
-        if (data.kind == 'input') {
-            inputs = updateArrayValue(value, data, inputs)
+        if (item.kind == 'input') {
+            inputs = updateArrayValue(value, item, inputs)
         } else {
-            options = updateArrayValue(value, data, options)
+            options = updateArrayValue(value, item, options)
         }
 
         App.store.dispatch(
@@ -151,13 +194,13 @@ export function ScriptForm({ job, script }: { job: Job; script: Script }) {
                                 </h2>
                                 <ul className="fields">
                                     {optional.map((item, idx) =>
-                                        item.mediaType.includes(
+                                        item.mediaType?.includes(
                                             'application/vnd.pipeline.tts-config+xml'
                                         ) ? (
                                             '' // skip it, we don't need to provide a visual field for this option, it's set globally
                                         ) : (
                                             <li key={idx}>
-                                                {item.mediaType.includes(
+                                                {item.mediaType?.includes(
                                                     'text/css'
                                                 ) ? (
                                                     <FormField
@@ -205,9 +248,21 @@ export function ScriptForm({ job, script }: { job: Job; script: Script }) {
                         )}
                     </div>
                     <div className="form-buttons">
-                        <button className="run" type="submit">
-                            Run
-                        </button>
+                        {job.stylesheetParameters != null && (
+                            <button className="run" onClick={previous}>
+                                Back
+                            </button>
+                        )}
+                        {isMultistep > -1 &&
+                        job.stylesheetParameters == null ? (
+                            <button className="run" onClick={next}>
+                                Next
+                            </button>
+                        ) : (
+                            <button className="run" type="submit">
+                                Run
+                            </button>
+                        )}
                         <button
                             className="cancel"
                             type="reset"

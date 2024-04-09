@@ -710,9 +710,32 @@ export function pipelineMiddleware({ getState, dispatch }) {
                         .fetchStylesheetParameters(job)(webservice)
                         .then((parameters) => {
                             console.log('received parameters', parameters)
+                            // update job options with new parameters
+                            const options = [...job.jobRequest.options]
+                            for (let item of parameters) {
+                                const existingOption = options.find(
+                                    (o) => o.name === item.name
+                                )
+                                if (existingOption !== undefined) {
+                                    existingOption.value = item.default
+                                } else {
+                                    // For now, only consider non-uri parameters
+                                    options.push({
+                                        name: item.name,
+                                        value: item.default,
+                                        isFile: false,
+                                    })
+                                }
+                            }
+                            // Also send back the parameters to the UI
+                            // for composition of the script options
                             dispatch(
                                 updateJob({
                                     ...job,
+                                    jobRequest: {
+                                        ...job.jobRequest,
+                                        options: [...options],
+                                    },
                                     stylesheetParameters: parameters,
                                 })
                             )

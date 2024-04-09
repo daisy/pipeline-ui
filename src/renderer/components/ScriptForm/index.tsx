@@ -81,8 +81,8 @@ export function ScriptForm({ job, script }: { job: Job; script: Script }) {
         for (let item of job.stylesheetParameters) {
             const existingOption = optional.find(
                 (o) => o.name === item.name
-            ) as ScriptOption
-            if (existingOption.name === item.name) {
+            ) as ScriptOption | undefined
+            if (existingOption !== undefined) {
                 existingOption.default = item.default
             } else {
                 optional.push(item)

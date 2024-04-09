@@ -26,6 +26,8 @@ import { jobResponseXmlToJson } from 'shared/parser/pipelineXmlConverter/jobResp
 import { propertiesXmlToJson } from 'shared/parser/pipelineXmlConverter/propertiesXmlToJson'
 import { propertyToXml } from 'shared/parser/pipelineXmlConverter/propertyToXml'
 import { ttsEnginesToJson } from 'shared/parser/pipelineXmlConverter/ttsEnginesToJson'
+import { parametersXmlToJson } from 'shared/parser/pipelineXmlConverter/parametersXmlToJson'
+import { jobToStylesheetParametersXml } from 'shared/parser/pipelineXmlConverter/jobToStylesheetParametersXml'
 
 //import fetch, { Response, RequestInit } from 'node-fetch'
 //import { info, error } from 'electron-log'
@@ -202,6 +204,24 @@ export class PipelineAPI {
         return this.createPipelineFetchFunction(
             (ws) => `${baseurl(ws)}/tts-engines`,
             (text) => ttsEnginesToJson(text)
+        )
+    }
+    // New /stylesheet-parameters endpoint : https://github.com/daisy/pipeline-ui/issues/198
+    // and https://github.com/daisy/pipeline/issues/750
+    /**
+     * Fetch new script options from a braille targeted job with
+     * inputs, stylesheet, page-width and page-height parameters set
+     * @param j the braille job
+     * @returns the script options to use for the job
+     */
+    fetchStylesheetParameters(j: Job) {
+        return this.createPipelineFetchFunction(
+            (ws) => `${baseurl(ws)}/stylesheet-parameters`,
+            (text) => parametersXmlToJson(text),
+            {
+                method: 'POST',
+                body: jobToStylesheetParametersXml(j),
+            }
         )
     }
 }

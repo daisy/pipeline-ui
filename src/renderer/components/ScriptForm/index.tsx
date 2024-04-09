@@ -223,45 +223,28 @@ export function ScriptForm({ job, script }: { job: Job; script: Script }) {
                                         ) ? (
                                             '' // skip it, we don't need to provide a visual field for this option, it's set globally
                                         ) : (
-                                            <li key={idx}>
-                                                {item.mediaType?.includes(
-                                                    'text/css'
-                                                ) ? (
-                                                    <FormField
-                                                        item={{
-                                                            ...item,
-                                                            kind: 'anyFile',
-                                                        }}
-                                                        key={idx}
-                                                        idprefix={`${ID(
-                                                            job.internalId
-                                                        )}-optional`}
-                                                        onChange={
-                                                            saveValueInJobRequest
-                                                        }
-                                                        initialValue={findValue(
-                                                            item.name,
-                                                            'anyFile',
-                                                            job.jobRequest
-                                                        )}
-                                                    />
-                                                ) : (
-                                                    <FormField
-                                                        item={item}
-                                                        key={idx}
-                                                        idprefix={`${ID(
-                                                            job.internalId
-                                                        )}-optional`}
-                                                        onChange={
-                                                            saveValueInJobRequest
-                                                        }
-                                                        initialValue={findValue(
-                                                            item.name,
-                                                            item.kind,
-                                                            job.jobRequest
-                                                        )}
-                                                    />
-                                                )}
+                                            <li
+                                                key={`${ID(job.internalId)}-${
+                                                    item.name
+                                                }-li`}
+                                            >
+                                                <FormField
+                                                    item={item}
+                                                    key={`${ID(
+                                                        job.internalId
+                                                    )}-${item.name}-FormField`}
+                                                    idprefix={`${ID(
+                                                        job.internalId
+                                                    )}-${item.name}-optional`}
+                                                    onChange={
+                                                        saveValueInJobRequest
+                                                    }
+                                                    initialValue={findValue(
+                                                        item.name,
+                                                        item.kind,
+                                                        job.jobRequest
+                                                    )}
+                                                />
                                             </li>
                                         )
                                     )}

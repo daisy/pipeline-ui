@@ -74,7 +74,7 @@ export const pipeline = createSlice({
         /**
          * Stop the pipeline instance
          *
-         * (Middleware handled action )
+         * (Middleware handled action)
          * @param state current pipeline state
          * @param action payload with a boolean : if true, then app is closing
          */
@@ -239,6 +239,19 @@ export const pipeline = createSlice({
                 state.selectedJobId = state.jobs[0].internalId
             }
         },
+        /**
+         * Request script options from stylesheet parameters endpoint
+         *
+         * (Middleware handled action )
+         * @param state current pipeline state
+         * @param action payload with a boolean : if true, then app is closing
+         */
+        requestStylesheetParameters: (
+            state: PipelineState,
+            param: PayloadAction<Job>
+        ) => {
+            // Handled by the middleware
+        },
         runJob: (state: PipelineState, param: PayloadAction<Job>) => {
             if (param.payload.jobRequest) {
                 // Retrieve latest JobRequest payload
@@ -349,6 +362,7 @@ export const {
     setProperties,
     setTtsEngineState,
     setTtsEngineFeatures,
+    requestStylesheetParameters,
 } = pipeline.actions
 
 export const selectors = {

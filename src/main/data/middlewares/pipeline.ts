@@ -24,6 +24,7 @@ import {
     setProperties,
     setTtsEngineState,
     setTtsEngineFeatures,
+    requestStylesheetParameters,
 } from 'shared/data/slices/pipeline'
 
 import {
@@ -686,6 +687,19 @@ export function pipelineMiddleware({ getState, dispatch }) {
                             })
                     }
                 }, 1000)
+                break
+            case requestStylesheetParameters.type:
+                const job = action.payload as Job
+                pipelineAPI
+                    .fetchStylesheetParameters(job)(webservice)
+                    .then((parameters) => {
+                        dispatch(
+                            updateJob({
+                                ...job,
+                                stylesheetParameters: parameters,
+                            })
+                        )
+                    })
                 break
             default:
                 if (action.type.startsWith('settings/')) {

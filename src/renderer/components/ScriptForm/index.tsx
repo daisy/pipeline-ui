@@ -179,33 +179,37 @@ export function ScriptForm({ job, script }: { job: Job; script: Script }) {
             {!submitInProgress ? (
                 <form onSubmit={onSubmit} id={`${ID(job.internalId)}-form`}>
                     <div className="form-sections">
-                        <section
-                            className="required-fields"
-                            aria-labelledby={`${ID(job.internalId)}-required`}
-                        >
-                            <h2 id={`${ID(job.internalId)}-required`}>
-                                Required information
-                            </h2>
-                            <ul className="fields">
-                                {required.map((item, idx) => (
-                                    <li key={idx}>
-                                        <FormField
-                                            item={item}
-                                            key={idx}
-                                            idprefix={`${ID(
-                                                job.internalId
-                                            )}-required`}
-                                            onChange={saveValueInJobRequest}
-                                            initialValue={findValue(
-                                                item.name,
-                                                item.kind,
-                                                job.jobRequest
-                                            )}
-                                        />
-                                    </li>
-                                ))}
-                            </ul>
-                        </section>
+                        {required.length > 0 && (
+                            <section
+                                className="required-fields"
+                                aria-labelledby={`${ID(
+                                    job.internalId
+                                )}-required`}
+                            >
+                                <h2 id={`${ID(job.internalId)}-required`}>
+                                    Required information
+                                </h2>
+                                <ul className="fields">
+                                    {required.map((item, idx) => (
+                                        <li key={idx}>
+                                            <FormField
+                                                item={item}
+                                                key={idx}
+                                                idprefix={`${ID(
+                                                    job.internalId
+                                                )}-required`}
+                                                onChange={saveValueInJobRequest}
+                                                initialValue={findValue(
+                                                    item.name,
+                                                    item.kind,
+                                                    job.jobRequest
+                                                )}
+                                            />
+                                        </li>
+                                    ))}
+                                </ul>
+                            </section>
+                        )}
                         {optional.length > 0 ? (
                             <section
                                 className="optional-fields"

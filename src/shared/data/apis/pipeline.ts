@@ -25,6 +25,7 @@ import {
 import { jobResponseXmlToJson } from 'shared/parser/pipelineXmlConverter/jobResponseToJson'
 import { propertiesXmlToJson } from 'shared/parser/pipelineXmlConverter/propertiesXmlToJson'
 import { propertyToXml } from 'shared/parser/pipelineXmlConverter/propertyToXml'
+import { ttsEnginesToJson } from 'shared/parser/pipelineXmlConverter/ttsEnginesToJson'
 
 //import fetch, { Response, RequestInit } from 'node-fetch'
 //import { info, error } from 'electron-log'
@@ -194,6 +195,13 @@ export class PipelineAPI {
                 method: 'PUT',
                 body: propertyToXml(prop),
             }
+        )
+    }
+
+    fetchTtsEnginesFeatures() {
+        return this.createPipelineFetchFunction(
+            (ws) => `${baseurl(ws)}/tts-engines`,
+            (text) => ttsEnginesToJson(text)
         )
     }
 }

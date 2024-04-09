@@ -34,6 +34,7 @@ const initialState = {
     alive: null,
     properties: {},
     ttsEnginesStates: {},
+    ttsEnginesFeatures: {},
 } as PipelineState
 
 export const pipeline = createSlice({
@@ -55,6 +56,8 @@ export const pipeline = createSlice({
                 state.properties = param.payload.properties
             if (param.payload.ttsEnginesStates)
                 state.ttsEnginesStates = param.payload.ttsEnginesStates
+            if (param.payload.ttsEnginesFeatures)
+                state.ttsEnginesFeatures = param.payload.ttsEnginesFeatures
         },
         /**
          * Start the pipeline.
@@ -306,6 +309,15 @@ export const pipeline = createSlice({
                 ...param.payload,
             }
         },
+        setTtsEngineFeatures: (
+            state: PipelineState,
+            param: PayloadAction<{ [engineKey: string]: Array<string> }>
+        ) => {
+            state.ttsEnginesFeatures = {
+                ...state.ttsEnginesFeatures,
+                ...param.payload,
+            }
+        },
     },
 })
 
@@ -336,6 +348,7 @@ export const {
     setTtsVoices,
     setProperties,
     setTtsEngineState,
+    setTtsEngineFeatures,
 } = pipeline.actions
 
 export const selectors = {

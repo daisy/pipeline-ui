@@ -23,6 +23,7 @@ import {
     setTtsVoices,
     setProperties,
     setTtsEngineState,
+    setTtsEngineFeatures,
 } from 'shared/data/slices/pipeline'
 
 import {
@@ -358,6 +359,12 @@ export function pipelineMiddleware({ getState, dispatch }) {
                             .then((voices: Array<TtsVoice>) => {
                                 // console.log('TTS Voices', voices)
                                 dispatch(setTtsVoices(voices))
+                                return pipelineAPI.fetchTtsEnginesFeatures()(
+                                    newWebservice
+                                )
+                            })
+                            .then((features) => {
+                                dispatch(setTtsEngineFeatures(features))
                             })
                             .catch((e) => {
                                 error('useWebservice', e)
@@ -603,6 +610,13 @@ export function pipelineMiddleware({ getState, dispatch }) {
                                     dispatch(
                                         setTtsEngineState(ttsEnginesStates)
                                     )
+                                    // Update features list
+                                    return pipelineAPI.fetchTtsEnginesFeatures()(
+                                        webservice
+                                    )
+                                })
+                                .then((features) => {
+                                    dispatch(setTtsEngineFeatures(features))
                                 })
                         }
                     })

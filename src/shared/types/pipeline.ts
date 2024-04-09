@@ -52,6 +52,7 @@ export type PipelineState = {
     alive: Alive
     properties?: { [key: string]: EngineProperty }
     ttsEnginesStates?: { [key: string]: TtsEngineState }
+    ttsEnginesFeatures?: { [key: string]: Array<string> }
     // messages: Array<string>
     // errors: Array<string>
 }

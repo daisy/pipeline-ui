@@ -199,6 +199,11 @@ export type Job = {
     invisible?: boolean
     // jobRequest.script also has script info (returned from ws);
     // however, storing it separately gives us access to more details
+    /**
+     * For job with a stylesheet parameter, supplementary options are retrieved
+     * from the pipeline stylesheet-parameters end point and stored here.
+     */
+    stylesheetParameters?: ScriptOption[]
 }
 // JobData is the JSON representation of Pipeline WS data for a single job
 export type JobData = {

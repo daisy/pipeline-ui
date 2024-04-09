@@ -24,6 +24,7 @@ import {
     setProperties,
     setTtsEngineState,
     setTtsEngineFeatures,
+    requestStylesheetParameters,
 } from 'shared/data/slices/pipeline'
 
 import {
@@ -367,7 +368,7 @@ export function pipelineMiddleware({ getState, dispatch }) {
                                 dispatch(setTtsEngineFeatures(features))
                             })
                             .catch((e) => {
-                                error('useWebservice', e)
+                                error('useWebservice', e, e.parsedText)
                                 if (
                                     selectStatus(getState()) ==
                                     PipelineStatus.RUNNING
@@ -686,6 +687,80 @@ export function pipelineMiddleware({ getState, dispatch }) {
                             })
                     }
                 }, 1000)
+                break
+            case requestStylesheetParameters.type:
+                const job = action.payload as Job
+                const stylesheet = job.jobRequest.options.filter(
+                    (option) => option.name === 'stylesheet'
+                )[0]
+                if (
+                    !stylesheet ||
+                    !stylesheet.value ||
+                    stylesheet.value == ''
+                ) {
+                    // No parameters provided, load defaults
+                    dispatch(
+                        updateJob({
+                            ...job,
+                            stylesheetParameters: [],
+                        })
+                    )
+                } else {
+                    pipelineAPI
+                        .fetchStylesheetParameters(job)(webservice)
+                        .then((parameters) => {
+                            console.log('received parameters', parameters)
+                            // update job options with new parameters
+                            const options = [...job.jobRequest.options]
+                            for (let item of parameters) {
+                                const existingOption = options.find(
+                                    (o) => o.name === item.name
+                                )
+                                if (existingOption !== undefined) {
+                                    existingOption.value = item.default
+                                } else {
+                                    // For now, only consider non-uri parameters
+                                    options.push({
+                                        name: item.name,
+                                        value: item.default,
+                                        isFile: false,
+                                    })
+                                }
+                            }
+                            // Also send back the parameters to the UI
+                            // for composition of the script options
+                            dispatch(
+                                updateJob({
+                                    ...job,
+                                    jobRequest: {
+                                        ...job.jobRequest,
+                                        options: [...options],
+                                    },
+                                    stylesheetParameters: parameters,
+                                })
+                            )
+                        })
+                        .catch((e) => {
+                            error('error fetching stylesheet parameters', e)
+                            dispatch(
+                                updateJob({
+                                    ...job,
+                                    jobData: {
+                                        ...job.jobData,
+                                        status: JobStatus.ERROR,
+                                    },
+                                    errors: [
+                                        {
+                                            error:
+                                                e instanceof ParserException
+                                                    ? e.parsedText
+                                                    : String(e),
+                                        },
+                                    ],
+                                })
+                            )
+                        })
+                }
                 break
             default:
                 if (action.type.startsWith('settings/')) {

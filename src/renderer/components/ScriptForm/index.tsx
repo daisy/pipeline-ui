@@ -1,7 +1,13 @@
 /*
 Fill out fields for a new job and submit it
 */
-import { Job, Script } from 'shared/types'
+import {
+    Job,
+    NameValue,
+    Script,
+    ScriptItemBase,
+    ScriptOption,
+} from 'shared/types'
 import { useState } from 'react'
 import { useWindowStore } from 'renderer/store'
 import {
@@ -10,7 +16,11 @@ import {
     getAllRequired,
     ID,
 } from 'renderer/utils/utils'
-import { restoreJob, runJob } from 'shared/data/slices/pipeline'
+import {
+    requestStylesheetParameters,
+    restoreJob,
+    runJob,
+} from 'shared/data/slices/pipeline'
 import {
     addJob,
     removeJob,
@@ -24,7 +34,7 @@ import { FormField } from '../Fields/FormField'
 const { App } = window
 
 // update the array and return a new copy of it
-let updateArrayValue = (value, data, arr) => {
+let updateArrayValue = (value: any, data: ScriptItemBase, arr: NameValue[]) => {
     let arr2 = arr.map((i) => (i.name == data.name ? { ...i, value } : i))
     return arr2
 }
@@ -37,23 +47,77 @@ export function ScriptForm({ job, script }: { job: Job; script: Script }) {
     let optional = getAllOptional(script)
     const { settings } = useWindowStore()
 
-    let saveValueInJobRequest = (value, data) => {
+    // for to-pef scripts
+    // the job request must be splitted in two step
+    // First only display the following parameters
+    // - inputs,
+    // - stylesheet,
+    // - page-width
+    // - page-height
+
+    // Cannot use const isBrailleJob = optional.findIndex((item) => item.name === 'stylesheet')
+    // as other non braille steps have a stylesheet option
+    const isBrailleJob = (script && script.id.endsWith('to-pef')) || false
+    // Filter out the options that are to be defined in the first step of braille script
+    const filteredOptions = ['stylesheet', 'page-width', 'page-height']
+    const hiddenOptions = ['transform', 'stylesheet-parameters']
+    if (isBrailleJob) {
+        optional = optional.filter((item) =>
+            filteredOptions.includes(item.name)
+        )
+    }
+
+    // After requestStylesheetParameters, the engine will return a list of new
+    // script options. Those are stored separatly in the job.stylesheetParameters
+    // properties
+    // When this property is set
+    if (isBrailleJob && job.stylesheetParameters != null) {
+        required = []
+        optional = [
+            ...getAllOptional(script)
+                .filter((item) => !filteredOptions.includes(item.name))
+                .filter((item) => !hiddenOptions.includes(item.name)),
+        ]
+        for (let item of job.stylesheetParameters) {
+            const existingOption = optional.find(
+                (o) => o.name === item.name
+            ) as ScriptOption | undefined
+            if (existingOption !== undefined) {
+                existingOption.default = item.default
+            } else {
+                optional.push(item)
+            }
+        }
+    }
+
+    // Allow the user to go back to first inputs and options set
+    let previous = async (e) => {
+        e.preventDefault()
+        App.store.dispatch(
+            updateJob({
+                ...job,
+                stylesheetParameters: null,
+            })
+        )
+    }
+
+    let saveValueInJobRequest = (value: any, item: ScriptItemBase) => {
         if (!job.jobRequest) {
             return
         }
         let inputs = [...job.jobRequest.inputs]
         let options = [...job.jobRequest.options]
 
-        if (data.mediaType.includes('text/css')) {
+        if (item.mediaType?.includes('text/css')) {
             // the css filenames are already formatted by our file widget as 'file:///'...
             // so i don't think they need to be modified before getting sent to the engine
             // but this block is a placeholder just in case we have to change it
             // i haven't tested this on windows as of now
         }
-        if (data.kind == 'input') {
-            inputs = updateArrayValue(value, data, inputs)
+        if (item.kind == 'input') {
+            inputs = updateArrayValue(value, item, inputs)
         } else {
-            options = updateArrayValue(value, data, options)
+            options = updateArrayValue(value, item, options)
         }
 
         App.store.dispatch(
@@ -71,15 +135,18 @@ export function ScriptForm({ job, script }: { job: Job; script: Script }) {
     // submit a job
     let onSubmit = async (e) => {
         e.preventDefault()
-        setSubmitInProgress(true)
-
-        App.store.dispatch(
-            runJob({
-                ...job,
-                jobRequest: job.jobRequest,
-            })
-        )
-        setSubmitInProgress(false)
+        if (isBrailleJob && job.stylesheetParameters == null) {
+            App.store.dispatch(requestStylesheetParameters(job))
+        } else {
+            setSubmitInProgress(true)
+            App.store.dispatch(
+                runJob({
+                    ...job,
+                    jobRequest: job.jobRequest,
+                })
+            )
+            setSubmitInProgress(false)
+        }
     }
 
     return (
@@ -112,33 +179,37 @@ export function ScriptForm({ job, script }: { job: Job; script: Script }) {
             {!submitInProgress ? (
                 <form onSubmit={onSubmit} id={`${ID(job.internalId)}-form`}>
                     <div className="form-sections">
-                        <section
-                            className="required-fields"
-                            aria-labelledby={`${ID(job.internalId)}-required`}
-                        >
-                            <h2 id={`${ID(job.internalId)}-required`}>
-                                Required information
-                            </h2>
-                            <ul className="fields">
-                                {required.map((item, idx) => (
-                                    <li key={idx}>
-                                        <FormField
-                                            item={item}
-                                            key={idx}
-                                            idprefix={`${ID(
-                                                job.internalId
-                                            )}-required`}
-                                            onChange={saveValueInJobRequest}
-                                            initialValue={findValue(
-                                                item.name,
-                                                item.kind,
-                                                job.jobRequest
-                                            )}
-                                        />
-                                    </li>
-                                ))}
-                            </ul>
-                        </section>
+                        {required.length > 0 && (
+                            <section
+                                className="required-fields"
+                                aria-labelledby={`${ID(
+                                    job.internalId
+                                )}-required`}
+                            >
+                                <h2 id={`${ID(job.internalId)}-required`}>
+                                    Required information
+                                </h2>
+                                <ul className="fields">
+                                    {required.map((item, idx) => (
+                                        <li key={idx}>
+                                            <FormField
+                                                item={item}
+                                                key={idx}
+                                                idprefix={`${ID(
+                                                    job.internalId
+                                                )}-required`}
+                                                onChange={saveValueInJobRequest}
+                                                initialValue={findValue(
+                                                    item.name,
+                                                    item.kind,
+                                                    job.jobRequest
+                                                )}
+                                            />
+                                        </li>
+                                    ))}
+                                </ul>
+                            </section>
+                        )}
                         {optional.length > 0 ? (
                             <section
                                 className="optional-fields"
@@ -151,50 +222,33 @@ export function ScriptForm({ job, script }: { job: Job; script: Script }) {
                                 </h2>
                                 <ul className="fields">
                                     {optional.map((item, idx) =>
-                                        item.mediaType.includes(
+                                        item.mediaType?.includes(
                                             'application/vnd.pipeline.tts-config+xml'
                                         ) ? (
                                             '' // skip it, we don't need to provide a visual field for this option, it's set globally
                                         ) : (
-                                            <li key={idx}>
-                                                {item.mediaType.includes(
-                                                    'text/css'
-                                                ) ? (
-                                                    <FormField
-                                                        item={{
-                                                            ...item,
-                                                            kind: 'anyFile',
-                                                        }}
-                                                        key={idx}
-                                                        idprefix={`${ID(
-                                                            job.internalId
-                                                        )}-optional`}
-                                                        onChange={
-                                                            saveValueInJobRequest
-                                                        }
-                                                        initialValue={findValue(
-                                                            item.name,
-                                                            'anyFile',
-                                                            job.jobRequest
-                                                        )}
-                                                    />
-                                                ) : (
-                                                    <FormField
-                                                        item={item}
-                                                        key={idx}
-                                                        idprefix={`${ID(
-                                                            job.internalId
-                                                        )}-optional`}
-                                                        onChange={
-                                                            saveValueInJobRequest
-                                                        }
-                                                        initialValue={findValue(
-                                                            item.name,
-                                                            item.kind,
-                                                            job.jobRequest
-                                                        )}
-                                                    />
-                                                )}
+                                            <li
+                                                key={`${ID(job.internalId)}-${
+                                                    item.name
+                                                }-li`}
+                                            >
+                                                <FormField
+                                                    item={item}
+                                                    key={`${ID(
+                                                        job.internalId
+                                                    )}-${item.name}-FormField`}
+                                                    idprefix={`${ID(
+                                                        job.internalId
+                                                    )}-${item.name}-optional`}
+                                                    onChange={
+                                                        saveValueInJobRequest
+                                                    }
+                                                    initialValue={findValue(
+                                                        item.name,
+                                                        item.kind,
+                                                        job.jobRequest
+                                                    )}
+                                                />
                                             </li>
                                         )
                                     )}
@@ -205,9 +259,20 @@ export function ScriptForm({ job, script }: { job: Job; script: Script }) {
                         )}
                     </div>
                     <div className="form-buttons">
-                        <button className="run" type="submit">
-                            Run
-                        </button>
+                        {isBrailleJob && job.stylesheetParameters != null && (
+                            <button className="run" onClick={previous}>
+                                Back
+                            </button>
+                        )}
+                        {isBrailleJob && job.stylesheetParameters == null ? (
+                            <button className="run" type="submit">
+                                Next
+                            </button>
+                        ) : (
+                            <button className="run" type="submit">
+                                Run
+                            </button>
+                        )}
                         <button
                             className="cancel"
                             type="reset"

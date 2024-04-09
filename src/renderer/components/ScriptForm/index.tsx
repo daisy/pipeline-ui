@@ -1,7 +1,13 @@
 /*
 Fill out fields for a new job and submit it
 */
-import { Job, NameValue, Script, ScriptItemBase } from 'shared/types'
+import {
+    Job,
+    NameValue,
+    Script,
+    ScriptItemBase,
+    ScriptOption,
+} from 'shared/types'
 import { useState } from 'react'
 import { useWindowStore } from 'renderer/store'
 import {
@@ -41,6 +47,8 @@ export function ScriptForm({ job, script }: { job: Job; script: Script }) {
     let optional = getAllOptional(script)
     const { settings } = useWindowStore()
 
+    const filteredOptions = ['stylesheet', 'page-width', 'page-height']
+    const hiddenOptions = ['transform', 'stylesheet-parameters']
     // for script that have stylesheet parameter available
     // the job request must be splitted in two step
     // First only display the following parameters
@@ -51,7 +59,7 @@ export function ScriptForm({ job, script }: { job: Job; script: Script }) {
     const isMultistep = optional.findIndex((item) => item.name === 'stylesheet')
     if (isMultistep > -1) {
         optional = optional.filter((item) =>
-            ['stylesheet', 'page-width', 'page-height'].includes(item.name)
+            filteredOptions.includes(item.name)
         )
     }
     // next will send back the partial jobRequest to the backend
@@ -66,7 +74,21 @@ export function ScriptForm({ job, script }: { job: Job; script: Script }) {
     // When this property is set
     if (job.stylesheetParameters != null) {
         required = []
-        optional = [/*...optional,*/ ...job.stylesheetParameters]
+        optional = [
+            ...getAllOptional(script)
+                .filter((item) => !filteredOptions.includes(item.name))
+                .filter((item) => !hiddenOptions.includes(item.name)),
+        ]
+        for (let item of job.stylesheetParameters) {
+            const existingOption = optional.find(
+                (o) => o.name === item.name
+            ) as ScriptOption
+            if (existingOption.name === item.name) {
+                existingOption.default = item.default
+            } else {
+                optional.push(item)
+            }
+        }
     }
 
     // Allow the user to go back to first inputs and options set

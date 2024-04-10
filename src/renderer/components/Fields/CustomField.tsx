@@ -1,13 +1,41 @@
 import { useWindowStore } from 'renderer/store'
 import { CustomFieldDocumentation } from './CustomFieldDocumentation'
-import { Datatype } from 'shared/types'
-import { useState } from 'react'
+import { Datatype, ScriptItemBase } from 'shared/types'
+import { useEffect, useState } from 'react'
 import { ControlledInput } from './ControlledInput'
 
-export function CustomField({ item, onChange, initialValue, controlId }) {
+export function CustomField({
+    item,
+    onChange,
+    initialValue,
+    controlId,
+    error,
+}: {
+    item: ScriptItemBase
+    onChange: (value: any) => void
+    initialValue: any
+    controlId: string
+    error?: string
+}) {
     const { pipeline } = useWindowStore()
     const [value, setValue] = useState(initialValue)
     const [userInteracted, setUserInteracted] = useState(false) // false if the user started typing
+
+    useEffect(() => {
+        const elem = document.getElementById(controlId) as HTMLInputElement
+        if (elem) {
+            elem.setCustomValidity(error ?? '')
+        }
+    }, [error])
+
+    const errorProps = error
+        ? {
+              'aria-invalid': true,
+              'aria-errormessage': controlId + '-error',
+          }
+        : {
+              'aria-invalid': false,
+          }
 
     // find the datatype in the pipeline.datatypes store
     let datatype = pipeline.datatypes.find((dt) => dt.id == item.type)
@@ -46,8 +74,19 @@ export function CustomField({ item, onChange, initialValue, controlId }) {
                                   datatype.choices[0]?.pattern ?? ''
                                 : ''
                         }
+                        {...errorProps}
                     ></ControlledInput>
-                    <span className="field-errors" aria-live="polite"></span>
+                    {error ? (
+                        <span
+                            id={controlId + '-error'}
+                            className="field-errors"
+                            aria-live="polite"
+                        >
+                            {error}
+                        </span>
+                    ) : (
+                        ''
+                    )}
                 </div>
             )
         } else {
@@ -95,8 +134,19 @@ export function CustomField({ item, onChange, initialValue, controlId }) {
                 onChange={(e) => onChangeValue(e)}
                 className={userInteracted ? 'interacted' : null}
                 pattern={item.pattern ?? null}
+                {...errorProps}
             ></ControlledInput>
-            <span className="field-errors" aria-live="polite"></span>
+            {error ? (
+                <span
+                    id={controlId + '-error'}
+                    className="field-errors"
+                    aria-live="polite"
+                >
+                    {error}
+                </span>
+            ) : (
+                ''
+            )}
         </>
     )
 }

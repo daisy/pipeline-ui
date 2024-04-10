@@ -20,15 +20,16 @@ export function FormField({
     idprefix,
     onChange,
     initialValue,
+    error = undefined,
 }: {
     item: ScriptItemBase
     idprefix: string
     onChange: (value: any, item: ScriptItemBase) => void // function to set the value in a parent-level collection.
     initialValue: any // the initial value for the field
+    error?: string // error message to display
 }) {
     const [checked, setChecked] = useState(true)
-    let controlId = `${idprefix}-${item.name}`
-
+    let controlId = `${idprefix}`
     let dialogOpts = ['anyFileURI', 'anyURI'].includes(item.type)
         ? ['openFile']
         : item.type == 'anyDirURI'
@@ -53,6 +54,7 @@ export function FormField({
                         required={item.required}
                         initialValue={initialValue}
                         ordered={item.ordered}
+                        error={error}
                     />
                 )
             } else {
@@ -75,6 +77,7 @@ export function FormField({
                             buttonLabel="Browse"
                             required={item.required}
                             initialValue={initialValue}
+                            error={error}
                         />
                     )
                 }
@@ -90,7 +93,18 @@ export function FormField({
                         checked={
                             initialValue === 'true' || initialValue === true
                         }
+                        aria-invalid={error ? 'true' : 'false'}
+                        aria-errormessage={controlId + '-error'}
                     ></input>
+                    {error && (
+                        <span
+                            id={controlId + '-error'}
+                            className="field-errors"
+                            aria-live="polite"
+                        >
+                            {error}
+                        </span>
+                    )}
                 </>
             )
         } else if (inputType == 'custom') {
@@ -111,7 +125,18 @@ export function FormField({
                         value={initialValue ?? ''}
                         id={controlId}
                         onChange={(e) => onChange(e.target.value, item)}
+                        aria-invalid={error ? 'true' : 'false'}
+                        aria-errormessage={controlId + '-error'}
                     ></input>
+                    {error && (
+                        <span
+                            id={controlId + '-error'}
+                            className="field-errors"
+                            aria-live="polite"
+                        >
+                            {error}
+                        </span>
+                    )}
                 </>
             )
         }

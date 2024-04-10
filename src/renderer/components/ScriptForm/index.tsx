@@ -65,6 +65,13 @@ export function ScriptForm({ job, script }: { job: Job; script: Script }) {
         optional = optional.filter((item) =>
             filteredOptions.includes(item.name)
         )
+        // .map((item) => {
+        //     if (item.name === 'stylesheet') {
+        //         // deactivate sequence for now on stylesheets
+        //         item.sequence = false
+        //     }
+        //     return item
+        // })
     }
 
     // After requestStylesheetParameters, the engine will return a list of new
@@ -128,6 +135,8 @@ export function ScriptForm({ job, script }: { job: Job; script: Script }) {
                     inputs: [...inputs],
                     options: [...options],
                 },
+                jobRequestError: undefined,
+                errors: job.errors?.filter((e) => e.fieldName !== item.name),
             })
         )
     }
@@ -172,8 +181,15 @@ export function ScriptForm({ job, script }: { job: Job; script: Script }) {
                             ''
                         )}
                     </p>
+                    {job.jobRequestError && (
+                        <p>
+                            An error occured while submitting the form:
+                            <span className="field-errors">
+                                {job.jobRequestError.description}
+                            </span>
+                        </p>
+                    )}
                 </div>
-                {error && <p>Error</p>}
             </section>
 
             {!submitInProgress ? (
@@ -197,13 +213,20 @@ export function ScriptForm({ job, script }: { job: Job; script: Script }) {
                                                 key={idx}
                                                 idprefix={`${ID(
                                                     job.internalId
-                                                )}-required`}
+                                                )}-${item.name}`}
                                                 onChange={saveValueInJobRequest}
                                                 initialValue={findValue(
                                                     item.name,
                                                     item.kind,
                                                     job.jobRequest
                                                 )}
+                                                error={
+                                                    job.errors?.find(
+                                                        (e) =>
+                                                            e.fieldName ===
+                                                            item.name
+                                                    )?.error
+                                                }
                                             />
                                         </li>
                                     ))}
@@ -221,7 +244,7 @@ export function ScriptForm({ job, script }: { job: Job; script: Script }) {
                                     Options
                                 </h2>
                                 <ul className="fields">
-                                    {optional.map((item, idx) =>
+                                    {optional.map((item) =>
                                         item.mediaType?.includes(
                                             'application/vnd.pipeline.tts-config+xml'
                                         ) ? (
@@ -239,7 +262,7 @@ export function ScriptForm({ job, script }: { job: Job; script: Script }) {
                                                     )}-${item.name}-FormField`}
                                                     idprefix={`${ID(
                                                         job.internalId
-                                                    )}-${item.name}-optional`}
+                                                    )}-${item.name}`}
                                                     onChange={
                                                         saveValueInJobRequest
                                                     }
@@ -248,6 +271,13 @@ export function ScriptForm({ job, script }: { job: Job; script: Script }) {
                                                         item.kind,
                                                         job.jobRequest
                                                     )}
+                                                    error={
+                                                        job.errors?.find(
+                                                            (e) =>
+                                                                e.fieldName ===
+                                                                item.name
+                                                        )?.error
+                                                    }
                                                 />
                                             </li>
                                         )

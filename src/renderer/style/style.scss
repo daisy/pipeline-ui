@@ -300,6 +300,13 @@ select {
     }
 }
 
+.field-errors {
+    background-color: var(--error-bg);
+    color: var(--error-fg);
+    font-weight: bold;
+    padding: 0.5em;
+}
+
 .new-job {
     input[type=text] {
         width: 25rem;

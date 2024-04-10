@@ -16,6 +16,7 @@ export function MultiFileOrFolderInput({
     required = false,
     ordered = false,
     initialValue = [''],
+    error = undefined,
 }: {
     dialogProperties: string[] // electron dialog properties for open or save, depending on which one you're doing (see 'type')
     elemId: string // ID for the control widget
@@ -29,8 +30,29 @@ export function MultiFileOrFolderInput({
     useSystemPath?: boolean // i forget what this is for but it defaults to 'true' and everywhere seems to set it to 'false'
     required?: boolean
     ordered?: boolean
+    error?: string // error message to display
 }) {
     const [values, setValues] = useState<Array<string>>(initialValue || [''])
+
+    useEffect(() => {
+        values.forEach((v, idx) => {
+            const elem = document.getElementById(
+                `${elemId}-${idx}`
+            ) as HTMLInputElement
+            if (elem) {
+                elem.setCustomValidity(error ?? '')
+            }
+        })
+    }, [error])
+
+    const errorProps = error
+        ? {
+              'aria-invalid': true,
+              'aria-errormessage': elemId + '-error',
+          }
+        : {
+              'aria-invalid': false,
+          }
 
     let addValue = (value) => {
         let newValues = [...values]
@@ -51,7 +73,7 @@ export function MultiFileOrFolderInput({
         onChange(newValues)
     }
     return (
-        <>
+        <div key={elemId} {...errorProps}>
             {values.map((v, idx) => (
                 <div className="multi-file-or-folder" key={idx}>
                     <div className="controls-row">
@@ -68,7 +90,6 @@ export function MultiFileOrFolderInput({
                             buttonLabel={buttonLabel}
                             required={required}
                             initialValue={values[idx]}
-                            makeSlotForErrors={false}
                             labelledBy={elemId + '-label'}
                         />
                         {values.length > 1 ? (
@@ -98,9 +119,19 @@ export function MultiFileOrFolderInput({
                             ''
                         )}
                     </div>
-                    <span className="field-errors" aria-live="polite"></span>
                 </div>
             ))}
-        </>
+            {error ? (
+                <p
+                    id={elemId + '-error'}
+                    className="field-errors"
+                    aria-live="polite"
+                >
+                    {error}
+                </p>
+            ) : (
+                ''
+            )}
+        </div>
     )
 }

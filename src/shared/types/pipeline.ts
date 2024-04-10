@@ -249,6 +249,7 @@ export type ScriptItemBase = {
     type?: string
     kind?: string
     ordered?: boolean
+    pattern?: string // for custom pattern validation
 }
 export type ScriptInput = ScriptItemBase & {
     type: 'anyFileURI'

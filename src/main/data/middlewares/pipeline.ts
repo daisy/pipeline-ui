@@ -44,6 +44,7 @@ import {
     EngineProperty,
     PipelineState,
     TtsEngineState,
+    ScriptOption,
 } from 'shared/types'
 
 import { info, error } from 'electron-log'
@@ -708,38 +709,59 @@ export function pipelineMiddleware({ getState, dispatch }) {
                 } else {
                     pipelineAPI
                         .fetchStylesheetParameters(job)(webservice)
-                        .then((parameters) => {
-                            console.log('received parameters', parameters)
-                            // update job options with new parameters
-                            const options = [...job.jobRequest.options]
-                            for (let item of parameters) {
-                                const existingOption = options.find(
-                                    (o) => o.name === item.name
-                                )
-                                if (existingOption !== undefined) {
-                                    existingOption.value = item.default
+                        .then(
+                            (parameters: ScriptOption[] | JobRequestError) => {
+                                // check if parameters is of type JobRequestError
+                                if ('type' in parameters) {
+                                    dispatch(
+                                        updateJob({
+                                            ...job,
+                                            jobData: {
+                                                ...job.jobData,
+                                                status: JobStatus.ERROR,
+                                            },
+                                            jobRequestError: parameters,
+                                            errors: [
+                                                {
+                                                    fieldName: 'stylesheet',
+                                                    error: parameters.description,
+                                                },
+                                            ],
+                                        })
+                                    )
                                 } else {
-                                    // For now, only consider non-uri parameters
-                                    options.push({
-                                        name: item.name,
-                                        value: item.default,
-                                        isFile: false,
-                                    })
+                                    // update job options with new parameters
+                                    const options = [...job.jobRequest.options]
+                                    for (let item of parameters) {
+                                        const existingOption = options.find(
+                                            (o) => o.name === item.name
+                                        )
+                                        if (existingOption !== undefined) {
+                                            existingOption.value = item.default
+                                        } else {
+                                            // For now, only consider non-uri parameters
+                                            options.push({
+                                                name: item.name,
+                                                value: item.default,
+                                                isFile: false,
+                                            })
+                                        }
+                                    }
+                                    // Also send back the parameters to the UI
+                                    // for composition of the script options
+                                    dispatch(
+                                        updateJob({
+                                            ...job,
+                                            jobRequest: {
+                                                ...job.jobRequest,
+                                                options: [...options],
+                                            },
+                                            stylesheetParameters: parameters,
+                                        })
+                                    )
                                 }
                             }
-                            // Also send back the parameters to the UI
-                            // for composition of the script options
-                            dispatch(
-                                updateJob({
-                                    ...job,
-                                    jobRequest: {
-                                        ...job.jobRequest,
-                                        options: [...options],
-                                    },
-                                    stylesheetParameters: parameters,
-                                })
-                            )
-                        })
+                        )
                         .catch((e) => {
                             error('error fetching stylesheet parameters', e)
                             dispatch(
@@ -749,8 +771,15 @@ export function pipelineMiddleware({ getState, dispatch }) {
                                         ...job.jobData,
                                         status: JobStatus.ERROR,
                                     },
+                                    jobRequestError: {
+                                        type: 'JobRequestError',
+                                        description:
+                                            String(e) + ':' + e.parsedText,
+                                        trace: (e as Error).stack,
+                                    },
                                     errors: [
                                         {
+                                            fieldName: 'stylesheet',
                                             error:
                                                 e instanceof ParserException
                                                     ? e.parsedText

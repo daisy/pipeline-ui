@@ -100,6 +100,17 @@ export function TtsMoreOptionsConfigPane({
         setSpeechRateDisplay('100%')
     }
 
+    let enginesWithSpeechRateSupport = []
+    for (const engine in pipeline.ttsEnginesFeatures) {
+        if (
+            pipeline.ttsEnginesFeatures[engine].find((f) =>
+                ['speech-rate'].includes(f)
+            )
+        ) {
+            enginesWithSpeechRateSupport.push(engine)
+        }
+    }
+
     return (
         <>
             <div>
@@ -142,8 +153,24 @@ export function TtsMoreOptionsConfigPane({
                     </button>
                 </div>
                 <p className="note">
-                    Setting the speech rate is currently supported on XYZ
-                    voices/engines.
+                    {enginesWithSpeechRateSupport.length > 0 ? (
+                        <>
+                            Setting the speech rate is currently supported on
+                            {' ' +
+                                enginesWithSpeechRateSupport
+                                    .slice(0, -1)
+                                    .join(', ') +
+                                ' and ' +
+                                enginesWithSpeechRateSupport.slice(-1) +
+                                ' '}
+                            engines on your system.
+                        </>
+                    ) : (
+                        <>
+                            Note that no speech engine supporting this setting
+                            is currently found on your system.
+                        </>
+                    )}
                 </p>
             </div>
             <div>

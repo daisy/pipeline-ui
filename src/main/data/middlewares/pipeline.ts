@@ -691,79 +691,11 @@ export function pipelineMiddleware({ getState, dispatch }) {
                 break
             case requestStylesheetParameters.type:
                 const job = action.payload as Job
-                const stylesheet = job.jobRequest.options.filter(
-                    (option) => option.name === 'stylesheet'
-                )[0]
-                if (
-                    !stylesheet ||
-                    !stylesheet.value ||
-                    stylesheet.value == ''
-                ) {
-                    // No parameters provided, load defaults
-                    dispatch(
-                        updateJob({
-                            ...job,
-                            stylesheetParameters: [],
-                        })
-                    )
-                } else {
-                    pipelineAPI
-                        .fetchStylesheetParameters(job)(webservice)
-                        .then(
-                            (parameters: ScriptOption[] | JobRequestError) => {
-                                // check if parameters is of type JobRequestError
-                                if ('type' in parameters) {
-                                    dispatch(
-                                        updateJob({
-                                            ...job,
-                                            jobData: {
-                                                ...job.jobData,
-                                                status: JobStatus.ERROR,
-                                            },
-                                            jobRequestError: parameters,
-                                            errors: [
-                                                {
-                                                    fieldName: 'stylesheet',
-                                                    error: parameters.description,
-                                                },
-                                            ],
-                                        })
-                                    )
-                                } else {
-                                    // update job options with new parameters
-                                    const options = [...job.jobRequest.options]
-                                    for (let item of parameters) {
-                                        const existingOption = options.find(
-                                            (o) => o.name === item.name
-                                        )
-                                        if (existingOption !== undefined) {
-                                            existingOption.value = item.default
-                                        } else {
-                                            // For now, only consider non-uri parameters
-                                            options.push({
-                                                name: item.name,
-                                                value: item.default,
-                                                isFile: false,
-                                            })
-                                        }
-                                    }
-                                    // Also send back the parameters to the UI
-                                    // for composition of the script options
-                                    dispatch(
-                                        updateJob({
-                                            ...job,
-                                            jobRequest: {
-                                                ...job.jobRequest,
-                                                options: [...options],
-                                            },
-                                            stylesheetParameters: parameters,
-                                        })
-                                    )
-                                }
-                            }
-                        )
-                        .catch((e) => {
-                            error('error fetching stylesheet parameters', e)
+                pipelineAPI
+                    .fetchStylesheetParameters(job)(webservice)
+                    .then((parameters: ScriptOption[] | JobRequestError) => {
+                        // check if parameters is of type JobRequestError
+                        if ('type' in parameters) {
                             dispatch(
                                 updateJob({
                                     ...job,
@@ -771,25 +703,73 @@ export function pipelineMiddleware({ getState, dispatch }) {
                                         ...job.jobData,
                                         status: JobStatus.ERROR,
                                     },
-                                    jobRequestError: {
-                                        type: 'JobRequestError',
-                                        description:
-                                            String(e) + ':' + e.parsedText,
-                                        trace: (e as Error).stack,
-                                    },
+                                    jobRequestError: parameters,
                                     errors: [
                                         {
                                             fieldName: 'stylesheet',
-                                            error:
-                                                e instanceof ParserException
-                                                    ? e.parsedText
-                                                    : String(e),
+                                            error: parameters.description,
                                         },
                                     ],
                                 })
                             )
-                        })
-                }
+                        } else {
+                            // update job options with new parameters
+                            const options = [...job.jobRequest.options]
+                            for (let item of parameters) {
+                                const existingOption = options.find(
+                                    (o) => o.name === item.name
+                                )
+                                if (existingOption !== undefined) {
+                                    existingOption.value = item.default
+                                } else {
+                                    // For now, only consider non-uri parameters
+                                    options.push({
+                                        name: item.name,
+                                        value: item.default,
+                                        isFile: false,
+                                    })
+                                }
+                            }
+                            // Also send back the parameters to the UI
+                            // for composition of the script options
+                            dispatch(
+                                updateJob({
+                                    ...job,
+                                    jobRequest: {
+                                        ...job.jobRequest,
+                                        options: [...options],
+                                    },
+                                    stylesheetParameters: parameters,
+                                })
+                            )
+                        }
+                    })
+                    .catch((e) => {
+                        error('error fetching stylesheet parameters', e)
+                        dispatch(
+                            updateJob({
+                                ...job,
+                                jobData: {
+                                    ...job.jobData,
+                                    status: JobStatus.ERROR,
+                                },
+                                jobRequestError: {
+                                    type: 'JobRequestError',
+                                    description: String(e) + ':' + e.parsedText,
+                                    trace: (e as Error).stack,
+                                },
+                                errors: [
+                                    {
+                                        fieldName: 'stylesheet',
+                                        error:
+                                            e instanceof ParserException
+                                                ? e.parsedText
+                                                : String(e),
+                                    },
+                                ],
+                            })
+                        )
+                    })
                 break
             default:
                 if (action.type.startsWith('settings/')) {

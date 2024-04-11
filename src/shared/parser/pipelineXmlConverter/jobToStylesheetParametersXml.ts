@@ -15,6 +15,7 @@ function jobToStylesheetParametersXml(j: Job): string {
     const stylesheet = j.jobRequest.options.filter(
         (option) => option.name === 'stylesheet'
     )[0]
+    console.log('stylesheet', stylesheet)
     const width = j.jobRequest.options.filter(
         (option) => option.name === 'page-width'
     )[0]
@@ -27,7 +28,11 @@ function jobToStylesheetParametersXml(j: Job): string {
         height.value
     })"/>
     <userStylesheets>${
-        stylesheet && stylesheet.value && `<file href="${stylesheet.value}"/>`
+        stylesheet && stylesheet.value
+            ? Array.isArray(stylesheet.value)
+                ? stylesheet.value.map((v) => `<file href="${v}"/>`).join('')
+                : `<file href="${stylesheet.value}"/>`
+            : ''
     }</userStylesheets>
     <sourceDocument>${j.jobRequest.inputs
         .filter((input) => input.isFile && !input.name.endsWith('.scss'))

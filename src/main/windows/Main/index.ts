@@ -5,12 +5,11 @@ import { ENVIRONMENT, IPC } from 'shared/constants'
 import { createWindow } from 'main/factories'
 import { APP_CONFIG } from '~/app.config'
 import { store } from 'main/data/store'
-import { ClosingMainWindowActionForApp, JobState } from 'shared/types'
+import { ClosingMainWindowAction } from 'shared/types'
 import {
     save,
-    selectClosingActionForApp,
-    setClosingMainWindowActionForApp,
-    selectClosingActionForJobs,
+    selectClosingAction,
+    setClosingMainWindowAction,
 } from 'shared/data/slices/settings'
 import {
     addJob,
@@ -150,71 +149,83 @@ export async function MainWindow() {
 
         MainWindowInstance.on('close', (event) => {
             event.preventDefault()
-            const closingActionForJobs = selectClosingActionForJobs(
-                store.getState()
-            )
-            // Check for confirmation on closing the app or not
-            const closingActionForApp = selectClosingActionForApp(
-                store.getState()
-            )
-            if (!closingActionForApp || closingActionForApp == 'ask') {
-                dialog
-                    .showMessageBox(MainWindowInstance, {
-                        message: `The application can keep running in the tray to keep the engine running and reload the application faster.
+            const closingAction: keyof typeof ClosingMainWindowAction =
+                selectClosingAction(store.getState()) || 'ask'
+            switch (closingAction) {
+                case 'ask':
+                    dialog
+                        .showMessageBox(MainWindowInstance, {
+                            message: `The application can keep running in the tray to keep the engine running and reload the application faster.
 
-Do you want to stop the engine and quit the application on closing this window ?`,
-                        checkboxLabel:
-                            'Remember my choice (can be changed in settings)',
-                        checkboxChecked: false,
-                        title: 'Keep the application in tray ?',
-                        type: 'info',
-                        buttons: [
-                            'Keep the application in tray',
-                            'Stop the application',
-                            'Cancel',
-                        ],
-                    })
-                    .then((result) => {
-                        if (result.response < 2) {
-                            let action: keyof typeof ClosingMainWindowActionForApp =
-                                result.response == 0 ? 'keep' : 'close'
-                            if (result.checkboxChecked) {
-                                store.dispatch(
-                                    setClosingMainWindowActionForApp(action)
+    Do you want to stop the engine and quit the application on closing this window ?`,
+                            checkboxLabel:
+                                'Remember my choice (can be changed in settings)',
+                            checkboxChecked: false,
+                            title: 'Keep the application in tray ?',
+                            type: 'info',
+                            buttons: [
+                                'Keep the application running in tray with all jobs opened',
+                                'Close all jobs but keep the application running in tray',
+                                'Quit the application',
+                                'Cancel',
+                            ],
+                        })
+                        .then((result) => {
+                            if (result.response < 3) {
+                                let action: keyof typeof ClosingMainWindowAction =
+                                    result.response == 0
+                                        ? 'keepall'
+                                        : result.response == 1
+                                        ? 'keepengine'
+                                        : result.response == 2
+                                        ? 'close'
+                                        : 'ask'
+
+                                if (result.checkboxChecked) {
+                                    store.dispatch(
+                                        setClosingMainWindowAction(action)
+                                    )
+                                    store.dispatch(save())
+                                    // Save result
+                                }
+                                switch (action) {
+                                    case 'close':
+                                        closeApplication()
+                                        break
+                                    case 'keepengine':
+                                        if (removeNonRunningJobs())
+                                            MainWindowInstance.destroy()
+                                        break
+                                    case 'keepall':
+                                    default:
+                                        MainWindowInstance.destroy()
+                                        break
+                                }
+                            } else if (
+                                selectJobs(store.getState()).length == 0
+                            ) {
+                                const _emptyJob = newJob(
+                                    selectPipeline(store.getState())
                                 )
-                                store.dispatch(save())
-                                // Save result
+                                store.dispatch(addJob(_emptyJob))
+                                store.dispatch(selectJob(_emptyJob))
                             }
-                            if (action == 'close') {
-                                closeApplication()
-                            } else {
-                                MainWindowInstance.destroy()
-                            }
-                        } else if (
-                            (!closingActionForJobs ||
-                                closingActionForJobs == 'close') &&
-                            selectJobs(store.getState()).length == 0
-                        ) {
-                            const _emptyJob = newJob(
-                                selectPipeline(store.getState())
-                            )
-                            store.dispatch(addJob(_emptyJob))
-                            store.dispatch(selectJob(_emptyJob))
-                        }
-                    })
-            } else if (closingActionForApp == 'close') {
-                closeApplication()
-            } else if (
-                !closingActionForJobs ||
-                closingActionForJobs == 'close'
-            ) {
-                if (removeNonRunningJobs()) MainWindowInstance.destroy()
-            } else {
-                MainWindowInstance.destroy()
+                        })
+                    break
+                case 'close':
+                    closeApplication()
+                    break
+                case 'keepengine':
+                    if (removeNonRunningJobs()) MainWindowInstance.destroy()
+                    break
+                case 'keepall':
+                default:
+                    MainWindowInstance.destroy()
+                    break
             }
         })
 
-        if (selectClosingActionForApp(store.getState()) == undefined) {
+        if (selectClosingAction(store.getState()) == undefined) {
             dialog
                 .showMessageBox(MainWindowInstance, {
                     message: `This application runs in the tray to keep the DAISY pipeline engine running in the background, and reload the application faster.
@@ -228,7 +239,7 @@ If you want to change this behaviour and also close the engine when closing the 
                 })
                 .then((result) => {
                     if (result.checkboxChecked) {
-                        store.dispatch(setClosingMainWindowActionForApp('ask'))
+                        store.dispatch(setClosingMainWindowAction('ask'))
                         store.dispatch(save())
                         // Save result
                     }

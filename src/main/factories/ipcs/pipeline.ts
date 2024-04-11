@@ -4,7 +4,6 @@ import {
     Webservice,
     PipelineStatus,
     PipelineState,
-    ApplicationSettings,
     PipelineInstanceProperties,
 } from 'shared/types'
 import { ENVIRONMENT, IPC } from 'shared/constants'
@@ -12,13 +11,9 @@ import { spawn, ChildProcessWithoutNullStreams } from 'child_process'
 import { existsSync, mkdirSync, readFileSync, rmSync } from 'fs'
 
 import { getAvailablePort, Pipeline2Error, walk } from './utils'
-
 import { resolveUnpacked } from 'shared/utils'
-
 import { info, error } from 'electron-log'
-
 import { pathToFileURL } from 'url'
-
 import { store } from 'main/data/store'
 import {
     selectPipeline,
@@ -52,13 +47,13 @@ export class PipelineInstance {
      */
     constructor(props?: PipelineInstanceProperties) {
         this.props = {
-            localPipelineHome:
+            pipelineHome:
                 // Add `(props && props.pipelineType == 'system' && props.localPipelineHome) ||` if system wide pipeline control requested
-                // (!props || props.pipelineType == 'embedded') &&
+                (!props || props.pipelineType == 'embedded') &&
                 resolveUnpacked('resources', 'daisy-pipeline'),
             jrePath:
                 // Add `(props && props.pipelineType == 'system' && props.jrePath) ||` if system wide pipeline control requested
-                // (!props || props.pipelineType == 'embedded') &&
+                (!props || props.pipelineType == 'embedded') &&
                 resolveUnpacked('resources', 'daisy-pipeline', 'jre'),
             // Note : [49152 ; 65535] is the range of dynamic port,  0 is reserved for error case
             webservice: (props &&
@@ -130,7 +125,7 @@ export class PipelineInstance {
         }
 
         if (
-            this.props.localPipelineHome === null ||
+            this.props.pipelineHome === null ||
             !existsSync(this.props.jrePath)
         ) {
             throw new Pipeline2Error(
@@ -253,8 +248,8 @@ Then close the program using the port and restart this application.`,
                 `Launching pipeline on ${this.props.webservice.host}:${this.props.webservice.port}`
             )
             let ClassFolders = [
-                resolve(this.props.localPipelineHome, 'system'),
-                resolve(this.props.localPipelineHome, 'modules'),
+                resolve(this.props.pipelineHome, 'system'),
+                resolve(this.props.pipelineHome, 'modules'),
             ]
             let jarFiles = ClassFolders.reduce(
                 (acc: Array<string>, path: string) => {
@@ -271,7 +266,7 @@ Then close the program using the port and restart this application.`,
             let relativeJarFiles = jarFiles.reduce(
                 (acc: Array<string>, path: string) => {
                     let relativeDirPath = relative(
-                        this.props.localPipelineHome,
+                        this.props.pipelineHome,
                         path
                     )
                     if (!acc.includes(relativeDirPath)) {
@@ -314,7 +309,7 @@ Then close the program using the port and restart this application.`,
             let SystemProps = [
                 '-Dorg.daisy.pipeline.properties="' +
                     resolve(
-                        this.props.localPipelineHome,
+                        this.props.pipelineHome,
                         'etc',
                         'pipeline.properties'
                     ) +
@@ -322,11 +317,7 @@ Then close the program using the port and restart this application.`,
                 // Logback configuration file
                 '-Dlogback.configurationFile=' +
                     pathToFileURL(
-                        resolve(
-                            this.props.localPipelineHome,
-                            'etc',
-                            'logback.xml'
-                        )
+                        resolve(this.props.pipelineHome, 'etc', 'logback.xml')
                     ).href +
                     '',
                 // XMLCalabash base configuration file
@@ -340,17 +331,17 @@ Then close the program using the port and restart this application.`,
                 // Updater configuration
                 '-Dorg.daisy.pipeline.updater.bin="' +
                     resolve(
-                        this.props.localPipelineHome,
+                        this.props.pipelineHome,
                         'updater',
                         'pipeline-updater'
                     ).replaceAll('\\', '/') +
                     '"',
                 '-Dorg.daisy.pipeline.updater.deployPath="' +
-                    this.props.localPipelineHome.replaceAll('\\', '/') +
+                    this.props.pipelineHome.replaceAll('\\', '/') +
                     '/"',
                 '-Dorg.daisy.pipeline.updater.releaseDescriptor="' +
                     resolve(
-                        this.props.localPipelineHome,
+                        this.props.pipelineHome,
                         'etc',
                         'releaseDescriptor.xml'
                     ).replaceAll('\\', '/') +
@@ -367,7 +358,7 @@ Then close the program using the port and restart this application.`,
                 '-Dorg.daisy.pipeline.ws.authentication=false',
                 '-Dorg.daisy.pipeline.ws.host=' + this.props.webservice.host,
                 '-Dorg.daisy.pipeline.ws.cors=true',
-                '-Dorg.daisy.pipeline.home=' + this.props.localPipelineHome,
+                '-Dorg.daisy.pipeline.home=' + this.props.pipelineHome,
                 '-Dorg.daisy.pipeline.tts.host.protection=false', // so we can send TTS engine properties
             ]
             if (this.props.webservice.path) {
@@ -416,7 +407,7 @@ Then close the program using the port and restart this application.`,
 ${command} ${args.join(' ')}`
             )
             this.instance = spawn(command, args, {
-                cwd: this.props.localPipelineHome,
+                cwd: this.props.pipelineHome,
             })
             // NP Replace stdout analysis by webservice monitoring
             this.instance.stdout.on('data', (data) => {

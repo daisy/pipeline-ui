@@ -6,6 +6,7 @@ import { selectPipeline } from 'shared/data/slices/pipeline'
 import { selectSettings } from 'shared/data/slices/settings'
 import { WindowProps } from 'shared/types'
 import { APP_CONFIG } from '~/app.config'
+
 import { PipelineInstance } from '../ipcs/pipeline'
 
 /**

@@ -5,7 +5,7 @@ import { ENVIRONMENT, IPC } from 'shared/constants'
 import { createWindow } from 'main/factories'
 import { APP_CONFIG } from '~/app.config'
 import { store } from 'main/data/store'
-import { ClosingMainWindowActionForApp, JobState } from 'shared/types'
+import { ClosingMainWindowActionForApp } from 'shared/types'
 import {
     save,
     selectClosingActionForApp,
@@ -18,7 +18,7 @@ import {
     removeJobs,
     selectJobs,
     selectJob,
-    selectNonRunningJobs,
+    selectProtectedJobs,
     selectPipeline,
     selectRunningJobs,
     stop,
@@ -29,7 +29,7 @@ import { info } from 'electron-log'
 
 function removeNonRunningJobs() {
     // Remove non-running jobs ()
-    const jobsToRemove = selectNonRunningJobs(store.getState())
+    const jobsToRemove = selectProtectedJobs(store.getState())
     if (jobsToRemove.length > 0) {
         const result = dialog.showMessageBoxSync(MainWindowInstance, {
             title: 'Remove non-empty jobs ?',

@@ -129,6 +129,12 @@ export class PipelineAPI {
             }
         )
     }
+    fetchJobLog(j: Job) {
+        return this.createPipelineFetchFunction(
+            () => j.jobData.log,
+            (text) => text
+        )
+    }
     launchJob(j: Job) {
         return this.createPipelineFetchFunction(
             (ws) => `${baseurl(ws)}/jobs`,
@@ -143,6 +149,13 @@ export class PipelineAPI {
             }
         )
     }
+    /**
+     * Delete a job in the pipeline
+     * @param j the job to delete
+     * @returns the http response of the webserver. Expected codes are <br/>
+     * - 204 on job removal
+     * - 404 if the job does not exists (i.e. if it has already been removed)
+     */
     deleteJob(j: Job) {
         return this.createPipelineRequestFunction(() => j.jobData.href, {
             method: 'DELETE',

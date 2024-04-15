@@ -12,6 +12,7 @@ import {
     EngineProperty,
     TtsEngineProperty,
     TtsVoice,
+    migrateSettings,
 } from 'shared/types'
 import { RootState } from 'shared/types/store'
 import { resolveUnpacked } from 'shared/utils'
@@ -23,38 +24,29 @@ import { propertyToXml } from 'shared/parser/pipelineXmlConverter/propertyToXml'
 const settingsFile = resolve(app.getPath('userData'), 'settings.json')
 
 export function readSettings() {
-    let settings = {
-        // Default folder to download the results on the user disk
+    let settings: ApplicationSettings = {
+        settingsVersion: '1.3.0',
         downloadFolder: pathToFileURL(
             resolve(app.getPath('home'), 'Documents', 'DAISY Pipeline results')
         ).href,
-        // Local pipeline server
-        // - Run or not a local pipeline server
-        runLocalPipeline: true,
-        // - Local pipeline settings
-        localPipelineProps: {
-            localPipelineHome: resolveUnpacked('resources', 'daisy-pipeline'),
-            jrePath: resolveUnpacked('resources', 'daisy-pipeline', 'jre'),
-            // Note : [49152 ; 65535] is the range of dynamic port,  0 is reserved for error case
+        pipelineInstanceProps: {
+            pipelineType: 'embedded',
             webservice: {
-                // Note : localhost resolve as ipv6 ':::' in nodejs, but we need ipv4 for the pipeline
+                // Notes :
+                // - [49152 ; 65535] is the range of dynamic port,  0 is reserved for error case
+                // - localhost resolve as ipv6 ':::' in nodejs, but we need ipv4 for the pipeline
                 host: '127.0.0.1',
                 port: 0,
                 path: '/ws',
             },
+            pipelineHome: resolveUnpacked('resources', 'daisy-pipeline'),
+            jrePath: resolveUnpacked('resources', 'daisy-pipeline', 'jre'),
             appDataFolder: app.getPath('userData'),
             logsFolder: resolve(app.getPath('userData'), 'pipeline-logs'),
         },
-        // Remote pipeline settings
-        // - Use a remote pipeline instead of the local one
-        useRemotePipeline: false,
-        // - Remote pipeline connection settings to be defined
-        /*remotePipelineWebservice: {
-            
-        }*/
         colorScheme: 'system',
-        appStateOnClosingMainWindow: undefined,
-        jobsStateOnClosingMainWindow: 'close',
+        onClosingMainWindow: undefined, // Undeterminate to display the app-opening dialog
+        editJobOnNewTab: true,
         ttsConfig: {
             preferredVoices: [],
             xmlFilepath: pathToFileURL(
@@ -63,21 +55,21 @@ export function readSettings() {
             ttsEngineProperties: [],
         },
         autoCheckUpdate: true,
-    } as ApplicationSettings
+    }
     try {
         if (existsSync(settingsFile)) {
-            const loaded: ApplicationSettings = JSON.parse(
-                readFileSync(settingsFile, 'utf8')
-            ) as ApplicationSettings
+            const loaded: ApplicationSettings = migrateSettings(
+                JSON.parse(readFileSync(settingsFile, 'utf8'))
+            )
             settings = {
                 ...settings,
                 ...loaded,
-                localPipelineProps: {
-                    ...settings.localPipelineProps,
-                    ...loaded?.localPipelineProps,
+                pipelineInstanceProps: {
+                    ...settings.pipelineInstanceProps,
+                    ...loaded?.pipelineInstanceProps,
                     webservice: {
-                        ...settings.localPipelineProps.webservice,
-                        ...loaded?.localPipelineProps?.webservice,
+                        ...settings.pipelineInstanceProps.webservice,
+                        ...loaded?.pipelineInstanceProps?.webservice,
                     },
                 },
                 ttsConfig: {
@@ -115,7 +107,7 @@ export function readSettings() {
     }
 
     // Remove pipeline props loading for dev
-    if (ENVIRONMENT.IS_DEV) settings.localPipelineProps = undefined
+    if (ENVIRONMENT.IS_DEV) settings.pipelineInstanceProps = undefined
 
     return settings
 }

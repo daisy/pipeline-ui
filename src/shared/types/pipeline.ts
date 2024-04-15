@@ -57,18 +57,26 @@ export type PipelineState = {
     // errors: Array<string>
 }
 
+export enum PipelineType {
+    embedded = 'Use embedded DAISY Pipeline 2',
+    // For later use : system wide already installed pipeline 2, and remotely installed pipeline
+    // system = 'Use and manage an other installed DAISY Pipeline 2 (with webservice module)',
+    // remote = 'Use a remote DAISY Pipeline 2',
+}
+
 /**
  * Properties for initializing ipc with the daisy pipeline 2
- * TODO: rename this to explicit it is properties use on the pipeline js runner
- * side (Note the pipeline engine itself)
+ * - also include the type of instance managed by IPC (embedded, system, or remote)
+ *
  */
 export type PipelineInstanceProperties = {
+    pipelineType?: keyof typeof PipelineType
     /**
      * optional path of the local installation of the pipeline,
      *
      * defaults to the application resources/daisy-pipeline
      */
-    localPipelineHome?: string
+    pipelineHome?: string
 
     appDataFolder?: string
 

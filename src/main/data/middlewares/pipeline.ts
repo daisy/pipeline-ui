@@ -149,6 +149,7 @@ async function downloadJobLog(j: Job, targetFolder: string) {
                     log: jobTargetUrl,
                     results: {
                         ...j.jobData.results,
+                        namedResults: [...j.jobData.results.namedResults],
                     },
                 },
             } as Job
@@ -185,7 +186,7 @@ async function downloadJobResults(j: Job, targetFolder: string) {
                 },
             } as Job
         })
-        .then((j: Job) => downloadJobLog(j, targetFolder))
+        .then(async (j: Job) => await downloadJobLog(j, targetFolder))
 }
 
 /**

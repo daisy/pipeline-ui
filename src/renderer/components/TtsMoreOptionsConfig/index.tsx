@@ -40,7 +40,9 @@ export function TtsMoreOptionsConfigPane({
     }>({})
 
     const [speechRateDisplay, setSpeechRateDisplay] = useState(
-        engineProperties['org.daisy.pipeline.tts.speech-rate'] ?? '100%'
+        engineProperties.find(
+            (prop) => prop.key == 'org.daisy.pipeline.tts.speech-rate'
+        )?.value ?? '100%'
     )
 
     let onLexiconChange = (filename) => {

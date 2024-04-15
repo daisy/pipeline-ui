@@ -597,6 +597,7 @@ export function pipelineMiddleware({ getState, dispatch }) {
                                                     status: 'disconnected',
                                                     message: 'Disconnected',
                                                 }
+                                                break
                                             case 'connecting':
                                             default:
                                                 // error case when trying to connect

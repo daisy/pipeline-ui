@@ -17,7 +17,7 @@ import {
     removeJobs,
     selectJobs,
     selectJob,
-    selectNonRunningJobs,
+    selectProtectedJobs,
     selectPipeline,
     selectRunningJobs,
     stop,
@@ -28,7 +28,7 @@ import { info } from 'electron-log'
 
 function removeNonRunningJobs() {
     // Remove non-running jobs ()
-    const jobsToRemove = selectNonRunningJobs(store.getState())
+    const jobsToRemove = selectProtectedJobs(store.getState())
     if (jobsToRemove.length > 0) {
         const result = dialog.showMessageBoxSync(MainWindowInstance, {
             title: 'Remove non-empty jobs ?',

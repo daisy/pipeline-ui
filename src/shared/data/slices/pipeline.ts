@@ -327,7 +327,6 @@ export const pipeline = createSlice({
             param: PayloadAction<{ [engineKey: string]: Array<string> }>
         ) => {
             state.ttsEnginesFeatures = {
-                ...state.ttsEnginesFeatures,
                 ...param.payload,
             }
         },
@@ -380,16 +379,17 @@ export const selectors = {
         state.pipeline.jobs.filter(
             (j) => !(j.state == JobState.NEW && j.jobRequest && !j.invisible)
         ),
-    selectNonRunningJobs: (state: RootState) =>
+    // Protected jobs are jobs to be confirmed before removal :
+    // those are jobs that are visible and are either
+    // - prefiled with a jobRequest
+    // - have been assigned with some non-empty data (JobRequest or jobData)
+    selectProtectedJobs: (state: RootState) =>
         state.pipeline.jobs.filter(
             (j) =>
-                !(
-                    !j.invisible &&
-                    j.jobData &&
-                    j.jobData.status &&
-                    (j.jobData.status == JobStatus.RUNNING ||
-                        j.jobData.status == JobStatus.IDLE)
-                )
+                j.invisible != true &&
+                ((j.jobRequest != null &&
+                    j.jobRequest != ({ nicename: '' } as JobRequest)) ||
+                    (j.jobData != null && j.jobData != ({} as JobData)))
         ),
     selectRunningJobs: (state: RootState) =>
         state.pipeline.jobs.filter(
@@ -449,7 +449,7 @@ export const {
     selectJobs,
     selectVisibleJobs,
     selectEmptyJobs,
-    selectNonRunningJobs,
+    selectProtectedJobs,
     selectRunningJobs,
     selectIncompleteJobs,
     selectScripts,

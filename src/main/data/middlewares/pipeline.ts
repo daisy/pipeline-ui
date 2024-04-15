@@ -136,8 +136,34 @@ async function downloadNamedResult(r: NamedResult, targetUrl: string) {
         .catch(() => r) // if a problem occured, return the original result
 }
 
+async function downloadJobLog(j: Job, targetFolder: string) {
+    let jobTargetUrl = new URL(`${targetFolder}/job.log`).href
+    return pipelineAPI
+        .fetchJobLog(j)()
+        .then((log) => {
+            saveFile(new TextEncoder().encode(log), jobTargetUrl)
+            return {
+                ...j,
+                jobData: {
+                    ...j.jobData,
+                    log: jobTargetUrl,
+                    results: {
+                        ...j.jobData.results,
+                    },
+                },
+            } as Job
+        })
+        .catch((e) => {
+            // Log is not accessible, revert back to default log url
+            // and continue the chain of promise
+            error('Job log could not be downloaded', e)
+            return j
+        })
+}
+
 async function downloadJobResults(j: Job, targetFolder: string) {
-    // Download and unzip named results archives
+    // Download log, named results, and unzip named results archives
+    let jobTargetUrl = new URL(`${targetFolder}/job.log`).href
     return Promise.all(
         j.jobData.results.namedResults.map((r) =>
             downloadNamedResult(
@@ -145,19 +171,21 @@ async function downloadJobResults(j: Job, targetFolder: string) {
                 new URL(`${targetFolder}/${r.nicename ?? r.name}`).href
             )
         )
-    ).then((downloadedNamedResults: NamedResult[]) => {
-        return {
-            ...j,
-            jobData: {
-                ...j.jobData,
-                downloadedFolder: targetFolder,
-                results: {
-                    ...j.jobData.results,
-                    namedResults: [...downloadedNamedResults],
+    )
+        .then((downloadedNamedResults: NamedResult[]) => {
+            return {
+                ...j,
+                jobData: {
+                    ...j.jobData,
+                    downloadedFolder: targetFolder,
+                    results: {
+                        ...j.jobData.results,
+                        namedResults: [...downloadedNamedResults],
+                    },
                 },
-            },
-        } as Job
-    })
+            } as Job
+        })
+        .then((j: Job) => downloadJobLog(j, targetFolder))
 }
 
 /**
@@ -185,33 +213,60 @@ function startMonitor(j: Job, ws: Webservice, getState, dispatch) {
                         ...value,
                         messages: ['removed to keep log cleaner'],
                     })
-                    if (
-                        [
-                            JobStatus.ERROR,
-                            JobStatus.FAIL,
-                            JobStatus.SUCCESS,
-                        ].includes(value.status)
-                    ) {
-                        // Job is finished or in error, stop monitor
+                    const finished = [
+                        JobStatus.ERROR,
+                        JobStatus.FAIL,
+                        JobStatus.SUCCESS,
+                    ].includes(value.status)
+
+                    if (finished) {
                         clearInterval(monitor)
                     }
                     let updatedJob = { ...j }
                     updatedJob.jobData = value
-                    // If job has results, download them
+                    const newJobName = `${
+                        updatedJob.jobData.nicename ??
+                        updatedJob.jobData.script.nicename
+                    }_${timestamp()}`
+                    const downloadFolder = selectDownloadPath(getState())
                     if (updatedJob.jobData && updatedJob.jobData.results) {
-                        const newJobName = `${
-                            updatedJob.jobData.nicename ??
-                            updatedJob.jobData.script.nicename
-                        }_${timestamp()}`
-                        //`${settings.downloadFolder}/${newJobName}/${namedResult.name}`
-                        const downloadFolder = selectDownloadPath(getState())
+                        // If job has results, download them
                         downloadJobResults(
                             updatedJob,
                             `${downloadFolder}/${newJobName}`
                         ).then((downloadedJob) => {
                             dispatch(updateJob(downloadedJob))
+                            const deleteJob =
+                                pipelineAPI.deleteJob(downloadedJob)
+                            deleteJob().then((response) => {
+                                console.log(
+                                    downloadedJob.jobData.jobId,
+                                    'delete response',
+                                    response.status,
+                                    response.statusText
+                                )
+                            })
                         })
-                    } else dispatch(updateJob(updatedJob))
+                    } else if (finished) {
+                        // job is finished wihout results : keep the log
+                        downloadJobLog(
+                            updatedJob,
+                            `${downloadFolder}/${newJobName}`
+                        ).then((jobWithLog) => {
+                            dispatch(updateJob(jobWithLog))
+                            const deleteJob = pipelineAPI.deleteJob(jobWithLog)
+                            deleteJob().then((response) => {
+                                console.log(
+                                    jobWithLog.jobData.jobId,
+                                    'delete response',
+                                    response.status,
+                                    response.statusText
+                                )
+                            })
+                        })
+                    } else {
+                        dispatch(updateJob(updatedJob))
+                    }
                 })
                 .catch((e) => {
                     error('Error fetching data for job', j, e)
@@ -469,6 +524,7 @@ export function pipelineMiddleware({ getState, dispatch }) {
                 }
                 if (action && removedJob.jobData && removedJob.jobData.href) {
                     // Remove server-side job using API
+                    // if it is not already removed
                     const deleteJob = pipelineAPI.deleteJob(removedJob)
                     deleteJob().then((response) => {
                         console.log(

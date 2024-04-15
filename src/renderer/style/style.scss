@@ -265,6 +265,19 @@ select {
                 display: flex;
                 flex-direction: row;
                 gap: var(--pad);
+                width: 80vw;
+                flex-wrap: wrap;
+                
+                &> * {
+                    flex-grow: 1;
+                    flex-basis: calc(( 30rem - 100%) * 999);
+                }
+                  
+                &> :nth-last-child(n+ 5),
+                &> :nth-last-child(n+ 5) ~ * {
+                flex-basis: 100%;
+                }
+                    
 
                 .nicename {
                     font-weight: bold;
@@ -272,7 +285,10 @@ select {
                 .description {
                     font-style: italic;
                     font-size: medium;
-                    
+                    // width: 80%;
+                    &>* {
+                        white-space: normal;
+                    }
                 }
             }
         }

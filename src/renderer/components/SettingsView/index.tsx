@@ -133,7 +133,7 @@ export function SettingsView() {
         App.store.dispatch(save())
         //setSaved(true)
     }
-    
+
     return (
         <div className="settings">
             <nav className="settings-menu">
@@ -417,6 +417,7 @@ export function SettingsView() {
                                 ttsEngineProperties={
                                     newSettings.ttsConfig.ttsEngineProperties
                                 }
+                                ttsEnginesFeatures={pipeline.ttsEnginesFeatures}
                                 onChangeTtsEngineProperties={
                                     onTtsEnginePropertiesChange
                                 }

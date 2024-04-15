@@ -26,6 +26,7 @@ const propertyKeys = [
 export function TtsMoreOptionsConfigPane({
     ttsEngineProperties,
     onChangeTtsEngineProperties,
+    ttsEnginesFeatures,
 }) {
     const { pipeline } = useWindowStore()
     console.log('TTS engine props, more options screen ', ttsEngineProperties)
@@ -101,11 +102,9 @@ export function TtsMoreOptionsConfigPane({
     }
 
     let enginesWithSpeechRateSupport = []
-    for (const engine in pipeline.ttsEnginesFeatures) {
+    for (const engine in ttsEnginesFeatures) {
         if (
-            pipeline.ttsEnginesFeatures[engine].find((f) =>
-                ['speech-rate'].includes(f)
-            )
+            ttsEnginesFeatures[engine].find((f) => ['speech-rate'].includes(f))
         ) {
             enginesWithSpeechRateSupport.push(engine)
         }

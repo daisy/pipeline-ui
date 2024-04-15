@@ -327,7 +327,6 @@ export const pipeline = createSlice({
             param: PayloadAction<{ [engineKey: string]: Array<string> }>
         ) => {
             state.ttsEnginesFeatures = {
-                ...state.ttsEnginesFeatures,
                 ...param.payload,
             }
         },

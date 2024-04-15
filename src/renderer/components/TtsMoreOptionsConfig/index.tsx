@@ -157,13 +157,15 @@ export function TtsMoreOptionsConfigPane({
                         <>
                             Setting the speech rate is currently supported on
                             {' ' +
-                                enginesWithSpeechRateSupport
-                                    .slice(0, -1)
-                                    .join(', ') +
-                                ' and ' +
-                                enginesWithSpeechRateSupport.slice(-1) +
+                                (enginesWithSpeechRateSupport.length == 1
+                                    ? enginesWithSpeechRateSupport[0]
+                                    : enginesWithSpeechRateSupport
+                                          .slice(0, -1)
+                                          .join(', ') +
+                                      ' and ' +
+                                      enginesWithSpeechRateSupport.slice(-1)) +
                                 ' '}
-                            engines on your system.
+                            voices.
                         </>
                     ) : (
                         <>

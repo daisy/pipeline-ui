@@ -148,8 +148,12 @@ async function downloadJobLog(j: Job, targetFolder: string) {
                     ...j.jobData,
                     log: jobTargetUrl,
                     results: {
-                        ...j.jobData.results,
-                        namedResults: [...j.jobData.results.namedResults],
+                        ...(j.jobData.results ? j.jobData.results : {}),
+                        namedResults: [
+                            ...(j.jobData.results?.namedResults
+                                ? j.jobData.results.namedResults
+                                : []),
+                        ],
                     },
                 },
             } as Job
@@ -164,7 +168,6 @@ async function downloadJobLog(j: Job, targetFolder: string) {
 
 async function downloadJobResults(j: Job, targetFolder: string) {
     // Download log, named results, and unzip named results archives
-    let jobTargetUrl = new URL(`${targetFolder}/job.log`).href
     return Promise.all(
         j.jobData.results.namedResults.map((r) =>
             downloadNamedResult(
@@ -230,7 +233,7 @@ function startMonitor(j: Job, ws: Webservice, getState, dispatch) {
                         updatedJob.jobData.script.nicename
                     }_${timestamp()}`
                     const downloadFolder = selectDownloadPath(getState())
-                    if (updatedJob.jobData && updatedJob.jobData.results) {
+                    if (updatedJob.jobData?.results?.namedResults) {
                         // If job has results, download them
                         downloadJobResults(
                             updatedJob,
@@ -249,6 +252,7 @@ function startMonitor(j: Job, ws: Webservice, getState, dispatch) {
                             })
                         })
                     } else if (finished) {
+                        console.log('job is finished without results')
                         // job is finished wihout results : keep the log
                         downloadJobLog(
                             updatedJob,

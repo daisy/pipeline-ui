@@ -3,6 +3,7 @@ import { CustomFieldDocumentation } from './CustomFieldDocumentation'
 import { ScriptItemBase, TypeChoice, ValueChoice } from 'shared/types'
 import { useEffect, useState } from 'react'
 import { ControlledInput } from './ControlledInput'
+import { MarkdownDescription } from './MarkdownDescription'
 
 export function CustomField({
     item,
@@ -163,7 +164,9 @@ export function CustomField({
                                             }
                                             style={{ margin: 0 }}
                                         >
-                                            {selectedOptionDescription}
+                                            <MarkdownDescription>
+                                                {selectedOptionDescription}
+                                            </MarkdownDescription>
                                         </p>
                                     )
                                 })}

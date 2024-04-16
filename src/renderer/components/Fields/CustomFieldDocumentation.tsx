@@ -1,6 +1,4 @@
-import remarkGfm from 'remark-gfm'
-import { externalLinkClick } from 'renderer/utils'
-import Markdown from 'react-markdown'
+import {MarkdownDescription} from './MarkdownDescription'
 const { App } = window
 
 export function CustomFieldDocumentation({ datatypes }) {
@@ -27,29 +25,7 @@ export function CustomFieldDocumentation({ datatypes }) {
                                 {d.summary}
                                 <div className="details">
                                     {d.details ? (
-                                        <Markdown
-                                            remarkPlugins={[remarkGfm]}
-                                            components={{
-                                                // override the rendering of link elements with a link element that opens in an external browser
-                                                a: (props) => {
-                                                    return (
-                                                        <a
-                                                            href={props.href}
-                                                            onClick={(e) =>
-                                                                externalLinkClick(
-                                                                    e,
-                                                                    App
-                                                                )
-                                                            }
-                                                        >
-                                                            {props.children}
-                                                        </a>
-                                                    )
-                                                },
-                                            }}
-                                        >
-                                            {d.details}
-                                        </Markdown>
+                                        <MarkdownDescription>{d.details}</MarkdownDescription>
                                     ) : (
                                         ''
                                     )}

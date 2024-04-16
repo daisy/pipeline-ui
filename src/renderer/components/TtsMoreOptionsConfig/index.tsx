@@ -214,14 +214,14 @@ export function TtsMoreOptionsConfigPane({
                             (prop) =>
                                 prop.key ==
                                 'org.daisy.pipeline.tts.google.samplerate'
-                        )?.value ?? ''
+                        )?.value ?? '44100'
                     }
                 >
                     <option value="8000">8000 Hz</option>
                     <option value="11025">11025 Hz</option>
                     <option value="16000">16000 Hz</option>
                     <option value="22050">22050 Hz</option>
-                    <option value="44100" selected>
+                    <option value="44100">
                         44100 Hz
                     </option>
                     <option value="48000">48000 Hz</option>

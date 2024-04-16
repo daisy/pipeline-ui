@@ -36,7 +36,10 @@ import { setupFileSystemEvents } from './fileSystem'
 import { setupOpenInBrowserEvents } from './browser'
 import { APP_CONFIG } from '~/app.config'
 import { getPipelineInstance } from './data/middlewares/pipeline'
-import { selectColorScheme } from 'shared/data/slices/settings'
+import {
+    selectColorScheme,
+    selectEditOnNewTab,
+} from 'shared/data/slices/settings'
 import { setupLogEvents } from './log'
 import {
     addJob,
@@ -137,10 +140,10 @@ function buildMenu() {
             await shell.openExternal('https://daisy.org/pipelineapphelp')
         },
         onNextTab: async () => {
-            store.dispatch(selectNextJob())
+            store.dispatch(selectNextJob(selectEditOnNewTab(store.getState())))
         },
         onPrevTab: async () => {
-            store.dispatch(selectPrevJob())
+            store.dispatch(selectPrevJob(selectEditOnNewTab(store.getState())))
         },
         onGotoTab: async (job) => {
             store.dispatch(selectJob(job))

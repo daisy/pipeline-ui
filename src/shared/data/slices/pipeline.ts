@@ -278,7 +278,11 @@ export const pipeline = createSlice({
                 state.selectedJobId = job.internalId
             }
         },
-        selectNextJob: (state: PipelineState) => {
+        selectNextJob: (
+            state: PipelineState,
+            param: PayloadAction<boolean | undefined>
+        ) => {
+            const alsoSelectInvisible = param.payload || false
             let selectedJobIndex = state.jobs.findIndex(
                 (j) => j.internalId == state.selectedJobId
             )
@@ -289,12 +293,17 @@ export const pipeline = createSlice({
                     state.jobs.length
                 ++i
             } while (
-                i < state.jobs.length &&
-                state.jobs[selectedJobIndex].invisible
+                !alsoSelectInvisible &&
+                state.jobs[selectedJobIndex].invisible &&
+                i < state.jobs.length
             )
             state.selectedJobId = state.jobs[selectedJobIndex].internalId
         },
-        selectPrevJob: (state: PipelineState) => {
+        selectPrevJob: (
+            state: PipelineState,
+            param: PayloadAction<boolean | undefined>
+        ) => {
+            const alsoSelectInvisible = param.payload || false
             let selectedJobIndex = state.jobs.findIndex(
                 (j) => j.internalId == state.selectedJobId
             )
@@ -305,8 +314,9 @@ export const pipeline = createSlice({
                     state.jobs.length
                 ++i
             } while (
-                i < state.jobs.length &&
-                state.jobs[selectedJobIndex].invisible
+                !alsoSelectInvisible &&
+                state.jobs[selectedJobIndex].invisible &&
+                i < state.jobs.length
             )
             state.selectedJobId = state.jobs[selectedJobIndex].internalId
         },
@@ -370,14 +380,21 @@ export const selectors = {
     selectWebservice: (state: RootState) => state.pipeline.webservice,
     selectJobs: (state: RootState) => state.pipeline.jobs,
     selectVisibleJobs: (state: RootState) =>
-        state.pipeline.jobs.filter((j) => !j.invisible),
+        state.pipeline.jobs.filter(
+            (j) => state.settings.editJobOnNewTab || !j.invisible
+        ),
     selectEmptyJobs: (state: RootState) =>
         state.pipeline.jobs.filter(
             (j) => j.state == JobState.NEW && !j.jobRequest
         ),
     selectIncompleteJobs: (state: RootState) =>
         state.pipeline.jobs.filter(
-            (j) => !(j.state == JobState.NEW && j.jobRequest && !j.invisible)
+            (j) =>
+                !(
+                    j.state == JobState.NEW &&
+                    j.jobRequest &&
+                    (state.settings.editJobOnNewTab || !j.invisible)
+                )
         ),
     // Protected jobs are jobs to be confirmed before removal :
     // those are jobs that are visible and are either
@@ -386,7 +403,7 @@ export const selectors = {
     selectProtectedJobs: (state: RootState) =>
         state.pipeline.jobs.filter(
             (j) =>
-                j.invisible != true &&
+                (state.settings.editJobOnNewTab || !j.invisible) &&
                 ((j.jobRequest != null &&
                     j.jobRequest != ({ nicename: '' } as JobRequest)) ||
                     (j.jobData != null && j.jobData != ({} as JobData)))
@@ -394,7 +411,7 @@ export const selectors = {
     selectRunningJobs: (state: RootState) =>
         state.pipeline.jobs.filter(
             (j) =>
-                !j.invisible &&
+                (state.settings.editJobOnNewTab || !j.invisible) &&
                 j.jobData &&
                 j.jobData.status &&
                 (j.jobData.status == JobStatus.RUNNING ||

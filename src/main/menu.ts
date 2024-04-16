@@ -1,11 +1,11 @@
 import { BrowserWindow, dialog, MenuItem } from 'electron'
 import { selectStatus } from 'shared/data/slices/pipeline'
-import { setClosingMainWindowActionForApp } from 'shared/data/slices/settings'
 import { calculateJobName, readableStatus } from 'shared/jobName'
 import { Job, JobState, JobStatus, PipelineStatus } from 'shared/types'
 import { getPipelineInstance } from './data/middlewares/pipeline'
 import { store } from './data/store'
-import { closeApplication, MainWindowInstance } from './windows'
+import { closeApplication } from './windows'
+import { selectEditOnNewTab } from 'shared/data/slices/settings'
 
 export function buildMenuTemplate({
     appName,
@@ -252,7 +252,11 @@ export function buildMenuTemplate({
                 ...(jobs.length > 0 ? [{ type: 'separator' }] : []),
                 ...(jobs.length > 0
                     ? jobs
-                          .filter((j: Job) => !j.invisible)
+                          .filter(
+                              (j: Job) =>
+                                  !j.invisible ||
+                                  selectEditOnNewTab(store.getState())
+                          )
                           .map((j: Job, idx: number) => {
                               let menuItem = {
                                   label: `${idx + 1}. ${calculateJobName(j)}`,

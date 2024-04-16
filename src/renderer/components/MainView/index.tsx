@@ -26,7 +26,7 @@ import { Plus } from '../SvgIcons'
 const { App } = window
 
 export function MainView() {
-    const { pipeline } = useWindowStore()
+    const { pipeline, settings } = useWindowStore()
 
     useEffect(() => {
         if (!(pipeline.jobs && pipeline.jobs.length > 0)) {
@@ -48,7 +48,9 @@ export function MainView() {
         }
     }, [pipeline.selectedJobId])
 
-    const visibleJobs = pipeline.jobs.filter((job) => !job.invisible)
+    const visibleJobs = pipeline.jobs.filter(
+        (job) => settings.editJobOnNewTab || !job.invisible
+    )
     const newJobButton = document.getElementById(`new-job-button`)
     /**
      * Keyboard actions on tabs with arrows
@@ -67,7 +69,8 @@ export function MainView() {
                     visibleJobs[visibleJobs.length - 1].internalId
                 ) {
                     document.getElementById(`new-job-button`)?.focus()
-                } else App.store.dispatch(selectNextJob())
+                } else
+                    App.store.dispatch(selectNextJob(settings.editJobOnNewTab))
                 break
             case 'ArrowLeft':
                 if (newJobButton == document.activeElement) {
@@ -85,7 +88,8 @@ export function MainView() {
                     pipeline.selectedJobId == visibleJobs[0].internalId
                 ) {
                     document.getElementById(`new-job-button`)?.focus()
-                } else App.store.dispatch(selectPrevJob())
+                } else
+                    App.store.dispatch(selectPrevJob(settings.editJobOnNewTab))
                 break
             case 'ArrowDown':
                 document
@@ -143,7 +147,7 @@ export function MainView() {
                 </button>
             </div>
             {pipeline.jobs
-                .filter((job) => !job.invisible)
+                .filter((job) => settings.editJobOnNewTab || !job.invisible)
                 .map((job, idx) => {
                     return (
                         <div

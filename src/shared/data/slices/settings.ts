@@ -134,4 +134,5 @@ export const {
     selectClosingAction,
     selectTtsConfig,
     selectAutoCheckUpdate,
+    selectEditOnNewTab
 } = selectors

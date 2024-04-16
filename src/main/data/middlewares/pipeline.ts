@@ -488,7 +488,11 @@ export function pipelineMiddleware({ getState, dispatch }) {
             case removeJob.type:
                 const visibleJobs = selectVisibleJobs(getState())
                 const removedJob = action.payload as Job
-                if (removedJob.jobRequest && !removedJob.invisible) {
+                if (
+                    removedJob.jobRequest &&
+                    (getState().settings.editJobOnNewTab ||
+                        !removedJob.invisible)
+                ) {
                     // Ask delete confirmation for visible jobs deletion
                     const result = dialog.showMessageBoxSync(
                         MainWindowInstance,
@@ -519,7 +523,11 @@ export function pipelineMiddleware({ getState, dispatch }) {
                     }
                 }
                 // Remove linked invisible jobs
-                if (action && removedJob.linkedTo) {
+                if (
+                    action &&
+                    removedJob.linkedTo &&
+                    !getState().settings.editJobOnNewTab
+                ) {
                     const linkedInvisibleJob = currentJobs.find(
                         (j) =>
                             j.invisible && removedJob.linkedTo == j.internalId

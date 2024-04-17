@@ -251,6 +251,12 @@ $engineColWidth: 8rem;
 
         
     }
+    .Connected::after {
+        content: ' ✅';
+    }
+    .Disconnected::after {
+        content: ' ❌';
+    }
 }
 .tts-more-options {
     display: flex;

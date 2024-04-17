@@ -148,8 +148,7 @@ export function TtsEnginesConfigPane({
             </p>
             <p className="desc">
                 After configuring these engines with the required credentials,
-                they will be available under 'Voices'. Save and reopen the
-                settings dialog to see changes.
+                they will be available under 'Voices'.
             </p>
             <ul>
                 {Object.keys(engineNames).map((engineKeyPrefix, idx) => (
@@ -194,7 +193,9 @@ export function TtsEnginesConfigPane({
                                 ))}
                             {engineMessage[engineKeyPrefix] && (
                                 <li className="error">
-                                    {engineMessage[engineKeyPrefix]}
+                                    <span className={engineMessage[engineKeyPrefix]}>
+                                        {engineMessage[engineKeyPrefix]}
+                                    </span>
                                 </li>
                             )}
                             {['azure', 'google'].includes(

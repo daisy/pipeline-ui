@@ -764,6 +764,7 @@ export function pipelineMiddleware({ getState, dispatch }) {
                 pipelineAPI
                     .fetchStylesheetParameters(job)(webservice)
                     .then((parameters: ScriptOption[] | JobRequestError) => {
+                        error('Result was', parameters)
                         // check if parameters is of type JobRequestError
                         if ('type' in parameters) {
                             dispatch(
@@ -774,12 +775,13 @@ export function pipelineMiddleware({ getState, dispatch }) {
                                         status: JobStatus.ERROR,
                                     },
                                     jobRequestError: parameters,
-                                    errors: [
-                                        {
-                                            fieldName: 'stylesheet',
-                                            error: parameters.description,
-                                        },
-                                    ],
+                                    // Note : the error can also come from the input
+                                    // errors: [
+                                    //     {
+                                    //         fieldName: 'stylesheet',
+                                    //         error: parameters.description,
+                                    //     },
+                                    // ],
                                 })
                             )
                         } else {
@@ -828,15 +830,16 @@ export function pipelineMiddleware({ getState, dispatch }) {
                                     description: String(e) + ':' + e.parsedText,
                                     trace: (e as Error).stack,
                                 },
-                                errors: [
-                                    {
-                                        fieldName: 'stylesheet',
-                                        error:
-                                            e instanceof ParserException
-                                                ? e.parsedText
-                                                : String(e),
-                                    },
-                                ],
+                                // Note : the error can also come from the input
+                                // errors: [
+                                //     {
+                                //         fieldName: 'stylesheet',
+                                //         error:
+                                //             e instanceof ParserException
+                                //                 ? e.parsedText
+                                //                 : String(e),
+                                //     },
+                                // ],
                             })
                         )
                     })

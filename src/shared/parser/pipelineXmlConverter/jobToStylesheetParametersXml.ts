@@ -30,7 +30,9 @@ function jobToStylesheetParametersXml(j: Job): string {
     <userStylesheets>${
         stylesheet && stylesheet.value
             ? Array.isArray(stylesheet.value)
-                ? stylesheet.value.map((v) => `<file href="${v}"/>`).join('')
+                ? stylesheet.value
+                      .map((v) => (v !== '' ? `<file href="${v}"/>` : ''))
+                      .join('')
                 : `<file href="${stylesheet.value}"/>`
             : ''
     }</userStylesheets>

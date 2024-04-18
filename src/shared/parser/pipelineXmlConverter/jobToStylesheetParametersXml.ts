@@ -22,6 +22,19 @@ function jobToStylesheetParametersXml(j: Job): string {
     const height = j.jobRequest.options.filter(
         (option) => option.name === 'page-height'
     )[0]
+    let sourceDocument = `<sourceDocument>${j.jobRequest.inputs
+        .filter(
+            (input) =>
+                input.value && input.isFile && !input.name.endsWith('.scss')
+        )
+        .map((input) => `<file href="${input.value}"/>`)
+        .join('')}</sourceDocument>`
+    
+    // workaround https://github.com/daisy/pipeline-ui/issues/198
+    if (j.jobRequest.scriptHref.includes('epub3-to-pef')) {
+        sourceDocument = ''
+    }
+    
     return `<?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <parameters xmlns="http://www.daisy.org/ns/pipeline/data">
     <media value="embossed AND (width:${width.value}) AND (height:${
@@ -36,13 +49,7 @@ function jobToStylesheetParametersXml(j: Job): string {
                 : `<file href="${stylesheet.value}"/>`
             : ''
     }</userStylesheets>
-    <sourceDocument>${j.jobRequest.inputs
-        .filter(
-            (input) =>
-                input.value && input.isFile && !input.name.endsWith('.scss')
-        )
-        .map((input) => `<file href="${input.value}"/>`)
-        .join('')}</sourceDocument>
+    ${sourceDocument}
 </parameters>`
 }
 

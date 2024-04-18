@@ -37,7 +37,10 @@ function jobToStylesheetParametersXml(j: Job): string {
             : ''
     }</userStylesheets>
     <sourceDocument>${j.jobRequest.inputs
-        .filter((input) => input.isFile && !input.name.endsWith('.scss'))
+        .filter(
+            (input) =>
+                input.value && input.isFile && !input.name.endsWith('.scss')
+        )
         .map((input) => `<file href="${input.value}"/>`)
         .join('')}</sourceDocument>
 </parameters>`

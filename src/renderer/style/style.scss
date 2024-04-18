@@ -173,7 +173,7 @@ select {
             padding: calc(var(--pad)/2);
             border-radius: var(--border-radius);
             gap: calc(var(--pad)/2);
-            height: 50vh;
+            max-height: 50vh;
             overflow: scroll;
         }
 

@@ -269,6 +269,7 @@ export type ScriptOption = ScriptItemBase & {
     type: string
     default?: string
     kind: 'option'
+    isStylesheetParameter?: boolean
 }
 
 export type Script = {

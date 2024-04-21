@@ -30,6 +30,7 @@ import {
 
 import { externalLinkClick } from 'renderer/utils/utils'
 import { FormField } from '../Fields/FormField'
+import { consolidateBrailleOptions } from 'renderer/components/ScriptForm/stylesheetParameterHandler'
 
 const { App } = window
 
@@ -126,7 +127,6 @@ export function ScriptForm({ job, script }: { job: Job; script: Script }) {
         } else {
             options = updateArrayValue(value, item, options)
         }
-
         App.store.dispatch(
             updateJob({
                 ...job,
@@ -147,6 +147,20 @@ export function ScriptForm({ job, script }: { job: Job; script: Script }) {
         if (isBrailleJob && job.stylesheetParameters == null) {
             App.store.dispatch(requestStylesheetParameters(job))
         } else {
+            if (isBrailleJob) {
+                let consolidatedOptions = consolidateBrailleOptions(
+                    optional,
+                    job.jobRequest.options
+                )
+                updateJob({
+                    ...job,
+                    jobRequest: {
+                        ...job.jobRequest,
+                        //@ts-ignore
+                        options: [...consolidatedOptions],
+                    },
+                })
+            }
             setSubmitInProgress(true)
             App.store.dispatch(
                 runJob({

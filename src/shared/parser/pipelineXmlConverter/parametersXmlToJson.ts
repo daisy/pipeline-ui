@@ -21,6 +21,7 @@ function parametersXmlToJson(
                     type: propElem.getAttribute('type'),
                     default: propElem.getAttribute('default'),
                     kind: 'option',
+                    isStylesheetParameter: true,
                 } as ScriptOption)
         )
     } catch (e) {

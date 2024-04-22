@@ -40,7 +40,12 @@ export function Settings({ job }: { job: Job }) {
                 <li key={idx}>
                     <span>{item.nicename}: </span>
                     <span>
-                        {findValue(item.name, item.kind, job.jobRequest)}
+                        {findValue(
+                            item.name,
+                            item.kind,
+                            job.jobRequest,
+                            item.isStylesheetParameter
+                        )}
                     </span>
                 </li>
             ))}
@@ -48,7 +53,12 @@ export function Settings({ job }: { job: Job }) {
                 <li key={idx}>
                     <span>{item.nicename}: </span>
                     <span>
-                        {findValue(item.name, item.kind, job.jobRequest)}
+                        {findValue(
+                            item.name,
+                            item.kind,
+                            job.jobRequest,
+                            item.isStylesheetParameter
+                        )}
                     </span>
                 </li>
             ))}

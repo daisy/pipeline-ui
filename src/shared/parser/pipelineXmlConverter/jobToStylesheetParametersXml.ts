@@ -15,7 +15,6 @@ function jobToStylesheetParametersXml(j: Job): string {
     const stylesheet = j.jobRequest.options.filter(
         (option) => option.name === 'stylesheet'
     )[0]
-    console.log('stylesheet', stylesheet)
     const width = j.jobRequest.options.filter(
         (option) => option.name === 'page-width'
     )[0]

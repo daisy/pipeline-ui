@@ -29,7 +29,6 @@ export function TtsMoreOptionsConfigPane({
     ttsEnginesFeatures,
 }) {
     const { pipeline } = useWindowStore()
-    console.log('TTS engine props, more options screen ', ttsEngineProperties)
     // Clone array and objects in it to avoid updating the original props
     const [engineProperties, setEngineProperties] = useState<
         Array<{ key: string; value: string }>
@@ -46,7 +45,6 @@ export function TtsMoreOptionsConfigPane({
     )
 
     let onLexiconChange = (filename) => {
-        console.log('lexicon', filename)
         onPropertyChange('org.daisy.pipeline.tts.default-lexicon', filename)
     }
     let onInputChange = (e, propName) => {
@@ -66,7 +64,6 @@ export function TtsMoreOptionsConfigPane({
 
     // TODO this isn't working yet
     let onPropertyChange = (propName, propValue) => {
-        console.log('name', propName)
         let engineProperties_ = clone(engineProperties)
         let prop = engineProperties_.find((prop) => prop.key == propName)
         if (prop) {
@@ -82,8 +79,6 @@ export function TtsMoreOptionsConfigPane({
         let realProp = (ttsEngineProperties || []).find(
             (prop) => prop.key == propName
         )
-        console.log('old prop', realProp)
-        console.log('new prop', prop)
         setEnginePropsChanged({
             ...enginePropsChanged,
             [propName]:

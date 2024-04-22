@@ -258,18 +258,18 @@ export type ScriptItemBase = {
     kind?: string
     ordered?: boolean
     pattern?: string // for custom pattern validation
+    isStylesheetParameter?: boolean
 }
 export type ScriptInput = ScriptItemBase & {
     type: 'anyFileURI'
     kind: 'input'
-    ordered: false
+    ordered: false,
 }
 
 export type ScriptOption = ScriptItemBase & {
     type: string
     default?: string
     kind: 'option'
-    isStylesheetParameter?: boolean
 }
 
 export type Script = {
@@ -287,6 +287,7 @@ export type NameValue = {
     name: string
     value: any
     isFile: boolean
+    isStylesheetParameter: boolean
 }
 export type Callback = {
     href: string
@@ -300,6 +301,7 @@ export type JobRequest = {
     batchId?: string
     inputs?: Array<NameValue>
     options?: Array<NameValue>
+    stylesheetParameterOptions?: Array<NameValue>
     outputs?: Array<NameValue>
     callbacks?: Array<Callback>
 }

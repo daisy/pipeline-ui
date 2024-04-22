@@ -786,19 +786,22 @@ export function pipelineMiddleware({ getState, dispatch }) {
                             )
                         } else {
                             // update job options with new parameters
-                            const options = [...job.jobRequest.options]
+                            const stylesheetParameterOptions = [
+                                ...job.jobRequest.stylesheetParameterOptions,
+                            ]
                             for (let item of parameters) {
-                                const existingOption = options.find(
+                                const existingOption = stylesheetParameterOptions.find(
                                     (o) => o.name === item.name
                                 )
                                 if (existingOption !== undefined) {
                                     existingOption.value = item.default
                                 } else {
                                     // For now, only consider non-uri parameters
-                                    options.push({
+                                    stylesheetParameterOptions.push({
                                         name: item.name,
                                         value: item.default,
                                         isFile: false,
+                                        isStylesheetParameter: true,
                                     })
                                 }
                             }
@@ -809,7 +812,9 @@ export function pipelineMiddleware({ getState, dispatch }) {
                                     ...job,
                                     jobRequest: {
                                         ...job.jobRequest,
-                                        options: [...options],
+                                        stylesheetParameterOptions: [
+                                            ...stylesheetParameterOptions,
+                                        ],
                                     },
                                     stylesheetParameters: parameters,
                                 })

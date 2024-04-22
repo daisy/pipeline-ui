@@ -30,7 +30,6 @@ import {
 
 import { externalLinkClick } from 'renderer/utils/utils'
 import { FormField } from '../Fields/FormField'
-import { consolidateBrailleOptions } from 'renderer/components/ScriptForm/stylesheetParameterHandler'
 
 const { App } = window
 
@@ -79,6 +78,8 @@ export function ScriptForm({ job, script }: { job: Job; script: Script }) {
     // script options. Those are stored separatly in the job.stylesheetParameters
     // properties
     // When this property is set
+    // 'optional' is what is displayed on screen as optional values. they could technically be job inputs, options, or stylesheet parameters
+    // but the user input values aren't stored there, those go in the job request itself
     if (isBrailleJob && job.stylesheetParameters != null) {
         required = []
         optional = [
@@ -88,7 +89,9 @@ export function ScriptForm({ job, script }: { job: Job; script: Script }) {
         ]
         for (let item of job.stylesheetParameters) {
             const existingOption = optional.find(
-                (o) => o.name === item.name
+                (o) =>
+                    o.name === item.name &&
+                    o.isStylesheetParameter == item.isStylesheetParameter
             ) as ScriptOption | undefined
             if (existingOption !== undefined) {
                 existingOption.default = item.default
@@ -115,6 +118,9 @@ export function ScriptForm({ job, script }: { job: Job; script: Script }) {
         }
         let inputs = [...job.jobRequest.inputs]
         let options = [...job.jobRequest.options]
+        let stylesheetParameterOptions = [
+            ...job.jobRequest.stylesheetParameterOptions,
+        ]
 
         if (item.mediaType?.includes('text/css')) {
             // the css filenames are already formatted by our file widget as 'file:///'...
@@ -125,7 +131,16 @@ export function ScriptForm({ job, script }: { job: Job; script: Script }) {
         if (item.kind == 'input') {
             inputs = updateArrayValue(value, item, inputs)
         } else {
-            options = updateArrayValue(value, item, options)
+            if (item.isStylesheetParameter) {
+                stylesheetParameterOptions = updateArrayValue(
+                    value,
+                    item,
+                    stylesheetParameterOptions
+                )
+                console.log("SSP", stylesheetParameterOptions)
+            } else {
+                options = updateArrayValue(value, item, options)
+            }
         }
         App.store.dispatch(
             updateJob({
@@ -134,6 +149,7 @@ export function ScriptForm({ job, script }: { job: Job; script: Script }) {
                     ...job.jobRequest,
                     inputs: [...inputs],
                     options: [...options],
+                    stylesheetParameterOptions: [...stylesheetParameterOptions],
                 },
                 jobRequestError: undefined,
                 errors: job.errors?.filter((e) => e.fieldName !== item.name),
@@ -147,25 +163,29 @@ export function ScriptForm({ job, script }: { job: Job; script: Script }) {
         if (isBrailleJob && job.stylesheetParameters == null) {
             App.store.dispatch(requestStylesheetParameters(job))
         } else {
+            let options = [...job.jobRequest.options]
             if (isBrailleJob) {
-                let consolidatedOptions = consolidateBrailleOptions(
-                    optional,
+                // format all the stylesheet parameter options as a string
+                // and assign it to the 'stylesheet-parameters' option
+                let stylesheetParametersOption =
+                    job.jobRequest.stylesheetParameterOptions
+                        .map((o) => `(${o.name}:"${CSS.escape(o.value)}")`)
+                        .join('')
+                options = updateArrayValue(
+                    stylesheetParametersOption,
+                    script.options.find(
+                        (o) =>
+                            o.name == 'stylesheet-parameters' &&
+                            !o.isStylesheetParameter
+                    ),
                     job.jobRequest.options
                 )
-                updateJob({
-                    ...job,
-                    jobRequest: {
-                        ...job.jobRequest,
-                        //@ts-ignore
-                        options: [...consolidatedOptions],
-                    },
-                })
             }
             setSubmitInProgress(true)
             App.store.dispatch(
                 runJob({
                     ...job,
-                    jobRequest: job.jobRequest,
+                    jobRequest: { ...job.jobRequest, options: [...options] },
                 })
             )
             setSubmitInProgress(false)
@@ -232,7 +252,8 @@ export function ScriptForm({ job, script }: { job: Job; script: Script }) {
                                                 initialValue={findValue(
                                                     item.name,
                                                     item.kind,
-                                                    job.jobRequest
+                                                    job.jobRequest,
+                                                    item.isStylesheetParameter
                                                 )}
                                                 error={
                                                     job.errors?.find(
@@ -267,23 +288,30 @@ export function ScriptForm({ job, script }: { job: Job; script: Script }) {
                                             <li
                                                 key={`${ID(job.internalId)}-${
                                                     item.name
+                                                }-${
+                                                    item.isStylesheetParameter
                                                 }-li`}
                                             >
                                                 <FormField
                                                     item={item}
                                                     key={`${ID(
                                                         job.internalId
-                                                    )}-${item.name}-FormField`}
+                                                    )}-${item.name}-${
+                                                        item.isStylesheetParameter
+                                                    }-FormField`}
                                                     idprefix={`${ID(
                                                         job.internalId
-                                                    )}-${item.name}`}
+                                                    )}-${item.name}-${
+                                                        item.isStylesheetParameter
+                                                    }`}
                                                     onChange={
                                                         saveValueInJobRequest
                                                     }
                                                     initialValue={findValue(
                                                         item.name,
                                                         item.kind,
-                                                        job.jobRequest
+                                                        job.jobRequest,
+                                                        item.isStylesheetParameter
                                                     )}
                                                     error={
                                                         job.errors?.find(

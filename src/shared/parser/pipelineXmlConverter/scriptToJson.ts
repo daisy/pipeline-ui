@@ -38,6 +38,7 @@ function scriptElementToJson(scriptElm: Element): Script {
                 type: 'anyFileURI',
                 kind: 'input',
                 ordered: false,
+                isStylesheetParameter: false,
             }
         }
     )
@@ -60,6 +61,7 @@ function scriptElementToJson(scriptElm: Element): Script {
                 type: optionElm.getAttribute('type'),
                 default: optionElm.getAttribute('default'),
                 kind: 'option',
+                isStylesheetParameter: false,
             }
         }
     )

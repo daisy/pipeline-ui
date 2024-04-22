@@ -21,10 +21,27 @@ export function getAllOptional(script: Script) {
         : []
 }
 
-export function findValue(name: string, kind: string, jobRequest: JobRequest) {
+export function findValue(
+    name: string,
+    kind: string,
+    jobRequest: JobRequest,
+    isStylesheetParameter: boolean
+) {
     if (!jobRequest) return ''
-    let arr = kind == 'input' ? jobRequest.inputs : jobRequest.options
-    let item = arr.find((i) => i.name == name)
+    let arr = null;
+    if (kind == 'input') {
+        arr = jobRequest.inputs
+    } else {
+        if (isStylesheetParameter) {
+            arr = jobRequest.stylesheetParameterOptions
+        } else {
+            arr = jobRequest.options
+        }
+    }
+    let item = arr.find(
+        (i) =>
+            i.name == name && i.isStylesheetParameter == isStylesheetParameter
+    )
     if (!item) return ''
     let value =
         // @ts-ignore

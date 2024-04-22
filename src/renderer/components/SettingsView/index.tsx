@@ -96,7 +96,6 @@ export function SettingsView() {
     }
 
     const onTtsVoicesPreferenceChange = (voices) => {
-        console.log('on tts voices pref change', voices)
         const newConfig = {
             preferredVoices: [...voices],
             ttsEngineProperties: [...settings.ttsConfig.ttsEngineProperties],

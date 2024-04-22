@@ -441,6 +441,7 @@ export const selectors = {
                         null,
                     isFile:
                         item.type == 'anyFileURI' || item.type == 'anyDirURI',
+                    isStylesheetParameter: false,
                 }
             }),
             options: script.options.map((item, index) => {
@@ -453,8 +454,10 @@ export const selectors = {
                         null,
                     isFile:
                         item.type == 'anyFileURI' || item.type == 'anyDirURI',
+                    isStylesheetParameter: false,
                 }
             }),
+            stylesheetParameterOptions: [],
         } as JobRequest
     },
 }

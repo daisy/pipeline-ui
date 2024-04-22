@@ -44,8 +44,6 @@ export function TtsEnginesConfigPane({
     onChangeTtsEngineProperties: (props: Array<TtsEngineProperty>) => void
 }) {
     const { pipeline } = useWindowStore()
-    console.log('TTS engine props', ttsEngineProperties)
-
     // Clone array and objects in it to avoid updating the oriiginal props
     const [engineProperties, setEngineProperties] = useState<
         Array<{ key: string; value: string }>
@@ -69,7 +67,6 @@ export function TtsEnginesConfigPane({
                 pipeline.ttsEnginesStates[engineKey].message
         }
         setEngineMessage(messages)
-        console.log(messages)
     }, [pipeline.ttsEnginesStates])
 
     let onPropertyChange = (e, propName) => {

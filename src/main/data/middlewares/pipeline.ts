@@ -785,26 +785,27 @@ export function pipelineMiddleware({ getState, dispatch }) {
                                 })
                             )
                         } else {
+                            // don't add stylesheet parameters if they have
+                            // the same name as existing script options
+                            let uniqueParameters = parameters.filter(
+                                (p) =>
+                                    !job.script.options.find(
+                                        (o) => o.name == p.name
+                                    )
+                            )
                             // update job options with new parameters
                             const stylesheetParameterOptions = [
                                 ...job.jobRequest.stylesheetParameterOptions,
                             ]
-                            for (let item of parameters) {
-                                const existingOption = stylesheetParameterOptions.find(
-                                    (o) => o.name === item.name
-                                )
-                                if (existingOption !== undefined) {
-                                    existingOption.value = item.default
-                                } else {
-                                    // For now, only consider non-uri parameters
-                                    stylesheetParameterOptions.push({
-                                        name: item.name,
-                                        value: item.default,
-                                        isFile: false,
-                                        isStylesheetParameter: true,
-                                    })
-                                }
-                            }
+
+                            uniqueParameters.map((item) => {
+                                stylesheetParameterOptions.push({
+                                    name: item.name,
+                                    value: item.default,
+                                    isFile: false,
+                                    isStylesheetParameter: true,
+                                })
+                            })
                             // Also send back the parameters to the UI
                             // for composition of the script options
                             dispatch(
@@ -816,7 +817,7 @@ export function pipelineMiddleware({ getState, dispatch }) {
                                             ...stylesheetParameterOptions,
                                         ],
                                     },
-                                    stylesheetParameters: parameters,
+                                    stylesheetParameters: [...uniqueParameters],
                                 })
                             )
                         }

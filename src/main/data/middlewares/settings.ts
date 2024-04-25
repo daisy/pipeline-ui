@@ -61,6 +61,16 @@ export function readSettings() {
             const loaded: ApplicationSettings = migrateSettings(
                 JSON.parse(readFileSync(settingsFile, 'utf8'))
             )
+            // NP 2024/04/25 : reset download folder on invalid url
+            try {
+                new URL(loaded.downloadFolder)
+            } catch (e) {
+                info(
+                    'Invalid download folder URL in settings file',
+                    'Falling back to default download folder'
+                )
+                loaded.downloadFolder = settings.downloadFolder
+            }
             settings = {
                 ...settings,
                 ...loaded,

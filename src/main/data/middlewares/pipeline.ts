@@ -93,22 +93,6 @@ const timestamp = () => {
         currentTime.getMilliseconds()}`
 }
 
-async function downloadResultFile(r: ResultFile, targetUrl: string) {
-    return pipelineAPI
-        .fetchResult(r)()
-        .then((buffer) =>
-            r.mimeType === 'application/zip'
-                ? unzipFile(buffer, targetUrl)
-                : saveFile(buffer, targetUrl)
-        )
-        .then(() => {
-            let newResult: ResultFile = Object.assign({}, r)
-            newResult.file = targetUrl
-            return newResult
-        })
-        .catch(() => r) // if a problem occured, return the original result
-}
-
 async function downloadNamedResult(r: NamedResult, targetUrl: string) {
     return pipelineAPI
         .fetchResult(r)()
@@ -133,7 +117,11 @@ async function downloadNamedResult(r: NamedResult, targetUrl: string) {
             })
             return newResult
         })
-        .catch(() => r) // if a problem occured, return the original result
+        .catch((e) => {
+            // if a problem occured, return the original result
+            error('Error downloading named result', r, e)
+            return r
+        })
 }
 
 async function downloadJobLog(j: Job, targetFolder: string) {
@@ -161,7 +149,7 @@ async function downloadJobLog(j: Job, targetFolder: string) {
         .catch((e) => {
             // Log is not accessible, revert back to default log url
             // and continue the chain of promise
-            error('Job log could not be downloaded', e)
+            error('Error downloading job log', e)
             return j
         })
 }
@@ -169,12 +157,12 @@ async function downloadJobLog(j: Job, targetFolder: string) {
 async function downloadJobResults(j: Job, targetFolder: string) {
     // Download log, named results, and unzip named results archives
     return Promise.all(
-        j.jobData.results.namedResults.map((r) =>
+        j.jobData.results?.namedResults?.map((r) =>
             downloadNamedResult(
                 r,
                 new URL(`${targetFolder}/${r.nicename ?? r.name}`).href
             )
-        )
+        ) || []
     )
         .then((downloadedNamedResults: NamedResult[]) => {
             return {
@@ -183,13 +171,17 @@ async function downloadJobResults(j: Job, targetFolder: string) {
                     ...j.jobData,
                     downloadedFolder: targetFolder,
                     results: {
-                        ...j.jobData.results,
+                        ...(j.jobData.results ?? {}),
                         namedResults: [...downloadedNamedResults],
                     },
                 },
             } as Job
         })
         .then(async (j: Job) => await downloadJobLog(j, targetFolder))
+        .catch((e) => {
+            error('Error downloading job results', e)
+            return j
+        })
 }
 
 /**
@@ -238,21 +230,28 @@ function startMonitor(j: Job, ws: Webservice, getState, dispatch) {
                         downloadJobResults(
                             updatedJob,
                             `${downloadFolder}/${newJobName}`
-                        ).then((downloadedJob) => {
-                            dispatch(updateJob(downloadedJob))
-                            const deleteJob =
-                                pipelineAPI.deleteJob(downloadedJob)
-                            deleteJob().then((response) => {
-                                console.log(
-                                    downloadedJob.jobData.jobId,
-                                    'delete response',
-                                    response.status,
-                                    response.statusText
-                                )
+                        )
+                            .then((downloadedJob) => {
+                                dispatch(updateJob(downloadedJob))
+                                // Only delete job if it has been downloaded
+                                if (downloadedJob.jobData.downloadedFolder) {
+                                    const deleteJob =
+                                        pipelineAPI.deleteJob(downloadedJob)
+                                    deleteJob().then((response) => {
+                                        info(
+                                            downloadedJob.jobData.jobId,
+                                            'delete response',
+                                            response.status,
+                                            response.statusText
+                                        )
+                                    })
+                                }
                             })
-                        })
+                            .catch((e) => {
+                                error('Error downloading job results', e)
+                            })
                     } else if (finished) {
-                        console.log('job is finished without results')
+                        info('job is finished without results')
                         // job is finished wihout results : keep the log
                         downloadJobLog(
                             updatedJob,
@@ -261,7 +260,7 @@ function startMonitor(j: Job, ws: Webservice, getState, dispatch) {
                             dispatch(updateJob(jobWithLog))
                             const deleteJob = pipelineAPI.deleteJob(jobWithLog)
                             deleteJob().then((response) => {
-                                console.log(
+                                info(
                                     jobWithLog.jobData.jobId,
                                     'delete response',
                                     response.status,

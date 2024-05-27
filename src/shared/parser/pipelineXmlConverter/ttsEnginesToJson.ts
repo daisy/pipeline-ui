@@ -1,8 +1,9 @@
+import { TtsEngineState } from 'shared/types'
 import { parseXml } from './parser'
 
 function ttsEnginesToJson(
     xmlString: string
-): { [key: string]: Array<string> } | {} {
+): { [key: string]: TtsEngineState } | {} {
     try {
         let ttsEnginesElm = parseXml(xmlString, 'tts-engines')
         return Array.from(
@@ -10,7 +11,18 @@ function ttsEnginesToJson(
         ).reduce((acc, ttsEngineElem: Element) => {
             const key = ttsEngineElem.getAttribute('name')
             if (key) {
-                acc[key] = ttsEngineElem.getAttribute('features')?.split(';')
+                acc[key] = {} as TtsEngineState
+                if (ttsEngineElem.getAttribute('features').length > 0) {
+                    acc[key].features = ttsEngineElem
+                        .getAttribute('features')
+                        ?.split(';')
+                }
+                if (ttsEngineElem.getAttribute('status').length > 0) {
+                    acc[key].status = ttsEngineElem.getAttribute('status')
+                }
+                if (ttsEngineElem.getAttribute('message').length > 0) {
+                    acc[key].message = ttsEngineElem.getAttribute('message')
+                }
             }
             return acc
         }, {})

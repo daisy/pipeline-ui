@@ -386,7 +386,7 @@ export function SettingsView() {
                                 ttsEngineProperties={
                                     newSettings.ttsConfig.ttsEngineProperties
                                 }
-                                ttsEnginesFeatures={pipeline.ttsEnginesFeatures}
+                                ttsEnginesStates={pipeline.ttsEnginesStates}
                                 onChangeTtsEngineProperties={
                                     onTtsEnginePropertiesChange
                                 }

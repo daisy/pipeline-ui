@@ -18,6 +18,7 @@ export type TtsConfig = {
 }
 
 export type TtsEngineState = {
-    status: 'disconnected' | 'connecting' | 'connected' | 'disconnecting'
+    status?: 'disabled' | 'connecting' | 'available' | 'disconnecting' | 'error'
+    features?: Array<string>
     message?: string
 }

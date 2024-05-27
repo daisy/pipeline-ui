@@ -3,6 +3,7 @@ import { useWindowStore } from 'renderer/store'
 import { PipelineAPI } from 'shared/data/apis/pipeline'
 import { setProperties } from 'shared/data/slices/pipeline'
 import { FileOrFolderInput } from '../Fields/FileOrFolderInput'
+import { TtsEngineState } from 'shared/types'
 
 const pipelineAPI = new PipelineAPI(
     (url, ...args) => window.fetch(url, ...args),
@@ -26,7 +27,13 @@ const propertyKeys = [
 export function TtsMoreOptionsConfigPane({
     ttsEngineProperties,
     onChangeTtsEngineProperties,
-    ttsEnginesFeatures,
+    ttsEnginesStates,
+}: {
+    ttsEngineProperties: Array<{ key: string; value: string }>
+    onChangeTtsEngineProperties: (
+        props: Array<{ key: string; value: string }>
+    ) => void
+    ttsEnginesStates: { [key: string]: TtsEngineState }
 }) {
     const { pipeline } = useWindowStore()
     // Clone array and objects in it to avoid updating the original props
@@ -99,9 +106,12 @@ export function TtsMoreOptionsConfigPane({
     }
 
     let enginesWithSpeechRateSupport = []
-    for (const engine in ttsEnginesFeatures) {
+    for (const engine in ttsEnginesStates) {
         if (
-            ttsEnginesFeatures[engine].find((f) => ['speech-rate'].includes(f))
+            ttsEnginesStates[engine].features &&
+            ttsEnginesStates[engine].features?.find((f) =>
+                ['speech-rate'].includes(f)
+            )
         ) {
             enginesWithSpeechRateSupport.push(engine)
         }

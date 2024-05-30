@@ -213,7 +213,7 @@ export class PipelineAPI {
         )
     }
 
-    fetchTtsEnginesFeatures() {
+    fetchTtsEnginesState() {
         return this.createPipelineFetchFunction(
             (ws) => `${baseurl(ws)}/tts-engines`,
             (text) => ttsEnginesToJson(text)

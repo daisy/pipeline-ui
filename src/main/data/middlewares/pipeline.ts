@@ -23,7 +23,6 @@ import {
     setTtsVoices,
     setProperties,
     setTtsEngineState,
-    setTtsEngineFeatures,
     requestStylesheetParameters,
 } from 'shared/data/slices/pipeline'
 
@@ -420,12 +419,13 @@ export function pipelineMiddleware({ getState, dispatch }) {
                             .then((voices: Array<TtsVoice>) => {
                                 // console.log('TTS Voices', voices)
                                 dispatch(setTtsVoices(voices))
-                                return pipelineAPI.fetchTtsEnginesFeatures()(
+                                return pipelineAPI.fetchTtsEnginesState()(
                                     newWebservice
                                 )
                             })
-                            .then((features) => {
-                                dispatch(setTtsEngineFeatures(features))
+                            .then((states) => {
+                                console.log('tts states', states)
+                                dispatch(setTtsEngineState(states))
                             })
                             .catch((e) => {
                                 error('useWebservice', e, e.parsedText)
@@ -570,7 +570,7 @@ export function pipelineMiddleware({ getState, dispatch }) {
                             if (prop.value === '') {
                                 // empty key provided, no connection
                                 ttsEnginesStatesStart[engineKey] = {
-                                    status: 'disconnected',
+                                    status: 'disabled',
                                     message: 'Disconnected',
                                 }
                             } else {
@@ -581,7 +581,7 @@ export function pipelineMiddleware({ getState, dispatch }) {
                             }
                         } else {
                             switch (ttsEnginesStatesStart[engineKey].status) {
-                                case 'connected':
+                                case 'available':
                                 case 'connecting':
                                     if (prop.value === '') {
                                         // key removal
@@ -597,7 +597,7 @@ export function pipelineMiddleware({ getState, dispatch }) {
                                         }
                                     }
                                     break
-                                case 'disconnected':
+                                case 'disabled':
                                 case 'disconnecting':
                                 default:
                                     if (prop.value !== '') {
@@ -646,48 +646,65 @@ export function pipelineMiddleware({ getState, dispatch }) {
                                     // update working engines
                                     for (const voice of voices) {
                                         ttsEnginesStates[voice.engine] = {
-                                            status: 'connected',
+                                            ...ttsEnginesStates[voice.engine],
+                                            status: 'available',
                                             message: 'Connected',
                                         }
                                     }
                                     // update non active expected engines
                                     for (const engineKey in ttsEnginesStates) {
-                                        switch (
+                                        if (
                                             ttsEnginesStates[engineKey].status
                                         ) {
-                                            case 'connected':
-                                            case 'disconnected':
-                                                // success or no change
-                                                break
-                                            case 'disconnecting':
-                                                // confirm disconnection
-                                                ttsEnginesStates[engineKey] = {
-                                                    status: 'disconnected',
-                                                    message: 'Disconnected',
-                                                }
-                                                break
-                                            case 'connecting':
-                                            default:
-                                                // error case when trying to connect
-                                                ttsEnginesStates[engineKey] = {
-                                                    status: 'disconnected',
-                                                    message:
-                                                        'Could not connect to the engine, please check your credentials or the service status.',
-                                                }
-                                                break
+                                            switch (
+                                                ttsEnginesStates[engineKey]
+                                                    .status
+                                            ) {
+                                                case 'available':
+                                                case 'disabled':
+                                                    // success or no change
+                                                    break
+                                                case 'disconnecting':
+                                                    // confirm disconnection
+                                                    ttsEnginesStates[
+                                                        engineKey
+                                                    ] = {
+                                                        ...ttsEnginesStates[
+                                                            engineKey
+                                                        ],
+                                                        status: 'disabled',
+                                                        message: 'Disconnected',
+                                                    }
+                                                    break
+                                                case 'connecting':
+                                                default:
+                                                    // error case when trying to connect
+                                                    ttsEnginesStates[
+                                                        engineKey
+                                                    ] = {
+                                                        ...ttsEnginesStates[
+                                                            engineKey
+                                                        ],
+                                                        status: 'disabled',
+                                                        message:
+                                                            'Could not connect to the engine, please check your credentials or the service status.',
+                                                    }
+                                                    break
+                                            }
                                         }
                                     }
                                     //console.log('tts states starting', ttsEnginesStates)
                                     dispatch(
                                         setTtsEngineState(ttsEnginesStates)
                                     )
-                                    // Update features list
-                                    return pipelineAPI.fetchTtsEnginesFeatures()(
+                                    // Re-update states from the engine itself
+                                    return pipelineAPI.fetchTtsEnginesState()(
                                         webservice
                                     )
                                 })
-                                .then((features) => {
-                                    dispatch(setTtsEngineFeatures(features))
+                                .then((states) => {
+                                    console.log('tts states', states)
+                                    dispatch(setTtsEngineState(states))
                                 })
                         }
                     })

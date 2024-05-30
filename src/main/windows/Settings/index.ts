@@ -10,7 +10,7 @@ export function SettingsWindow() {
     const window = createWindow({
         id: 'settings',
         title: `${APP_CONFIG.TITLE} - Settings`,
-        width: 800,
+        width: 1000,
         height: 800,
         resizable: true,
         alwaysOnTop: false,

@@ -24,7 +24,7 @@ export enum ClosingMainWindowAction {
  * - Merged app and job actions on closing main window
  */
 export type ApplicationSettings = {
-    settingsVersion: '1.3.0'
+    settingsVersion: '1.4.0'
     // Default folder to download the results on the user disk
     downloadFolder?: string
     // Pipeline instance properties for IPCs
@@ -97,7 +97,7 @@ const migrators: Map<string, (prev: any) => any> = new Map<
             }
 
             return {
-                settingsVersion: '1.3.0',
+                settingsVersion: '1.4.0',
                 downloadFolder: prev.downloadFolder,
                 pipelineInstanceProps: {
                     pipelineType: 'embedded',

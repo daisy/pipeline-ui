@@ -15,7 +15,7 @@ import {
     setClosingMainWindowAction,
     setEditJobOnNewTab,
 } from 'shared/data/slices/settings'
-import { TtsVoicesConfigPane } from '../TtsVoicesConfig'
+import { TtsVoicesConfigPane2 } from '../TtsVoicesConfig/newConfig'
 import { TtsEnginesConfigPane } from '../TtsEnginesConfig'
 import { TtsMoreOptionsConfigPane } from '../TtsMoreOptionsConfig'
 const { App } = window // The "App" comes from the bridge
@@ -96,8 +96,11 @@ export function SettingsView() {
     }
 
     const onTtsVoicesPreferenceChange = (voices) => {
+        console.log("defaults", settings.ttsConfig.defaultVoices)
+
         const newConfig = {
             preferredVoices: [...voices],
+            defaultVoices: [...settings.ttsConfig.defaultVoices],
             ttsEngineProperties: [...settings.ttsConfig.ttsEngineProperties],
             xmlFilepath: newSettings.ttsConfig.xmlFilepath,
         }
@@ -105,9 +108,20 @@ export function SettingsView() {
         App.store.dispatch(save())
         //setSaved(true)
     }
+    const onTtsVoicesDefaultsChange = (voices) => {
+        const newConfig = {
+            preferredVoices: [...settings.ttsConfig.preferredVoices],
+            defaultVoices: [...voices],
+            ttsEngineProperties: [...settings.ttsConfig.ttsEngineProperties],
+            xmlFilepath: newSettings.ttsConfig.xmlFilepath,
+        }
+        App.store.dispatch(setTtsConfig(newConfig))
+        App.store.dispatch(save())
+    }
     const onTtsEnginePropertiesChange = (ttsEngineProperties) => {
         const newConfig = {
             preferredVoices: [...settings.ttsConfig.preferredVoices],
+            defaultVoices: [...settings.ttsConfig.defaultVoices],
             ttsEngineProperties: [...ttsEngineProperties],
             xmlFilepath: newSettings.ttsConfig.xmlFilepath,
         }
@@ -359,13 +373,19 @@ export function SettingsView() {
                         </div>
                     ) : selectedSection == SelectedMenuItem.TTSVoices ? (
                         <div className="tts-voices-config">
-                            <TtsVoicesConfigPane
+                            <TtsVoicesConfigPane2
                                 availableVoices={pipeline.ttsVoices}
                                 userPreferredVoices={
                                     newSettings.ttsConfig.preferredVoices
                                 }
+                                userDefaultVoices={
+                                    newSettings.ttsConfig.defaultVoices
+                                }
                                 onChangePreferredVoices={
                                     onTtsVoicesPreferenceChange
+                                }
+                                onChangeDefaultVoices={
+                                    onTtsVoicesDefaultsChange
                                 }
                             />
                         </div>

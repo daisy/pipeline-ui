@@ -98,119 +98,189 @@ $engineColWidth: 8rem;
 .fields:has(.tts-engines-config) {
     padding-top: 0;
 }
+// .tts-voices-config {
+//     display: flex;
+//     flex-direction: column;
+//     gap: var(--pad);
+
+//     p, ul {
+//         padding: 0;
+//         margin: 0;
+//     }
+    
+//     ul {
+//         border: thin solid;
+//         border-radius: 5px;
+//         padding: 1px;
+//         li {
+//             display: flex;
+//             flex-direction: row;
+//             gap: calc(var(--pad)/2);
+//         }
+//     }
+    
+
+//     button {
+//         width: min-content;
+//         height: min-content;
+//     }
+//     .inline-button {
+//         border-radius: 10px;
+//         font-size: medium;
+//         padding: 2px;
+//         margin-left: 5px;
+//     }
+//     #voicesearch {
+//         border-radius: 10px;
+//     }
+//     #voice-table-controls {
+//         // display: flex;
+//         // flex-direction: row;
+//         gap: var(--pad);
+//         align-items: center;
+
+//         input {
+//             width: 80%;
+//         }
+
+//         .includeEngines, .includeEngines ul, .includeEngines li {
+//             display: flex;
+//             flex-direction: row;
+//             align-items: center;
+//             border: none;
+
+//             label {
+//                 font-weight: normal;
+//                 width: min-content;
+//                 white-space: nowrap;
+//             }
+//         }
+//     }
+//     /* the table scrolling container */
+//     div[role="region"][aria-labelledby][tabindex] {
+//         overflow: auto;
+//         max-height: $fieldHeight - 28vh;
+//     }
+
+//     table {
+//         summary {
+//             font-weight: bold;
+//         }
+//         td {
+//             width: min-content;
+//         }
+//         // make this one a littie wider
+//         td:nth-child(4) {
+//             min-width: $engineColWidth + 3rem;
+//         }
+//         tr:has(:checked) {
+//             background-color: var(--select-mix);
+//         }
+//         thead {
+//             text-align: left;
+//         }
+//         button {
+//             border: none;
+//         }
+//         th {
+//             background-color: var(--fg);
+//             color: var(--bg);
+//             position: sticky;
+//             top: 0;
+//             padding: 5px;
+//         }
+
+//         /* sorting */
+//         thead th {
+//             cursor: pointer;
+//         }
+//         thead th::after {
+//             margin-left: 5px;
+//         }
+//         thead th[aria-sort='ascending']::after {
+//             content: '▲';
+//         }
+//         thead th[aria-sort='descending']::after {
+//             content: '▼';
+//         }
+//     }
+
+//     .selection-summary {
+//         font-size: smaller;
+//         font-style: italic;
+//     }
+// }
 .tts-voices-config {
     display: flex;
     flex-direction: column;
-    gap: var(--pad);
-
-    p, ul {
-        padding: 0;
-        margin: 0;
-    }
+    gap: 1rem;
+    // grid-template-areas: "header header"
+    // "filters preferred"
+    // "details preferred";
+    // grid-template-columns: min-content auto;
     
-    ul {
-        border: thin solid;
-        border-radius: 5px;
-        padding: 1px;
-        li {
+    .voice-filters {
+        display: flex;
+        flex-direction: row;
+        flex-wrap: wrap;
+        gap: 1rem;
+        // grid-area: filters;
+
+        div {
             display: flex;
             flex-direction: row;
-            gap: calc(var(--pad)/2);
+            
         }
     }
-    
-
-    button {
-        width: min-content;
-        height: min-content;
+    .voice-details {
+        button, label, input {
+            font-size: smaller;
+            font-weight: normal;
+            line-height: 1;
+        }
     }
-    .inline-button {
-        border-radius: 10px;
-        font-size: medium;
-        padding: 2px;
-        margin-left: 5px;
+    p > select {
+        margin-left: .5rem;
+        margin-right: .5rem;
     }
-    #voicesearch {
-        border-radius: 10px;
-    }
-    #voice-table-controls {
-        // display: flex;
-        // flex-direction: row;
-        gap: var(--pad);
-        align-items: center;
-
-        input {
-            width: 80%;
+    .preferred-voices {
+        display: flex;
+        flex-direction: column;
+        
+        div[role=region] {
+            overflow: auto;
+            max-height: 40vh;
         }
 
-        .includeEngines, .includeEngines ul, .includeEngines li {
-            display: flex;
-            flex-direction: row;
-            align-items: center;
-            border: none;
-
-            label {
-                font-weight: normal;
-                width: min-content;
-                white-space: nowrap;
+        table {
+            border-collapse: collapse;
+            caption {
+                text-align: left;
+                padding-bottom: 1rem;
+                font-weight: bold;
+            }
+            th {
+                background-color: var(--fg);
+                color: var(--bg);
+                position: sticky;
+                top: 0;
+                padding: 5px;
+            }
+            button {
+                font-size: smaller;
+            }
+            td {
+                padding: .5rem;
             }
         }
     }
-    /* the table scrolling container */
-    div[role="region"][aria-labelledby][tabindex] {
-        overflow: auto;
-        max-height: $fieldHeight - 28vh;
+    div:has(>select), div:has(>input) {
+        display: flex;
+        gap: 0.5rem;
     }
 
-    table {
-        summary {
-            font-weight: bold;
-        }
-        td {
-            width: min-content;
-        }
-        // make this one a littie wider
-        td:nth-child(4) {
-            min-width: $engineColWidth + 3rem;
-        }
-        tr:has(:checked) {
-            background-color: var(--select-mix);
-        }
-        thead {
-            text-align: left;
-        }
-        button {
-            border: none;
-        }
-        th {
-            background-color: var(--fg);
-            color: var(--bg);
-            position: sticky;
-            top: 0;
-            padding: 5px;
-        }
-
-        /* sorting */
-        thead th {
-            cursor: pointer;
-        }
-        thead th::after {
-            margin-left: 5px;
-        }
-        thead th[aria-sort='ascending']::after {
-            content: '▲';
-        }
-        thead th[aria-sort='descending']::after {
-            content: '▼';
-        }
-    }
-
-    .selection-summary {
-        font-size: smaller;
-        font-style: italic;
-    }
+    
 }
-
 .tts-engines-config {
     padding: 0;
     .desc {

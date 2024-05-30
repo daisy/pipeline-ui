@@ -25,7 +25,7 @@ const settingsFile = resolve(app.getPath('userData'), 'settings.json')
 
 export function readSettings() {
     let settings: ApplicationSettings = {
-        settingsVersion: '1.3.0',
+        settingsVersion: '1.4.0',
         downloadFolder: pathToFileURL(
             resolve(app.getPath('home'), 'Documents', 'DAISY Pipeline results')
         ).href,
@@ -49,6 +49,7 @@ export function readSettings() {
         editJobOnNewTab: true,
         ttsConfig: {
             preferredVoices: [],
+            defaultVoices: [],
             xmlFilepath: pathToFileURL(
                 resolve(app.getPath('userData'), 'ttsConfig.xml')
             ).href,

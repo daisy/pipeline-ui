@@ -13,7 +13,7 @@ export function SettingsWindow() {
         width: 800,
         height: 800,
         resizable: true,
-        alwaysOnTop: true,
+        alwaysOnTop: false,
 
         webPreferences: {
             preload: join(__dirname, 'bridge.js'),

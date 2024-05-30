@@ -20,7 +20,7 @@ function MessageDisplay(m: Message, key) {
 
 export function Messages({ job }: { job: Job }) {
     return (
-        <ul aria-live="polite">
+        <ul>
             {job.jobData.messages
                 ?.sort(messageSort)
                 .map((message: Message, idx) =>

@@ -41,19 +41,16 @@ export function TtsVoicesConfigPane2({
 
     let languageNames = new Intl.DisplayNames(['en'], { type: 'language' })
 
-    let changePreferredVoices = (e, voice: TtsVoice) => {
-        console.log(e, voice)
-        console.log(preferredVoices)
-        console.log(userPreferredVoices)
+    let addToPreferredVoices = (voice: TtsVoice) => {
+        let tmpVoices = [...preferredVoices, voice]
+        setPreferredVoices(tmpVoices)
+        onChangePreferredVoices(tmpVoices)
+    }
 
-        let tmpVoices = []
-        if (e.target.checked) {
-            tmpVoices = [...preferredVoices, voice]
-        } else {
-            tmpVoices = [...preferredVoices]
-            let idx = tmpVoices.findIndex((v) => v.id == voice.id)
-            tmpVoices.splice(idx, 1)
-        }
+    let removeFromPreferredVoices = (voice: TtsVoice) => {
+        let tmpVoices = [...preferredVoices]
+        let idx = tmpVoices.findIndex((v) => v.id == voice.id)
+        tmpVoices.splice(idx, 1)
         setPreferredVoices(tmpVoices)
         onChangePreferredVoices(tmpVoices)
     }
@@ -310,7 +307,17 @@ export function TtsVoicesConfigPane2({
                             }
                         </p>
                         <div>
-                            <button>Add to preferred voices</button>
+                            <button
+                                onClick={(e) =>
+                                    addToPreferredVoices(
+                                        availableVoices.find(
+                                            (v) => v.id == voiceId
+                                        )
+                                    )
+                                }
+                            >
+                                Add to preferred voices
+                            </button>
                         </div>
                     </>
                 ) : (
@@ -389,13 +396,19 @@ export function TtsVoicesConfigPane2({
                                         <td>{languageNames.of(v.lang)}</td>
                                         <td>{v.gender}</td>
                                         <td>
-                                            <select>
-                                                <option>Yes</option>
-                                                <option>No</option>
+                                            <select defaultValue="No">
+                                                <option value="Yes">Yes</option>
+                                                <option value="No">No</option>
                                             </select>
                                         </td>
                                         <td>
-                                            <button>Remove voice</button>
+                                            <button
+                                                onClick={(e) =>
+                                                    removeFromPreferredVoices(v)
+                                                }
+                                            >
+                                                Remove voice
+                                            </button>
                                         </td>
                                     </tr>
                                 ))}

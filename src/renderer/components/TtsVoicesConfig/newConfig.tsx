@@ -54,6 +54,18 @@ export function TtsVoicesConfigPane2({
         setPreferredVoices(tmpVoices)
         onChangePreferredVoices(tmpVoices)
     }
+    let addToDefaultVoices = (voice: TtsVoice) => {
+        let tmpVoices = [...defaultVoices, voice]
+        setDefaultVoices(tmpVoices)
+        onChangeDefaultVoices(tmpVoices)
+    }
+    let removeFromDefaultVoices = (voice: TtsVoice) => {
+        let tmpVoices = [...defaultVoices]
+        let idx = tmpVoices.findIndex((v) => v.id == voice.id)
+        tmpVoices.splice(idx, 1)
+        setDefaultVoices(tmpVoices)
+        onChangeDefaultVoices(tmpVoices)
+    }
 
     // return the first part of the language code (e.g. 'en' for 'en-US')
     // or return the whole thing if there is no dash
@@ -64,7 +76,6 @@ export function TtsVoicesConfigPane2({
     }
 
     let selectLanguage = (e) => {
-        console.log('select language ', e.target.value)
         setLang(e.target.value)
         setEngine('All')
         setLangcode('All')
@@ -72,29 +83,39 @@ export function TtsVoicesConfigPane2({
         setVoiceId('None')
     }
     let selectEngine = (e) => {
-        console.log('select engine ', e.target.value)
         setEngine(e.target.value)
         setLangcode('All')
         setGender('All')
         setVoiceId('None')
     }
-    let selectRegion = (e) => {
-        console.log('select region ', e.target.value)
+    let selectLangcode = (e) => {
         setLangcode(e.target.value)
         setGender('All')
         setVoiceId('None')
     }
     let selectGender = (e) => {
-        console.log('select gender ', e.target.value)
         setGender(e.target.value)
         setVoiceId('None')
     }
     let selectVoice = (e) => {
-        console.log('select voice id', e.target.value)
         setVoiceId(e.target.value)
     }
     let selectPreferredVoicesLanguage = (e) => {
         setPreferredVoicesLanguage(e.target.value)
+    }
+    let selectDefault = (e, v) => {
+        if (e.target.value == 'Yes') {
+            addToDefaultVoices(v)
+        } else {
+            removeFromDefaultVoices(v)
+        }
+    }
+    let selectPriority = (e, v) => {
+        if (e.target.value == 'High') {
+            v.priority = 2
+        } else {
+            v.priority = 1
+        }
     }
 
     return (
@@ -159,10 +180,10 @@ export function TtsVoicesConfigPane2({
                     </select>
                 </div>
                 <div>
-                    <label htmlFor="select-region">Region</label>
+                    <label htmlFor="select-dialect">Dialect</label>
                     <select
-                        id="select-region"
-                        onChange={(e) => selectRegion(e)}
+                        id="select-dialect"
+                        onChange={(e) => selectLangcode(e)}
                         defaultValue={langcode}
                     >
                         <option value="All">All</option>
@@ -353,7 +374,7 @@ export function TtsVoicesConfigPane2({
                     tabIndex={0}
                 >
                     <table
-                        aria-colcount={6}
+                        aria-colcount={7}
                         aria-rowcount={
                             userPreferredVoices.filter((v) => {
                                 if (preferredVoicesLanguage == 'All') {
@@ -372,8 +393,9 @@ export function TtsVoicesConfigPane2({
                                 <th>Name</th>
                                 <th>Engine</th>
                                 <th>Language</th>
-                                <th>Gender</th>
-                                <th>Is default</th>
+                                <th>Gender/Age</th>
+                                <th>Default</th>
+                                <th>Priority</th>
                                 <th>Actions</th>
                             </tr>
                         </thead>
@@ -396,9 +418,41 @@ export function TtsVoicesConfigPane2({
                                         <td>{languageNames.of(v.lang)}</td>
                                         <td>{v.gender}</td>
                                         <td>
-                                            <select defaultValue="No">
+                                            <select
+                                                defaultValue={
+                                                    defaultVoices.find(
+                                                        (vx) => vx.id == v.id
+                                                    )
+                                                        ? 'Yes'
+                                                        : 'No'
+                                                }
+                                                onChange={(e) =>
+                                                    selectDefault(e, v)
+                                                }
+                                            >
                                                 <option value="Yes">Yes</option>
                                                 <option value="No">No</option>
+                                            </select>
+                                        </td>
+                                        <td>
+                                            <select
+                                                defaultValue={
+                                                    v.hasOwnProperty(
+                                                        'priority'
+                                                    ) && v.priority > 1
+                                                        ? 'High'
+                                                        : 'Normal'
+                                                }
+                                                onChange={(e) =>
+                                                    selectPriority(e, v)
+                                                }
+                                            >
+                                                <option value="High">
+                                                    High
+                                                </option>
+                                                <option value="Normal">
+                                                    Normal
+                                                </option>
                                             </select>
                                         </td>
                                         <td>

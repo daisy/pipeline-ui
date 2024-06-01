@@ -137,7 +137,7 @@ export function ScriptForm({ job, script }: { job: Job; script: Script }) {
                     item,
                     stylesheetParameterOptions
                 )
-                console.log("SSP", stylesheetParameterOptions)
+                console.log('SSP', stylesheetParameterOptions)
             } else {
                 options = updateArrayValue(value, item, options)
             }
@@ -201,8 +201,24 @@ export function ScriptForm({ job, script }: { job: Job; script: Script }) {
                 <div>
                     <h1 id={`${ID(job.internalId)}-script-hd`}>
                         {script?.nicename}
+                        {script?.inputs.find((i) =>
+                            i.mediaType.includes(
+                                'application/vnd.pipeline.tts-config+xml'
+                            )
+                        )
+                            ? ' (TTS Enhanced)'
+                            : ''}
                     </h1>
-                    <p>{script?.description}</p>
+                    <p>
+                        {script?.description}
+                        {script?.inputs.find((i) =>
+                            i.mediaType.includes(
+                                'application/vnd.pipeline.tts-config+xml'
+                            )
+                        )
+                            ? '. Text can be recorded in TTS voices.'
+                            : ''}
+                    </p>
                     <p>
                         {script?.homepage ? (
                             <a

@@ -55,6 +55,13 @@ export function NewJobPane({ job }: { job: Job }) {
                             .map((script, idx) => (
                                 <option key={idx} value={script.id}>
                                     {script.nicename}
+                                    {script.inputs.find((i) =>
+                                        i.mediaType.includes(
+                                            'application/vnd.pipeline.tts-config+xml'
+                                        )
+                                    )
+                                        ? ' (TTS Enhanced)'
+                                        : ''}
                                 </option>
                             ))}
                     </select>

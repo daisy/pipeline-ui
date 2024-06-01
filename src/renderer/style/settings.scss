@@ -98,134 +98,18 @@ $engineColWidth: 8rem;
 .fields:has(.tts-engines-config) {
     padding-top: 0;
 }
-// .tts-voices-config {
-//     display: flex;
-//     flex-direction: column;
-//     gap: var(--pad);
-
-//     p, ul {
-//         padding: 0;
-//         margin: 0;
-//     }
-    
-//     ul {
-//         border: thin solid;
-//         border-radius: 5px;
-//         padding: 1px;
-//         li {
-//             display: flex;
-//             flex-direction: row;
-//             gap: calc(var(--pad)/2);
-//         }
-//     }
-    
-
-//     button {
-//         width: min-content;
-//         height: min-content;
-//     }
-//     .inline-button {
-//         border-radius: 10px;
-//         font-size: medium;
-//         padding: 2px;
-//         margin-left: 5px;
-//     }
-//     #voicesearch {
-//         border-radius: 10px;
-//     }
-//     #voice-table-controls {
-//         // display: flex;
-//         // flex-direction: row;
-//         gap: var(--pad);
-//         align-items: center;
-
-//         input {
-//             width: 80%;
-//         }
-
-//         .includeEngines, .includeEngines ul, .includeEngines li {
-//             display: flex;
-//             flex-direction: row;
-//             align-items: center;
-//             border: none;
-
-//             label {
-//                 font-weight: normal;
-//                 width: min-content;
-//                 white-space: nowrap;
-//             }
-//         }
-//     }
-//     /* the table scrolling container */
-//     div[role="region"][aria-labelledby][tabindex] {
-//         overflow: auto;
-//         max-height: $fieldHeight - 28vh;
-//     }
-
-//     table {
-//         summary {
-//             font-weight: bold;
-//         }
-//         td {
-//             width: min-content;
-//         }
-//         // make this one a littie wider
-//         td:nth-child(4) {
-//             min-width: $engineColWidth + 3rem;
-//         }
-//         tr:has(:checked) {
-//             background-color: var(--select-mix);
-//         }
-//         thead {
-//             text-align: left;
-//         }
-//         button {
-//             border: none;
-//         }
-//         th {
-//             background-color: var(--fg);
-//             color: var(--bg);
-//             position: sticky;
-//             top: 0;
-//             padding: 5px;
-//         }
-
-//         /* sorting */
-//         thead th {
-//             cursor: pointer;
-//         }
-//         thead th::after {
-//             margin-left: 5px;
-//         }
-//         thead th[aria-sort='ascending']::after {
-//             content: '▲';
-//         }
-//         thead th[aria-sort='descending']::after {
-//             content: '▼';
-//         }
-//     }
-
-//     .selection-summary {
-//         font-size: smaller;
-//         font-style: italic;
-//     }
-// }
 .tts-voices-config {
     display: flex;
     flex-direction: column;
-    gap: 1rem;
-    // grid-template-areas: "header header"
-    // "filters preferred"
-    // "details preferred";
-    // grid-template-columns: min-content auto;
+    gap: .5rem;
+    height: 100%;
     
     .voice-filters {
         display: flex;
         flex-direction: row;
         flex-wrap: wrap;
         gap: 1rem;
-        // grid-area: filters;
-
+        
         div {
             display: flex;
             flex-direction: row;
@@ -233,10 +117,14 @@ $engineColWidth: 8rem;
         }
     }
     .voice-details {
+        display: flex;
+        flex-direction: row;
+        gap: .5rem;
+        align-items:baseline;
+
         button, label, input {
-            font-size: smaller;
             font-weight: normal;
-            line-height: 1;
+            font-size: 1.1rem;
         }
     }
     p > select {
@@ -249,16 +137,16 @@ $engineColWidth: 8rem;
         
         div[role=region] {
             overflow: auto;
-            max-height: 28vh;
+            height: 37vh;
+        }
+        p {
+            margin-block-start: 0;
         }
 
         table {
+            font-size: smaller;
             border-collapse: collapse;
-            caption {
-                text-align: left;
-                padding-bottom: 1rem;
-                font-weight: bold;
-            }
+            width: 100%;
             th {
                 background-color: var(--fg);
                 color: var(--bg);
@@ -266,11 +154,25 @@ $engineColWidth: 8rem;
                 top: 0;
                 padding: 5px;
             }
-            button {
-                font-size: smaller;
-            }
             td {
-                padding: .5rem;
+                padding: .25rem;
+                padding-left: .5rem;
+                padding-right: .5rem;
+            }
+            
+            label {
+                font-weight: normal;
+            }
+            td.actions {
+                label {
+                    white-space: nowrap;
+                }
+                div:has(input) {
+                    display: flex;
+                    flex-direction: row;
+                    justify-content: space-between;
+                    align-items: center;
+                }
             }
         }
     }
@@ -278,7 +180,20 @@ $engineColWidth: 8rem;
         display: flex;
         gap: 0.5rem;
     }
-
+    
+    p > button {
+        margin-left: 1rem;
+    }
+    button {
+        font-size: medium;
+        border: none;
+        text-decoration: underline;
+        padding: 0;
+        &:hover {
+            background: none;
+            cursor: pointer;
+        }
+    }
     
 }
 .tts-engines-config {

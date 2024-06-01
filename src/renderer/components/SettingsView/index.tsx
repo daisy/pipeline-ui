@@ -15,9 +15,9 @@ import {
     setClosingMainWindowAction,
     setEditJobOnNewTab,
 } from 'shared/data/slices/settings'
-import { TtsVoicesConfigPane2 } from '../TtsVoicesConfig/newConfig'
 import { TtsEnginesConfigPane } from '../TtsEnginesConfig'
 import { TtsMoreOptionsConfigPane } from '../TtsMoreOptionsConfig'
+import { TtsVoicesConfigPane } from '../TtsVoicesConfig'
 const { App } = window // The "App" comes from the bridge
 
 enum SelectedMenuItem {
@@ -96,8 +96,6 @@ export function SettingsView() {
     }
 
     const onTtsVoicesPreferenceChange = (voices) => {
-        console.log("defaults", settings.ttsConfig.defaultVoices)
-
         const newConfig = {
             preferredVoices: [...voices],
             defaultVoices: [...settings.ttsConfig.defaultVoices],
@@ -373,7 +371,7 @@ export function SettingsView() {
                         </div>
                     ) : selectedSection == SelectedMenuItem.TTSVoices ? (
                         <div className="tts-voices-config">
-                            <TtsVoicesConfigPane2
+                            <TtsVoicesConfigPane
                                 availableVoices={pipeline.ttsVoices}
                                 userPreferredVoices={
                                     newSettings.ttsConfig.preferredVoices

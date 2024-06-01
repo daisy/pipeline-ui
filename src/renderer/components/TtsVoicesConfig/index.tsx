@@ -9,312 +9,456 @@ import { Down, Up } from '../SvgIcons'
 export function TtsVoicesConfigPane({
     availableVoices,
     userPreferredVoices,
+    userDefaultVoices,
     onChangePreferredVoices,
+    onChangeDefaultVoices,
 }) {
-    const { pipeline } = useWindowStore()
-    const [voiceList, setVoiceList] = useState(
-        availableVoices.map((v) => ({ ...v, show: true }))
-    )
     const [preferredVoices, setPreferredVoices] = useState([
         ...userPreferredVoices,
     ])
-    const [engines, setEngines] = useState([])
-    const [langs, setLangs] = useState([])
-    const [enginesChecked, setEnginesChecked] = useState([])
+    const [defaultVoices, setDefaultVoices] = useState([...userDefaultVoices])
+    // filter selections
+    const [engine, setEngine] = useState('All')
+    const [lang, setLang] = useState('All')
+    const [langcode, setLangcode] = useState('All')
+    const [gender, setGender] = useState('All')
+    const [voiceId, setVoiceId] = useState('None')
+    const [preferredVoicesLanguage, setPreferredVoicesLanguage] =
+        useState('All')
 
-    // table filter search
-    const [searchString, setSearchString] = useState('')
-    // what direction is each column being sorted in (1 or -1)
-    const [sortSettings, setSortSettings] = useState({
-        prefer: 1,
-        name: -1,
-        engine: -1,
-        lang: -1,
-        gender: -1,
-        selected: 'prefer',
-    })
     let languageNames = new Intl.DisplayNames(['en'], { type: 'language' })
 
-    let changePreferredVoices = (e, voice: TtsVoice) => {
-        if (e.target.checked) {
-            let tmpVoices = [...preferredVoices, voice]
-            setPreferredVoices(tmpVoices)
-            onChangePreferredVoices(tmpVoices)
+    let addToPreferredVoices = (voice: TtsVoice) => {
+        let tmpVoices = [...preferredVoices, voice]
+        setPreferredVoices(tmpVoices)
+        onChangePreferredVoices(tmpVoices)
+    }
+
+    let removeFromPreferredVoices = (voice: TtsVoice) => {
+        let tmpVoices = [...preferredVoices]
+        let idx = tmpVoices.findIndex((v) => v.id == voice.id)
+        tmpVoices.splice(idx, 1)
+        setPreferredVoices(tmpVoices)
+        onChangePreferredVoices(tmpVoices)
+    }
+
+    // return the first part of the language code (e.g. 'en' for 'en-US')
+    // or return the whole thing if there is no dash
+    let getLang = (str) => {
+        let trimmed = str.trim()
+        let idxOfDash = trimmed.indexOf('-')
+        return str.slice(0, idxOfDash == -1 ? undefined : idxOfDash)
+    }
+
+    let selectLanguage = (e) => {
+        setLang(e.target.value)
+        setEngine('All')
+        setLangcode('All')
+        setGender('All')
+        setVoiceId('None')
+    }
+    let selectEngine = (e) => {
+        setEngine(e.target.value)
+        setLangcode('All')
+        setGender('All')
+        setVoiceId('None')
+    }
+    let selectLangcode = (e) => {
+        setLangcode(e.target.value)
+        setGender('All')
+        setVoiceId('None')
+    }
+    let selectGender = (e) => {
+        setGender(e.target.value)
+        setVoiceId('None')
+    }
+    let selectVoice = (e) => {
+        setVoiceId(e.target.value)
+    }
+    let selectPreferredVoicesLanguage = (e) => {
+        setPreferredVoicesLanguage(e.target.value)
+    }
+    let selectDefault = (e, voice) => {
+        console.log('select default', e, voice)
+        let tmpVoices = [...defaultVoices]
+        let oldDefaultIdx = tmpVoices.findIndex(
+            (vx) => getLang(vx.lang) == getLang(voice.lang)
+        )
+        if (oldDefaultIdx != -1) {
+            console.log(getLang(voice.lang), ' has default already')
+            tmpVoices.splice(oldDefaultIdx, 1)
+        }
+        tmpVoices.push(voice)
+        setDefaultVoices(tmpVoices)
+        onChangeDefaultVoices(tmpVoices)
+    }
+    let clearDefaultVoice = (langCode) => {
+        console.log('clear default', langCode)
+        let tmpVoices = [...defaultVoices]
+        let oldDefaultIdx = tmpVoices.findIndex(
+            (vx) => getLang(vx.lang) == langCode
+        )
+        if (oldDefaultIdx != -1) {
+            console.log('found at ', oldDefaultIdx)
+            tmpVoices.splice(oldDefaultIdx, 1)
+            setDefaultVoices(tmpVoices)
+            onChangeDefaultVoices(tmpVoices)
         } else {
-            let tmpVoices = [...preferredVoices]
-            let idx = tmpVoices.findIndex((v) => v.id == voice.id)
-            tmpVoices.splice(idx, 1)
-            setPreferredVoices(tmpVoices)
-            onChangePreferredVoices(tmpVoices)
+            console.log('not found')
         }
     }
-
-    let sortVoices = (sortBy) => {
-        let sortedVoices = sortVoicesArray(voiceList, preferredVoices, sortBy)
-
-        let sortSettings_ = { ...sortSettings }
-        // reverse the sort direction in the settings
-        sortSettings_[sortBy] = sortSettings_[sortBy] == 1 ? -1 : 1
-        sortSettings_.selected = sortBy
-        // reverse the actual data
-        if (sortSettings_[sortBy] == -1) {
-            sortedVoices.reverse()
-        }
-        setVoiceList([...sortedVoices])
-        setSortSettings(sortSettings_)
-    }
-    useEffect(() => {
-        let search = searchString.trim().toLowerCase()
-        let voiceList_ = [...voiceList]
-        if (search == '') {
-            voiceList_.map((v) => (v.show = true))
+    let preferredRowLength = userPreferredVoices.filter((v) => {
+        if (preferredVoicesLanguage == 'All') {
+            return true
         } else {
-            voiceList_.map((v) => {
-                if (
-                    // look in all the text searchable fields
-                    v.name.toLowerCase().indexOf(search) != -1 ||
-                    v.engine.toLowerCase().indexOf(search) != -1 ||
-                    v.lang.toLowerCase().indexOf(search) != -1 ||
-                    v.gender.toLowerCase().indexOf(search) != -1
-                ) {
-                    v.show = true && enginesChecked.includes(v.engine)
-                } else {
-                    v.show = false
-                }
-            })
+            return getLang(v.lang) == preferredVoicesLanguage
         }
-        setVoiceList([...voiceList_])
-    }, [searchString])
+    }).length
 
-    useEffect(() => {
-        let tmpVoices = [...voiceList]
-        for (let v of tmpVoices) {
-            v.show = enginesChecked.includes(v.engine)
-        }
-        setVoiceList(tmpVoices)
-    }, [enginesChecked])
-
-    useEffect(() => {
-        let langs_ = Array.from(new Set(voiceList.map((v) => v.lang)))
-        let engines_ = Array.from(new Set(voiceList.map((v) => v.engine)))
-        // sort on startup
-        sortVoices(sortSettings.selected)
-        // see what engines and languages are included in this voices array
-        setLangs(langs_)
-        setEngines(engines_)
-        // start with all engines selected
-        setEnginesChecked(engines_)
-    }, [])
-
-    let clearSearch = () => {
-        setSearchString('')
-        setEnginesChecked([...engines])
-    }
-
-    let changeEngineFilter = (e, engine) => {
-        let tmpEngines
-        if (e.target.checked) {
-            tmpEngines = [...enginesChecked, engine]
-            setEnginesChecked(tmpEngines)
-        } else {
-            tmpEngines = [...enginesChecked]
-            let idx = tmpEngines.findIndex((eng) => eng == engine)
-            tmpEngines.splice(idx, 1)
-            setEnginesChecked(tmpEngines)
-        }
-    }
-    let getAriaSortValue = (colName) => {
-        return sortSettings.selected == colName
-            ? sortSettings[colName] == 1
-                ? 'ascending'
-                : 'descending'
-            : 'none'
-    }
     return (
         <>
-            <p id="available-voices-label" className="label">
-                <b>Text-to-speech voices</b>
-            </p>
-            <p>
-                Select your preferred voices, saved as your default TTS
-                configuration.
-            </p>
-            <div id="voice-table-controls">
-                <div className="search">
-                    <label htmlFor="voicesearch">Search</label>
-                    <input
-                        id="voicesearch"
-                        type="text"
-                        value={searchString}
-                        onChange={(e) => {
-                            setSearchString(e.target.value)
-                        }}
-                        onKeyDown={(e) => {
-                            e.key === 'Enter' && e.preventDefault()
-                        }}
-                    />
+            <div>
+                <p id="available-voices-label" className="label">
+                    <b>Text-to-speech voices</b>
+                </p>
+            </div>
+
+            <div className="voice-filters">
+                <div>
+                    <label htmlFor="select-language">Language</label>
+                    <select
+                        id="select-language"
+                        onChange={(e) => selectLanguage(e)}
+                        defaultValue={lang}
+                    >
+                        <option value="All">All</option>
+                        {Array.from(
+                            new Set(availableVoices.map((v) => getLang(v.lang)))
+                        )
+                            .sort((a: string, b: string) =>
+                                languageNames.of(a) < languageNames.of(b)
+                                    ? -1
+                                    : 1
+                            )
+                            .map((lang: string, idx: number) => (
+                                <option value={lang} key={idx}>
+                                    {languageNames.of(lang)}
+                                </option>
+                            ))}
+                    </select>
                 </div>
-                <div className="includeEngines">
-                    <span>Show engines: </span>
-                    <ul>
-                        {engines.map((engine, idx) => (
-                            <li key={idx}>
-                                <input
-                                    type="checkbox"
-                                    id={`filter-engine-${engine}`}
-                                    checked={enginesChecked.includes(engine)}
-                                    onClick={(e) =>
-                                        changeEngineFilter(e, engine)
-                                    }
-                                    onChange={(e) =>
-                                        changeEngineFilter(e, engine)
-                                    }
-                                />
-                                <label htmlFor={`filter-engine-${engine}`}>
-                                    {engine}
-                                </label>
-                            </li>
-                        ))}
-                    </ul>
+                <div>
+                    <label htmlFor="select-engine">Engine</label>
+                    <select
+                        id="select-engine"
+                        onChange={(e) => selectEngine(e)}
+                        defaultValue={engine}
+                    >
+                        <option value="All">All</option>
+                        {Array.from(
+                            new Set(
+                                availableVoices
+                                    .filter((v) => {
+                                        if (lang == 'All') {
+                                            return true
+                                        }
+                                        return getLang(v.lang) == lang
+                                    })
+                                    .map((v) => v.engine)
+                            )
+                        )
+                            .sort((a: string, b: string) => (a < b ? -1 : 1))
+                            .map((engine: string, idx: number) => (
+                                <option value={engine} key={idx}>
+                                    {engine.charAt(0).toUpperCase() +
+                                        engine.substring(1)}
+                                </option>
+                            ))}
+                    </select>
+                </div>
+                <div>
+                    <label htmlFor="select-dialect">Dialect</label>
+                    <select
+                        id="select-dialect"
+                        onChange={(e) => selectLangcode(e)}
+                        defaultValue={langcode}
+                    >
+                        <option value="All">All</option>
+                        {Array.from(
+                            new Set(
+                                availableVoices
+                                    .filter((v) => {
+                                        if (lang == 'All') {
+                                            return true
+                                        }
+                                        return getLang(v.lang) == lang
+                                    })
+                                    .filter((v) => {
+                                        if (engine == 'All') {
+                                            return true
+                                        }
+                                        return v.engine == engine
+                                    })
+                                    .map((v) => v.lang)
+                            )
+                        )
+                            .sort((a: string, b: string) =>
+                                languageNames.of(a) < languageNames.of(b)
+                                    ? -1
+                                    : 1
+                            )
+                            .map((lang: string, idx: number) => (
+                                <option value={lang} key={idx}>
+                                    {languageNames.of(lang)}
+                                </option>
+                            ))}
+                    </select>
+                </div>
+                <div>
+                    <label htmlFor="select-gender">Gender/Age</label>
+                    <select
+                        id="select-gender"
+                        onChange={(e) => selectGender(e)}
+                        defaultValue={gender}
+                    >
+                        <option value="All">All</option>
+                        {Array.from(
+                            new Set(
+                                availableVoices
+                                    .filter((v) => {
+                                        if (lang == 'All') {
+                                            return true
+                                        }
+                                        return getLang(v.lang) == lang
+                                    })
+                                    .filter((v) => {
+                                        if (engine == 'All') {
+                                            return true
+                                        }
+                                        return v.engine == engine
+                                    })
+                                    .filter((v) => {
+                                        if (langcode == 'All') {
+                                            return true
+                                        }
+                                        return v.lang == langcode
+                                    })
+                                    .map((v) => v.gender)
+                            )
+                        )
+                            .sort((a: string, b: string) => (a < b ? -1 : 1))
+                            .map((gender: string, idx: number) => (
+                                <option value={gender} key={idx}>
+                                    {gender.charAt(0).toUpperCase() +
+                                        gender.substring(1)}
+                                </option>
+                            ))}
+                    </select>
+                </div>
+                <div>
+                    <label htmlFor="select-voice">Voice</label>
+                    <select
+                        id="select-voice"
+                        onChange={(e) => selectVoice(e)}
+                        defaultValue={voiceId}
+                    >
+                        <option value="None">None</option>
+                        {Array.from(
+                            new Set(
+                                availableVoices
+                                    .filter((v) => {
+                                        if (lang == 'All') {
+                                            return true
+                                        }
+                                        return getLang(v.lang) == lang
+                                    })
+                                    .filter((v) => {
+                                        if (engine == 'All') {
+                                            return true
+                                        }
+                                        return v.engine == engine
+                                    })
+                                    .filter((v) => {
+                                        if (langcode == 'All') {
+                                            return true
+                                        }
+                                        return v.lang == langcode
+                                    })
+                                    .filter((v) => {
+                                        if (gender == 'All') {
+                                            return true
+                                        }
+                                        return v.gender == gender
+                                    })
+                            )
+                        )
+                            // @ts-ignore
+                            .sort((a, b) => (a.name < b.name ? -1 : 1))
+                            .map((v: TtsVoice, idx) => (
+                                //@ts-ignore
+                                <option value={v.id} key={idx}>
+                                    {v.name}
+                                </option>
+                            ))}
+                    </select>
                 </div>
             </div>
-            {voiceList.filter((v) => v.show).length > 0 ? (
+            <div className="voice-details">
+                {voiceId != 'None' ? (
+                    <>
+                        <p>
+                            <b>Selected</b>: "
+                            {availableVoices.find((v) => v.id == voiceId).name}
+                            ",{' '}
+                            {languageNames.of(
+                                availableVoices.find((v) => v.id == voiceId)
+                                    .lang
+                            )}
+                            ,{' '}
+                            {
+                                availableVoices.find((v) => v.id == voiceId)
+                                    .engine
+                            }
+                            ,{' '}
+                            {
+                                availableVoices.find((v) => v.id == voiceId)
+                                    .gender
+                            }
+                            .
+                        </p>
+                        {preferredVoices.find((v) => v.id == voiceId) ? (
+                            <p>This voice is already in your list.</p>
+                        ) : (
+                            <button
+                                onClick={(e) =>
+                                    addToPreferredVoices(
+                                        availableVoices.find(
+                                            (v) => v.id == voiceId
+                                        )
+                                    )
+                                }
+                            >
+                                Add to preferred voices
+                            </button>
+                        )}
+                    </>
+                ) : (
+                    <p>
+                        <i>No voice selected</i>
+                    </p>
+                )}
+            </div>
+            <div className="preferred-voices">
+                <p id="preferred-table-title">
+                    View
+                    <select onChange={(e) => selectPreferredVoicesLanguage(e)}>
+                        <option value="All">All</option>
+                        {Array.from(
+                            new Set(
+                                userPreferredVoices.map((v) => getLang(v.lang))
+                            )
+                        )
+                            .sort((a: string, b: string) =>
+                                languageNames.of(a) < languageNames.of(b)
+                                    ? -1
+                                    : 1
+                            )
+                            .map((lang: string, idx: number) => (
+                                <option value={lang} key={idx}>
+                                    {languageNames.of(lang)}
+                                </option>
+                            ))}
+                    </select>
+                    preferred voices. Showing {preferredRowLength}{' '}
+                    {preferredRowLength == 1 ? 'row' : 'rows'}.
+                </p>
                 <div
                     role="region"
-                    aria-labelledby="available-voices-label"
+                    aria-labelledby="preferred-table-title"
                     tabIndex={0}
                 >
-                    <table
-                        aria-labelledby="available-voices-label"
-                        aria-live="polite"
-                    >
+                    <table aria-colcount={5} aria-rowcount={preferredRowLength}>
                         <thead>
                             <tr>
-                                <th
-                                    onClick={(e) => sortVoices('prefer')}
-                                    aria-sort={getAriaSortValue('prefer')}
-                                    title="Sort by preference"
-                                >
-                                    <span tabIndex={0} role="button">
-                                        Prefer
-                                    </span>
-                                </th>
-                                <th
-                                    onClick={(e) => sortVoices('name')}
-                                    aria-sort={getAriaSortValue('name')}
-                                    title="Sort by name"
-                                >
-                                    <span tabIndex={0} role="button">
-                                        Name
-                                    </span>
-                                </th>
-                                <th
-                                    onClick={(e) => sortVoices('engine')}
-                                    aria-sort={getAriaSortValue('engine')}
-                                    title="Sort by engine"
-                                >
-                                    <span tabIndex={0} role="button">
-                                        Engine
-                                    </span>
-                                </th>
-                                <th
-                                    onClick={(e) => sortVoices('lang')}
-                                    aria-sort={getAriaSortValue('lang')}
-                                    title="Sort by language"
-                                >
-                                    <span tabIndex={0} role="button">
-                                        Language
-                                    </span>
-                                </th>
-                                <th
-                                    onClick={(e) => sortVoices('gender')}
-                                    aria-sort={getAriaSortValue('gender')}
-                                    title="Sort by gender"
-                                >
-                                    <span tabIndex={0} role="button">
-                                        Gender
-                                    </span>
-                                </th>
+                                <th>Name</th>
+                                <th>Engine</th>
+                                <th>Language</th>
+                                <th>Gender/Age</th>
+                                <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody>
-                            {voiceList
-                                .filter((v, idx) => v.show)
-                                .map((v, idx) => {
-                                    let checked =
-                                        preferredVoices.findIndex(
-                                            // @ts-ignore
-                                            (vx) => vx.id == v.id
-                                        ) != -1
-
-                                    return (
-                                        <tr key={idx}>
-                                            <td>
+                            {userPreferredVoices
+                                .filter((v) => {
+                                    if (preferredVoicesLanguage == 'All') {
+                                        return true
+                                    } else {
+                                        return (
+                                            getLang(v.lang) ==
+                                            preferredVoicesLanguage
+                                        )
+                                    }
+                                })
+                                .sort((a, b) => (a.name > b.name ? 1 : -1))
+                                .map((v, idx) => (
+                                    <tr key={idx}>
+                                        <td>{v.name}</td>
+                                        <td>{v.engine}</td>
+                                        <td>{languageNames.of(v.lang)}</td>
+                                        <td>{v.gender}</td>
+                                        <td className="actions">
+                                            <div>
+                                                <label htmlFor={`cb-${v.id}`}>
+                                                    Default for{' '}
+                                                    {languageNames.of(
+                                                        getLang(v.lang)
+                                                    )}
+                                                </label>
                                                 <input
-                                                    type="checkbox"
+                                                    type="radio"
+                                                    name={getLang(v.lang)}
+                                                    id={`cb-${v.id}`}
                                                     onChange={(e) =>
-                                                        changePreferredVoices(
-                                                            e,
-                                                            v
-                                                        )
+                                                        selectDefault(e, v)
                                                     }
-                                                    title={`Select ${v.name}`}
-                                                    checked={checked}
-                                                />
-                                            </td>
-                                            <td>{v.name}</td>
-                                            <td>{v.engine}</td>
-                                            <td>{languageNames.of(v.lang)}</td>
-                                            <td>{v.gender}</td>
-                                        </tr>
-                                    )
-                                })}
+                                                    defaultChecked={
+                                                        defaultVoices.find(
+                                                            (vx) =>
+                                                                vx.id == v.id
+                                                        ) != undefined
+                                                    }
+                                                ></input>
+                                            </div>
+                                            <button
+                                                onClick={(e) =>
+                                                    removeFromPreferredVoices(v)
+                                                }
+                                                title={`Remove ${v.name}`}
+                                            >
+                                                Remove voice
+                                            </button>
+                                        </td>
+                                    </tr>
+                                ))}
                         </tbody>
                     </table>
+                    {/* {preferredVoicesLanguage != 'All' &&
+                    defaultVoices.findIndex(
+                        (vx) => getLang(vx.lang) == preferredVoicesLanguage
+                    ) != -1 ? (
+                        <button
+                            onClick={(e) =>
+                                clearDefaultVoice(preferredVoicesLanguage)
+                            }
+                        >
+                            Clear the default voice for{' '}
+                            {languageNames.of(preferredVoicesLanguage)}
+                        </button>
+                    ) : (
+                        ''
+                    )} */}
                 </div>
-            ) : (
-                <>
-                    <p>
-                        No voices found{' '}
-                        {searchString != '' || enginesChecked.length == 0 ? (
-                            <button
-                                className="inline-button"
-                                onClick={(e) => clearSearch()}
-                            >
-                                Clear search
-                            </button>
-                        ) : (
-                            ''
-                        )}
-                    </p>
-                </>
-            )}
-            <p className="selection-summary" aria-live="polite">
-                {preferredVoices.length} selected:{' '}
-                {preferredVoices.map((v) => v.name).join(', ')}
-            </p>
+            </div>
         </>
     )
-}
-
-function sortVoicesArray(voiceList, preferredVoices, sortBy) {
-    let alphasort = (a, b) => (a > b ? 1 : a == b ? 0 : -1)
-
-    let sortedVoices = voiceList.sort((a, b) => {
-        if (sortBy == 'prefer') {
-            let prefersA = preferredVoices.map((v) => v.id).includes(a.id)
-            let prefersB = preferredVoices.map((v) => v.id).includes(b.id)
-            return prefersA ? 1 : prefersB ? -1 : 0
-        } else if (sortBy == 'name') {
-            return alphasort(a.name, b.name)
-        } else if (sortBy == 'engine') {
-            return alphasort(a.engine, b.engine)
-        } else if (sortBy == 'lang') {
-            return alphasort(a.lang, b.lang)
-        } else if (sortBy == 'gender') {
-            return alphasort(a.gender, b.gender)
-        }
-    })
-
-    return sortedVoices
 }

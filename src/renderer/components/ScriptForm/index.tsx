@@ -8,7 +8,7 @@ import {
     ScriptItemBase,
     ScriptOption,
 } from 'shared/types'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useWindowStore } from 'renderer/store'
 import {
     findValue,
@@ -42,10 +42,15 @@ let updateArrayValue = (value: any, data: ScriptItemBase, arr: NameValue[]) => {
 export function ScriptForm({ job, script }: { job: Job; script: Script }) {
     const [submitInProgress, setSubmitInProgress] = useState(false)
     const [error, setError] = useState(false)
+    const [canRunJob, setCanRunJob] = useState(false)
 
     let required = getAllRequired(script)
     let optional = getAllOptional(script)
     const { settings } = useWindowStore()
+
+    useEffect(() => {
+        setCanRunJob(settings.downloadFolder?.trim() != '')
+    }, [settings.downloadFolder])
 
     // for to-pef scripts
     // the job request must be splitted in two step
@@ -346,6 +351,14 @@ export function ScriptForm({ job, script }: { job: Job; script: Script }) {
                             ''
                         )}
                     </div>
+                    {!canRunJob && (
+                        <div className="warnings">
+                            <p className="warning">
+                                Go under settings and choose a results folder
+                                location before running the job.
+                            </p>
+                        </div>
+                    )}
                     <div className="form-buttons">
                         {isBrailleJob && job.stylesheetParameters != null && (
                             <button className="run" onClick={previous}>
@@ -357,7 +370,11 @@ export function ScriptForm({ job, script }: { job: Job; script: Script }) {
                                 Next
                             </button>
                         ) : (
-                            <button className="run" type="submit">
+                            <button
+                                className="run"
+                                type="submit"
+                                disabled={!canRunJob}
+                            >
                                 Run
                             </button>
                         )}

@@ -279,7 +279,9 @@ export function SettingsView() {
                                 required={true}
                             />
                             {newSettings.downloadFolder == '' ? (
-                                <span className="warning">This field cannot be empty.</span>
+                                <span className="warning">
+                                    This field cannot be empty.
+                                </span>
                             ) : (
                                 ''
                             )}

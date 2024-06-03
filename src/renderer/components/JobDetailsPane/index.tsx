@@ -10,11 +10,19 @@ import { ID, externalLinkClick } from '../../utils/utils'
 import { editJob, removeJob, runJob } from 'shared/data/slices/pipeline'
 import { readableStatus } from 'shared/jobName'
 import { FileLink } from '../FileLink'
+import { useWindowStore } from 'renderer/store'
+import { useState, useEffect } from 'react'
 
 const { App } = window
 
 export function JobDetailsPane({ job }: { job: Job }) {
+    const [canRunJob, setCanRunJob] = useState(false)
+    const { settings } = useWindowStore()
+
     //let probableLogLink = job?.jobData?.href ? `${job.jobData.href}/log` : ''
+    useEffect(() => {
+        setCanRunJob(settings?.downloadFolder?.trim() != '')
+    }, [settings.downloadFolder])
 
     return job.jobRequestError ? (
         <>
@@ -120,31 +128,43 @@ export function JobDetailsPane({ job }: { job: Job }) {
                         <Messages job={job} />
                     </section>
                 </div>
+
                 {job.jobData.status != JobStatus.RUNNING &&
                 job.jobData.status != JobStatus.IDLE ? (
-                    <div className="form-buttons">
-                        <button
-                            onClick={(e) => {
-                                App.store.dispatch(runJob(job))
-                            }}
-                        >
-                            Re-run job
-                        </button>
-                        <button
-                            onClick={(e) => {
-                                App.store.dispatch(editJob(job))
-                            }}
-                        >
-                            Edit job
-                        </button>
-                        <button
-                            onClick={(e) => {
-                                App.store.dispatch(removeJob(job))
-                            }}
-                        >
-                            Close job
-                        </button>
-                    </div>
+                    <>
+                        {!canRunJob && (
+                            <div className="warnings">
+                                <p className="warning">
+                                    Go under settings and choose a results
+                                    folder location before re-running the job.
+                                </p>
+                            </div>
+                        )}
+                        <div className="form-buttons">
+                            <button
+                                onClick={(e) => {
+                                    App.store.dispatch(runJob(job))
+                                }}
+                                disabled={!canRunJob}
+                            >
+                                Re-run job
+                            </button>
+                            <button
+                                onClick={(e) => {
+                                    App.store.dispatch(editJob(job))
+                                }}
+                            >
+                                Edit job
+                            </button>
+                            <button
+                                onClick={(e) => {
+                                    App.store.dispatch(removeJob(job))
+                                }}
+                            >
+                                Close job
+                            </button>
+                        </div>
+                    </>
                 ) : (
                     ''
                 )}

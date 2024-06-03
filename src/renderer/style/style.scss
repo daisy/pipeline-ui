@@ -33,6 +33,10 @@ button {
     
     white-space: nowrap;
 }
+button:disabled {
+    color: var(--disabled);
+    background-color: inherit;
+}
 
 input {
     border-radius: var(--border-radius);
@@ -51,7 +55,13 @@ select {
     background-color: var(--bg);
     color:var(--fg);
 }
-
+.warning {
+    color: var(--warning);
+    font-style: italic;
+}
+p.warning {
+    margin: 0;
+}
 
 .form-field {
     display: flex;
@@ -103,7 +113,9 @@ select {
     button:hover {
         background-color: var(--select-mix);
     }
-
+    button:disabled:hover {
+        background-color: inherit;
+    }
     a {
         color: var(--fg);
     }

@@ -53,6 +53,7 @@ $dark-theme: themeColors($dark-color, $dark-select-color, $dark-error-color-bg, 
     --error-fg: #{map.get($dark-theme, 'error-fg')};
     --error-bg: #{map.get($light-theme, 'error-bg')};
     --warning: #{map.get($light-theme, 'warning')};
+    --disabled: lightgray;
 
     // theme-specific colors
      // text color

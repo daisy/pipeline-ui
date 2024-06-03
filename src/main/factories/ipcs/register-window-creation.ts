@@ -9,9 +9,14 @@ export function registerWindowCreationByIPC({
 }: WindowCreationByIPC) {
     let window: BrowserWindowOrNull
     ipcMain.on(channel, (event) => {
-        if (!createWindow || window) return
-        window = createWindow()
-        window.on('closed', () => (window = null))
-        callback && callback(window, event)
+        if (!createWindow) return
+        if (window) {
+            // the window is already open, bring it to the front
+            window.show()
+        } else {
+            window = createWindow()
+            window.on('closed', () => (window = null))
+            callback && callback(window, event)
+        }
     })
 }

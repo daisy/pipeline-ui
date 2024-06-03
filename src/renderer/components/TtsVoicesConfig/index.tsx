@@ -141,7 +141,7 @@ export function TtsVoicesConfigPane({
                                     : 1
                             )
                             .map((lang: string, idx: number) => (
-                                <option value={lang} key={idx}>
+                                <option value={lang} key={lang}>
                                     {languageNames.of(lang)}
                                 </option>
                             ))}
@@ -169,7 +169,7 @@ export function TtsVoicesConfigPane({
                         )
                             .sort((a: string, b: string) => (a < b ? -1 : 1))
                             .map((engine: string, idx: number) => (
-                                <option value={engine} key={idx}>
+                                <option value={engine} key={engine}>
                                     {engine.charAt(0).toUpperCase() +
                                         engine.substring(1)}
                                 </option>
@@ -208,7 +208,7 @@ export function TtsVoicesConfigPane({
                                     : 1
                             )
                             .map((lang: string, idx: number) => (
-                                <option value={lang} key={idx}>
+                                <option value={lang} key={lang}>
                                     {languageNames.of(lang)}
                                 </option>
                             ))}
@@ -248,7 +248,7 @@ export function TtsVoicesConfigPane({
                         )
                             .sort((a: string, b: string) => (a < b ? -1 : 1))
                             .map((gender: string, idx: number) => (
-                                <option value={gender} key={idx}>
+                                <option value={gender} key={gender}>
                                     {gender.charAt(0).toUpperCase() +
                                         gender.substring(1)}
                                 </option>
@@ -296,7 +296,7 @@ export function TtsVoicesConfigPane({
                             .sort((a, b) => (a.name < b.name ? -1 : 1))
                             .map((v: TtsVoice, idx) => (
                                 //@ts-ignore
-                                <option value={v.id} key={idx}>
+                                <option value={v.id} key={`voice-${v.id}`}>
                                     {v.name}
                                 </option>
                             ))}
@@ -327,7 +327,9 @@ export function TtsVoicesConfigPane({
                             .
                         </p>
                         {preferredVoices.find((v) => v.id == voiceId) ? (
-                            <p>This voice is already in your list.</p>
+                            <p>
+                                <i>This voice is already in your list.</i>
+                            </p>
                         ) : (
                             <button
                                 onClick={(e) =>
@@ -364,7 +366,7 @@ export function TtsVoicesConfigPane({
                                     : 1
                             )
                             .map((lang: string, idx: number) => (
-                                <option value={lang} key={idx}>
+                                <option value={lang} key={lang}>
                                     {languageNames.of(lang)}
                                 </option>
                             ))}
@@ -401,7 +403,7 @@ export function TtsVoicesConfigPane({
                                 })
                                 .sort((a, b) => (a.name > b.name ? 1 : -1))
                                 .map((v, idx) => (
-                                    <tr key={idx}>
+                                    <tr key={v.id}>
                                         <td>{v.name}</td>
                                         <td>{v.engine}</td>
                                         <td>{languageNames.of(v.lang)}</td>
@@ -442,21 +444,18 @@ export function TtsVoicesConfigPane({
                                 ))}
                         </tbody>
                     </table>
-                    {/* {preferredVoicesLanguage != 'All' &&
-                    defaultVoices.findIndex(
-                        (vx) => getLang(vx.lang) == preferredVoicesLanguage
-                    ) != -1 ? (
+                    {preferredVoicesLanguage != 'All' ? (
                         <button
                             onClick={(e) =>
                                 clearDefaultVoice(preferredVoicesLanguage)
                             }
                         >
-                            Clear the default voice for{' '}
+                            Clear default for{' '}
                             {languageNames.of(preferredVoicesLanguage)}
                         </button>
                     ) : (
                         ''
-                    )} */}
+                    )}
                 </div>
             </div>
         </>

@@ -316,7 +316,7 @@ export function SettingsView() {
                                 </label>
                                 <span className="description">
                                     If checked, editing a job will open a
-                                    pre-filled new job instead of reuse the
+                                    pre-filled new job instead of reusing the
                                     existing job.
                                 </span>
                                 <input

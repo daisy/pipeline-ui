@@ -276,7 +276,13 @@ export function SettingsView() {
                                     newSettings.downloadFolder
                                 )}
                                 buttonLabel="Browse"
+                                required={true}
                             />
+                            {newSettings.downloadFolder == '' ? (
+                                <span className="warning">This field cannot be empty.</span>
+                            ) : (
+                                ''
+                            )}
                         </div>
                     ) : selectedSection == SelectedMenuItem.Appearance ? (
                         <div className="form-field">

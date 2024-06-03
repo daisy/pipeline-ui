@@ -60,6 +60,10 @@ $engineColWidth: 8rem;
         width: 80%;
         overflow: scroll;
     }
+    .warning {
+        color: var(--warning);
+        font-style: italic;
+    }
     label {
         font-weight: bold;
         

@@ -6,6 +6,7 @@ import { getPipelineInstance } from './data/middlewares/pipeline'
 import { store } from './data/store'
 import { closeApplication } from './windows'
 import { selectEditOnNewTab } from 'shared/data/slices/settings'
+import { selectDownloadPath } from 'shared/data/slices/settings'
 
 export function buildMenuTemplate({
     appName,
@@ -53,7 +54,8 @@ export function buildMenuTemplate({
         pipelineStatus == PipelineStatus.RUNNING &&
         currentJob &&
         currentJob.state == JobState.NEW &&
-        currentJob.jobRequest != null
+        currentJob.jobRequest != null &&
+        selectDownloadPath(store.getState()) != ''
 
     let canCreateJob = pipelineStatus == PipelineStatus.RUNNING
 

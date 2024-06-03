@@ -82,6 +82,7 @@ $engineColWidth: 8rem;
         border: thin solid;
         border-radius: 5px;
         padding: calc(.5 * var(--pad));
+        overflow: auto;
     }
 }
 

@@ -10,8 +10,6 @@ export function registerSettingsWindowCreationByIPC() {
         window: SettingsWindow,
 
         callback(window, event) {
-            console.log("Window creation callback")
-            
             const channel = IPC.WINDOWS.SETTINGS.WHEN_CLOSE
 
             ipcMain.removeHandler(channel)

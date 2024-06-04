@@ -186,11 +186,32 @@ export function ScriptForm({ job, script }: { job: Job; script: Script }) {
                     job.jobRequest.options
                 )
             }
+            // autofill tts config option if present
+            // if present, it will be an input to the script but an optional one
+            
+            let ttsConfigOpt = optional.find((o) =>
+                o.mediaType.includes('application/vnd.pipeline.tts-config+xml')
+            )
+            console.log(ttsConfigOpt)
+            let ttsConfigExists = await App.pathExists(
+                settings.ttsConfig.xmlFilepath
+            )
+            let inputs = [...job.jobRequest.inputs]
+            if (ttsConfigOpt && ttsConfigExists) {
+                console.log("TTS XML FILEPATH", settings.ttsConfig.xmlFilepath)
+                inputs = updateArrayValue(
+                    settings.ttsConfig.xmlFilepath,
+                    ttsConfigOpt,
+                    inputs
+                )
+            } else if (!ttsConfigExists) {
+                App.log(`File does not exist ${settings.ttsConfig.xmlFilepath}`)
+            }
             setSubmitInProgress(true)
             App.store.dispatch(
                 runJob({
                     ...job,
-                    jobRequest: { ...job.jobRequest, options: [...options] },
+                    jobRequest: { ...job.jobRequest, options: [...options], inputs: [...inputs] },
                 })
             )
             setSubmitInProgress(false)

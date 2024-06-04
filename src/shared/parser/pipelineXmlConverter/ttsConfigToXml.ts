@@ -20,10 +20,14 @@ function ttsConfigToXml(ttsConfig: TtsConfig): string {
             <voice engine="${v.engine}" name="${v.name}" lang="${
                 v.lang
             }" gender="${v.gender}" priority="${isDefault(v) ? 2 : 1}"/>
-            
-            <voice engine="${v.engine}" name="${v.name}" lang="${getLang(
-                v.lang
-            )}" gender="${v.gender}" priority="${isDefault(v) ? 2 : 1}"/>`
+            ${
+                isDefault(v)
+                    ? `<voice engine="${v.engine}" name="${
+                          v.name
+                      }" lang="${getLang(v.lang)}" 
+                gender="${v.gender}" priority="2"/>`
+                    : ''
+            }`
         })
         .join('')}
   </config>`

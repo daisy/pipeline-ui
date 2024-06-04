@@ -35,6 +35,10 @@ export function TtsVoicesConfigPane({
     }
 
     let removeFromPreferredVoices = (voice: TtsVoice) => {
+        if (defaultVoices.find((vx) => vx.id == voice.id)) {
+            clearDefaultVoice(voice.lang)
+        }
+
         let tmpVoices = [...preferredVoices]
         let idx = tmpVoices.findIndex((v) => v.id == voice.id)
         tmpVoices.splice(idx, 1)
@@ -432,9 +436,9 @@ export function TtsVoicesConfigPane({
                                                 ></input>
                                             </div>
                                             <button
-                                                onClick={(e) =>
+                                                onClick={(e) => {
                                                     removeFromPreferredVoices(v)
-                                                }
+                                                }}
                                                 title={`Remove ${v.name}`}
                                             >
                                                 Remove voice

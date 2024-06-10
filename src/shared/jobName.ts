@@ -5,7 +5,7 @@ const readableStatus = {
     RUNNING: 'Running',
     ERROR: 'Error',
     SUCCESS: 'Completed',
-    FAIL: 'Error',
+    FAIL: 'Fail',
 }
 
 function calculateJobName(job: Job) {

@@ -236,6 +236,14 @@ $engineColWidth: 8rem;
                         width: 70%;
                     }
                 }
+                .error {
+                    details {
+                        width:100% !important;
+                        summary {
+                            width:100% !important;
+                        }
+                    }
+                }
             }
         }
 

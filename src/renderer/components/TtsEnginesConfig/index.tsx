@@ -190,9 +190,26 @@ export function TtsEnginesConfigPane({
                                 ))}
                             {engineMessage[engineKeyPrefix] && (
                                 <li className="error">
-                                    <span className={engineMessage[engineKeyPrefix]}>
-                                        {engineMessage[engineKeyPrefix]}
-                                    </span>
+                                    {engineMessage[engineKeyPrefix].split('\n')
+                                        .length === 1 ? (
+                                        <span>
+                                            {engineMessage[engineKeyPrefix]}
+                                        </span>
+                                    ) : (
+                                        <details>
+                                            <summary>
+                                                {
+                                                    engineMessage[
+                                                        engineKeyPrefix
+                                                    ].split('\n')[0]
+                                                }
+                                            </summary>
+                                            {engineMessage[engineKeyPrefix]
+                                                .split('\n')
+                                                .slice(1)
+                                                .join('\n')}
+                                        </details>
+                                    )}
                                 </li>
                             )}
                             {['azure', 'google'].includes(

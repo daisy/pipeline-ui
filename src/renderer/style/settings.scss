@@ -124,12 +124,15 @@ $engineColWidth: 8rem;
     .voice-details {
         display: flex;
         flex-direction: row;
-        gap: .5rem;
+        gap: 1rem;
         align-items:baseline;
 
         button, label, input {
             font-weight: normal;
             font-size: 1.1rem;
+            border: thin solid;
+            padding: 5px;
+            text-decoration: none;
         }
     }
     p > select {
@@ -178,6 +181,10 @@ $engineColWidth: 8rem;
                     justify-content: space-between;
                     align-items: center;
                 }
+            }
+            td.voiceName {
+                max-width: 8rem;
+                white-space: wrap;
             }
         }
     }

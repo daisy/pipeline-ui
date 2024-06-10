@@ -1,5 +1,5 @@
 import { PipelineInstanceProperties, Webservice } from './pipeline'
-import { TtsConfig } from './ttsConfig'
+import { TtsConfig, TtsEngineProperty, TtsVoice } from './ttsConfig'
 
 export enum ColorScheme {
     system = 'System default mode',
@@ -40,7 +40,10 @@ export type ApplicationSettings = {
 }
 
 export function migrateSettings(
-    settings: ApplicationSettings | _ApplicationSettings_v0
+    settings:
+        | ApplicationSettings
+        | _ApplicationSettings_v130
+        | _ApplicationSettings_v0
 ): ApplicationSettings {
     // Take the content of the settings file
     // And apply migration process in order based on current settings version
@@ -73,8 +76,30 @@ const migrators: Map<string, (prev: any) => any> = new Map<
     // Insert new migrators here as [ 'version', (prev) => ApplicationSettings ]
     // Don't forget to update the settings class of previous migrators
     [
+        '1.4.0',
+        (prev: _ApplicationSettings_v130): ApplicationSettings => {
+            const {
+                // Removed, changed or renamed :
+                settingsVersion,
+                ttsConfig,
+                // remaining unchanged settings
+                ...toKeep
+            } = prev
+            // changes in pipeline properties
+
+            return {
+                settingsVersion: '1.4.0',
+                ttsConfig: {
+                    ...prev.ttsConfig,
+                    defaultVoices: [], // new default voices setting
+                },
+                ...toKeep,
+            } as ApplicationSettings
+        },
+    ],
+    [
         '1.3.0',
-        (prev: _ApplicationSettings_v0): ApplicationSettings => {
+        (prev: _ApplicationSettings_v0): _ApplicationSettings_v130 => {
             const {
                 // Removed, changed or renamed :
                 runLocalPipeline,
@@ -97,7 +122,7 @@ const migrators: Map<string, (prev: any) => any> = new Map<
             }
 
             return {
-                settingsVersion: '1.4.0',
+                settingsVersion: '1.3.0',
                 downloadFolder: prev.downloadFolder,
                 pipelineInstanceProps: {
                     pipelineType: 'embedded',
@@ -115,10 +140,30 @@ const migrators: Map<string, (prev: any) => any> = new Map<
                         ? 'keepengine'
                         : 'keepall',
                 ...toKeep,
-            } as ApplicationSettings
+            } as _ApplicationSettings_v130
         },
     ],
 ])
+
+export type _ApplicationSettings_v130 = {
+    settingsVersion: '1.3.0'
+    // Default folder to download the results on the user disk
+    downloadFolder?: string
+    // Pipeline instance properties for IPCs
+    pipelineInstanceProps?: PipelineInstanceProperties
+    // Dark mode selector
+    colorScheme: keyof typeof ColorScheme
+    // Actions to perform when closing the main window
+    onClosingMainWindow?: keyof typeof ClosingMainWindowAction
+    editJobOnNewTab?: boolean
+    // tts preferred voices
+    ttsConfig?: {
+        preferredVoices: Array<TtsVoice>
+        ttsEngineProperties: Array<TtsEngineProperty>
+        xmlFilepath?: string
+    }
+    autoCheckUpdate?: boolean
+}
 
 /////// Keeping previous applications settings here for history and for migrators
 /**
@@ -177,6 +222,10 @@ type _ApplicationSettings_v0 = {
     appStateOnClosingMainWindow?: 'keep' | 'close' | 'ask'
     jobsStateOnClosingMainWindow?: 'keep' | 'close'
     // tts preferred voices
-    ttsConfig?: TtsConfig
+    ttsConfig?: {
+        preferredVoices: Array<TtsVoice>
+        ttsEngineProperties: Array<TtsEngineProperty>
+        xmlFilepath?: string
+    }
     autoCheckUpdate?: boolean
 }

@@ -60,13 +60,21 @@ export function ScriptForm({ job, script }: { job: Job; script: Script }) {
     // - page-width
     // - page-height
 
-    // Cannot use const isBrailleJob = optional.findIndex((item) => item.name === 'stylesheet')
-    // as other non braille steps have a stylesheet option
-    const isBrailleJob = (script && script.id.endsWith('to-pef')) || false
+    // Cannot use this now as other non braille steps have a stylesheet option
+    //const is2StepsJob =
+    //    optional.findIndex((item) => item.name === 'stylesheet') > -1
+    const is2StepsJob = (script && script.id.endsWith('to-pef')) || false
     // Filter out the options that are to be defined in the first step of braille script
-    const filteredOptions = ['stylesheet', 'page-width', 'page-height']
+    const filteredOptions = [
+        'stylesheet',
+        'page-width',
+        'page-height',
+        'audio',
+        'braille',
+        'tts',
+    ]
     const hiddenOptions = ['transform', 'stylesheet-parameters']
-    if (isBrailleJob) {
+    if (is2StepsJob) {
         optional = optional.filter((item) =>
             filteredOptions.includes(item.name)
         )
@@ -85,7 +93,7 @@ export function ScriptForm({ job, script }: { job: Job; script: Script }) {
     // When this property is set
     // 'optional' is what is displayed on screen as optional values. they could technically be job inputs, options, or stylesheet parameters
     // but the user input values aren't stored there, those go in the job request itself
-    if (isBrailleJob && job.stylesheetParameters != null) {
+    if (is2StepsJob && job.stylesheetParameters != null) {
         required = []
         optional = [
             ...getAllOptional(script)
@@ -165,11 +173,37 @@ export function ScriptForm({ job, script }: { job: Job; script: Script }) {
     // submit a job
     let onSubmit = async (e) => {
         e.preventDefault()
-        if (isBrailleJob && job.stylesheetParameters == null) {
-            App.store.dispatch(requestStylesheetParameters(job))
+        if (is2StepsJob && job.stylesheetParameters == null) {
+            /*  constraints on the stylesheet parameters :
+                the /stylesheet-parameters call should not be made if
+                - TTS is disabled (audio = false) on scripts dtbook-to-daisy3, dtbook-to-epub3 and zedai-to-epub3
+                - Braille and TTS is disabled (braille = false and audio = false) on epub3-to-epub3
+                Note : epub-to-daisy also has a "tts" option which might be renamed to "audio".
+             */
+            const hasAudio = job.jobRequest.options.find(
+                (o) => o.name === 'audio' || o.name === 'tts'
+            )
+            const hasBraille = job.jobRequest.options.find(
+                (o) => o.name === 'braille'
+            )
+            if (
+                (hasAudio &&
+                    (hasAudio.value === true || hasAudio.value !== 'false')) ||
+                (hasBraille && hasBraille.value === true) ||
+                job.script.id.endsWith('to-pef')
+            ) {
+                App.store.dispatch(requestStylesheetParameters(job))
+            } else {
+                App.store.dispatch(
+                    updateJob({
+                        ...job,
+                        stylesheetParameters: [],
+                    })
+                )
+            }
         } else {
             let options = [...job.jobRequest.options]
-            if (isBrailleJob) {
+            if (is2StepsJob) {
                 // format all the stylesheet parameter options as a string
                 // and assign it to the 'stylesheet-parameters' option
                 let stylesheetParametersOption =
@@ -381,12 +415,12 @@ export function ScriptForm({ job, script }: { job: Job; script: Script }) {
                         </div>
                     )}
                     <div className="form-buttons">
-                        {isBrailleJob && job.stylesheetParameters != null && (
+                        {is2StepsJob && job.stylesheetParameters != null && (
                             <button className="run" onClick={previous}>
                                 Back
                             </button>
                         )}
-                        {isBrailleJob && job.stylesheetParameters == null ? (
+                        {is2StepsJob && job.stylesheetParameters == null ? (
                             <button className="run" type="submit">
                                 Next
                             </button>

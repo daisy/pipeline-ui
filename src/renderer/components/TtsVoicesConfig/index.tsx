@@ -14,6 +14,8 @@ export function TtsVoicesConfigPane({
     onChangePreferredVoices,
     onChangeDefaultVoices,
 }) {
+    const { pipeline } = useWindowStore()
+
     const [preferredVoices, setPreferredVoices] = useState([
         ...userPreferredVoices,
     ])
@@ -418,7 +420,13 @@ export function TtsVoicesConfigPane({
                                             {voicesTransliterations[v.name] ??
                                                 v.name}
                                         </td>
-                                        <td>{v.engine}</td>
+                                        <td>
+                                            {
+                                                pipeline.ttsEnginesStates[
+                                                    v.engine
+                                                ].name
+                                            }
+                                        </td>
                                         <td>{languageNames.of(v.lang)}</td>
                                         <td>{v.gender}</td>
                                         <td className="actions">

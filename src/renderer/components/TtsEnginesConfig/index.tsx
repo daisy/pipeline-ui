@@ -18,6 +18,11 @@ const enginePropertyKeys = [
     'org.daisy.pipeline.tts.azure.region',
     'org.daisy.pipeline.tts.google.apikey',
 ]
+const engineIds = [
+    'org.daisy.pipeline.tts.azure',
+    'org.daisy.pipeline.tts.google',
+]
+
 const engineNames = {
     'org.daisy.pipeline.tts.azure': 'Azure',
     'org.daisy.pipeline.tts.google': 'Google',
@@ -148,14 +153,16 @@ export function TtsEnginesConfigPane({
                 they will be available under 'Voices'.
             </p>
             <ul>
-                {Object.keys(engineNames).map((engineKeyPrefix, idx) => (
-                    <li key={engineKeyPrefix + '-' + idx}>
-                        {engineNames[engineKeyPrefix]}
+                {/* {Object.keys(engineNames).map((engineKeyPrefix, idx) => ( */}
+                {engineIds.map((engineId, idx) => (
+                    <li key={engineId + '-' + idx}>
+                        {pipeline.ttsEnginesStates[
+                            engineId.split('.').reverse()[0]
+                        ]?.name ?? engineId}
+
                         <ul>
                             {enginePropertyKeys
-                                .filter((propkey) =>
-                                    propkey.includes(engineKeyPrefix)
-                                )
+                                .filter((propkey) => propkey.includes(engineId))
                                 .map((propkey, idx) => (
                                     <li key={propkey + '-' + idx}>
                                         <label htmlFor={propkey}>
@@ -163,7 +170,7 @@ export function TtsEnginesConfigPane({
                                                 // the propkey looks like org.daisy.pipeline.tts.enginename.propkeyname
                                                 // label the form field as "Propkeyname"
                                                 let propkey_ = propkey.replace(
-                                                    engineKeyPrefix + '.',
+                                                    engineId + '.',
                                                     ''
                                                 )
                                                 return (
@@ -188,23 +195,21 @@ export function TtsEnginesConfigPane({
                                         />
                                     </li>
                                 ))}
-                            {engineMessage[engineKeyPrefix] && (
+                            {engineMessage[engineId] && (
                                 <li className="error">
-                                    {engineMessage[engineKeyPrefix].split('\n')
+                                    {engineMessage[engineId].split('\n')
                                         .length === 1 ? (
-                                        <span>
-                                            {engineMessage[engineKeyPrefix]}
-                                        </span>
+                                        <span>{engineMessage[engineId]}</span>
                                     ) : (
                                         <details>
                                             <summary>
                                                 {
                                                     engineMessage[
-                                                        engineKeyPrefix
+                                                        engineId
                                                     ].split('\n')[0]
                                                 }
                                             </summary>
-                                            {engineMessage[engineKeyPrefix]
+                                            {engineMessage[engineId]
                                                 .split('\n')
                                                 .slice(1)
                                                 .join('\n')}
@@ -213,29 +218,25 @@ export function TtsEnginesConfigPane({
                                 </li>
                             )}
                             {['azure', 'google'].includes(
-                                engineKeyPrefix.split('.').slice(-1)[0]
+                                engineId.split('.').slice(-1)[0]
                             ) && (
                                 <li>
-                                    {!isConnectedToTTSEngine(engineKeyPrefix) ||
-                                    enginePropsChanged[engineKeyPrefix] ? (
+                                    {!isConnectedToTTSEngine(engineId) ||
+                                    enginePropsChanged[engineId] ? (
                                         <button
                                             onClick={(e) => {
                                                 e.preventDefault()
-                                                connectToTTSEngine(
-                                                    engineKeyPrefix
-                                                )
+                                                connectToTTSEngine(engineId)
                                             }}
                                         >
                                             Connect
                                         </button>
-                                    ) : isConnectedToTTSEngine(
-                                          engineKeyPrefix
-                                      ) ? (
+                                    ) : isConnectedToTTSEngine(engineId) ? (
                                         <button
                                             onClick={(e) => {
                                                 e.preventDefault()
                                                 disconnectFromTTSEngine(
-                                                    engineKeyPrefix
+                                                    engineId
                                                 )
                                             }}
                                         >

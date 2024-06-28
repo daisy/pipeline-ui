@@ -22,4 +22,6 @@ export type TtsEngineState = {
     status?: 'disabled' | 'connecting' | 'available' | 'disconnecting' | 'error'
     features?: Array<string>
     message?: string
+    name?: string
+    voicesUrl?: string
 }

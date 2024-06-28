@@ -23,6 +23,12 @@ function ttsEnginesToJson(
                 if (ttsEngineElem.getAttribute('message').length > 0) {
                     acc[key].message = ttsEngineElem.getAttribute('message')
                 }
+                if (ttsEngineElem.getAttribute('voices').length > 0) {
+                    acc[key].voicesUrl = ttsEngineElem.getAttribute('voices')
+                }
+                if (ttsEngineElem.getAttribute('nicename').length > 0) {
+                    acc[key].name = ttsEngineElem.getAttribute('nicename')
+                }
             }
             return acc
         }, {})

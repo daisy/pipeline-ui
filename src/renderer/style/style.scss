@@ -256,6 +256,10 @@ p.warning {
                     margin-bottom: calc(var(--pad));
                 }
             }
+
+            ul li:not(.warning):not(:last-of-type):not(:has(.warning)) {
+                display: none;
+            }
         }
 
         .job-results {

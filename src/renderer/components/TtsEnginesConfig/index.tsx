@@ -153,7 +153,6 @@ export function TtsEnginesConfigPane({
                 they will be available under 'Voices'.
             </p>
             <ul>
-                {/* {Object.keys(engineNames).map((engineKeyPrefix, idx) => ( */}
                 {engineIds.map((engineId, idx) => (
                     <li key={engineId + '-' + idx}>
                         {pipeline.ttsEnginesStates[

@@ -96,7 +96,7 @@ function jobElementToJson(jobElm: Element): JobData {
         } catch (e) {
             console.log('error parsing messages', e)
         }
-        jobData.progress = parseInt(messagesElms[0].getAttribute('progress'))
+        jobData.progress = parseFloat(messagesElms[0].getAttribute('progress'))
     }
     let scriptElms = jobElm.getElementsByTagName('script')
     if (scriptElms.length > 0) {

@@ -69,9 +69,11 @@ export function JobDetailsPane({ job }: { job: Job }) {
                         </span>
                     </p>
                     {job.jobData.progress ? (
-                        <p aria-live="polite">
+                        <p>
                             Progress:&nbsp;
-                            <span>{job.jobData.progress * 100}%</span>
+                            <span>
+                                {Math.ceil(job.jobData.progress * 100)}%
+                            </span>
                         </p>
                     ) : (
                         ''

@@ -222,6 +222,10 @@ $engineColWidth: 8rem;
         gap: calc(var(--pad) * 1.5);
         margin-top: calc(var(--pad) * 1);
         padding: 0;
+        /* don't show engine messages if the engine is disabled. they don't make sense. */
+        li:has(input:invalid) .disabled {
+            display: none;
+        }
         &>li {
             font-weight: bold;
             font-size: larger;
@@ -236,20 +240,27 @@ $engineColWidth: 8rem;
                     display: flex;
                     flex-direction: row;
 
-                    :first-child {
+                    label {
                         width: 5rem;
                     }
-                    :last-child {
+                    button, .input, .input input {
                         width: 70%;
                     }
                 }
-                .error {
+                .required-field-message, .error, .disabled {
+                    font-style: italic;
+                    font-weight: normal;
+                    color: var(--warning);
                     details {
                         width:100% !important;
                         summary {
                             width:100% !important;
                         }
                     }
+                }
+                .connecting {
+                    font-style: italic;
+                    font-weight: normal;
                 }
             }
         }
@@ -261,6 +272,9 @@ $engineColWidth: 8rem;
     }
     .Disconnected::after {
         content: ' ❌';
+    }
+    .required-field-message {
+        display: block;
     }
 }
 .tts-more-options {

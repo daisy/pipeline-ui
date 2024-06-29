@@ -58,20 +58,27 @@ export function TtsEnginesConfigPane({
         [engineKey: string]: string
     }>({})
 
+    const [engineStatus, setEngineStatus] = useState<{
+        [engineKey: string]: string
+    }>({})
+
     const [enginePropsChanged, setEnginePropsChanged] = useState<{
         [engineKey: string]: boolean
     }>({})
 
     useEffect(() => {
         let messages = { ...engineMessage }
-
+        let statuses = { ...engineStatus }
         for (let engineKey in pipeline.ttsEnginesStates) {
             // Note : engineKey in template is the full one
             // while in voices only the final name is given
             messages['org.daisy.pipeline.tts.' + engineKey] =
                 pipeline.ttsEnginesStates[engineKey].message
+            statuses['org.daisy.pipeline.tts.' + engineKey] =
+                pipeline.ttsEnginesStates[engineKey].status
         }
         setEngineMessage(messages)
+        setEngineStatus(statuses)
     }, [pipeline.ttsEnginesStates])
 
     let onPropertyChange = (e, propName) => {
@@ -142,7 +149,7 @@ export function TtsEnginesConfigPane({
         // TODO : add a setting to let users disable autoconnect on startup
         onChangeTtsEngineProperties(ttsProps)
     }
-
+    console.log(engineProperties)
     return (
         <>
             <p id="available-voices-label" className="label">
@@ -180,22 +187,32 @@ export function TtsEnginesConfigPane({
                                                 )
                                             })()}
                                         </label>
-                                        <input
-                                            id={propkey}
-                                            type="text"
-                                            onChange={(e) =>
-                                                onPropertyChange(e, propkey)
-                                            }
-                                            value={
-                                                engineProperties.find(
-                                                    (p) => p.key == propkey
-                                                )?.value ?? ''
-                                            }
-                                        />
+                                        <div className="input">
+                                            <input
+                                                id={propkey}
+                                                type="text"
+                                                onChange={(e) =>
+                                                    onPropertyChange(e, propkey)
+                                                }
+                                                value={
+                                                    engineProperties.find(
+                                                        (p) => p.key == propkey
+                                                    )?.value ?? ''
+                                                }
+                                                required
+                                            />
+                                            {!(engineProperties.find(
+                                                (p) => p.key == propkey
+                                            )?.value) && (
+                                                <span className="required-field-message">
+                                                    This field is required
+                                                </span>
+                                            )}
+                                        </div>
                                     </li>
                                 ))}
                             {engineMessage[engineId] && (
-                                <li className="error">
+                                <li className={engineStatus[engineId]}>
                                     {engineMessage[engineId].split('\n')
                                         .length === 1 ? (
                                         <span>{engineMessage[engineId]}</span>

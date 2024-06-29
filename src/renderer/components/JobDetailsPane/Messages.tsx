@@ -5,7 +5,6 @@ const { App } = window
 let messageSort = (a, b) => (a.sequence < b.sequence ? b : a)
 
 function MessageDisplay(m: Message, key, depth, verbose, showWarnings) {
-    console.log('verbose', verbose)
     // show messages that pass the verbosity filter
     // always show error and warning
     let renderMessageChildren = (messages) => (
@@ -51,29 +50,32 @@ function MessageDisplay(m: Message, key, depth, verbose, showWarnings) {
 export function Messages({ job }: { job: Job }) {
     const [verbose, setVerbose] = useState(false)
     const [showWarnings, setShowWarnings] = useState(true)
+    const [showWarningsV, setShowWarningsV] = useState(true)
 
-    useEffect(() => {})
     return (
         <>
             <div className="messageFilters">
                 <div>
-                    <label htmlFor={`${job.internalId}-showwarnings`}>
+                    <label id={`${job.internalId}-showwarnings-label`}>
                         Show warnings
                     </label>
                     {verbose ? (
                         <input
-                            id={`${job.internalId}-showwarnings`}
-                            disabled
+                            aria-labelledby={`${job.internalId}-showwarnings-label`}
                             type="checkbox"
-                            checked
+                            //@ts-ignore
+                            defaultChecked={true}
+                            disabled
+                            key={`${job.internalId}-showwarnings-a`}
                         ></input>
                     ) : (
                         <input
-                            id={`${job.internalId}-showwarnings`}
+                            aria-labelledby={`${job.internalId}-showwarnings-label`}
                             type="checkbox"
                             //@ts-ignore
                             onClick={(e) => setShowWarnings(e.target.checked)}
-                            defaultChecked={verbose || showWarnings}
+                            defaultChecked={showWarnings}
+                            key={`${job.internalId}-showwarnings-b`}
                         ></input>
                     )}
                 </div>

@@ -4,29 +4,20 @@ const { App } = window
 
 let messageSort = (a, b) => (a.sequence < b.sequence ? b : a)
 
-function MessageDisplay(m: Message, key, depth, verbose, showWarnings) {
+function MessageDisplay(m: Message, key, depth, verbose) {
     // show messages that pass the verbosity filter
     // always show error and warning
     let renderMessageChildren = (messages) => (
         <>
             {messages.map((msg, idx) =>
-                MessageDisplay(
-                    msg,
-                    `${key}-${idx}`,
-                    depth + 1,
-                    verbose,
-                    showWarnings
-                )
+                MessageDisplay(msg, `${key}-${idx}`, depth + 1, verbose)
             )}
         </>
     )
 
     return (
         <>
-            {verbose ||
-            (!verbose && depth < 2) ||
-            m.level == 'ERROR' ||
-            (showWarnings && m.level == 'WARNING') ? (
+            {verbose || m.level == 'ERROR' || m.level == 'WARNING' ? (
                 <li key={key} className={MessageLevel[m.level].toLowerCase()}>
                     {m.level == 'INFO'
                         ? m.content
@@ -49,45 +40,19 @@ function MessageDisplay(m: Message, key, depth, verbose, showWarnings) {
 
 export function Messages({ job }: { job: Job }) {
     const [verbose, setVerbose] = useState(false)
-    const [showWarnings, setShowWarnings] = useState(true)
-    const [showWarningsV, setShowWarningsV] = useState(true)
 
     return (
         <>
             <div className="messageFilters">
                 <div>
-                    <label id={`${job.internalId}-showwarnings-label`}>
-                        Show warnings
+                    <label htmlFor={`${job.internalId}-verbose`}>
+                        View all messages
                     </label>
-                    {verbose ? (
-                        <input
-                            aria-labelledby={`${job.internalId}-showwarnings-label`}
-                            type="checkbox"
-                            //@ts-ignore
-                            defaultChecked={true}
-                            disabled
-                            key={`${job.internalId}-showwarnings-a`}
-                        ></input>
-                    ) : (
-                        <input
-                            aria-labelledby={`${job.internalId}-showwarnings-label`}
-                            type="checkbox"
-                            //@ts-ignore
-                            onClick={(e) => setShowWarnings(e.target.checked)}
-                            defaultChecked={showWarnings}
-                            key={`${job.internalId}-showwarnings-b`}
-                        ></input>
-                    )}
-                </div>
-                <div>
-                    <label htmlFor={`${job.internalId}-verbose`}>Verbose</label>
                     <input
                         id={`${job.internalId}-verbose`}
                         type="checkbox"
-                        onClick={(e) => {
-                            //@ts-ignore
-                            setVerbose(e.target.checked)
-                        }}
+                        //@ts-ignore
+                        onClick={(e) => setVerbose(e.target.checked)}
                         defaultChecked={verbose}
                     ></input>
                 </div>
@@ -100,8 +65,7 @@ export function Messages({ job }: { job: Job }) {
                             message,
                             `log-${job?.internalId}-${idx}`,
                             0,
-                            verbose,
-                            showWarnings
+                            verbose
                         )
                     )}
             </ul>

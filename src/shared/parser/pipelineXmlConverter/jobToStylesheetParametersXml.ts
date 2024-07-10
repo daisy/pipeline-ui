@@ -126,7 +126,7 @@ function jobToStylesheetParametersXml(j: Job): string {
     return `<?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <parameters xmlns="http://www.daisy.org/ns/pipeline/data">
     ${mediaTag}
-    <!-- ${mimetype} -->
+    ${mimetype}
     <userStylesheets>${
         stylesheet && stylesheet.value
             ? Array.isArray(stylesheet.value)

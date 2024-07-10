@@ -60,10 +60,8 @@ export function ScriptForm({ job, script }: { job: Job; script: Script }) {
     // - page-width
     // - page-height
 
-    // Cannot use this now as other non braille steps have a stylesheet option
-    //const is2StepsJob =
-    //    optional.findIndex((item) => item.name === 'stylesheet') > -1
-    const is2StepsJob = (script && script.id.endsWith('to-pef')) || false
+    const is2StepsJob =
+        optional.findIndex((item) => item.name === 'stylesheet-parameters') > -1
     // Filter out the options that are to be defined in the first step of braille script
     const filteredOptions = [
         'stylesheet',
@@ -222,7 +220,7 @@ export function ScriptForm({ job, script }: { job: Job; script: Script }) {
             }
             // autofill tts config option if present
             // if present, it will be an input to the script but an optional one
-            
+
             let ttsConfigOpt = optional.find((o) =>
                 o.mediaType.includes('application/vnd.pipeline.tts-config+xml')
             )
@@ -232,7 +230,6 @@ export function ScriptForm({ job, script }: { job: Job; script: Script }) {
             )
             let inputs = [...job.jobRequest.inputs]
             if (ttsConfigOpt && ttsConfigExists) {
-                console.log("TTS XML FILEPATH", settings.ttsConfig.xmlFilepath)
                 inputs = updateArrayValue(
                     settings.ttsConfig.xmlFilepath,
                     ttsConfigOpt,
@@ -245,7 +242,11 @@ export function ScriptForm({ job, script }: { job: Job; script: Script }) {
             App.store.dispatch(
                 runJob({
                     ...job,
-                    jobRequest: { ...job.jobRequest, options: [...options], inputs: [...inputs] },
+                    jobRequest: {
+                        ...job.jobRequest,
+                        options: [...options],
+                        inputs: [...inputs],
+                    },
                 })
             )
             setSubmitInProgress(false)

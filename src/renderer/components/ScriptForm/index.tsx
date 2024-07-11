@@ -222,9 +222,9 @@ export function ScriptForm({ job, script }: { job: Job; script: Script }) {
             // if present, it will be an input to the script but an optional one
 
             let ttsConfigOpt = optional.find((o) =>
-                o.mediaType.includes('application/vnd.pipeline.tts-config+xml')
+                o.mediaType?.includes('application/vnd.pipeline.tts-config+xml')
             )
-            console.log(ttsConfigOpt)
+
             let ttsConfigExists = await App.pathExists(
                 settings.ttsConfig.xmlFilepath
             )

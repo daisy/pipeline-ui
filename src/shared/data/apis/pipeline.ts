@@ -44,6 +44,7 @@ interface Response {
 interface RequestInit {
     method?: string
     body?: {}
+    signals?: AbortSignal
 }
 /**
  * PipelineAPI class to fetch data from the webserver.
@@ -81,7 +82,10 @@ export class PipelineAPI {
                 webserviceUrlBuilder(ws),
                 JSON.stringify(options)
             )
-            return this.fetchFunc(webserviceUrlBuilder(ws), options)
+            return this.fetchFunc(webserviceUrlBuilder(ws), {
+                ...options,
+                signals: options?.signals ?? AbortSignal.timeout(5000),
+            })
                 .then((response: Response) => response.text())
                 .then((text: string) => parser(text))
         }

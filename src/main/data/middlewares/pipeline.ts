@@ -208,17 +208,19 @@ function startMonitor(j: Job, ws: Webservice, getState, dispatch) {
                         ...value,
                         messages: ['removed to keep log cleaner'],
                     })
+                    let updatedJob = {
+                        ...j,
+                        jobData: value,
+                    }
                     const finished = [
                         JobStatus.ERROR,
                         JobStatus.FAIL,
                         JobStatus.SUCCESS,
                     ].includes(value.status)
-
                     if (finished) {
                         clearInterval(monitor)
+                        updatedJob.state = JobState.ENDED
                     }
-                    let updatedJob = { ...j }
-                    updatedJob.jobData = value
                     const newJobName = `${
                         updatedJob.jobData.nicename ??
                         updatedJob.jobData.script.nicename
@@ -712,68 +714,83 @@ export function pipelineMiddleware({ getState, dispatch }) {
             case runJob.type:
                 // Launch the job with the API and start monitoring its execution
                 // Also change its state to submited
-                let runJobInterval = null
                 const jobToRun = action.payload as Job
                 // Empty previous references to jobData results for re run
                 if (jobToRun.jobData && jobToRun.jobData.results) {
                     jobToRun.jobData.results = undefined
                 }
-                info('Launching job', JSON.stringify(jobToRun))
-                const launchJobOn = pipelineAPI.launchJob(jobToRun)
-                runJobInterval = setInterval(() => {
-                    if (webservice) {
-                        launchJobOn(webservice)
-                            .then((jobResponse) => {
-                                const updatedJob = {
+                if (
+                    jobToRun.state === JobState.SUBMITTED ||
+                    jobToRun.state === JobState.SUBMITTING
+                ) {
+                    info('Job is already launched', JSON.stringify(jobToRun))
+                } else if (webservice) {
+                    info('Launching job', JSON.stringify(jobToRun))
+                    dispatch(
+                        updateJob({ ...jobToRun, state: JobState.SUBMITTING })
+                    )
+                    pipelineAPI
+                        .launchJob(jobToRun)(webservice)
+                        .then((jobResponse) => {
+                            const updatedJob = {
+                                ...jobToRun,
+                                state: JobState.SUBMITTED,
+                            } as Job
+                            if (
+                                jobResponse.type == 'JobRequestError' ||
+                                jobResponse.type == 'JobUnknownResponse'
+                            ) {
+                                updatedJob.jobRequestError =
+                                    jobResponse as JobRequestError
+                            } else {
+                                updatedJob.jobData = jobResponse as JobData
+                                // start a job monitor
+                                startMonitor(
+                                    updatedJob,
+                                    webservice,
+                                    getState,
+                                    dispatch
+                                )
+                            }
+                            dispatch(updateJob(updatedJob))
+                        })
+                        .catch((e) => {
+                            error('error launching job', jobToRun.internalId, e)
+                            dispatch(
+                                updateJob({
                                     ...jobToRun,
-                                    state: JobState.SUBMITTED,
-                                } as Job
-                                if (
-                                    jobResponse.type == 'JobRequestError' ||
-                                    jobResponse.type == 'JobUnknownResponse'
-                                ) {
-                                    updatedJob.jobRequestError =
-                                        jobResponse as JobRequestError
-                                } else {
-                                    updatedJob.jobData = jobResponse as JobData
-                                    // start a job monitor
-                                    startMonitor(
-                                        updatedJob,
-                                        webservice,
-                                        getState,
-                                        dispatch
-                                    )
-                                }
-                                clearInterval(runJobInterval)
-                                dispatch(updateJob(updatedJob))
-                            })
-                            .catch((e) => {
-                                clearInterval(runJobInterval)
-                                error(
-                                    'error launching job',
-                                    jobToRun.internalId,
-                                    e
-                                )
-                                dispatch(
-                                    updateJob({
-                                        ...jobToRun,
-                                        jobData: {
-                                            ...jobToRun.jobData,
-                                            status: JobStatus.ERROR,
+                                    jobData: {
+                                        ...jobToRun.jobData,
+                                        status: JobStatus.ERROR,
+                                    },
+                                    errors: [
+                                        {
+                                            error:
+                                                e instanceof ParserException
+                                                    ? e.parsedText
+                                                    : String(e),
                                         },
-                                        errors: [
-                                            {
-                                                error:
-                                                    e instanceof ParserException
-                                                        ? e.parsedText
-                                                        : String(e),
-                                            },
-                                        ],
-                                    })
-                                )
-                            })
-                    }
-                }, 1000)
+                                    ],
+                                })
+                            )
+                        })
+                } else {
+                    error('No webservice available to run job', jobToRun)
+                    dispatch(
+                        updateJob({
+                            ...jobToRun,
+                            jobData: {
+                                ...jobToRun.jobData,
+                                status: JobStatus.ERROR,
+                            },
+                            errors: [
+                                {
+                                    error: 'No webservice available',
+                                },
+                            ],
+                        })
+                    )
+                }
                 break
             case requestStylesheetParameters.type:
                 const job = action.payload as Job

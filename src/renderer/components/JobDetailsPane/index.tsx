@@ -1,7 +1,7 @@
 /*
 Details of a submitted job
 */
-import { Job, JobStatus } from '/shared/types'
+import { Job, JobState, JobStatus } from '/shared/types'
 import { Messages } from './Messages'
 import { Settings } from './Settings'
 import { Results } from './Results'
@@ -17,12 +17,19 @@ const { App } = window
 
 export function JobDetailsPane({ job }: { job: Job }) {
     const [canRunJob, setCanRunJob] = useState(false)
+    const [isRerunning, setIsRerunning] = useState(false)
     const { settings } = useWindowStore()
 
     //let probableLogLink = job?.jobData?.href ? `${job.jobData.href}/log` : ''
     useEffect(() => {
         setCanRunJob(settings?.downloadFolder?.trim() != '')
     }, [settings.downloadFolder])
+    useEffect(() => {
+        // In case the job is rejected and its state is reset to a previous
+        setIsRerunning(
+            [JobState.SUBMITTING, JobState.SUBMITTED].includes(job.state)
+        )
+    }, [job.state])
 
     return job.jobRequestError ? (
         <>
@@ -61,11 +68,17 @@ export function JobDetailsPane({ job }: { job: Job }) {
                     <p aria-live="polite">
                         Status:&nbsp;
                         <span
-                            className={`status ${readableStatus[
-                                job.jobData.status
-                            ].toLowerCase()}`}
+                            className={`status ${
+                                job.jobData?.status
+                                    ? readableStatus[
+                                          job.jobData.status
+                                      ].toLowerCase()
+                                    : readableStatus.LAUNCHING.toLowerCase()
+                            }`}
                         >
-                            {readableStatus[job.jobData.status]}{' '}
+                            {job.jobData?.status
+                                ? readableStatus[job.jobData.status]
+                                : readableStatus.LAUNCHING}{' '}
                         </span>
                     </p>
                     {job.jobData.progress ? (
@@ -146,8 +159,9 @@ export function JobDetailsPane({ job }: { job: Job }) {
                             <button
                                 onClick={(e) => {
                                     App.store.dispatch(runJob(job))
+                                    setIsRerunning(true)
                                 }}
-                                disabled={!canRunJob}
+                                disabled={!canRunJob || isRerunning}
                             >
                                 Re-run job
                             </button>

@@ -243,7 +243,9 @@ export type JobRequestError = {
 
 export enum JobState {
     NEW,
+    SUBMITTING,
     SUBMITTED,
+    ENDED,
 }
 
 export type ScriptItemBase = {
@@ -262,7 +264,7 @@ export type ScriptItemBase = {
 export type ScriptInput = ScriptItemBase & {
     type: 'anyFileURI'
     kind: 'input'
-    ordered: false,
+    ordered: false
 }
 
 export type ScriptOption = ScriptItemBase & {

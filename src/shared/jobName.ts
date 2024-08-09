@@ -1,6 +1,7 @@
 import { Job, JobState, JobStatus } from './types'
 
 const readableStatus = {
+    LAUNCHING: 'Launching',
     IDLE: 'Waiting',
     RUNNING: 'Running',
     ERROR: 'Error',

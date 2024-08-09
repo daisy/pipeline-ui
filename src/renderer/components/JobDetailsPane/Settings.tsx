@@ -12,11 +12,10 @@ const { App } = window
 
 export function Settings({ job }: { job: Job }) {
     const { pipeline } = useWindowStore()
-    const scriptDetails = pipeline.scripts.filter(
-        (s) => s.id == job.jobData.script.id
-    )[0]
+    const scriptId = job.jobData?.script?.id || job.script?.id
+    const scriptDetails = pipeline.scripts.filter((s) => s.id == scriptId)[0]
     if (!scriptDetails) {
-        return <p>Unrecognized script {job.jobData.script.id}</p>
+        return <p>Unrecognized script {scriptId}</p>
     }
 
     return (

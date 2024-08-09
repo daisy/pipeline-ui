@@ -392,6 +392,9 @@ Then close the program using the port and restart this application.`,
                     `Using existing ${this.props.logsFolder} for pipeline logs`
                 )
             }
+            if (existsSync(resolve(app.getPath('temp'), 'dp2key.txt'))) {
+                rmSync(resolve(app.getPath('temp'), 'dp2key.txt'))
+            }
             // avoid using bat to control the runner ?
             // Spawn pipeline process
             let command = resolve(this.props.jrePath, 'bin', 'java')

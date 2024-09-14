@@ -6,6 +6,8 @@ function voiceElementToJson(voiceElm: Element): TtsVoice {
         gender: voiceElm.getAttribute('gender'),
         lang: voiceElm.getAttribute('lang'),
         engine: voiceElm.getAttribute('engine'),
+        href: voiceElm.getAttribute('href'),
+        preview: voiceElm.getAttribute('preview'),
     }
     voice.id = `${voice.engine}-${voice.name}`
     return voice

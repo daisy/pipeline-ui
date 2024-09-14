@@ -5,6 +5,8 @@ export type TtsVoice = {
     gender: string
     priority?: number
     id?: string
+    href: string
+    preview: string
 }
 export type TtsEngineProperty = {
     key: string

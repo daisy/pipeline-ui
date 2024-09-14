@@ -6,6 +6,7 @@ import { useWindowStore } from 'renderer/store'
 import { TtsConfig, TtsVoice } from 'shared/types/ttsConfig'
 import { Down, Up } from '../SvgIcons'
 import { voicesTransliterations } from './voiceTransliterations'
+import { VoicePreview } from './VoicePreview'
 
 export function TtsVoicesConfigPane({
     availableVoices,
@@ -338,6 +339,9 @@ export function TtsVoicesConfigPane({
                             }
                             .
                         </p>
+                        <VoicePreview
+                            voice={availableVoices.find((v) => v.id == voiceId)}
+                        ></VoicePreview>
                         {preferredVoices.find((v) => v.id == voiceId) ? (
                             <p>
                                 <i>This voice is already in your list.</i>

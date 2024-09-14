@@ -106,7 +106,7 @@ $engineColWidth: 8rem;
 .tts-voices-config {
     display: flex;
     flex-direction: column;
-    gap: .5rem;
+    gap: .75rem;
     height: 100%;
     
     .voice-filters {
@@ -122,11 +122,23 @@ $engineColWidth: 8rem;
         }
     }
     .voice-details {
-        display: flex;
-        flex-direction: row;
+        display: grid;
+        grid-template-areas: "desc preview"
+        "add add";
         gap: 1rem;
         align-items:baseline;
-
+        p {
+            grid-area: desc;
+            margin-top: .25rem;
+            margin-bottom: 0;
+        }
+        button {
+            grid-area: add;
+        }
+        audio {
+            grid-area: preview;
+            height: 1rem;
+        }
         button, label, input {
             font-weight: normal;
             font-size: 1.1rem;

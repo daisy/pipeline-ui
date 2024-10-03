@@ -570,3 +570,12 @@ button.grayedout {
 button.grayedout:hover {
     background: none !important;
 }
+
+.sponsorship {
+    align-self: center;
+    border: 2px var(--fg) solid;
+    bottom: 5%;
+    position: absolute;
+    border-radius: 5px;
+    padding: 10px;
+}

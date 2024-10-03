@@ -1,7 +1,7 @@
 /*
 Select a script and submit a new job
 */
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { ScriptForm } from '../ScriptForm'
 import { useWindowStore } from 'renderer/store'
 import { ID } from 'renderer/utils/utils'
@@ -11,11 +11,55 @@ import {
     removeJob,
     updateJob,
 } from 'shared/data/slices/pipeline'
+import {
+    save,
+    setSponsorshipMessageLastShown,
+} from 'shared/data/slices/settings'
+import { externalLinkClick } from 'renderer/utils'
 
 const { App } = window
+import {
+    defaultSponsorshipMessage,
+    updateSponsorshipMessage,
+} from '../../utils'
 
+// is datestring more than 2 weeks old
+let isExpired = (datestring) => {
+    if (datestring == '') return true
+
+    const TWOWEEKS_MS = 1209600000
+    let date = new Date(datestring)
+    let now = Date.now()
+    if (now - date.getMilliseconds() > TWOWEEKS_MS) {
+        return true
+    }
+    return false
+}
 export function NewJobPane({ job }: { job: Job }) {
-    const { pipeline } = useWindowStore()
+    const { settings, pipeline } = useWindowStore()
+    const [sponsorshipMessage, setSponsorshipMessage] = useState(
+        defaultSponsorshipMessage
+    )
+    const [showSponsorshipMessage, setShowSponsorshipMessage] = useState(
+        isExpired(settings.sponsorshipMessageLastShown)
+    )
+
+    // useMemo should only run once per render
+    useMemo(() => {
+        const fetchData = async () => {
+            let updatedSponsorshipMessage = await updateSponsorshipMessage()
+            setSponsorshipMessage({ ...updatedSponsorshipMessage })
+        }
+        fetchData().catch()
+        if (isExpired(settings.sponsorshipMessageLastShown)) {
+            setShowSponsorshipMessage(true)
+            // update settings with a new date
+            App.store.dispatch(
+                setSponsorshipMessageLastShown(Date.now().toString())
+            )
+            App.store.dispatch(save())
+        }
+    }, [])
 
     let onSelectChange = (e) => {
         let selection = pipeline.scripts.find(
@@ -107,6 +151,19 @@ export function NewJobPane({ job }: { job: Job }) {
                 >
                     Cancel
                 </button>
+            )}
+            {job.script == null && showSponsorshipMessage ? (
+                <div className="sponsorship">
+                    <a
+                        href={sponsorshipMessage.url}
+                        onClick={(e) => externalLinkClick(e, App)}
+                    >
+                        {sponsorshipMessage.buttonText}
+                    </a>
+                    <p>{sponsorshipMessage.messageText}</p>
+                </div>
+            ) : (
+                ''
             )}
         </>
     )

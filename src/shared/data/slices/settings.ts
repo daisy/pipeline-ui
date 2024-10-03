@@ -99,6 +99,12 @@ export const settings = createSlice({
         ) => {
             state.ttsConfig = action.payload
         },
+        setSponsorshipMessageLastShown: (
+            state: ApplicationSettings,
+            action: PayloadAction<string>
+        ) => {
+            state.sponsorshipMessageLastShown = action.payload
+        },
     },
 })
 
@@ -112,6 +118,7 @@ export const {
     setTtsConfig,
     setAutoCheckUpdate,
     setEditJobOnNewTab,
+    setSponsorshipMessageLastShown,
 } = settings.actions
 
 export const selectors = {
@@ -134,5 +141,5 @@ export const {
     selectClosingAction,
     selectTtsConfig,
     selectAutoCheckUpdate,
-    selectEditOnNewTab
+    selectEditOnNewTab,
 } = selectors

@@ -24,7 +24,7 @@ export enum ClosingMainWindowAction {
  * - Merged app and job actions on closing main window
  */
 export type ApplicationSettings = {
-    settingsVersion: '1.4.0'
+    settingsVersion: '1.5.0'
     // Default folder to download the results on the user disk
     downloadFolder?: string
     // Pipeline instance properties for IPCs
@@ -37,6 +37,7 @@ export type ApplicationSettings = {
     // tts preferred voices
     ttsConfig?: TtsConfig
     autoCheckUpdate?: boolean
+    sponsorshipMessageLastShown?: string
 }
 
 export function migrateSettings(
@@ -76,8 +77,18 @@ const migrators: Map<string, (prev: any) => any> = new Map<
     // Insert new migrators here as [ 'version', (prev) => ApplicationSettings ]
     // Don't forget to update the settings class of previous migrators
     [
+        '1.5.0',
+        (prev: _ApplicationSettings_v140): ApplicationSettings => {
+            const { settingsVersion, ...toKeep } = prev
+            return {
+                sponsorshipMessageLastShown: '',
+                ...toKeep,
+            } as ApplicationSettings
+        },
+    ],
+    [
         '1.4.0',
-        (prev: _ApplicationSettings_v130): ApplicationSettings => {
+        (prev: _ApplicationSettings_v130): _ApplicationSettings_v140 => {
             const {
                 // Removed, changed or renamed :
                 settingsVersion,
@@ -94,7 +105,7 @@ const migrators: Map<string, (prev: any) => any> = new Map<
                     defaultVoices: [], // new default voices setting
                 },
                 ...toKeep,
-            } as ApplicationSettings
+            } as _ApplicationSettings_v140
         },
     ],
     [
@@ -145,6 +156,26 @@ const migrators: Map<string, (prev: any) => any> = new Map<
     ],
 ])
 
+export type _ApplicationSettings_v140 = {
+    settingsVersion: '1.4.0'
+    // Default folder to download the results on the user disk
+    downloadFolder?: string
+    // Pipeline instance properties for IPCs
+    pipelineInstanceProps?: PipelineInstanceProperties
+    // Dark mode selector
+    colorScheme: keyof typeof ColorScheme
+    // Actions to perform when closing the main window
+    onClosingMainWindow?: keyof typeof ClosingMainWindowAction
+    editJobOnNewTab?: boolean
+    // tts preferred voices
+    ttsConfig?: {
+        preferredVoices: Array<TtsVoice>
+        ttsEngineProperties: Array<TtsEngineProperty>
+        xmlFilepath?: string
+        defaultVoices: Array<TtsVoice>
+    }
+    autoCheckUpdate?: boolean
+}
 export type _ApplicationSettings_v130 = {
     settingsVersion: '1.3.0'
     // Default folder to download the results on the user disk

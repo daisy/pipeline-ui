@@ -37,7 +37,7 @@ export type ApplicationSettings = {
     // tts preferred voices
     ttsConfig?: TtsConfig
     autoCheckUpdate?: boolean
-    sponsorshipMessageLastShown?: string
+    sponsorshipMessageLastShown?: number
 }
 
 export function migrateSettings(
@@ -81,7 +81,7 @@ const migrators: Map<string, (prev: any) => any> = new Map<
         (prev: _ApplicationSettings_v140): ApplicationSettings => {
             const { settingsVersion, ...toKeep } = prev
             return {
-                sponsorshipMessageLastShown: '',
+                sponsorshipMessageLastShown: 0,
                 ...toKeep,
             } as ApplicationSettings
         },

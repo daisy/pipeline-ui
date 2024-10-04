@@ -18,17 +18,20 @@ import {
 import { externalLinkClick } from 'renderer/utils'
 
 const { App } = window
+// import {}
 import {
     defaultSponsorshipMessage,
     updateSponsorshipMessage,
 } from '../../utils'
 
 // is datestring more than 2 weeks old
-let isExpired = (datestring) => {
-    if (datestring == '') return true
+// datestring is milliseconds (string)
+let isExpired = (dateInMs: number) => {
+    if (dateInMs == 0) return true
 
     const TWOWEEKS_MS = 1209600000
-    let date = new Date(datestring)
+    // const TWOWEEKS_MS = 500 // for testing
+    let date = new Date(dateInMs)
     let now = Date.now()
     if (now - date.getMilliseconds() > TWOWEEKS_MS) {
         return true
@@ -44,19 +47,17 @@ export function NewJobPane({ job }: { job: Job }) {
         isExpired(settings.sponsorshipMessageLastShown)
     )
 
-    // useMemo should only run once per render
+    // useMemo runs once per render (unlike useEffect)
     useMemo(() => {
         const fetchData = async () => {
             let updatedSponsorshipMessage = await updateSponsorshipMessage()
             setSponsorshipMessage({ ...updatedSponsorshipMessage })
         }
-        fetchData().catch()
         if (isExpired(settings.sponsorshipMessageLastShown)) {
+            fetchData().catch()
             setShowSponsorshipMessage(true)
             // update settings with a new date
-            App.store.dispatch(
-                setSponsorshipMessageLastShown(Date.now().toString())
-            )
+            App.store.dispatch(setSponsorshipMessageLastShown(Date.now()))
             App.store.dispatch(save())
         }
     }, [])

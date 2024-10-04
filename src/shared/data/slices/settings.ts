@@ -101,7 +101,7 @@ export const settings = createSlice({
         },
         setSponsorshipMessageLastShown: (
             state: ApplicationSettings,
-            action: PayloadAction<string>
+            action: PayloadAction<number>
         ) => {
             state.sponsorshipMessageLastShown = action.payload
         },

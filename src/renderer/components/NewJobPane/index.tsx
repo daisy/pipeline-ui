@@ -18,7 +18,7 @@ import {
 import { externalLinkClick } from 'renderer/utils'
 
 const { App } = window
-// import {}
+
 import {
     defaultSponsorshipMessage,
     updateSponsorshipMessage,
@@ -33,7 +33,7 @@ let isExpired = (dateInMs: number) => {
     // const TWOWEEKS_MS = 500 // for testing
     let date = new Date(dateInMs)
     let now = Date.now()
-    if (now - date.getMilliseconds() > TWOWEEKS_MS) {
+    if (now - date.getTime() > TWOWEEKS_MS) {
         return true
     }
     return false

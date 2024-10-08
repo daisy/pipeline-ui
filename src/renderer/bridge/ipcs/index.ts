@@ -15,3 +15,4 @@ export * from './file/save'
 export * from './file/unzip'
 
 export * from './log'
+export * from './oneTimeFetch'

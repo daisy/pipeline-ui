@@ -55,6 +55,7 @@ import {
 import { setupClipboardEvents } from './clipboard'
 import { checkForUpdate } from 'shared/data/slices/update'
 import path from 'path'
+import { setupOneTimeFetchEvent } from './one-time-fetch'
 
 makeAppWithSingleInstanceLock(async () => {
     app.setName(APP_CONFIG.TITLE)
@@ -90,6 +91,7 @@ makeAppWithSingleInstanceLock(async () => {
     setupFileSystemEvents()
     setupClipboardEvents()
     setupLogEvents()
+    setupOneTimeFetchEvent()
     buildMenu()
 
     store.subscribe(() => {
@@ -149,11 +151,12 @@ function buildMenu() {
             store.dispatch(selectJob(job))
         },
         onRunJob: async (job) => {
-            store.dispatch(
-                runJob({
-                    ...job,
-                })
-            )
+            MainWindow().then((w) => w.webContents.send('run-job'))
+            // store.dispatch(
+            //     runJob({
+            //         ...job,
+            //     })
+            // )
         },
         onRemoveJob: async (job) => {
             store.dispatch(removeJob(job))

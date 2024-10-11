@@ -28,7 +28,7 @@ export function findValue(
     isStylesheetParameter: boolean
 ) {
     if (!jobRequest) return ''
-    let arr = null;
+    let arr = null
     if (kind == 'input') {
         arr = jobRequest.inputs
     } else {
@@ -65,17 +65,13 @@ export function findInputType(type) {
     } else if (['xsd:string', 'xs:string', 'string'].includes(type)) {
         inputType = 'text'
     } else if (
-        [
-            'xsd:integer',
-            'xsd:float',
-            'xsd:double',
-            'xsd:decimal',
-            'xs:integer',
-            'integer',
-            'number',
-        ].includes(type)
+        ['xsd:integer', 'xs:integer', 'integer', 'number'].includes(type)
     ) {
         inputType = 'number'
+    } else if (type == 'nonNegativeInteger') {
+        inputType = 'nonNegativeInteger'
+    } else if (['xsd:float', 'xsd:double', 'xsd:decimal'].includes(type)) {
+        inputType = 'float'
     } else if (type == '') {
         inputType = 'text'
     } else {

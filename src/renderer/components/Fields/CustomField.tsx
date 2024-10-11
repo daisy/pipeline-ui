@@ -1,9 +1,10 @@
 import { useWindowStore } from 'renderer/store'
 import { CustomFieldDocumentation } from './CustomFieldDocumentation'
 import { ScriptItemBase, TypeChoice, ValueChoice } from 'shared/types'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useMemo } from 'react'
 import { ControlledInput } from './ControlledInput'
 import { MarkdownDescription } from './MarkdownDescription'
+import { fetchTemporaryDatatype } from 'renderer/utils/temp-datatype'
 
 export function CustomField({
     item,
@@ -21,6 +22,20 @@ export function CustomField({
     const { pipeline } = useWindowStore()
     const [value, setValue] = useState(initialValue)
     const [userInteracted, setUserInteracted] = useState(false) // false if the user started typing
+    const [datatype, setDatatype] = useState(
+        pipeline.datatypes.find((dt) => dt.id == item.type) ?? null
+    )
+
+    useMemo(() => {
+        const fetchData = async () => {
+            let datatypeDetails = await fetchTemporaryDatatype(item.type)
+            // @ts-ignore
+            setDatatype({ ...datatypeDetails })
+        }
+        if (!datatype) {
+            fetchData().catch()
+        }
+    }, [])
 
     useEffect(() => {
         const elem = document.getElementById(controlId) as HTMLInputElement
@@ -38,16 +53,13 @@ export function CustomField({
               'aria-invalid': false,
           }
 
-    // find the datatype in the pipeline.datatypes store
-    let datatype = pipeline.datatypes.find((dt) => dt.id == item.type)
-
     let onChangeValue = (newValue) => {
         setUserInteracted(true)
         setValue(newValue)
         onChange(newValue)
     }
 
-    if (datatype) {
+    if (datatype && datatype.choices) {
         // if there are value choices, make a dropdown select
         let valueChoices = datatype.choices.filter((item) =>
             item.hasOwnProperty('value')

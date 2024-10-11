@@ -107,6 +107,31 @@ export function FormField({
                     )}
                 </>
             )
+        } else if (
+            ['nonNegativeInteger', 'float', 'number'].includes(inputType)
+        ) {
+            return (
+                <>
+                    <input
+                        type="number"
+                        min={inputType == 'nonNegativeInteger' ? 1 : 'any'}
+                        step={inputType == 'float' ? 0.01 : 1}
+                        required={item.required}
+                        onChange={(e) => onChange(e.target.value, item)}
+                        id={controlId}
+                        defaultValue={initialValue}
+                    ></input>
+                    {error && (
+                        <span
+                            id={controlId + '-error'}
+                            className="field-errors"
+                            aria-live="polite"
+                        >
+                            {error}
+                        </span>
+                    )}
+                </>
+            )
         } else if (inputType == 'custom') {
             return (
                 <CustomField

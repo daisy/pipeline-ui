@@ -12,10 +12,11 @@ let defaultSponsorshipMessage = {
 async function updateSponsorshipMessage() {
     // fetch the latest sponsorship message
     try {
-        let sponsorshipData = await App.oneTimeFetch(
+        let data = await App.oneTimeFetch(
             'https://dl.daisy.org/tools/sponsorship.json'
         )
-        if (sponsorshipData) {
+        if (data) {
+            let sponsorshipData = JSON.parse(data)
             return sponsorshipData['PipelineApp']['en']
         } else {
             return defaultSponsorshipMessage

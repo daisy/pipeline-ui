@@ -8,12 +8,8 @@ async function oneTimeFetch(url) {
     if (url.length == 0) return false
 
     let res = await fetch(url)
-    if (res) {
-        return res.json()
-    }
-    else {
-        return null
-    }
+    let txt = await res.text()
+    return txt ?? null
 }
 
 function setupOneTimeFetchEvent() {

@@ -16,6 +16,7 @@ import {
     setSponsorshipMessageLastShown,
 } from 'shared/data/slices/settings'
 import { externalLinkClick } from 'renderer/utils'
+import * as utils from '../../utils'
 
 const { App } = window
 
@@ -24,8 +25,7 @@ import {
     updateSponsorshipMessage,
 } from '../../utils'
 
-// is datestring more than 2 weeks old
-// datestring is milliseconds (string)
+// is dateInMs more than 2 weeks old
 let isExpired = (dateInMs: number) => {
     if (dateInMs == 0) return true
 
@@ -70,6 +70,7 @@ export function NewJobPane({ job }: { job: Job }) {
             updateJob({
                 ...job,
                 script: selection,
+                is2StepsJob: utils.is2StepsScript(selection),
                 jobData: {
                     ...job.jobData,
                     nicename: selection.nicename,

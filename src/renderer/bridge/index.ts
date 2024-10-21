@@ -45,6 +45,7 @@ const API = {
     copyToClipboard: ipcs.copyToClipboard,
     log: ipcs.log,
     oneTimeFetch: ipcs.oneTimeFetch,
+    onScriptFormSubmit: (channel, listener) => ipcRenderer.on(channel, listener),
     // we can add on to this API and restructure it as we move more commands to the redux side
     store: {
         dispatch,

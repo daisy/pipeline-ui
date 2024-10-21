@@ -211,6 +211,7 @@ export type Job = {
      * from the pipeline stylesheet-parameters end point and stored here.
      */
     stylesheetParameters?: ScriptOption[]
+    is2StepsJob?: boolean
 }
 // JobData is the JSON representation of Pipeline WS data for a single job
 export type JobData = {

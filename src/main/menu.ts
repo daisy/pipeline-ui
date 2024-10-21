@@ -64,6 +64,12 @@ export function buildMenuTemplate({
         .replace(' - App', '')
         .replace('(2023)', '')
         .trim()
+    let submitFormLabel =
+        currentJob &&
+        currentJob.is2StepsJob &&
+        currentJob.stylesheetParameters == null
+            ? 'Next'
+            : 'Run job'
 
     // @ts-ignore
     const template: MenuItemConstructorOptions = [
@@ -123,7 +129,7 @@ export function buildMenuTemplate({
                     : []),
                 { type: 'separator' },
                 {
-                    label: 'Run job',
+                    label: submitFormLabel,
                     click: () => {
                         onRunJob(currentJob)
                     },

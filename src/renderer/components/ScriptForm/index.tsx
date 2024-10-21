@@ -9,7 +9,7 @@ import {
     ScriptItemBase,
     ScriptOption,
 } from 'shared/types'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef, useMemo } from 'react'
 import { useWindowStore } from 'renderer/store'
 import {
     findValue,
@@ -44,10 +44,20 @@ export function ScriptForm({ job, script }: { job: Job; script: Script }) {
     const [submitInProgress, setSubmitInProgress] = useState(false)
     const [error, setError] = useState(false)
     const [canRunJob, setCanRunJob] = useState(false)
+    const submitButtonRef = useRef(null)
 
     let required = getAllRequired(script)
     let optional = getAllOptional(script)
     const { settings } = useWindowStore()
+
+    useMemo(() => {
+        App.onScriptFormSubmit('submit-script-form', async () => {
+            // console.log("SUBMIT script form for ", job.script.id)
+            if (submitButtonRef && submitButtonRef.current) {
+                submitButtonRef.current.click()
+            }
+        })
+    }, [])
 
     useEffect(() => {
         setCanRunJob(settings.downloadFolder?.trim() != '')
@@ -65,8 +75,9 @@ export function ScriptForm({ job, script }: { job: Job; script: Script }) {
     // - page-width
     // - page-height
 
-    const is2StepsJob =
-        optional.findIndex((item) => item.name === 'stylesheet-parameters') > -1
+    // moved to job datatype
+    // const is2StepsJob =
+    //     optional.findIndex((item) => item.name === 'stylesheet-parameters') > -1
     // Filter out the options that are to be defined in the first step of braille script
     const filteredOptions = [
         'stylesheet',
@@ -77,7 +88,7 @@ export function ScriptForm({ job, script }: { job: Job; script: Script }) {
         'tts',
     ]
     const hiddenOptions = ['transform', 'stylesheet-parameters']
-    if (is2StepsJob) {
+    if (job.is2StepsJob) {
         optional = optional.filter((item) =>
             filteredOptions.includes(item.name)
         )
@@ -96,7 +107,7 @@ export function ScriptForm({ job, script }: { job: Job; script: Script }) {
     // When this property is set
     // 'optional' is what is displayed on screen as optional values. they could technically be job inputs, options, or stylesheet parameters
     // but the user input values aren't stored there, those go in the job request itself
-    if (is2StepsJob && job.stylesheetParameters != null) {
+    if (job.is2StepsJob && job.stylesheetParameters != null) {
         required = []
         optional = [
             ...getAllOptional(script)
@@ -176,7 +187,7 @@ export function ScriptForm({ job, script }: { job: Job; script: Script }) {
     // submit a job
     let onSubmit = async (e) => {
         e.preventDefault()
-        if (is2StepsJob && job.stylesheetParameters == null) {
+        if (job.is2StepsJob && job.stylesheetParameters == null) {
             /*  constraints on the stylesheet parameters :
                 the /stylesheet-parameters call should not be made if
                 - TTS is disabled (audio = false) on scripts dtbook-to-daisy3, dtbook-to-epub3 and zedai-to-epub3
@@ -206,7 +217,7 @@ export function ScriptForm({ job, script }: { job: Job; script: Script }) {
             }
         } else {
             let options = [...job.jobRequest.options]
-            if (is2StepsJob) {
+            if (job.is2StepsJob) {
                 // format all the stylesheet parameter options as a string
                 // and assign it to the 'stylesheet-parameters' option
                 let stylesheetParametersOption =
@@ -411,13 +422,13 @@ export function ScriptForm({ job, script }: { job: Job; script: Script }) {
                     </div>
                 )}
                 <div className="form-buttons">
-                    {is2StepsJob && job.stylesheetParameters != null && (
+                    {job.is2StepsJob && job.stylesheetParameters != null && (
                         <button className="run" onClick={previous}>
                             Back
                         </button>
                     )}
-                    {is2StepsJob && job.stylesheetParameters == null ? (
-                        <button className="run" type="submit">
+                    {job.is2StepsJob && job.stylesheetParameters == null ? (
+                        <button className="run" type="submit" ref={submitButtonRef}>
                             Next
                         </button>
                     ) : (
@@ -425,6 +436,7 @@ export function ScriptForm({ job, script }: { job: Job; script: Script }) {
                             className="run"
                             type="submit"
                             disabled={!canRunJob || submitInProgress}
+                            ref={submitButtonRef}
                         >
                             {submitInProgress ? 'Starting...' : 'Run'}
                         </button>

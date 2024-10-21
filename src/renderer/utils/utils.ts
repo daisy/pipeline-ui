@@ -87,3 +87,11 @@ export function externalLinkClick(e, app) {
         app.openInBrowser(closest.href)
     }
 }
+
+export function is2StepsScript(script: Script) {
+    return (
+        script.options.findIndex(
+            (item) => item.name == 'stylesheet-parameters'
+        ) > -1
+    )
+}

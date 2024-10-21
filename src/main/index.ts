@@ -151,7 +151,7 @@ function buildMenu() {
             store.dispatch(selectJob(job))
         },
         onRunJob: async (job) => {
-            MainWindow().then((w) => w.webContents.send('run-job'))
+            MainWindow().then((w) => w.webContents.send('submit-script-form'))
             // store.dispatch(
             //     runJob({
             //         ...job,

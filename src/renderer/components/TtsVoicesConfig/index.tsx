@@ -436,7 +436,7 @@ export function TtsVoicesConfigPane({
                                         <td className="actions">
                                             <div>
                                                 <label htmlFor={`cb-${v.id}`}>
-                                                    Default for{' '}
+                                                    Set as default for{' '}
                                                     {languageNames.of(
                                                         getLang(v.lang)
                                                     )}

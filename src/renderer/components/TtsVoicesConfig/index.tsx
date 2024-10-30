@@ -314,7 +314,7 @@ export function TtsVoicesConfigPane({
             <div className="voice-details">
                 {voiceId != 'None' ? (
                     <>
-                        <p>
+                        <p className="selected-voice">
                             <b>Selected</b>: "
                             {voicesTransliterations[
                                 availableVoices.find((v) => v.id == voiceId)
@@ -343,7 +343,7 @@ export function TtsVoicesConfigPane({
                             voice={availableVoices.find((v) => v.id == voiceId)}
                         ></VoicePreview>
                         {preferredVoices.find((v) => v.id == voiceId) ? (
-                            <p>
+                            <p className="voice-already-exists">
                                 <i>This voice is already in your list.</i>
                             </p>
                         ) : (

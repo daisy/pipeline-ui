@@ -128,9 +128,14 @@ $engineColWidth: 8rem;
         gap: 1rem;
         align-items:baseline;
         p {
-            grid-area: desc;
             margin-top: .25rem;
             margin-bottom: 0;
+        }
+        p.selected-voice {
+            grid-area: desc;
+        }
+        p.voice-already-exists {
+            grid-area: add;
         }
         button {
             grid-area: add;

@@ -443,21 +443,21 @@ export function pipelineMiddleware({ getState, dispatch }) {
                                 // dispatch to sync the properties
                                 // in the engine
                                 dispatch(setProperties(settingsTtsProperties))
-                                return pipelineAPI.fetchTtsVoices(
-                                    selectTtsConfig(getState())
-                                )(newWebservice)
+                                // return pipelineAPI.fetchTtsVoices(
+                                //     selectTtsConfig(getState())
+                                // )(newWebservice)
                             })
-                            .then((voices: Array<TtsVoice>) => {
-                                // console.log('TTS Voices', voices)
-                                dispatch(setTtsVoices(voices))
-                                return pipelineAPI.fetchTtsEnginesState()(
-                                    newWebservice
-                                )
-                            })
-                            .then((states) => {
-                                console.log('tts states', states)
-                                dispatch(setTtsEngineState(states))
-                            })
+                            // .then((voices: Array<TtsVoice>) => {
+                            //     // console.log('TTS Voices', voices)
+                            //     dispatch(setTtsVoices(voices))
+                            //     return pipelineAPI.fetchTtsEnginesState()(
+                            //         newWebservice
+                            //     )
+                            // })
+                            // .then((states) => {
+                            //     //console.log('tts states', states)
+                            //     dispatch(setTtsEngineState(states))
+                            // })
                             .catch((e) => {
                                 error('useWebservice', e, e.parsedText)
                                 if (e instanceof AbortError) {
@@ -667,9 +667,10 @@ export function pipelineMiddleware({ getState, dispatch }) {
                 )
                     //.then(() => pipelineAPI.fetchProperties()(webservice))
                     .then(() => {
-                        // If any of the properties updated is a TTS engine key
-                        // property, reload voice list
-                        if (
+                        // If voices list is not yet initialised
+                        // or any of the properties updated is a TTS engine key
+                        // property, reload voices list when properties are set
+                        if (getState().pipeline.ttsVoices == null ||
                             newProperties.find(
                                 (p) =>
                                     p.name.indexOf('.tts.') >= 0 &&
@@ -749,7 +750,7 @@ export function pipelineMiddleware({ getState, dispatch }) {
                                     )
                                 })
                                 .then((states) => {
-                                    console.log('tts states', states)
+                                    //console.log('tts states', states)
                                     dispatch(setTtsEngineState(states))
                                 })
                         }

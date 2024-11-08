@@ -11,12 +11,11 @@ import { VoicePreview } from './VoicePreview'
 export function TtsVoicesConfigPane({
     availableVoices,
     userPreferredVoices,
+    ttsEnginesStates,
     userDefaultVoices,
     onChangePreferredVoices,
     onChangeDefaultVoices,
 }) {
-    const { pipeline } = useWindowStore()
-
     const [preferredVoices, setPreferredVoices] = useState([
         ...userPreferredVoices,
     ])
@@ -87,11 +86,11 @@ export function TtsVoicesConfigPane({
         setPreferredVoicesLanguage(e.target.value)
     }
     let selectDefault = (e, voice) => {
-        console.log('select default', e, voice)
-        let tmpVoices = [...defaultVoices]
-        let oldDefaultIdx = tmpVoices.findIndex(
+        console.log('default voices', defaultVoices)
+        let tmpVoices = defaultVoices ? [...defaultVoices] : []
+        let oldDefaultIdx = tmpVoices?.findIndex(
             (vx) => getLang(vx.lang) == getLang(voice.lang)
-        )
+        ) ?? -1
         if (oldDefaultIdx != -1) {
             console.log(getLang(voice.lang), ' has default already')
             tmpVoices.splice(oldDefaultIdx, 1)
@@ -101,8 +100,7 @@ export function TtsVoicesConfigPane({
         onChangeDefaultVoices(tmpVoices)
     }
     let clearDefaultVoice = (langCode) => {
-        console.log('clear default', langCode)
-        let tmpVoices = [...defaultVoices]
+        let tmpVoices = defaultVoices ? [...defaultVoices] : []
         let oldDefaultIdx = tmpVoices.findIndex(
             (vx) => getLang(vx.lang) == langCode
         )
@@ -425,11 +423,8 @@ export function TtsVoicesConfigPane({
                                                 v.name}
                                         </td>
                                         <td>
-                                            {
-                                                pipeline.ttsEnginesStates[
-                                                    v.engine
-                                                ]?.name ?? v.engine
-                                            }
+                                            {ttsEnginesStates[v.engine]?.name ??
+                                                v.engine}
                                         </td>
                                         <td>{languageNames.of(v.lang)}</td>
                                         <td>{v.gender}</td>
@@ -449,7 +444,7 @@ export function TtsVoicesConfigPane({
                                                         selectDefault(e, v)
                                                     }
                                                     defaultChecked={
-                                                        defaultVoices.find(
+                                                        defaultVoices?.find(
                                                             (vx) =>
                                                                 vx.id == v.id
                                                         ) != undefined

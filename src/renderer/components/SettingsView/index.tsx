@@ -379,21 +379,26 @@ export function SettingsView() {
                         </div>
                     ) : selectedSection == SelectedMenuItem.TTSVoices ? (
                         <div className="tts-voices-config">
-                            <TtsVoicesConfigPane
-                                availableVoices={pipeline.ttsVoices}
-                                userPreferredVoices={
-                                    newSettings.ttsConfig.preferredVoices
-                                }
-                                userDefaultVoices={
-                                    newSettings.ttsConfig.defaultVoices
-                                }
-                                onChangePreferredVoices={
-                                    onTtsVoicesPreferenceChange
-                                }
-                                onChangeDefaultVoices={
-                                    onTtsVoicesDefaultsChange
-                                }
-                            />
+                            {pipeline.ttsVoices ? (
+                                <TtsVoicesConfigPane
+                                    availableVoices={pipeline.ttsVoices}
+                                    userPreferredVoices={
+                                        newSettings.ttsConfig.preferredVoices
+                                    }
+                                    ttsEnginesStates={pipeline.ttsEnginesStates}
+                                    userDefaultVoices={
+                                        newSettings.ttsConfig.defaultVoices
+                                    }
+                                    onChangePreferredVoices={
+                                        onTtsVoicesPreferenceChange
+                                    }
+                                    onChangeDefaultVoices={
+                                        onTtsVoicesDefaultsChange
+                                    }
+                                />
+                            ) : (
+                                <p>Loading voices...</p>
+                            )}
                         </div>
                     ) : selectedSection == SelectedMenuItem.TTSEngines ? (
                         <div className="tts-engines-config">

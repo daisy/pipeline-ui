@@ -55,6 +55,9 @@ interface RequestInit {
 export class PipelineAPI {
     fetchFunc: (url: string, options?: RequestInit) => Promise<Response>
     info: (message?: any, ...optionalParams: any[]) => void
+    // Cache to avoid multiple fetches on the same url
+    fetchCache: Map<string, Promise<any>> = new Map()
+
     constructor(fetchFunc, info?) {
         this.fetchFunc = fetchFunc
         this.info = info ?? console.info
@@ -77,17 +80,40 @@ export class PipelineAPI {
         options?: RequestInit
     ) {
         return (ws?: Webservice) => {
-            this.info(
-                'fetching ',
-                webserviceUrlBuilder(ws),
-                JSON.stringify(options)
-            )
-            return this.fetchFunc(webserviceUrlBuilder(ws), {
-                ...options,
-                signals: options?.signals ?? AbortSignal.timeout(5000),
-            })
-                .then((response: Response) => response.text())
-                .then((text: string) => parser(text))
+            const url = webserviceUrlBuilder(ws)
+            const fetcher = () => {
+                this.info('Fetching ', url, JSON.stringify(options))
+                this.fetchCache.set(
+                    url,
+                    this.fetchFunc(url, {
+                        ...options,
+                        signals: options?.signals ?? AbortSignal.timeout(5000),
+                    })
+                        .then((response: Response) => {
+                            // Try to delete the cache if the fetch is successful
+                            this.fetchCache.delete(url)
+                            return response.text()
+                        })
+                        .then((text: string) => parser(text))
+                        .catch((e) => {
+                            this.fetchCache.delete(url)
+                            throw e
+                        })
+                )
+                return this.fetchCache.get(url)
+            }
+            if (this.fetchCache.has(url)) {
+                this.info(
+                    'Requesting refetch on URL',
+                    url,
+                    JSON.stringify(options)
+                )
+                // concatenate a new fetch to the existing promise
+                return this.fetchCache.get(url).then(() => fetcher())
+            } else {
+                // Launching the first fetch
+                return fetcher()
+            }
         }
     }
 

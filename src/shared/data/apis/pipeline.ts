@@ -56,7 +56,7 @@ export class PipelineAPI {
     fetchFunc: (url: string, options?: RequestInit) => Promise<Response>
     info: (message?: any, ...optionalParams: any[]) => void
     // Cache to avoid multiple fetches on the same url
-    fetchCache: Map<string, Promise<any>> = new Map()
+    fetchCache: Map<string, {count:number,request:Promise<any>}> = new Map()
 
     constructor(fetchFunc, info?) {
         this.fetchFunc = fetchFunc
@@ -65,51 +65,56 @@ export class PipelineAPI {
     /**
      * Create a fetch function on the pipeline webservice
      * for which the resulting pipeline xml is parsed and converted to a js object
-     * @type T return type of the parser
+     * @type {T} return type of the parser
      * @param webserviceUrlBuilder method to build a url,
      * optionnaly using  a webservice (like ``(ws) => `${baseurl(ws)}/scripts` ``)
      * @param parser method to convert pipeline xml to an object object
      * @param options options to be passed to the fetch call
      * (like `{method:'POST', body:whateveryoulike}`)
      * @returns a customized fetch function from the webservice
-     * `` (ws:Webservice) => Promise<Awaited<T>> ``
+     * `` (ws:Webservice) => Promise<T> ``
      */
     createPipelineFetchFunction<T>(
         webserviceUrlBuilder: (ws: Webservice) => string,
         parser: (text: string) => T,
         options?: RequestInit
-    ) {
+    ) : (ws?: Webservice) => Promise<T> {
         return (ws?: Webservice) => {
             const url = webserviceUrlBuilder(ws)
-            const fetcher = () => {
-                this.info('Fetching ', url, JSON.stringify(options))
+            const fetcher = (launch = 1) => {
+                this.info(`createPipelineFetchFunction - Fetching ${launch}`, url, JSON.stringify(options))
                 this.fetchCache.set(
                     url,
-                    this.fetchFunc(url, {
-                        ...options,
-                        signals: options?.signals ?? AbortSignal.timeout(5000),
-                    })
-                        .then((response: Response) => {
-                            // Try to delete the cache if the fetch is successful
-                            this.fetchCache.delete(url)
-                            return response.text()
+                    {   count: launch,
+                        request: this.fetchFunc(url, {
+                            ...options,
+                            signals: options?.signals ?? AbortSignal.timeout(5000),
                         })
-                        .then((text: string) => parser(text))
-                        .catch((e) => {
-                            this.fetchCache.delete(url)
-                            throw e
+                            .then((response: Response) => {
+                                this.info(`createPipelineFetchFunction - Response ${launch} to request` , url, JSON.stringify(options))
+                                // Try to delete the cache if the fetch is successful
+                                this.fetchCache.delete(url)
+                                return response.text()
+                            })
+                            .then((text: string) => parser(text))
+                            .catch((e) => {
+                                this.info(`createPipelineFetchFunction - Error ${launch}`, url)
+                                this.fetchCache.delete(url)
+                                throw e
                         })
+                    }
                 )
-                return this.fetchCache.get(url)
+                return this.fetchCache.get(url).request
             }
             if (this.fetchCache.has(url)) {
                 this.info(
-                    'Requesting refetch on URL',
+                    'createPipelineFetchFunction - Requesting refetch on URL',
                     url,
                     JSON.stringify(options)
                 )
+                const lastCache = this.fetchCache.get(url)
                 // concatenate a new fetch to the existing promise
-                return this.fetchCache.get(url).then(() => fetcher())
+                return lastCache.request.then(() => fetcher(lastCache.count + 1))
             } else {
                 // Launching the first fetch
                 return fetcher()
@@ -235,7 +240,7 @@ export class PipelineAPI {
     setProperty(prop: EngineProperty) {
         return this.createPipelineFetchFunction(
             (ws) => `${baseurl(ws)}/admin/properties/${prop.name}`,
-            (text) => console.log(text),
+            (text) => null, //this.info('Property', prop.name, 'successfully set to', text),
             {
                 method: 'PUT',
                 body: propertyToXml(prop),

@@ -27,7 +27,7 @@ const initialState = {
     webservice: null,
     scripts: [],
     datatypes: [],
-    ttsVoices: [],
+    ttsVoices: null,
     jobs: [],
     internalJobCounter: 0,
     selectedJobId: '',
@@ -416,7 +416,7 @@ export const selectors = {
         ),
     selectScripts: (state: RootState) => state.pipeline.scripts,
     selectDatatypes: (state: RootState) => state.pipeline.datatypes,
-    selectTtsVoices: (state: RootState) => state.pipeline.ttsVoices,
+    selectTtsVoices: (state: RootState) => state.pipeline.ttsVoices ?? [],
     selectProperties: (state: RootState) => state.pipeline.properties,
     newJob: (pipeline: PipelineState) =>
         ({

@@ -428,7 +428,7 @@ export function TtsVoicesConfigPane({
                                             {
                                                 pipeline.ttsEnginesStates[
                                                     v.engine
-                                                ].name
+                                                ]?.name ?? v.engine
                                             }
                                         </td>
                                         <td>{languageNames.of(v.lang)}</td>

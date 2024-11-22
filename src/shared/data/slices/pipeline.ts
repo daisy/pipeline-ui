@@ -426,14 +426,18 @@ export const selectors = {
         } as Job),
     prepareJobRequest: (job: Job, script: Script) => {
         const hasJobRequestOnScript: Boolean =
-            job.jobRequest && job.jobRequest.scriptHref == script.href
+            job.jobRequest && job.jobRequest.scriptHref == script?.href
+        const scriptInputs = script?.inputs ?? []
+        const scriptOptions = script?.options ?? []
         return {
-            scriptHref: script.href,
-            inputs: script.inputs.map((item, index) => {
+            scriptHref: script?.href ?? '',
+            inputs: scriptInputs.map((item, index) => {
                 return {
                     name: item.name,
                     value:
                         (hasJobRequestOnScript &&
+                            job.jobRequest &&
+                            job.jobRequest.inputs &&
                             job.jobRequest.inputs[index].value) ||
                         null,
                     isFile:
@@ -441,7 +445,7 @@ export const selectors = {
                     isStylesheetParameter: false,
                 }
             }),
-            options: script.options.map((item, index) => {
+            options: scriptOptions.map((item, index) => {
                 return {
                     name: item.name,
                     value:

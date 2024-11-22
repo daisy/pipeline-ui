@@ -73,7 +73,7 @@ export function NewJobPane({ job }: { job: Job }) {
                 is2StepsJob: utils.is2StepsScript(selection),
                 jobData: {
                     ...job.jobData,
-                    nicename: selection.nicename,
+                    nicename: selection?.nicename ?? '',
                 },
                 jobRequest: prepareJobRequest(job, selection),
             })

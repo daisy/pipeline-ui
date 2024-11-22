@@ -89,6 +89,9 @@ export function externalLinkClick(e, app) {
 }
 
 export function is2StepsScript(script: Script) {
+    if (!script || !script.options) {
+        return false
+    }
     return (
         script.options.findIndex(
             (item) => item.name == 'stylesheet-parameters'

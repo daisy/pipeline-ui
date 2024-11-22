@@ -25,7 +25,7 @@ const settingsFile = resolve(app.getPath('userData'), 'settings.json')
 
 export function readSettings() {
     let settings: ApplicationSettings = {
-        settingsVersion: '1.4.0',
+        settingsVersion: '1.5.0',
         downloadFolder: pathToFileURL(
             resolve(app.getPath('home'), 'Documents', 'DAISY Pipeline results')
         ).href,

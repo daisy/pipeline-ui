@@ -2,10 +2,10 @@ import { useEffect } from 'react'
 import { useWindowStore } from 'renderer/store'
 import { externalLinkClick } from 'renderer/utils'
 import { PipelineStatus } from 'shared/types/pipeline'
-import { Copy } from '../SvgIcons'
+import { Copy } from '../../SvgIcons'
 import daisyLogo from './daisy_high.jpg'
 import pipelineLogo from './logo_64x64.png'
-import packageJson from '../../../../package.json'
+import packageJson from '../../../../../package.json'
 import { UpdateState } from 'shared/types'
 import {
     startInstall,

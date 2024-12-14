@@ -5,7 +5,7 @@ import {
     ClosingMainWindowAction,
     ColorScheme,
 } from 'shared/types'
-import { FileOrFolderInput } from '../Fields/FileOrFolderInput'
+import { FileOrFolderInput } from '../../Fields/FileOrFolderInput'
 import {
     save,
     setTtsConfig,
@@ -15,9 +15,9 @@ import {
     setClosingMainWindowAction,
     setEditJobOnNewTab,
 } from 'shared/data/slices/settings'
-import { TtsEnginesConfigPane } from '../TtsEnginesConfig'
-import { TtsMoreOptionsConfigPane } from '../TtsMoreOptionsConfig'
-import { TtsVoicesConfigPane } from '../TtsVoicesConfig'
+import { TtsEnginesConfigPane } from '../../TtsSettings/TtsEnginesConfig'
+import { TtsMoreOptionsConfigPane } from '../../TtsSettings/TtsMoreOptionsConfig'
+import { TtsVoicesConfigPane } from '../../TtsSettings/TtsVoicesConfig'
 const { App } = window // The "App" comes from the bridge
 
 enum SelectedMenuItem {

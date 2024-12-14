@@ -17,11 +17,11 @@ import {
     selectNextJob,
     selectPrevJob,
 } from 'shared/data/slices/pipeline'
-import { NewJobPane } from '../NewJobPane'
-import { JobDetailsPane } from '../JobDetailsPane'
+import { NewJobPane } from '../../NewJobPane'
+import { JobDetailsPane } from '../../JobDetailsPane'
 import { calculateJobName } from 'shared/jobName'
 import { PLATFORM } from 'shared/constants'
-import { Plus } from '../SvgIcons'
+import { Plus } from '../../SvgIcons'
 
 const { App } = window
 

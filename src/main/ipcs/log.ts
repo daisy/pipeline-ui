@@ -4,7 +4,7 @@
 // so this is a workaround
 
 import { ipcMain } from 'electron'
-import { IPC_EVENT_log } from '../shared/main-renderer-events'
+import { IPC_EVENT_log } from '../../shared/main-renderer-events'
 import { info } from 'electron-log'
 
 function setupLogEvents() {

@@ -15,6 +15,7 @@ export async function saveFile(buffer: ArrayBuffer, pathFileURL: string) {
     if (!existsSync(dirname(systemPath))) {
         mkdirSync(dirname(systemPath), { recursive: true })
     }
+    // @ts-ignore
     return writeFile(systemPath, Buffer.from(buffer))
         .catch((e) => {
             error('An error occured writing file ', pathFileURL, ' : ', e)

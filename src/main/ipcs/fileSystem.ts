@@ -5,7 +5,7 @@ import chardet from 'chardet'
 import {
     IPC_EVENT_pathExists,
     IPC_EVENT_sniffEncoding,
-} from '../shared/main-renderer-events'
+} from '../../shared/main-renderer-events'
 import { PLATFORM } from 'shared/constants'
 
 function pathExists(path) {

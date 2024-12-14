@@ -6,7 +6,7 @@ import {
     IPC_EVENT_showItemInFolder,
     IPC_EVENT_showOpenFileDialog,
     IPC_EVENT_showSaveDialog,
-} from '../shared/main-renderer-events'
+} from '../../shared/main-renderer-events'
 
 /*
 dialogOptions: https://www.electronjs.org/docs/latest/api/dialog

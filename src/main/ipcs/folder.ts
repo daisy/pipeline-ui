@@ -4,7 +4,7 @@ import { PLATFORM } from 'shared/constants'
 import { lstatSync } from 'fs'
 
 // helper functions
-import { IPC_EVENT_showItemInFolder } from '../shared/main-renderer-events'
+import { IPC_EVENT_showItemInFolder } from '../../shared/main-renderer-events'
 
 function setupShowInFolderEvents() {
     // payload should be "/Path/to/folder" not file://..

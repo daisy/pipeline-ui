@@ -28,19 +28,19 @@ import {
 import { buildMenuTemplate } from './menu'
 
 import { registerStoreIPC, store } from './data/store'
-import { setupFileDialogEvents, showOpenFileDialog } from './fileDialogs'
+import { setupFileDialogEvents, showOpenFileDialog } from './ipcs/fileDialogs'
 import { ENVIRONMENT, IPC } from 'shared/constants'
-import { setupShowInFolderEvents } from './folder'
-import { registerFileIPC } from './factories/ipcs/file'
-import { setupFileSystemEvents } from './fileSystem'
-import { setupOpenInBrowserEvents } from './browser'
+import { setupShowInFolderEvents } from './ipcs/folder'
+import { registerFileIPC } from './ipcs/file'
+import { setupFileSystemEvents } from './ipcs/fileSystem'
+import { setupOpenInBrowserEvents } from './ipcs/browser'
 import { APP_CONFIG } from '~/app.config'
 import { getPipelineInstance } from './data/middlewares/pipeline'
 import {
     selectColorScheme,
     selectEditOnNewTab,
 } from 'shared/data/slices/settings'
-import { setupLogEvents } from './log'
+import { setupLogEvents } from './ipcs/log'
 import {
     addJob,
     editJob,
@@ -52,10 +52,10 @@ import {
     selectNextJob,
     selectPrevJob,
 } from 'shared/data/slices/pipeline'
-import { setupClipboardEvents } from './clipboard'
+import { setupClipboardEvents } from './ipcs/clipboard'
 import { checkForUpdate } from 'shared/data/slices/update'
 import path from 'path'
-import { setupOneTimeFetchEvent } from './one-time-fetch'
+import { setupOneTimeFetchEvent } from './ipcs/one-time-fetch'
 
 makeAppWithSingleInstanceLock(async () => {
     app.setName(APP_CONFIG.TITLE)

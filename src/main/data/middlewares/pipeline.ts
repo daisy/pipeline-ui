@@ -50,7 +50,7 @@ import { info, error } from 'electron-log'
 
 import { pipelineAPI } from '../apis/pipeline'
 import { PayloadAction } from '@reduxjs/toolkit'
-import { saveFile, unzipFile } from 'main/factories/ipcs/file'
+import { saveFile, unzipFile } from 'main/ipcs/file'
 import {
     selectDownloadPath,
     selectPipelineProperties,
@@ -58,7 +58,7 @@ import {
     selectTtsConfig,
 } from 'shared/data/slices/settings'
 import { ParserException } from 'shared/parser/pipelineXmlConverter/parser'
-import { PipelineInstance } from 'main/factories'
+import { PipelineInstance } from 'main/pipeline'
 import { RootState } from 'shared/types/store'
 import { dialog, ipcMain } from 'electron'
 import { IPC } from 'shared/constants/ipc'
@@ -129,6 +129,7 @@ async function downloadJobLog(j: Job, targetFolder: string) {
     return pipelineAPI
         .fetchJobLog(j)()
         .then((log) => {
+            // @ts-ignore
             saveFile(new TextEncoder().encode(log), jobTargetUrl)
             return {
                 ...j,

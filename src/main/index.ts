@@ -16,6 +16,7 @@ import {
     bindWindowToPipeline,
     makeAppSetup,
     makeAppWithSingleInstanceLock,
+    //parsePipelineCommands,
 } from './factories'
 
 import {
@@ -97,22 +98,31 @@ makeAppWithSingleInstanceLock(async () => {
     store.subscribe(() => {
         buildMenu()
     })
-    // Reopen the main window when trying to launch
-    // the app when it is already launched
+    // Note for command line parsing
+    // - second-instance event is emitted when a new instance is requested
+    // (that is, if we try to relaunch the app in any way, the new instance is killed
+    //  and the existing one receive this event along the passed command line arguments of the killed on)
     app.on(
         'second-instance',
         (event, commandLine, workingDirectory, additionalData) => {
             MainWindow().then((window) => {
-                if (window.isMinimized()) {
-                    window.restore()
+                // Parse command line to create a new job from command line
+                // possibly following pipeline 2 original command line tool
+                //parsePipelineCommands(commandLine)
+                if (!commandLine.includes('--hidden')) {
+                    if (window.isMinimized()) {
+                        window.restore()
+                    }
+                    window.focus()
                 }
-                window.focus()
             })
         }
     )
     if (store.getState().settings.autoCheckUpdate) {
         store.dispatch(checkForUpdate())
     }
+    // Parse pipeline commands
+    //parsePipelineCommands(process.argv)
 })
 
 function buildMenu() {

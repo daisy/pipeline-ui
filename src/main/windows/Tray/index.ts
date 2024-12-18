@@ -13,9 +13,9 @@ import {
     start,
     stop,
 } from 'shared/data/slices/pipeline'
-import { getPipelineInstance } from 'main/data/middlewares/pipeline'
+import { getPipelineInstance } from '../../data/instance'
 import { APP_CONFIG } from '~/app.config'
-import { setClosingMainWindowActionForApp } from 'shared/data/slices/settings'
+// import { setClosingMainWindowActionForApp } from 'shared/data/slices/settings'
 
 const { TRAY_TITLE } = APP_CONFIG
 

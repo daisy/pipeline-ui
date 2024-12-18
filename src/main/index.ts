@@ -35,7 +35,7 @@ import { registerFileIPC } from './ipcs/file'
 import { setupFileSystemEvents } from './ipcs/fileSystem'
 import { setupOpenInBrowserEvents } from './ipcs/browser'
 import { APP_CONFIG } from '~/app.config'
-import { getPipelineInstance } from './data/middlewares/pipeline'
+import { getPipelineInstance } from './data/instance'
 import {
     selectColorScheme,
     selectEditOnNewTab,

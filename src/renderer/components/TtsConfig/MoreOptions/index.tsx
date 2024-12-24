@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useWindowStore } from 'renderer/store'
 import { PipelineAPI } from 'shared/data/apis/pipeline'
 import { setProperties } from 'shared/data/slices/pipeline'
-import { FileOrFolderInput } from '../Fields/FileOrFolderInput'
+import { FileOrFolderInput } from '../../Fields/FileOrFolderInput'
 import { TtsEngineState } from 'shared/types'
 
 const pipelineAPI = new PipelineAPI(

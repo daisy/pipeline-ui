@@ -4,7 +4,7 @@ Select a script and submit a new job
 import { useState, useEffect } from 'react'
 import { useWindowStore } from 'renderer/store'
 import { TtsConfig, TtsVoice } from 'shared/types/ttsConfig'
-import { Down, Up } from '../SvgIcons'
+import { Down, Up } from '../../SvgIcons'
 import { voicesTransliterations } from './voiceTransliterations'
 import { VoicePreview } from './VoicePreview'
 

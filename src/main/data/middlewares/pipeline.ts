@@ -13,7 +13,7 @@ import {
     requestStylesheetParameters,
 } from 'shared/data/slices/pipeline'
 
-import { Datatype, Script } from 'shared/types'
+import { Datatype, Job, Script } from 'shared/types'
 
 import { error } from 'electron-log'
 
@@ -79,7 +79,8 @@ export function pipelineMiddleware({ getState, dispatch }) {
                 actions.setProperties(action, dispatch, getState)
                 break
             case runJob.type:
-                actions.runJob(action, dispatch, getState)
+                actions.runJob(action.payload as Job, dispatch, getState)
+                break
                 break
             case requestStylesheetParameters.type:
                 actions.requestStylesheetParameters(action, dispatch, getState)

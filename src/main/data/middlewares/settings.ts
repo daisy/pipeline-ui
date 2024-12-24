@@ -1,25 +1,16 @@
 import { PayloadAction } from '@reduxjs/toolkit'
 import { app, nativeTheme } from 'electron'
-import { info, error } from 'electron-log'
+import { error, info } from 'electron-log'
 import { existsSync, readFileSync, writeFile } from 'fs'
+import { resolveUnpacked } from 'main/pipeline/utils'
 import { resolve } from 'path'
 import { ENVIRONMENT } from 'shared/constants'
 import { save, setAutoCheckUpdate } from 'shared/data/slices/settings'
 import { checkForUpdate } from 'shared/data/slices/update'
 import { ttsConfigToXml } from 'shared/parser/pipelineXmlConverter/ttsConfigToXml'
-import {
-    ApplicationSettings,
-    EngineProperty,
-    TtsEngineProperty,
-    TtsVoice,
-    migrateSettings,
-} from 'shared/types'
+import { ApplicationSettings, migrateSettings } from 'shared/types'
 import { RootState } from 'shared/types/store'
-import { resolveUnpacked } from 'shared/utils'
 import { fileURLToPath, pathToFileURL } from 'url'
-import { pipelineAPI } from '../apis/pipeline'
-import { selectWebservice, setTtsVoices } from 'shared/data/slices/pipeline'
-import { propertyToXml } from 'shared/parser/pipelineXmlConverter/propertyToXml'
 
 const settingsFile = resolve(app.getPath('userData'), 'settings.json')
 

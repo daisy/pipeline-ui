@@ -16,8 +16,14 @@ import {
 } from 'shared/data/slices/pipeline'
 import { getPipelineInstance } from '../../instance'
 import { AbortError } from 'node-fetch'
+import { GetStateFunction } from 'shared/types/store'
+import { PayloadAction } from '@reduxjs/toolkit'
 
-export function useWebservice(action, dispatch, getState) {
+export function useWebservice(
+    action: PayloadAction<any>,
+    dispatch,
+    getState: GetStateFunction
+) {
     // Action dispatched when the pipeline instance is launched
     const newWebservice = action.payload as Webservice
     const fetchAlive = pipelineAPI.fetchAlive()
@@ -98,7 +104,9 @@ export function useWebservice(action, dispatch, getState) {
                             `Trying for a new attempt ${attempt} / ${maxAttempt}`
                         )
                         loadPipelineData(attempt + 1)
-                    } else if (selectStatus(getState()) == PipelineStatus.RUNNING) {
+                    } else if (
+                        selectStatus(getState()) == PipelineStatus.RUNNING
+                    ) {
                         error(
                             'useWebservice',
                             'Pipeline has stopped working during webservice monitoring.',

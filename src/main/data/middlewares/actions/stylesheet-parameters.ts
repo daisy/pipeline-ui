@@ -1,9 +1,15 @@
+import { PayloadAction } from '@reduxjs/toolkit'
 import { error } from 'electron-log'
 import { pipelineAPI } from 'main/data/apis/pipeline'
 import { selectWebservice, updateJob } from 'shared/data/slices/pipeline'
 import { Job, JobRequestError, JobStatus, ScriptOption } from 'shared/types'
+import { GetStateFunction } from 'shared/types/store'
 
-export function requestStylesheetParameters(action, dispatch, getState) {
+export function requestStylesheetParameters(
+    action: PayloadAction<any>,
+    dispatch,
+    getState: GetStateFunction
+) {
     const job = action.payload as Job
     const webservice = selectWebservice(getState())
     pipelineAPI

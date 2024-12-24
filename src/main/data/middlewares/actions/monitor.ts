@@ -12,6 +12,7 @@ import { downloadJobLog, downloadJobResults } from './download'
 import { selectDownloadPath } from 'shared/data/slices/settings'
 import { updateJob, selectStatus } from 'shared/data/slices/pipeline'
 import { ParserException } from 'shared/parser/pipelineXmlConverter/parser'
+import { GetStateFunction } from 'shared/types/store'
 
 /**
  * Start a job monitor that will continue until the job is done.
@@ -22,7 +23,12 @@ import { ParserException } from 'shared/parser/pipelineXmlConverter/parser'
  * @param getState redux store getState function
  * @param dispatch redux store dispatch function
  */
-export function startMonitor(j: Job, ws: Webservice, getState, dispatch) {
+export function startMonitor(
+    j: Job,
+    ws: Webservice,
+    getState: GetStateFunction,
+    dispatch
+) {
     const fetchJobData = pipelineAPI.fetchJobData(j)
     const maxAttempt = 3
     const timeoutMonitor = async (attempt) => {

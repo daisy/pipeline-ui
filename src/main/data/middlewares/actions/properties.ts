@@ -1,3 +1,4 @@
+import { PayloadAction } from '@reduxjs/toolkit'
 import { pipelineAPI } from 'main/data/apis/pipeline'
 import {
     selectWebservice,
@@ -6,8 +7,13 @@ import {
 } from 'shared/data/slices/pipeline'
 import { selectTtsConfig } from 'shared/data/slices/settings'
 import { EngineProperty, TtsEngineState, TtsVoice } from 'shared/types'
+import { GetStateFunction } from 'shared/types/store'
 
-export function setProperties(action, dispatch, getState) {
+export function setProperties(
+    action: PayloadAction<any>,
+    dispatch,
+    getState: GetStateFunction
+) {
     const webservice = selectWebservice(getState())
     const newProperties = action.payload as EngineProperty[]
     let ttsEnginesStatesStart = {

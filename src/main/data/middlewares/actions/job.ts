@@ -21,8 +21,12 @@ import { removeJob as removeJobSlice } from 'shared/data/slices/pipeline'
 import { error, info } from 'electron-log'
 import { startMonitor } from './monitor'
 import { ParserException } from 'shared/parser/pipelineXmlConverter/parser'
+import { GetStateFunction } from 'shared/types/store'
+import { createAction, PayloadAction } from '@reduxjs/toolkit'
+import { v4 as uuidv4 } from 'uuid'
+import { getBatchInputValues, getPrimaryInput } from 'shared/utils'
 
-export function removeJobs(action) {
+export function removeJobs(action: PayloadAction<any>) {
     let removedJobs = action.payload as Job[]
     for (const jobToRemove of removedJobs) {
         // Remove server-side job using API
@@ -40,14 +44,18 @@ export function removeJobs(action) {
     }
 }
 
-export function removeJob(action, dispatch, state) {
+export function removeJob(
+    action: PayloadAction<any>,
+    dispatch,
+    getState: GetStateFunction
+) {
     let removedJob = action.payload as Job
-    const currentJobs = selectJobs(state)
-    const visibleJobs = selectVisibleJobs(state)
+    const currentJobs = selectJobs(getState())
+    const visibleJobs = selectVisibleJobs(getState())
 
     if (
         removedJob.jobRequest &&
-        (state.settings.editJobOnNewTab || !removedJob.invisible)
+        (getState().settings.editJobOnNewTab || !removedJob.invisible)
     ) {
         // Ask delete confirmation for visible jobs deletion
         const result = dialog.showMessageBoxSync(MainWindowInstance, {
@@ -65,7 +73,7 @@ export function removeJob(action, dispatch, state) {
     ) {
         // recreate a new job tab if the job closed was not empty
         if (removedJob.jobRequest) {
-            dispatch(addJob(newJob(selectPipeline(state))))
+            dispatch(addJob(newJob(selectPipeline(getState()))))
         } else {
             // choice 1 : avoid deleting last job present
             // action = null
@@ -76,7 +84,7 @@ export function removeJob(action, dispatch, state) {
         }
     }
     // Remove linked invisible jobs
-    if (action && removedJob.linkedTo && !state.settings.editJobOnNewTab) {
+    if (action && removedJob.linkedTo && !getState().settings.editJobOnNewTab) {
         const linkedInvisibleJob = currentJobs.find(
             (j) => j.invisible && removedJob.linkedTo == j.internalId
         )
@@ -97,10 +105,10 @@ export function removeJob(action, dispatch, state) {
     }
 }
 
-export function runJob(action, dispatch, getState) {
+export function runJob(jobToRun: Job, dispatch, getState: GetStateFunction) {
     // Launch the job with the API and start monitoring its execution
     // Also change its state to submited
-    const jobToRun = action.payload as Job
+    // const jobToRun = action.payload as Job
     const webservice = selectWebservice(getState())
 
     // Empty previous references to jobData results for re run
@@ -171,4 +179,68 @@ export function runJob(action, dispatch, getState) {
             })
         )
     }
+}
+
+/**
+ *
+ * @param action action.payload is a Job with one JobRequest
+ * input containing many values for the batch process
+ *
+ */
+export function runBatchJobs(
+    action: PayloadAction<any>,
+    dispatch,
+    getState: GetStateFunction
+) {
+    // this job is already represented internally as the default job for the tab
+    let job = action.payload as Job
+
+    // mark the job request as a batch request
+    job.jobRequest.batchId = uuidv4()
+    // mark this job as batch primary
+    job.isPrimaryForBatch = true
+
+    // get the batch input
+    let batchInput = getPrimaryInput(job.script)
+    // get the array of inputs
+    let batchJobRequestInputValues = getBatchInputValues(job)
+
+    if (batchJobRequestInputValues.length <= 1) {
+        // TODO error this shouldn't happen
+        return
+    }
+
+    // use one for the default job
+    job.jobRequest.inputs.find((input) => input.name == batchInput.name).value =
+        batchJobRequestInputValues[0]
+    // run the default job
+    runJob(job, dispatch, getState)
+
+    // add the rest as extra jobs
+    batchJobRequestInputValues.slice(1).map((inputValue) => {
+        // would love to use structuredClone(...) but it's not working in typescript
+        let newJob = { ...job }
+        newJob.jobRequest = { ...job.jobRequest }
+        newJob.jobRequest.options = [...job.jobRequest.options]
+        // @ts-ignore
+        newJob.jobRequest.inputs = job.jobRequest.inputs.map((input) => {
+            if (input.name == batchInput.name) {
+                return { name: input.name, value: inputValue }
+            } else {
+                return input
+            }
+        })
+        newJob.isPrimaryForBatch = false
+
+        // normally, the addJob action assigns an ID and adds job to state.pipeline.jobs
+        // we aren't dispatching new actions from within this function so we'll do it
+        // manually
+        //newJob.internalId = `job-${getState().pipeline.internalJobCounter}`
+        //getState().pipeline.jobs.push(newJob)
+        //getState().pipeline.internalJobCounter += 1
+        dispatch(addJob(newJob))
+
+        // run the job
+        runJob(newJob, dispatch, getState)
+    })
 }

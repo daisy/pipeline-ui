@@ -92,3 +92,12 @@ export async function getAvailablePort(
     }
     return portOpened
 }
+
+
+const __baseUnpackagedPath = __dirname.endsWith('.asar')
+    ? __dirname + '.unpacked'
+    : __dirname
+
+export const resolveUnpacked = (...path: string[]) => {
+    return resolve(__baseUnpackagedPath, ...path)
+}

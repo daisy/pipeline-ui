@@ -3,23 +3,6 @@ import { JobRequest, Script } from 'shared/types'
 // make an HTML-friendly ID string
 export let ID = (id) => `z-${id}`
 
-export function getAllRequired(script: Script) {
-    return script
-        ? [
-              ...script.inputs.filter((i) => i.required),
-              ...script.options.filter((i) => i.required),
-          ]
-        : []
-}
-
-export function getAllOptional(script: Script) {
-    return script
-        ? [
-              ...script.inputs.filter((i) => !i.required),
-              ...script.options.filter((i) => !i.required),
-          ]
-        : []
-}
 
 export function findValue(
     name: string,
@@ -88,13 +71,3 @@ export function externalLinkClick(e, app) {
     }
 }
 
-export function is2StepsScript(script: Script) {
-    if (!script || !script.options) {
-        return false
-    }
-    return (
-        script.options.findIndex(
-            (item) => item.name == 'stylesheet-parameters'
-        ) > -1
-    )
-}

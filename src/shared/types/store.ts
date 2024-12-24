@@ -10,3 +10,5 @@ export interface RootState {
     pipeline?: PipelineState
     update?: UpdateState
 }
+
+export type GetStateFunction = () => RootState

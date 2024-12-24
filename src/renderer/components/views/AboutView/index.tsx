@@ -1,7 +1,7 @@
 import { useEffect } from 'react'
 import { useWindowStore } from 'renderer/store'
 import { externalLinkClick } from 'renderer/utils'
-import { PipelineStatus } from 'shared/types/pipeline'
+import { PipelineStatus } from 'shared/types'
 import { Copy } from '../../SvgIcons'
 import daisyLogo from './daisy_high.jpg'
 import pipelineLogo from './logo_64x64.png'

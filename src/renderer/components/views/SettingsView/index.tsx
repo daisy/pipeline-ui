@@ -15,9 +15,9 @@ import {
     setClosingMainWindowAction,
     setEditJobOnNewTab,
 } from 'shared/data/slices/settings'
-import { TtsEnginesConfigPane } from '../../TtsSettings/TtsEnginesConfig'
-import { TtsMoreOptionsConfigPane } from '../../TtsSettings/TtsMoreOptionsConfig'
-import { TtsVoicesConfigPane } from '../../TtsSettings/TtsVoicesConfig'
+import { TtsEnginesConfigPane } from '../../TtsConfig/Engines'
+import { TtsMoreOptionsConfigPane } from '../../TtsConfig/MoreOptions'
+import { TtsVoicesConfigPane } from '../../TtsConfig/Voices'
 const { App } = window // The "App" comes from the bridge
 
 enum SelectedMenuItem {

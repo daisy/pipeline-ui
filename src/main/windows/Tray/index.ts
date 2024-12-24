@@ -1,9 +1,8 @@
-import { app, Menu, Tray, BrowserWindow, ipcMain, nativeImage } from 'electron'
-import { closeApplication, MainWindow, MainWindowInstance } from 'main/windows'
-import { IPC, PLATFORM } from 'shared/constants'
-import { PipelineState, PipelineStatus } from 'shared/types'
-import { resolveUnpacked } from 'shared/utils'
+import { app, ipcMain, Menu, nativeImage, Tray } from 'electron'
 import { store } from 'main/data/store'
+import { resolveUnpacked } from 'main/pipeline/utils'
+import { closeApplication, MainWindow } from 'main/windows'
+import { IPC, PLATFORM } from 'shared/constants'
 import {
     addJob,
     newJob,
@@ -11,10 +10,10 @@ import {
     selectPipeline,
     selectStatus,
     start,
-    stop,
 } from 'shared/data/slices/pipeline'
-import { getPipelineInstance } from '../../data/instance'
+import { PipelineStatus } from 'shared/types'
 import { APP_CONFIG } from '~/app.config'
+import { getPipelineInstance } from '../../data/instance'
 // import { setClosingMainWindowActionForApp } from 'shared/data/slices/settings'
 
 const { TRAY_TITLE } = APP_CONFIG

@@ -1,12 +1,8 @@
 // job settings, not application settings
 import { useWindowStore } from 'renderer/store'
-import {
-    externalLinkClick,
-    findValue,
-    getAllOptional,
-    getAllRequired,
-} from 'renderer/utils/utils'
+import { externalLinkClick, findValue } from 'renderer/utils/utils'
 import { Job } from 'shared/types'
+import { getAllOptional, getAllRequired } from 'shared/utils'
 
 const { App } = window
 

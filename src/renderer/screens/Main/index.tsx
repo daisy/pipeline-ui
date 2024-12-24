@@ -2,7 +2,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { MainView } from 'renderer/components'
 import { useWindowStore } from 'renderer/store'
 import { start } from 'shared/data/slices/pipeline'
-import { PipelineStatus } from 'shared/types/pipeline'
+import { PipelineStatus } from 'shared/types'
 
 const queryClient = new QueryClient()
 

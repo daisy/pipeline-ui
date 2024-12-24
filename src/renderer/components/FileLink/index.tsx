@@ -4,7 +4,10 @@ interface FileLinkProps {
     fileHref: string
     children?: React.ReactNode
 }
-
+/*
+Wrap a local or remote file reference in a link element
+Click to open in finder or browser
+*/
 export function FileLink({ fileHref, children }: FileLinkProps) {
     let localPath = fileHref
         ? decodeURI(fileHref.replace('file:', '').replace('///', '/'))

@@ -1,19 +1,16 @@
-import { app, ipcMain, dialog } from 'electron'
-import path, { resolve, delimiter, relative } from 'path'
-import {
-    Webservice,
-    PipelineStatus,
-    PipelineState,
-    PipelineInstanceProperties,
-} from 'shared/types'
-import { ENVIRONMENT, IPC } from 'shared/constants'
-import { spawn, ChildProcessWithoutNullStreams } from 'child_process'
+import { ChildProcessWithoutNullStreams, spawn } from 'child_process'
+import { app, dialog } from 'electron'
 import { existsSync, mkdirSync, readFileSync, rmSync } from 'fs'
+import { delimiter, relative, resolve } from 'path'
+import { ENVIRONMENT } from 'shared/constants'
+import {
+    PipelineInstanceProperties,
+    PipelineState,
+    PipelineStatus,
+    Webservice,
+} from 'shared/types'
 
-import { getAvailablePort, Pipeline2Error, walk } from './utils'
-import { resolveUnpacked } from 'shared/utils'
-import { info, error } from 'electron-log'
-import { pathToFileURL } from 'url'
+import { error, info } from 'electron-log'
 import { store } from 'main/data/store'
 import {
     selectPipeline,
@@ -21,7 +18,13 @@ import {
     setStatus,
     useWebservice,
 } from 'shared/data/slices/pipeline'
-import fs from 'fs-extra'
+import { pathToFileURL } from 'url'
+import {
+    getAvailablePort,
+    Pipeline2Error,
+    resolveUnpacked,
+    walk,
+} from './utils'
 
 /**
  * Local DAISY Pipeline 2 management class

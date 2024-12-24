@@ -7,7 +7,7 @@ import {
     JobData,
     MessageLevel,
     Message,
-} from 'shared/types/pipeline'
+} from 'shared/types'
 import { scriptElementToJson } from './scriptToJson'
 import { parseXml } from './parser'
 

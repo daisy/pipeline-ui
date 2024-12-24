@@ -24,6 +24,7 @@ import {
     defaultSponsorshipMessage,
     updateSponsorshipMessage,
 } from '../../utils'
+import { is2StepsScript } from 'shared/utils'
 
 // is dateInMs more than 2 weeks old
 let isExpired = (dateInMs: number) => {
@@ -70,7 +71,7 @@ export function NewJobPane({ job }: { job: Job }) {
             updateJob({
                 ...job,
                 script: selection,
-                is2StepsJob: utils.is2StepsScript(selection),
+                is2StepsJob: is2StepsScript(selection),
                 jobData: {
                     ...job.jobData,
                     nicename: selection?.nicename ?? '',

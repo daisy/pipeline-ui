@@ -264,6 +264,22 @@ export const pipeline = createSlice({
                 })
             }
         },
+        runBatchJobs: (state: PipelineState, param: PayloadAction<Job>) => {
+            if (param.payload.jobRequest) {
+                // TODO is this correct here too as above?
+                // Retrieve latest JobRequest payload
+                // the runAction will be intercepted by the middleware
+                // To make the required api calls
+                state.jobs = state.jobs.map((job) => {
+                    return job.internalId === param.payload.internalId
+                        ? {
+                              ...job,
+                              jobRequest: param.payload.jobRequest,
+                          }
+                        : job
+                })
+            }
+        },
         // for the tabbed view and menu list
         // this could have gone in its own state slice but it depends on pipeline.jobs anyway
         // and i'm not sure how redux handles dependent states across slices
@@ -358,6 +374,7 @@ export const {
     editJob,
     updateJob,
     runJob,
+    runBatchJobs,
     restoreJob,
     removeJob,
     removeJobs,

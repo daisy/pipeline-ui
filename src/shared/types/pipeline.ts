@@ -212,6 +212,12 @@ export type Job = {
      */
     stylesheetParameters?: ScriptOption[]
     is2StepsJob?: boolean
+    /**
+     * There is one job per tab except for batch jobs
+     * In this case, the job-tab association is only for the 'primary' job in the batch
+     * eg the job for which the tab was made in the first place
+    */
+    isPrimaryForBatch?: boolean
 }
 // JobData is the JSON representation of Pipeline WS data for a single job
 export type JobData = {
@@ -266,6 +272,7 @@ export type ScriptInput = ScriptItemBase & {
     type: 'anyFileURI'
     kind: 'input'
     ordered: false
+    batchable: boolean
 }
 
 export type ScriptOption = ScriptItemBase & {
@@ -283,6 +290,7 @@ export type Script = {
     inputs?: Array<ScriptInput>
     options?: Array<ScriptOption>
     homepage?: string
+    batchable: boolean
 }
 
 export type NameValue = {

@@ -4,6 +4,7 @@ import {
     setDatatypes,
     removeJob,
     runJob,
+    runBatchJobs,
     start,
     stop,
     updateScript,
@@ -81,6 +82,8 @@ export function pipelineMiddleware({ getState, dispatch }) {
             case runJob.type:
                 actions.runJob(action.payload as Job, dispatch, getState)
                 break
+            case runBatchJobs.type:
+                actions.runBatchJobs(action, dispatch, getState)
                 break
             case requestStylesheetParameters.type:
                 actions.requestStylesheetParameters(action, dispatch, getState)

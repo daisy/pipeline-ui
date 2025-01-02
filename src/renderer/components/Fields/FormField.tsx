@@ -5,7 +5,7 @@
 import { useState } from 'react'
 import { useWindowStore } from 'renderer/store'
 import { externalLinkClick, findInputType } from 'renderer/utils'
-import { ScriptItemBase } from 'shared/types'
+import { ScriptInput, ScriptItemBase } from 'shared/types'
 import Markdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import { FileOrFolderInput } from './FileOrFolderInput'
@@ -14,6 +14,9 @@ import { MultiFileOrFolderInput } from './MultiFileOrFolderInput'
 
 const { App } = window
 
+let isBatchableInput = (item: ScriptItemBase) => {
+    return item.kind === 'input' && (item as ScriptInput).batchable
+}
 // item.mediaType is a file type e.g. application/x-dtbook+xml
 export function FormField({
     item,
@@ -37,10 +40,10 @@ export function FormField({
         : ['openFile', 'openDirectory']
 
     const { settings } = useWindowStore()
-    let matchType = (item) => {
+    let matchType = (item: ScriptItemBase) => {
         let inputType = findInputType(item.type)
         if (inputType == 'file') {
-            if (item.sequence) {
+            if (item.sequence || isBatchableInput(item)) {
                 return (
                     <MultiFileOrFolderInput
                         type="open"

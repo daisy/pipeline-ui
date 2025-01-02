@@ -20,7 +20,6 @@ export function JobDetailsPane({ job }: { job: Job }) {
     const [isRerunning, setIsRerunning] = useState(false)
     const { settings } = useWindowStore()
 
-    //let probableLogLink = job?.jobData?.href ? `${job.jobData.href}/log` : ''
     useEffect(() => {
         setCanRunJob(settings?.downloadFolder?.trim() != '')
     }, [settings.downloadFolder])
@@ -98,6 +97,11 @@ export function JobDetailsPane({ job }: { job: Job }) {
                         <summary>Job Settings</summary>
                         <Settings job={job} />
                     </details>
+                    {job.isPrimaryForBatch ? (
+                            <p>Part of a batch</p>
+                        ) : (
+                            <p>Not batched</p>
+                        )}
                 </div>
             </section>
 

@@ -1,5 +1,6 @@
-import { Script, ScriptInput, ScriptOption } from 'shared/types/pipeline'
+import { Script, ScriptInput, ScriptOption } from 'shared/types'
 import { parseXml } from './parser'
+import { supportsBatch } from 'shared/utils'
 
 function scriptXmlToJson(xmlString: string): Script {
     let scriptElm = parseXml(xmlString, 'script')
@@ -19,6 +20,7 @@ function scriptElementToJson(scriptElm: Element): Script {
         description: (descriptionElm[0] as Element)?.textContent.trim() ?? '',
         version: (versionElm[0] as Element)?.textContent.trim() ?? '',
         homepage: (homepageElm[0] as Element)?.textContent.trim() ?? '',
+        batchable: false,
     }
 
     script.inputs = Array.from(scriptElm.getElementsByTagName('input')).map(
@@ -39,6 +41,7 @@ function scriptElementToJson(scriptElm: Element): Script {
                 kind: 'input',
                 ordered: false,
                 isStylesheetParameter: false,
+                batchable: false,
             }
         }
     )
@@ -65,6 +68,13 @@ function scriptElementToJson(scriptElm: Element): Script {
             }
         }
     )
+
+    // say whether the script is able to be batch-executed
+    if (supportsBatch(script)) {
+        script.batchable = true
+        // scripts take one input right now
+        script.inputs.map((input) => (input.batchable = true))
+    }
 
     return script
 }

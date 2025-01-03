@@ -219,18 +219,20 @@ export function runBatchJobs(
     // add the rest as extra jobs
     batchJobRequestInputValues.slice(1).map((inputValue) => {
         // would love to use structuredClone(...) but it's not working in typescript
-        let newJob = { ...job }
-        newJob.jobRequest = { ...job.jobRequest }
-        newJob.jobRequest.options = [...job.jobRequest.options]
+        const { internalId, ...jobWithoutId } = { ...job }
+        let newJob_ = newJob(selectPipeline(getState()))
+        newJob_ = { ...newJob_, ...jobWithoutId }
+        newJob_.jobRequest = { ...job.jobRequest }
+        newJob_.jobRequest.options = [...job.jobRequest.options]
         // @ts-ignore
-        newJob.jobRequest.inputs = job.jobRequest.inputs.map((input) => {
+        newJob_.jobRequest.inputs = job.jobRequest.inputs.map((input) => {
             if (input.name == batchInput.name) {
                 return { name: input.name, value: inputValue }
             } else {
                 return input
             }
         })
-        newJob.isPrimaryForBatch = false
+        newJob_.isPrimaryForBatch = false
 
         // normally, the addJob action assigns an ID and adds job to state.pipeline.jobs
         // we aren't dispatching new actions from within this function so we'll do it
@@ -238,9 +240,9 @@ export function runBatchJobs(
         //newJob.internalId = `job-${getState().pipeline.internalJobCounter}`
         //getState().pipeline.jobs.push(newJob)
         //getState().pipeline.internalJobCounter += 1
-        dispatch(addJob(newJob))
+        dispatch(addJob(newJob_))
 
         // run the job
-        runJob(newJob, dispatch, getState)
+        runJob(newJob_, dispatch, getState)
     })
 }

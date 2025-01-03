@@ -47,10 +47,20 @@ $engineColWidth: 8rem;
     padding-left: 3px;
     display: flex;
     flex-direction: column;
-    gap: calc(var(--pad) * 2);
+    gap: calc(var(--pad) * 1);
     width: 100%;
     font-size: large;
     
+    h2, h3 {
+        margin: 0;
+        font-weight: bold;
+    }
+    h2 {
+        font-size: 120%;
+    }
+    h3 {
+        font-size: 100%;
+    }
     .file-or-folder > .controls-row {
         display: flex;
         flex-direction: column;
@@ -106,8 +116,9 @@ $engineColWidth: 8rem;
 .tts-voices-config {
     display: flex;
     flex-direction: column;
-    gap: .75rem;
+    gap: 1rem;
     height: 100%;
+    
     
     .voice-filters {
         display: flex;
@@ -121,35 +132,45 @@ $engineColWidth: 8rem;
             
         }
     }
-    .voice-details {
-        display: grid;
-        grid-template-areas: "desc preview"
-        "add add";
+    .voice-selection {
+        display: flex;
+        flex-direction: column;
         gap: 1rem;
-        align-items:baseline;
-        p {
+    }
+    .voice-details {
+        display: flex;
+        flex-direction: column;
+        
+        gap: 1rem;
+        
+        p.selected-voice {
             margin-top: .25rem;
             margin-bottom: 0;
+            font-style: italic;
+            font-size: smaller;
         }
-        p.selected-voice {
-            grid-area: desc;
-        }
-        p.voice-already-exists {
-            grid-area: add;
-        }
-        button {
-            grid-area: add;
-        }
-        audio {
-            grid-area: preview;
-            height: 1rem;
-        }
+        
         button, label, input {
             font-weight: normal;
             font-size: 1.1rem;
             border: thin solid;
             padding: 5px;
             text-decoration: none;
+        }
+
+        .voice-preview {
+            display: grid;
+            grid-template-areas: "preview preview"
+            "text audio";
+
+            input {
+                grid-area: text;
+                height: 1rem;
+            }
+            audio {
+                grid-area: audio;
+                height: 1rem;
+            }
         }
     }
     p > select {

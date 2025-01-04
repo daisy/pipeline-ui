@@ -152,9 +152,6 @@ export function TtsEnginesConfigPane({
     console.log(engineProperties)
     return (
         <>
-            <p id="available-voices-label" className="label">
-                <b>Configure text-to-speech engines</b>
-            </p>
             <p className="desc">
                 After configuring these engines with the required credentials,
                 they will be available under 'Voices'.

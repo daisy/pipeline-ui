@@ -79,9 +79,6 @@ export function TtsPreferredVoicesConfigPane({
     }
     return (
         <>
-            <h2 id="preferred-voices-label" className="label">Preferred voices</h2>
-            <div className="preferred-voices">
-                <h3>Preferred Voices</h3>
                 <p id="preferred-table-title">
                     View
                     <select onChange={(e) => selectPreferredVoicesLanguage(e)}>
@@ -194,7 +191,6 @@ export function TtsPreferredVoicesConfigPane({
                         ''
                     )}
                 </div>
-            </div>
         </>
     )
 }

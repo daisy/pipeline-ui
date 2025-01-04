@@ -398,21 +398,15 @@ export function SettingsView() {
                             </span>
                         </div>
                     ) : selectedSection == SelectedMenuItem.TTSBrowseVoices ? (
-                        <div className="tts-voices-config">
+                        <div className="tts-browse-voices">
                             {pipeline.ttsVoices ? (
                                 <TtsBrowseVoicesConfigPane
                                     availableVoices={pipeline.ttsVoices}
                                     userPreferredVoices={
                                         newSettings.ttsConfig.preferredVoices
                                     }
-                                    userDefaultVoices={
-                                        newSettings.ttsConfig.defaultVoices
-                                    }
                                     onChangePreferredVoices={
                                         onTtsVoicesPreferenceChange
-                                    }
-                                    onChangeDefaultVoices={
-                                        onTtsVoicesDefaultsChange
                                     }
                                 />
                             ) : (
@@ -420,7 +414,7 @@ export function SettingsView() {
                             )}
                         </div>
                     ) : selectedSection == SelectedMenuItem.TTSPreferredVoices ? (
-                        <div className="tts-voices-config">
+                        <div className="tts-preferred-voices">
                             {pipeline.ttsVoices ? (
                                 <TtsPreferredVoicesConfigPane
                                     ttsEnginesStates={pipeline.ttsEnginesStates}

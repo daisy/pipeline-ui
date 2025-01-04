@@ -8,7 +8,7 @@ export function VoicePreview({ voice }: { voice: TtsVoice }) {
     }
     return (
         <div className="voice-preview">
-            <h3 id="preview-label">Preview</h3>
+            <p id="preview-label">Enter text to hear a preview:</p>
             <input type="text" onChange={(e) => updatePreview(e)} aria-labelledby='preview-label'/>
             <audio
                 controls

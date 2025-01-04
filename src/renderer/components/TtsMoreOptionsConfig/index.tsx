@@ -119,9 +119,6 @@ export function TtsMoreOptionsConfigPane({
 
     return (
         <>
-            <h2 id="more-options-label" className="label">
-                More options
-            </h2>
             <div>
                 <label htmlFor="speechRate">
                     Speech rate: {speechRateDisplay}

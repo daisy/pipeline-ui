@@ -237,23 +237,23 @@ export function ScriptForm({ job, script }: { job: Job; script: Script }) {
             // autofill tts config option if present
             // if present, it will be an input to the script but an optional one
 
-            let ttsConfigOpt = optional.find((o) =>
-                o.mediaType?.includes('application/vnd.pipeline.tts-config+xml')
-            )
+            // let ttsConfigOpt = optional.find((o) =>
+            //     o.mediaType?.includes('application/vnd.pipeline.tts-config+xml')
+            // )
 
-            let ttsConfigExists = await App.pathExists(
-                settings.ttsConfig.xmlFilepath
-            )
-            let inputs = [...job.jobRequest.inputs]
-            if (ttsConfigOpt && ttsConfigExists) {
-                inputs = updateArrayValue(
-                    settings.ttsConfig.xmlFilepath,
-                    ttsConfigOpt,
-                    inputs
-                )
-            } else if (!ttsConfigExists) {
-                App.log(`File does not exist ${settings.ttsConfig.xmlFilepath}`)
-            }
+            // let ttsConfigExists = await App.pathExists(
+            //     settings.ttsConfig.xmlFilepath
+            // )
+            // let inputs = [...job.jobRequest.inputs]
+            // if (ttsConfigOpt && ttsConfigExists) {
+            //     inputs = updateArrayValue(
+            //         settings.ttsConfig.xmlFilepath,
+            //         ttsConfigOpt,
+            //         inputs
+            //     )
+            // } else if (!ttsConfigExists) {
+            //     App.log(`File does not exist ${settings.ttsConfig.xmlFilepath}`)
+            // }
             setSubmitInProgress(true)
             App.store.dispatch(
                 runJob({
@@ -261,7 +261,6 @@ export function ScriptForm({ job, script }: { job: Job; script: Script }) {
                     jobRequest: {
                         ...job.jobRequest,
                         options: [...options],
-                        inputs: [...inputs],
                     },
                 })
             )

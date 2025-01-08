@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { TtsVoice } from 'shared/types/ttsConfig'
-import { voicesTransliterations } from './voiceTransliterations'
-import { VoicePreview } from './VoicePreview'
+import { voicesTransliterations } from '../TtsConfig/BrowseVoices/voiceTransliterations'
+import { VoicePreview } from '../TtsConfig/BrowseVoices/VoicePreview'
 
 export function TtsBrowseVoicesConfigPane({
     availableVoices,

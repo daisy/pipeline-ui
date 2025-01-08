@@ -275,7 +275,7 @@ export function TtsBrowseVoicesConfigPane({
                         ></VoicePreview>
                         {preferredVoices.find((v) => v.id == voiceId) ? (
                             <p className="voice-already-exists">
-                                <i>This voice is already in your list.</i>
+                                <i>This voice is in your list.</i>
                             </p>
                         ) : (
                             <button

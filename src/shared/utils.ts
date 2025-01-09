@@ -33,43 +33,43 @@ export function updateArrayValue(
     return arr2
 }
 
-// // does the job request have multiple values for the input parameter marked 'batchable'?
-// export function hasBatchInput(job: Job) {
-//     if (job.script.batchable) {
-//         let batchInput = getBatchInput(job.script)
-//         if (batchInput) {
-//             let batchInputInRequest = job.jobRequest.inputs.find(
-//                 (input) => input.name == batchInput.name
-//             )
-//             return batchInputInRequest?.value.length > 1
-//         }
-//         return false
-//     }
-//     return false
-// }
-// export function getBatchInput(script: Script) {
-//     if (script.batchable) {
-//         let batchInput = script.inputs.find((input) => input.batchable)
-//         return batchInput
-//     } else {
-//         return null
-//     }
-// }
-// export function getBatchInputValues(job: Job) {
-//     if (job.script.batchable) {
-//         let batchInput = getBatchInput(job.script)
-//         if (batchInput) {
-//             let batchInputInRequest = job.jobRequest.inputs.find(
-//                 (input) => input.name == batchInput.name
-//             )
-//             return batchInputInRequest.value
-//         } else {
-//             return []
-//         }
-//     } else {
-//         return []
-//     }
-// }
+// does the job request have multiple values for the input parameter marked 'batchable'?
+export function hasBatchInput(job: Job) {
+    if (job.script.batchable) {
+        let batchInput = getBatchInput(job.script)
+        if (batchInput) {
+            let batchInputInRequest = job.jobRequest.inputs.find(
+                (input) => input.name == batchInput.name
+            )
+            return batchInputInRequest?.value.length > 1
+        }
+        return false
+    }
+    return false
+}
+export function getBatchInput(script: Script) {
+    if (script.batchable) {
+        let batchInput = script.inputs.find((input) => input.batchable)
+        return batchInput
+    } else {
+        return null
+    }
+}
+export function getBatchInputValues(job: Job) {
+    if (job.script.batchable) {
+        let batchInput = getBatchInput(job.script)
+        if (batchInput) {
+            let batchInputInRequest = job.jobRequest.inputs.find(
+                (input) => input.name == batchInput.name
+            )
+            return batchInputInRequest.value
+        } else {
+            return []
+        }
+    } else {
+        return []
+    }
+}
 
 export function is2StepsScript(script: Script) {
     if (!script || !script.options) {

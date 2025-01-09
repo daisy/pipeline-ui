@@ -15,9 +15,12 @@ import {
     setClosingMainWindowAction,
     setEditJobOnNewTab,
 } from 'shared/data/slices/settings'
+
 import { TtsEnginesConfigPane } from '../../TtsConfig/Engines'
 import { TtsMoreOptionsConfigPane } from '../../TtsConfig/MoreOptions'
-import { TtsVoicesConfigPane } from '../../TtsConfig/Voices'
+import { TtsBrowseVoicesConfigPane } from '../../TtsConfig/BrowseVoices'
+import { TtsPreferredVoicesConfigPane } from '../../TtsConfig/PreferredVoices'
+
 const { App } = window // The "App" comes from the bridge
 
 enum SelectedMenuItem {
@@ -25,7 +28,8 @@ enum SelectedMenuItem {
     Appearance,
     Behavior,
     Updates,
-    TTSVoices,
+    TTSBrowseVoices,
+    TTSPreferredVoices,
     TTSEngines,
     TTSMoreOptions,
 }
@@ -198,7 +202,7 @@ export function SettingsView() {
                             <li
                                 className={
                                     selectedSection ==
-                                    SelectedMenuItem.TTSVoices
+                                    SelectedMenuItem.TTSBrowseVoices
                                         ? 'selected-menu-item'
                                         : ''
                                 }
@@ -206,11 +210,29 @@ export function SettingsView() {
                                 <button
                                     onClick={(e) =>
                                         setSelectedSection(
-                                            SelectedMenuItem.TTSVoices
+                                            SelectedMenuItem.TTSBrowseVoices
                                         )
                                     }
                                 >
-                                    Voices
+                                    Browse Voices
+                                </button>
+                            </li>
+                            <li
+                                className={
+                                    selectedSection ==
+                                    SelectedMenuItem.TTSPreferredVoices
+                                        ? 'selected-menu-item'
+                                        : ''
+                                }
+                            >
+                                <button
+                                    onClick={(e) =>
+                                        setSelectedSection(
+                                            SelectedMenuItem.TTSPreferredVoices
+                                        )
+                                    }
+                                >
+                                    Preferred Voices
                                 </button>
                             </li>
                             <li
@@ -377,15 +399,30 @@ export function SettingsView() {
                                 checking for updates in the background.
                             </span>
                         </div>
-                    ) : selectedSection == SelectedMenuItem.TTSVoices ? (
-                        <div className="tts-voices-config">
+                    ) : selectedSection == SelectedMenuItem.TTSBrowseVoices ? (
+                        <div className="tts-browse-voices">
                             {pipeline.ttsVoices ? (
-                                <TtsVoicesConfigPane
+                                <TtsBrowseVoicesConfigPane
                                     availableVoices={pipeline.ttsVoices}
                                     userPreferredVoices={
                                         newSettings.ttsConfig.preferredVoices
                                     }
+                                    onChangePreferredVoices={
+                                        onTtsVoicesPreferenceChange
+                                    }
+                                />
+                            ) : (
+                                <p>Loading voices...</p>
+                            )}
+                        </div>
+                    ) : selectedSection == SelectedMenuItem.TTSPreferredVoices ? (
+                        <div className="tts-preferred-voices">
+                            {pipeline.ttsVoices ? (
+                                <TtsPreferredVoicesConfigPane
                                     ttsEnginesStates={pipeline.ttsEnginesStates}
+                                    userPreferredVoices={
+                                        newSettings.ttsConfig.preferredVoices
+                                    }
                                     userDefaultVoices={
                                         newSettings.ttsConfig.defaultVoices
                                     }

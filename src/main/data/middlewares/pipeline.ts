@@ -443,12 +443,13 @@ export function pipelineMiddleware({ getState, dispatch }) {
                                 }
                                 // Also set the new TTS config property
                                 // along the saved tts configurations
-                                let ttsConfig = selectTtsConfig(getState())
+                                // Not working yet, to be used in future engine release
+                                //let ttsConfig = selectTtsConfig(getState())
                                 //console.log('loading tts configuration', ttsConfig)
-                                settingsTtsProperties.push({
-                                    name: 'org.daisy.pipeline.tts.config',
-                                    value: ttsConfig?.xmlFilepath,
-                                })
+                                // settingsTtsProperties.push({
+                                //     name: 'org.daisy.pipeline.tts.config',
+                                //     value: ttsConfig?.xmlFilepath,
+                                // })
                                 // dispatch to sync the properties
                                 // in the engine
                                 dispatch(setProperties(settingsTtsProperties))

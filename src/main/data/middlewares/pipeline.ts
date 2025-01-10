@@ -44,6 +44,7 @@ import {
     PipelineState,
     TtsEngineState,
     ScriptOption,
+    TtsConfig,
 } from 'shared/types'
 
 import { info, error } from 'electron-log'
@@ -440,12 +441,18 @@ export function pipelineMiddleware({ getState, dispatch }) {
                                         settingsTtsProperties.push(p)
                                     }
                                 }
+                                // Also set the new TTS config property
+                                // along the saved tts configurations
+                                // Not working yet, to be used in future engine release
+                                //let ttsConfig = selectTtsConfig(getState())
+                                //console.log('loading tts configuration', ttsConfig)
+                                // settingsTtsProperties.push({
+                                //     name: 'org.daisy.pipeline.tts.config',
+                                //     value: ttsConfig?.xmlFilepath,
+                                // })
                                 // dispatch to sync the properties
                                 // in the engine
                                 dispatch(setProperties(settingsTtsProperties))
-                                // return pipelineAPI.fetchTtsVoices(
-                                //     selectTtsConfig(getState())
-                                // )(newWebservice)
                             })
                             // .then((voices: Array<TtsVoice>) => {
                             //     // console.log('TTS Voices', voices)

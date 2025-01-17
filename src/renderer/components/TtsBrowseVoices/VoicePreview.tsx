@@ -9,7 +9,7 @@ export function VoicePreview({ voice }: { voice: TtsVoice }) {
     return (
         <div className="voice-preview">
             <p id="preview-label">Enter text to hear a preview:</p>
-            <input type="text" onChange={(e) => updatePreview(e)} aria-labelledby='preview-label'/>
+            <input type="text" onChange={(e) => updatePreview(e)} aria-labelledby='preview-label' placeholder='Hello, my name is...'/>
             <audio
                 controls
                 src={

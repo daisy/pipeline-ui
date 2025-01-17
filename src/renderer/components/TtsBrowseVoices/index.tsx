@@ -8,16 +8,28 @@ export function TtsBrowseVoicesConfigPane({
     userPreferredVoices,
     onChangePreferredVoices,
     ttsEnginesStates,
+    voiceFilters,
+    onChangeVoiceFilters,
 }) {
     const [preferredVoices, setPreferredVoices] = useState([
         ...userPreferredVoices,
     ])
     // filter selections
-    const [engine, setEngine] = useState('All')
-    const [lang, setLang] = useState('All')
-    const [langcode, setLangcode] = useState('All')
-    const [gender, setGender] = useState('All')
-    const [voiceId, setVoiceId] = useState('None')
+    const [engine, setEngine] = useState(
+        voiceFilters.find((vf) => vf.id == 'select-engine')?.value ?? 'All'
+    )
+    const [lang, setLang] = useState(
+        voiceFilters.find((vf) => vf.id == 'select-lang')?.value ?? 'All'
+    )
+    const [langcode, setLangcode] = useState(
+        voiceFilters.find((vf) => vf.id == 'select-dialect')?.value ?? 'All'
+    )
+    const [gender, setGender] = useState(
+        voiceFilters.find((vf) => vf.id == 'select-gender')?.value ?? 'All'
+    )
+    const [voiceId, setVoiceId] = useState(
+        voiceFilters.find((vf) => vf.id == 'select-voice')?.value ?? 'None'
+    )
 
     let languageNames = new Intl.DisplayNames(['en'], { type: 'language' })
 
@@ -41,24 +53,141 @@ export function TtsBrowseVoicesConfigPane({
         setLangcode('All')
         setGender('All')
         setVoiceId('None')
+
+        let filters = [
+            {
+                id: 'select-lang',
+                value: e.target.value,
+            },
+            {
+                id: 'select-engine',
+                value: 'All',
+            },
+            {
+                id: 'select-dialect',
+                value: 'All',
+            },
+            {
+                id: 'select-gender',
+                value: 'All',
+            },
+            {
+                id: 'select-voice',
+                value: 'None',
+            },
+        ]
+        onChangeVoiceFilters(filters)
     }
     let selectEngine = (e) => {
         setEngine(e.target.value)
         setLangcode('All')
         setGender('All')
         setVoiceId('None')
+
+        let filters = [
+            {
+                id: 'select-lang',
+                value: lang,
+            },
+            {
+                id: 'select-engine',
+                value: e.target.value,
+            },
+            {
+                id: 'select-dialect',
+                value: 'All',
+            },
+            {
+                id: 'select-gender',
+                value: 'All',
+            },
+            {
+                id: 'select-voice',
+                value: 'None',
+            },
+        ]
+        onChangeVoiceFilters(filters)
     }
     let selectLangcode = (e) => {
         setLangcode(e.target.value)
         setGender('All')
         setVoiceId('None')
+        let filters = [
+            {
+                id: 'select-lang',
+                value: lang,
+            },
+            {
+                id: 'select-engine',
+                value: engine,
+            },
+            {
+                id: 'select-dialect',
+                value: e.target.value,
+            },
+            {
+                id: 'select-gender',
+                value: 'All',
+            },
+            {
+                id: 'select-voice',
+                value: 'None',
+            },
+        ]
+        onChangeVoiceFilters(filters)
     }
     let selectGender = (e) => {
         setGender(e.target.value)
         setVoiceId('None')
+        let filters = [
+            {
+                id: 'select-lang',
+                value: lang,
+            },
+            {
+                id: 'select-engine',
+                value: engine,
+            },
+            {
+                id: 'select-dialect',
+                value: langcode,
+            },
+            {
+                id: 'select-gender',
+                value: e.target.value,
+            },
+            {
+                id: 'select-voice',
+                value: 'None',
+            },
+        ]
+        onChangeVoiceFilters(filters)
     }
     let selectVoice = (e) => {
         setVoiceId(e.target.value)
+        let filters = [
+            {
+                id: 'select-lang',
+                value: lang,
+            },
+            {
+                id: 'select-engine',
+                value: engine,
+            },
+            {
+                id: 'select-dialect',
+                value: langcode,
+            },
+            {
+                id: 'select-gender',
+                value: gender,
+            },
+            {
+                id: 'select-voice',
+                value: e.target.value,
+            },
+        ]
+        onChangeVoiceFilters(filters)
     }
 
     return (

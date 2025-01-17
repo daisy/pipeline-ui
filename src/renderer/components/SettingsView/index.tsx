@@ -408,6 +408,7 @@ export function SettingsView() {
                                     onChangePreferredVoices={
                                         onTtsVoicesPreferenceChange
                                     }
+                                    ttsEnginesStates={pipeline.ttsEnginesStates}
                                 />
                             ) : (
                                 <p>Loading voices...</p>

@@ -23,11 +23,6 @@ const engineIds = [
     'org.daisy.pipeline.tts.google',
 ]
 
-const engineNames = {
-    'org.daisy.pipeline.tts.azure': 'Azure',
-    'org.daisy.pipeline.tts.google': 'Google',
-}
-
 const pipelineAPI = new PipelineAPI(
     (url, ...args) => window.fetch(url, ...args),
     console.info

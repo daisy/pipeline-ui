@@ -7,6 +7,7 @@ export function TtsBrowseVoicesConfigPane({
     availableVoices,
     userPreferredVoices,
     onChangePreferredVoices,
+    ttsEnginesStates,
 }) {
     const [preferredVoices, setPreferredVoices] = useState([
         ...userPreferredVoices,
@@ -109,8 +110,7 @@ export function TtsBrowseVoicesConfigPane({
                             .sort((a: string, b: string) => (a < b ? -1 : 1))
                             .map((engine: string, idx: number) => (
                                 <option value={engine} key={engine}>
-                                    {engine.charAt(0).toUpperCase() +
-                                        engine.substring(1)}
+                                    {ttsEnginesStates[engine]?.name ?? engine}
                                 </option>
                             ))}
                     </select>

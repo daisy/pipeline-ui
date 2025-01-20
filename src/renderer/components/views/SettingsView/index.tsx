@@ -33,6 +33,7 @@ enum SelectedMenuItem {
     TTSEngines,
     TTSMoreOptions,
 }
+type VoiceFilter = { id: string; value: string }
 
 export function SettingsView() {
     // Current registered settings
@@ -62,6 +63,8 @@ export function SettingsView() {
     const [selectedSection, setSelectedSection] = useState(
         SelectedMenuItem.General
     )
+    const [voiceFilters, setVoiceFilters] = useState([])
+
     // Changed folder
     const resultsFolderChanged = (filename) => {
         App.store.dispatch(setDownloadPath(filename))
@@ -131,7 +134,9 @@ export function SettingsView() {
         App.store.dispatch(save())
         //setSaved(true)
     }
-
+    const onTtsVoiceFiltersChange = (vf: VoiceFilter[]) => {
+        setVoiceFilters(vf)
+    }
     return (
         <div className="settings">
             <nav className="settings-menu">
@@ -410,12 +415,18 @@ export function SettingsView() {
                                     onChangePreferredVoices={
                                         onTtsVoicesPreferenceChange
                                     }
+                                    ttsEnginesStates={pipeline.ttsEnginesStates}
+                                    onChangeVoiceFilters={
+                                        onTtsVoiceFiltersChange
+                                    }
+                                    voiceFilters={voiceFilters}
                                 />
                             ) : (
                                 <p>Loading voices...</p>
                             )}
                         </div>
-                    ) : selectedSection == SelectedMenuItem.TTSPreferredVoices ? (
+                    ) : selectedSection ==
+                      SelectedMenuItem.TTSPreferredVoices ? (
                         <div className="tts-preferred-voices">
                             {pipeline.ttsVoices ? (
                                 <TtsPreferredVoicesConfigPane

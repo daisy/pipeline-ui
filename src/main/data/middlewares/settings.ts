@@ -5,12 +5,24 @@ import { existsSync, readFileSync, writeFile } from 'fs'
 import { resolveUnpacked } from 'main/pipeline/utils'
 import { resolve } from 'path'
 import { ENVIRONMENT } from 'shared/constants'
-import { save, setAutoCheckUpdate } from 'shared/data/slices/settings'
+import { save, selectTtsConfig, setAutoCheckUpdate } from 'shared/data/slices/settings'
 import { checkForUpdate } from 'shared/data/slices/update'
 import { ttsConfigToXml } from 'shared/parser/pipelineXmlConverter/ttsConfigToXml'
-import { ApplicationSettings, migrateSettings } from 'shared/types'
+import {
+    ApplicationSettings,
+    EngineProperty,
+    TtsConfig,
+    TtsEngineProperty,
+    TtsVoice,
+    Webservice,
+    migrateSettings,
+} from 'shared/types'
 import { RootState } from 'shared/types/store'
 import { fileURLToPath, pathToFileURL } from 'url'
+import { pipelineAPI } from '../apis/pipeline'
+import { selectWebservice, setTtsVoices } from 'shared/data/slices/pipeline'
+import { propertyToXml } from 'shared/parser/pipelineXmlConverter/propertyToXml'
+import { baseurl } from 'shared/types'
 
 const settingsFile = resolve(app.getPath('userData'), 'settings.json')
 
@@ -95,11 +107,9 @@ export function readSettings() {
         const ttsConfigPath = fileURLToPath(settings.ttsConfig.xmlFilepath)
         if (!existsSync(ttsConfigPath)) {
             info(`Writing initial TTS Config file ${ttsConfigPath}`)
-            writeFile(
-                ttsConfigPath,
-                ttsConfigToXml(settings.ttsConfig),
-                () => {}
-            )
+            writeFile(ttsConfigPath, ttsConfigToXml(settings.ttsConfig), () => {
+                // TODO send file path to pipeline (tts config property)
+            })
         }
     } catch (e) {
         info('Error when trying to parse settings file')
@@ -159,7 +169,18 @@ export function settingsMiddleware({ getState, dispatch }) {
                     writeFile(
                         new URL(settings.ttsConfig.xmlFilepath),
                         ttsConfigToXml(settings.ttsConfig),
-                        () => {}
+                        () => {
+                            const webservice = selectWebservice(getState())
+                            let ttsConfig = selectTtsConfig(getState())
+                            console.log(ttsConfig)
+                            let ttsConfigProperty: EngineProperty = {
+                                name: 'org.daisy.pipeline.tts.config',
+                                value: ttsConfig.xmlFilepath,
+                            }
+                            pipelineAPI.setProperty(ttsConfigProperty)(
+                                webservice
+                            )
+                        }
                     )
                     break
                 case setAutoCheckUpdate.type:

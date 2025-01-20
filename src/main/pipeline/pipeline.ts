@@ -25,6 +25,8 @@ import {
     resolveUnpacked,
     walk,
 } from './utils'
+import fs from 'fs-extra'
+import { selectTtsConfig } from 'shared/data/slices/settings'
 
 /**
  * Local DAISY Pipeline 2 management class
@@ -364,6 +366,17 @@ Then close the program using the port and restart this application.`,
                 '-Dorg.daisy.pipeline.home=' + this.props.pipelineHome,
                 '-Dorg.daisy.pipeline.tts.host.protection=false', // so we can send TTS engine properties
             ]
+            // #238 : include the current tts config settings file at engine launch
+            const ttsConfig = selectTtsConfig(store.getState())
+            if (
+                ttsConfig &&
+                ttsConfig.xmlFilepath &&
+                ttsConfig.xmlFilepath.length > 0
+            ) {
+                SystemProps.push(
+                    '-Dorg.daisy.pipeline.tts.config=' + ttsConfig.xmlFilepath
+                )
+            }
             if (this.props.webservice.path) {
                 SystemProps.push(
                     '-Dorg.daisy.pipeline.ws.path=' + this.props.webservice.path

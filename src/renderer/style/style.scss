@@ -1,6 +1,7 @@
 @use 'vars.scss' as *;
 @use 'tabs.scss' as *;
 @use 'settings.scss' as *;
+@use 'filedrop.scss' as *;
 
 body {
     color: var(--fg);
@@ -140,7 +141,7 @@ p.warning {
 .fixed-height-layout {
     display: flex;
     flex-direction: column;
-    gap: calc(1.5 * var(--pad));
+    gap: calc(1 * var(--pad));
     max-height: var(--tab-panel-height);
     min-height: var(--tab-panel-height);
 }
@@ -152,16 +153,20 @@ p.warning {
     grid-template-columns: 60% auto;
     font-size: large;
 
-    // indent the contents not the heading
-    div > *:not(h1) {
-        margin-left: var(--pad);
-    }
     h1 {
         white-space: nowrap;
+        margin: 0;
     }
     h1 span {
         font-size: small;
         display: block;
+    }
+    p {
+        margin-top: .5rem;
+
+        a {
+            margin: .5rem;
+        }
     }
 
     button {
@@ -440,7 +445,7 @@ p.warning {
             flex-direction: column;
             gap: 8%;
             section {
-                width: 70%;
+                // width: 70%;
             }
             overflow-y: scroll;
 

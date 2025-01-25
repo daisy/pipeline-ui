@@ -30,8 +30,6 @@ export function ScriptName({
                 )
                     ? '. Text can be recorded in TTS voices.'
                     : ''}
-            </p>
-            <p>
                 {script?.homepage ? (
                     <a
                         href={script.homepage}

@@ -159,7 +159,7 @@ export function MainView() {
                         App.store.dispatch(selectJob(newJob_))
                     }}
                 >
-                    <Plus width="24" height="24" />
+                    +
                 </button>
             </div>
             {pipeline.jobs

@@ -248,6 +248,37 @@ Then close the program using the port and restart this application.`,
             info(
                 `Launching pipeline on ${this.props.webservice.host}:${this.props.webservice.port}`
             )
+            // Update the cli config file with the new werbservice informations
+            const cliConfigFile = resolve(
+                this.props.pipelineHome,
+                'cli',
+                'config.yml'
+            )
+            if (existsSync(cliConfigFile)) {
+                let cliConfig = readFileSync(cliConfigFile, 'utf8')
+                cliConfig = cliConfig
+                    .replace(
+                        /host:.*\n/,
+                        `host: ${
+                            (this.props.webservice.ssl
+                                ? 'https://'
+                                : 'http://') + this.props.webservice.host
+                        }\n`
+                    )
+                    .replace(
+                        /port:.*\n/,
+                        `port: ${this.props.webservice.port}\n`
+                    )
+                    .replace(
+                        /ws_path:.*\n/,
+                        `ws_path: ${
+                            this.props.webservice.path.startsWith('/')
+                                ? this.props.webservice.path.slice(1)
+                                : this.props.webservice.path
+                        }\n`
+                    )
+                fs.writeFileSync(cliConfigFile, cliConfig)
+            }
             let ClassFolders = [
                 resolve(this.props.pipelineHome, 'system'),
                 resolve(this.props.pipelineHome, 'modules'),

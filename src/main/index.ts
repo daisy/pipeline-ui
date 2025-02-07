@@ -106,24 +106,21 @@ makeAppWithSingleInstanceLock(async () => {
     //  and the existing one receive this event along the passed command line arguments of the killed on)
     app.on(
         'second-instance',
-        (event, commandLine, workingDirectory, additionalData) => {
-            MainWindow().then((window) => {
-                // Parse command line to create a new job from command line
-                // possibly following pipeline 2 original command line tool
-                //parsePipelineCommands(commandLine)
-                if (
-                    !(
-                        commandLine.includes('--bg') ||
-                        commandLine.includes('--hidden') ||
-                        commandLine.includes('cli')
-                    )
-                ) {
+        (
+            event,
+            commandLine,
+            workingDirectory,
+            additionalData: { argv: string[] }
+        ) => {
+            const cliArgs = additionalData?.argv || []
+            if (!commandLine.includes('--hidden') && cliArgs.length == 0) {
+                MainWindow().then((window) => {
                     if (window.isMinimized()) {
                         window.restore()
                     }
                     window.focus()
-                }
-            })
+                })
+            }
         }
     )
     if (store.getState().settings.autoCheckUpdate) {

@@ -6,8 +6,7 @@
 import { store } from 'main/data/store'
 import { getPipelineInstance } from 'main/data/middlewares/pipeline'
 import path from 'path'
-import { cwd } from 'process'
-import { spawnSync, spawn, execSync } from 'child_process'
+import { spawnSync } from 'child_process'
 import { existsSync } from 'fs'
 import { Webservice } from 'shared/types'
 

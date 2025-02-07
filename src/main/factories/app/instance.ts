@@ -30,14 +30,19 @@ async function getWebserviceFromSettings(remain: number, startingTime: number) {
 const reservedFlag = ['--bg', '--hidden']
 
 export function makeAppWithSingleInstanceLock(fn: () => void) {
-    const isPrimaryInstance = app.requestSingleInstanceLock()
-    const isElectron = process.argv[0]
-        .replaceAll('.exe', '')
-        .endsWith('electron')
-    const appLaunchArgs = process.argv.slice(0, isElectron ? 2 : 1)
-    const commandLineArgs = process.argv
-        .slice(isElectron ? 2 : 1)
-        .filter((arg) => !reservedFlag.includes(arg))
+    let isElectron = false
+    let commandLineArgs = []
+    let appLaunchArgs = []
+    if (process.argv) {
+        isElectron = process.argv[0].replaceAll('.exe', '').endsWith('electron')
+        appLaunchArgs = process.argv.slice(0, isElectron ? 2 : 1)
+        commandLineArgs = process.argv
+            .slice(isElectron ? 2 : 1)
+            .filter((arg) => !reservedFlag.includes(arg))
+    }
+    const isPrimaryInstance = app.requestSingleInstanceLock({
+        argv: commandLineArgs,
+    })
     const startingTime = isPrimaryInstance ? Date.now() : 0
     if (isPrimaryInstance) {
         // basic initialisation of the app if

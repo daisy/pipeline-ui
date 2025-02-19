@@ -20,8 +20,7 @@ async function getWebserviceFromSettings(remain: number, startingTime: number) {
         const test = Date.now()
         // Does not work but i don't know why ... possibly an issue
         // with my nodejs version
-        //await setTimeout(1000)
-        // ugly but it works
+        // ugly but it works to check every 3 seconds
         do {} while (Date.now() - test < 3000)
         return await getWebserviceFromSettings(remain - 1, startingTime)
     }
@@ -62,7 +61,9 @@ export function makeAppWithSingleInstanceLock(fn: () => void) {
                 // launch the app in hidden mode
                 ...(commandLineArgs.length > 0 ? ['--hidden'] : []),
             ]
-
+            console.log(
+                'Launching the app in the background and wait for the webservice ...'
+            )
             // launch the app in detached mode in a separate process
             const child = spawn(appLaunchArgs[0], bgInstanceArgs, {
                 cwd: process.cwd(),
@@ -78,7 +79,7 @@ export function makeAppWithSingleInstanceLock(fn: () => void) {
         app.quit()
     }
     if (commandLineArgs.length > 0) {
-        getWebserviceFromSettings(5, startingTime)
+        getWebserviceFromSettings(10, startingTime)
             .then((webservice) => {
                 runCliTool(webservice, commandLineArgs)
             })

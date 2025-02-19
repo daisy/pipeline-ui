@@ -33,7 +33,7 @@ export function makeAppWithSingleInstanceLock(fn: () => void) {
     let commandLineArgs = []
     let appLaunchArgs = []
     if (process.argv) {
-        isElectron = process.argv[0].replaceAll('.exe', '').endsWith('electron')
+        isElectron = process.argv[0].replaceAll('.exe', '').toLowerCase().endsWith('electron')
         appLaunchArgs = process.argv.slice(0, isElectron ? 2 : 1)
         commandLineArgs = process.argv
             .slice(isElectron ? 2 : 1)

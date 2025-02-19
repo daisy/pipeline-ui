@@ -254,31 +254,40 @@ Then close the program using the port and restart this application.`,
                 'cli',
                 'config.yml'
             )
-            if (existsSync(cliConfigFile)) {
-                let cliConfig = readFileSync(cliConfigFile, 'utf8')
-                cliConfig = cliConfig
-                    .replace(
-                        /host:.*\n/,
-                        `host: ${
-                            (this.props.webservice.ssl
-                                ? 'https://'
-                                : 'http://') + this.props.webservice.host
-                        }\n`
-                    )
-                    .replace(
-                        /port:.*\n/,
-                        `port: ${this.props.webservice.port}\n`
-                    )
-                    .replace(
-                        /ws_path:.*\n/,
-                        `ws_path: ${
-                            this.props.webservice.path.startsWith('/')
-                                ? this.props.webservice.path.slice(1)
-                                : this.props.webservice.path
-                        }\n`
-                    )
-                fs.writeFileSync(cliConfigFile, cliConfig)
+            try{
+                if (existsSync(cliConfigFile)) {
+                    let cliConfig = readFileSync(cliConfigFile, 'utf8')
+                    cliConfig = cliConfig
+                        .replace(
+                            /host:.*\n/,
+                            `host: ${
+                                (this.props.webservice.ssl
+                                    ? 'https://'
+                                    : 'http://') + this.props.webservice.host
+                            }\n`
+                        )
+                        .replace(
+                            /port:.*\n/,
+                            `port: ${this.props.webservice.port}\n`
+                        )
+                        .replace(
+                            /ws_path:.*\n/,
+                            `ws_path: ${
+                                this.props.webservice.path.startsWith('/')
+                                    ? this.props.webservice.path.slice(1)
+                                    : this.props.webservice.path
+                            }\n`
+                        )
+                    fs.writeFileSync(cliConfigFile, cliConfig)
+                }
+            } catch (error){
+                // Note : on macos, with the dp2 tool included in the app, the configuration cannot be updated
+                // it raises a permission denied
+                // for now i think i'll just keep it in its current state
+                // as the next dp2 tool should check for the presence of the DAISY Pipeline application
+                //console.log("Warning : could not update the embedded dp2 configuration for reuse", error)
             }
+            
             let ClassFolders = [
                 resolve(this.props.pipelineHome, 'system'),
                 resolve(this.props.pipelineHome, 'modules'),

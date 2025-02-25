@@ -1,14 +1,8 @@
 import { useState } from 'react'
 import { useWindowStore } from 'renderer/store'
-import { PipelineAPI } from 'shared/data/apis/pipeline'
 import { setProperties } from 'shared/data/slices/pipeline'
-import { FileOrFolderInput } from '../../Fields/FileOrFolderInput'
 import { TtsEngineState } from 'shared/types'
-
-const pipelineAPI = new PipelineAPI(
-    (url, ...args) => window.fetch(url, ...args),
-    console.info
-)
+import { SingleFileInput } from 'renderer/components/Fields/SingleFileInput'
 
 const { App } = window
 
@@ -226,9 +220,7 @@ export function TtsMoreOptionsConfigPane({
                     <option value="11025">11025 Hz</option>
                     <option value="16000">16000 Hz</option>
                     <option value="22050">22050 Hz</option>
-                    <option value="44100">
-                        44100 Hz
-                    </option>
+                    <option value="44100">44100 Hz</option>
                     <option value="48000">48000 Hz</option>
                 </select>
                 <p className="note">
@@ -237,16 +229,14 @@ export function TtsMoreOptionsConfigPane({
             </div>
             <div>
                 <label htmlFor="lexicon-select">Choose a lexicon:</label>
-                <FileOrFolderInput
-                    type="open"
-                    dialogProperties={['openFile']}
+                <SingleFileInput
+                    allowFile={true}
+                    allowFolder={false}
                     elemId="lexicon-select"
                     mediaType={['application/pls+xml']}
-                    name="Lexicon"
-                    onChange={(filename) => onLexiconChange(filename)}
-                    useSystemPath={false}
-                    buttonLabel="Browse"
-                    required={false}
+                    onChange={(filenames) =>
+                        onLexiconChange(filenames.length ? filenames[0] : '')
+                    }
                     initialValue={
                         engineProperties.find(
                             (p) =>

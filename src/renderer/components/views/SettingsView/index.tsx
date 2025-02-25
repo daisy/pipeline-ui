@@ -5,7 +5,6 @@ import {
     ClosingMainWindowAction,
     ColorScheme,
 } from 'shared/types'
-import { FileOrFolderInput } from '../../Fields/FileOrFolderInput'
 import {
     save,
     setTtsConfig,
@@ -20,6 +19,7 @@ import { TtsEnginesConfigPane } from '../../TtsConfig/Engines'
 import { TtsMoreOptionsConfigPane } from '../../TtsConfig/MoreOptions'
 import { TtsBrowseVoicesConfigPane } from '../../TtsConfig/BrowseVoices'
 import { TtsPreferredVoicesConfigPane } from '../../TtsConfig/PreferredVoices'
+import { SingleFileInput } from 'renderer/components/Fields/SingleFileInput'
 
 const { App } = window // The "App" comes from the bridge
 
@@ -291,19 +291,15 @@ export function SettingsView() {
                                 A folder where all job results will be
                                 automatically downloaded
                             </span>
-                            <FileOrFolderInput
-                                type="open"
-                                dialogProperties={['openDirectory']}
-                                elemId="resultsFolder"
-                                mediaType={['']}
-                                name={'Results folder'}
+                            <SingleFileInput
+                                allowFile={false}
+                                allowFolder={true}
                                 onChange={resultsFolderChanged}
-                                useSystemPath={false}
                                 initialValue={decodeURI(
                                     newSettings.downloadFolder
                                 )}
-                                buttonLabel="Browse"
                                 required={true}
+                                elemId="results-folder"
                             />
                             {newSettings.downloadFolder == '' ? (
                                 <span className="warning">

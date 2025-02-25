@@ -41,7 +41,7 @@ export function hasBatchInput(job: Job) {
             let batchInputInRequest = job.jobRequest.inputs.find(
                 (input) => input.name == batchInput.name
             )
-            return batchInputInRequest?.value.length > 1
+            return batchInputInRequest?.value?.length > 1
         }
         return false
     }

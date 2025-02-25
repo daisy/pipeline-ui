@@ -23,7 +23,7 @@ import {
 
 import { FormField } from '../Fields/FormField'
 import { JobRequestError } from './jobRequestError'
-import { ScriptName } from './scriptName'
+import { ScriptName } from './ScriptName'
 import {
     getAllOptional,
     getAllRequired,
@@ -34,6 +34,7 @@ import {
     supportsBatch,
     updateArrayValue,
 } from 'shared/utils'
+import { getRelevantFiletypes } from 'shared/scriptFilters'
 const { App } = window
 
 export function ScriptForm({ job, script }: { job: Job; script: Script }) {
@@ -125,9 +126,11 @@ export function ScriptForm({ job, script }: { job: Job; script: Script }) {
     }
 
     let saveValueInJobRequest = (value: any, item: ScriptItemBase) => {
+        console.log('savevalue', value,)
         if (!job.jobRequest) {
             return
         }
+        
         let inputs = [...job.jobRequest.inputs]
         let options = [...job.jobRequest.options]
         let stylesheetParameterOptions = [
@@ -170,6 +173,7 @@ export function ScriptForm({ job, script }: { job: Job; script: Script }) {
 
     // submit a job
     let onSubmit = async (e) => {
+        console.log("ON JOB SUBMIT")
         e.preventDefault()
         if (job.is2StepsJob && job.stylesheetParameters == null) {
             /*  constraints on the stylesheet parameters :
@@ -218,27 +222,7 @@ export function ScriptForm({ job, script }: { job: Job; script: Script }) {
                     job.jobRequest.options
                 )
             }
-            // TODO replace with API call
-            // // autofill tts config option if present
-            // // if present, it will be an input to the script but an optional one
 
-            // let ttsConfigOpt = optional.find((o) =>
-            //     o.mediaType?.includes('application/vnd.pipeline.tts-config+xml')
-            // )
-
-            // let ttsConfigExists = await App.pathExists(
-            //     settings.ttsConfig.xmlFilepath
-            // )
-            // let inputs = [...job.jobRequest.inputs]
-            // if (ttsConfigOpt && ttsConfigExists) {
-            //     inputs = updateArrayValue(
-            //         settings.ttsConfig.xmlFilepath,
-            //         ttsConfigOpt,
-            //         inputs
-            //     )
-            // } else if (!ttsConfigExists) {
-            //     App.log(`File does not exist ${settings.ttsConfig.xmlFilepath}`)
-            // }
             setSubmitInProgress(true)
 
             if (hasBatchInput(job)) {
@@ -296,17 +280,13 @@ export function ScriptForm({ job, script }: { job: Job; script: Script }) {
                 className="header"
                 aria-labelledby={`${ID(job.internalId)}-script-hd`}
             >
-                <div>
-                    <ScriptName
-                        script={script}
-                        headerId={`${ID(job.internalId)}-script-hd`}
-                    />
-                    {job.jobRequestError && (
-                        <JobRequestError
-                            jobRequestError={job.jobRequestError}
-                        />
-                    )}
-                </div>
+                <ScriptName
+                    script={script}
+                    headerId={`${ID(job.internalId)}-script-hd`}
+                />
+                {job.jobRequestError && (
+                    <JobRequestError jobRequestError={job.jobRequestError} />
+                )}
             </section>
             <form onSubmit={onSubmit} id={`${ID(job.internalId)}-form`}>
                 <div className="form-sections">
@@ -318,6 +298,11 @@ export function ScriptForm({ job, script }: { job: Job; script: Script }) {
                             <h2 id={`${ID(job.internalId)}-required`}>
                                 Required information
                             </h2>
+                            {script.batchable && (
+                                <p className="tip">
+                                    Add multiple files to run a batch job.
+                                </p>
+                            )}
                             <ul className="fields">
                                 {required.map((item, idx) => {
                                     return (
@@ -334,7 +319,7 @@ export function ScriptForm({ job, script }: { job: Job; script: Script }) {
                                                     item.kind,
                                                     job.jobRequest,
                                                     item.isStylesheetParameter
-                                                )}
+                                                ) ?? []}
                                                 error={
                                                     job.errors?.find(
                                                         (e) =>
@@ -387,7 +372,7 @@ export function ScriptForm({ job, script }: { job: Job; script: Script }) {
                                                     item.kind,
                                                     job.jobRequest,
                                                     item.isStylesheetParameter
-                                                )}
+                                                ) ?? []}
                                                 error={
                                                     job.errors?.find(
                                                         (e) =>

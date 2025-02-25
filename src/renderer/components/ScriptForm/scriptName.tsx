@@ -35,7 +35,7 @@ export function ScriptName({
                         href={script.homepage}
                         onClick={(e) => externalLinkClick(e, App)}
                     >
-                        Read the script documentation.
+                        Learn more.
                     </a>
                 ) : (
                     ''

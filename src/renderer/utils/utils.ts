@@ -3,7 +3,6 @@ import { JobRequest, Script } from 'shared/types'
 // make an HTML-friendly ID string
 export let ID = (id) => `z-${id}`
 
-
 export function findValue(
     name: string,
     kind: string,
@@ -21,6 +20,11 @@ export function findValue(
             arr = jobRequest.options
         }
     }
+    // ensure there is a value for isStylesheetParameter
+    arr.map(
+        (item) =>
+            (item.isStylesheetParameter = item.isStylesheetParameter ?? false)
+    )
     let item = arr.find(
         (i) =>
             i.name == name && i.isStylesheetParameter == isStylesheetParameter
@@ -39,7 +43,7 @@ export function findValue(
 
 export function findInputType(type) {
     let inputType = ''
-    if (['anyFileURI', 'anyDirURI', 'anyURI'].includes(type)) {
+    if (['anyFileURI', 'anyDirURI'].includes(type)) {
         inputType = 'file'
     } else if (['xsd:dateTime', 'xs:dateTime', 'datetime'].includes(type)) {
         inputType = 'datetime-local'
@@ -55,6 +59,8 @@ export function findInputType(type) {
         inputType = 'nonNegativeInteger'
     } else if (['xsd:float', 'xsd:double', 'xsd:decimal'].includes(type)) {
         inputType = 'float'
+    } else if (type == 'anyURI') {
+        inputType = 'uri'
     } else if (type == '') {
         inputType = 'text'
     } else {
@@ -70,4 +76,3 @@ export function externalLinkClick(e, app) {
         app.openInBrowser(closest.href)
     }
 }
-

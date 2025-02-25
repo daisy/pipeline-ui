@@ -2,7 +2,7 @@ import { app, BrowserWindow } from 'electron'
 
 import installExtension, {
     REACT_DEVELOPER_TOOLS,
-} from '@daltonmenezes/electron-devtools-installer'
+} from 'electron-devtools-installer'
 
 import { PLATFORM, ENVIRONMENT } from 'shared/constants'
 

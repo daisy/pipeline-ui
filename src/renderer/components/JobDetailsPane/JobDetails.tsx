@@ -15,7 +15,7 @@ import { useState, useEffect } from 'react'
 
 const { App } = window
 
-export function JobDetailsPane({ job }: { job: Job }) {
+export function JobDetails({ job }: { job: Job }) {
     const [canRunJob, setCanRunJob] = useState(false)
     const [isRerunning, setIsRerunning] = useState(false)
     const { settings } = useWindowStore()
@@ -29,6 +29,11 @@ export function JobDetailsPane({ job }: { job: Job }) {
             [JobState.SUBMITTING, JobState.SUBMITTED].includes(job.state)
         )
     }, [job.state])
+
+    console.log('Job details', JSON.stringify(job, null, '  '))
+
+    let jobIsBatch =
+        job.jobRequest.batchId != null && job.jobRequest.batchId != ''
 
     return job.jobRequestError ? (
         <>
@@ -97,11 +102,6 @@ export function JobDetailsPane({ job }: { job: Job }) {
                         <summary>Job Settings</summary>
                         <Settings job={job} />
                     </details>
-                    {job.isPrimaryForBatch ? (
-                            <p>Part of a batch</p>
-                        ) : (
-                            <p>Not batched</p>
-                        )}
                 </div>
             </section>
 
@@ -160,29 +160,39 @@ export function JobDetailsPane({ job }: { job: Job }) {
                             </div>
                         )}
                         <div className="form-buttons">
+                            {!jobIsBatch && (
+                                <button
+                                    onClick={(e) => {
+                                        App.store.dispatch(runJob(job))
+                                        setIsRerunning(true)
+                                    }}
+                                    disabled={!canRunJob || isRerunning}
+                                >
+                                    Re-run job
+                                </button>
+                            )}
                             <button
                                 onClick={(e) => {
-                                    App.store.dispatch(runJob(job))
-                                    setIsRerunning(true)
-                                }}
-                                disabled={!canRunJob || isRerunning}
-                            >
-                                Re-run job
-                            </button>
-                            <button
-                                onClick={(e) => {
+                                    let job_ = {...job}
+                                    job_.jobRequest = {...job.jobRequest }
+                                    job_.jobData = null
+                                    job_.errors = []                                    
+                                    job_.isPrimaryForBatch = false
+                                    job_.jobRequest.batchId = null
                                     App.store.dispatch(editJob(job))
                                 }}
                             >
                                 Edit job
                             </button>
-                            <button
-                                onClick={(e) => {
-                                    App.store.dispatch(removeJob(job))
-                                }}
-                            >
-                                Close job
-                            </button>
+                            {!jobIsBatch && (
+                                <button
+                                    onClick={(e) => {
+                                        App.store.dispatch(removeJob(job))
+                                    }}
+                                >
+                                    Close job
+                                </button>
+                            )}
                         </div>
                     </>
                 ) : (

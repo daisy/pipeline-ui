@@ -14,6 +14,8 @@ export function Settings({ job }: { job: Job }) {
         return <p>Unrecognized script {scriptId}</p>
     }
 
+    console.log("JOB ", JSON.stringify(job, null, ''))
+    
     return (
         <ul>
             <li>

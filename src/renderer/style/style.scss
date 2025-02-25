@@ -2,7 +2,7 @@
 @use 'tabs.scss' as *;
 @use 'settings.scss' as *;
 @use 'filedrop.scss' as *;
-
+@use 'sass:color';
 body {
     color: var(--fg);
     background-color: var(--bg);
@@ -14,7 +14,8 @@ body {
     border-color: var(--fg-mix);
 }
 h2, h3 {
-    font-weight: normal;
+    // font-weight: normal;
+    font-size: medium;
 }
 
 button {
@@ -148,11 +149,7 @@ p.warning {
 
 // the tab panel "header" 
 .header {
-    line-height: 1.2;
-    display: grid;
-    grid-template-columns: 60% auto;
-    font-size: large;
-
+    font-size: medium;
     h1 {
         white-space: nowrap;
         margin: 0;
@@ -347,6 +344,31 @@ p.warning {
             margin-bottom: calc(var(--pad) * 0.5);
         }
     }
+
+    .batch-job {
+        display: flex;
+        flex-direction: row;
+        gap: calc(var(--pad) * 2);
+        
+        ul h2 {
+            width: min-content;
+            word-wrap: none;
+        }
+        ul li {
+            font-size: 80%;
+            a {
+                cursor: pointer;
+            }
+        }
+        section {
+            width: 80rem;
+        }
+        aside {
+            border: thin solid var(--fg-mix-fade);
+            display: flex;
+            flex-direction: column;
+        }
+    }
 }
 
 .visuallyhidden:not(:focus):not(:active) {
@@ -375,6 +397,21 @@ p.warning {
 }
 
 .new-job {
+    .suggestion {
+        font-style: italic;
+    }
+    
+    &>.file-dropzone {
+        width: 80vw;
+        .drop-target {
+            width: 100%;
+        }
+    }
+    .files-by-script {
+        label.suggestion {
+            color: var(--fg-mix-bold);
+        }
+    }
     input[type=text] {
         width: 25rem;
         font-size: large;
@@ -419,7 +456,7 @@ p.warning {
         flex-direction: row;
         flex-wrap: wrap;
         gap: calc(var(--pad)*2);
-        font-size: x-large;
+        font-size: large;
         
         
         border-bottom: thin solid var(--fg-mix);
@@ -431,7 +468,9 @@ p.warning {
         &>div {
             display: flex;
             gap: calc(var(--pad)/2);
+            align-items: center;
         }
+        
     }
 
     form {
@@ -440,13 +479,13 @@ p.warning {
         gap: calc(var(--pad) * 2);
         overflow-y: scroll;
 
+        .tip {
+            font-style: italic;
+        }
         .form-sections {
             display: flex;
             flex-direction: column;
             gap: 8%;
-            section {
-                // width: 70%;
-            }
             overflow-y: scroll;
 
             ul.fields {
@@ -489,7 +528,6 @@ p.warning {
                     font-size: normal;
                     padding: 0;
                 }
-                
             }
         }    
         .form-buttons {
@@ -583,4 +621,10 @@ button.grayedout:hover {
     position: absolute;
     border-radius: 5px;
     padding: 10px;
+}
+.horizontal-input {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 2rem;
 }

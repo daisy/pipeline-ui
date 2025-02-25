@@ -10,7 +10,7 @@
     
     font-weight: normal;
     color: var(--fg-mix-bold);
-    background-color: rgb(54, 54, 54);
+    background-color: var(--fg-mix-fade);
     display: flex;
     gap: calc(var(--pad)/2);
     
@@ -42,14 +42,14 @@
     // border-bottom-left-radius: 0;
     // border-bottom-right-radius: 0;
     // border: thin solid var(--fg);
-    background-color: rgb(54, 54, 54);
+    background-color: var(--fg-mix-fade);
     font-weight: normal;
     font-size: larger;
     color: var(--fg-mix-bold);
 
     display: flex;
     gap: calc(var(--pad)/2);
-    font-size: large;
+    // font-size: large;
     transition: all .1s ease-in-out;
     border-bottom: none;
 

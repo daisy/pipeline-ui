@@ -332,3 +332,8 @@ export type TypeChoice = DatatypeChoice & {
     type?: string
     pattern?: string
 }
+export type Filetype = {
+    name?: string
+    extensions: string[]
+    type: string
+}

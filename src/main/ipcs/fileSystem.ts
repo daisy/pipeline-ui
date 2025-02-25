@@ -3,10 +3,15 @@ import { ipcMain } from 'electron'
 import fs from 'fs-extra'
 import chardet from 'chardet'
 import {
+    IPC_EVENT_detectFiletype,
     IPC_EVENT_pathExists,
     IPC_EVENT_sniffEncoding,
+    IPC_EVENT_traverseDirectory,
 } from '../../shared/main-renderer-events'
-import { PLATFORM } from 'shared/constants'
+import { PLATFORM, scriptInputFiletypes } from 'shared/constants'
+import { sniffFile } from './sniffFile'
+import { Filetype } from 'shared/types'
+import path from 'path'
 
 function pathExists(path) {
     if (path.length == 0) return false
@@ -38,6 +43,82 @@ const sniffEncoding = async (filepath: string): Promise<string> => {
     return encoding.toString()
 }
 
+async function detectFiletype(filepath: string): Promise<Filetype> {
+    let filetypeType = await sniffFile(filepath)
+    console.log('file sniffed as ', filetypeType)
+    // some special types exist where the result of sniffFile is also the filetype type
+    let specialType = scriptInputFiletypes.find((ft) => ft.type == filetypeType)
+    if (specialType) {
+        return specialType
+    }
+
+    // or the filetype could be given by the extension
+    if (filetypeType == 'xhtml') {
+        return scriptInputFiletypes.find(
+            (mt) => mt.type == 'application/xhtml+xml'
+        )
+    } else if (filetypeType == 'html') {
+        return scriptInputFiletypes.find((mt) => mt.type == 'text/html')
+    } else if (filetypeType == 'dtbook') {
+        return scriptInputFiletypes.find(
+            (mt) => mt.type == 'application/x-dtbook+xml'
+        )
+    } else if (filetypeType == 'zedai') {
+        return scriptInputFiletypes.find(
+            (mt) => mt.type == 'application/z3998-auth+xml'
+        )
+    } else if (filetypeType == 'xml') {
+        return scriptInputFiletypes.find((mt) => mt.type == 'application/xml')
+    } else {
+        let mt = scriptInputFiletypes.find((mt) =>
+            mt.extensions.includes(filetypeType)
+        )
+        return mt ?? null
+    }
+}
+
+export interface FileTreeEntry {
+    name: string
+    type: 'directory' | 'file'
+    path: string
+    contents: Array<FileTreeEntry>
+}
+
+async function traverseDirectory(dirPath): Promise<Array<FileTreeEntry>> {
+    try {
+        const entries = await fs.readdir(dirPath, { withFileTypes: true })
+        const fileTree = []
+        for (const entry of entries) {
+            const fullPath = path.join(dirPath, entry.name)
+
+            if (entry.isDirectory()) {
+                // Recursively traverse subdirectories
+                const subDirContents = await traverseDirectory(fullPath)
+                fileTree.push({
+                    name: entry.name,
+                    type: 'directory',
+                    path: fullPath,
+                    contents: subDirContents,
+                })
+            } else {
+                // Get file stats
+                const stats = await fs.stat(fullPath)
+                fileTree.push({
+                    name: entry.name,
+                    type: 'file',
+                    path: fullPath,
+                    size: stats.size,
+                    modified: stats.mtime,
+                })
+            }
+        }
+        return fileTree
+    } catch (error) {
+        console.error(`Error traversing directory ${dirPath}:`, error)
+        return []
+    }
+}
+
 function setupFileSystemEvents() {
     // comes from the renderer process (ipcRenderer.send())
     ipcMain.on(IPC_EVENT_pathExists, async (event, payload) => {
@@ -47,6 +128,14 @@ function setupFileSystemEvents() {
     ipcMain.on(IPC_EVENT_sniffEncoding, async (event, payload) => {
         let res = await sniffEncoding(payload)
         event.sender.send(IPC_EVENT_sniffEncoding, res)
+    })
+    ipcMain.on(IPC_EVENT_detectFiletype, async (event, payload) => {
+        let res = await detectFiletype(payload)
+        event.sender.send(IPC_EVENT_detectFiletype, res)
+    })
+    ipcMain.on(IPC_EVENT_traverseDirectory, async (event, payload) => {
+        let res = await traverseDirectory(payload)
+        event.sender.send(IPC_EVENT_traverseDirectory, res)
     })
 }
 export { setupFileSystemEvents, pathExists, sniffEncoding }

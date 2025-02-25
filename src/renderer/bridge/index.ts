@@ -55,6 +55,9 @@ const API = {
         onSliceUpdate: (actionType, callback) =>
             ipcRenderer.on(actionType, (event, data) => callback(data)),
     },
+    getDroppedFilePath: (file) => ipcs.getFilePath(file),
+    detectFiletype: (filepath) => ipcs.detectFiletype(filepath),
+    traverseDirectory: (dirpath) => ipcs.traverseDirectory(dirpath),
 }
 
 contextBridge.exposeInMainWorld('App', API)

@@ -17,11 +17,12 @@ import {
     selectNextJob,
     selectPrevJob,
 } from 'shared/data/slices/pipeline'
-import { NewJobPane } from '../../NewJobPane'
-import { JobDetailsPane } from '../../JobDetailsPane'
+import { NewJobPane } from '../../JobDetailsPane/NewJobPane'
 import { calculateJobName } from 'shared/jobName'
 import { PLATFORM } from 'shared/constants'
 import { Plus } from '../../SvgIcons'
+import { BatchJobDetailsPane } from 'renderer/components/JobDetailsPane/BatchJobPane'
+import { SingleJobDetailsPane } from 'renderer/components/JobDetailsPane/SingleJobPane'
 
 const { App } = window
 
@@ -162,15 +163,15 @@ export function MainView() {
                     +
                 </button>
             </div>
-            {pipeline.jobs
+            {visibleJobs
                 .filter((job) => settings.editJobOnNewTab || !job.invisible)
-                .map((job, idx) => {
+                .map((job: Job, idx) => {
                     return (
                         <div
                             key={idx}
-                            className={`"tabPanel" ${
+                            className={
                                 job.state == JobState.NEW ? 'new-job' : 'job'
-                            }`}
+                            }
                             id={`${ID(job.internalId)}-tabpanel`}
                             role="tabpanel"
                             hidden={pipeline.selectedJobId != job.internalId}
@@ -186,8 +187,21 @@ export function MainView() {
                             >
                                 {job.state == JobState.NEW ? (
                                     <NewJobPane job={job} />
+                                ) : job.jobRequest.batchId == null ? (
+                                    <SingleJobDetailsPane job={job} />
                                 ) : (
-                                    <JobDetailsPane job={job} />
+                                    <BatchJobDetailsPane 
+                                        jobs={[
+                                            job,
+                                            pipeline.jobs.filter(
+                                                (j) =>
+                                                    j.internalId !=
+                                                        job.internalId &&
+                                                    j.jobRequest?.batchId ==
+                                                        job.jobRequest?.batchId
+                                            ),
+                                        ].flat()}
+                                    />
                                 )}
                             </div>
                         </div>

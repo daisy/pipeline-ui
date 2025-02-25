@@ -32,9 +32,7 @@ export function CustomField({
             // @ts-ignore
             setDatatype({ ...datatypeDetails })
         }
-        if (!datatype) {
-            fetchData().catch()
-        }
+        fetchData()
     }, [])
 
     useEffect(() => {
@@ -116,10 +114,16 @@ export function CustomField({
                         <select
                             id={controlId}
                             onChange={(e) => onChangeValue(e.target.value)}
-                            value={value ?? ''}
+                            value={
+                                (Array.isArray(value) && value.length == 0) ||
+                                value == null
+                                    ? ''
+                                    : value
+                            }
                             aria-details={
                                 controlId + '-' + selectedOption + '-details'
                             }
+                            multiple={false}
                         >
                             {valueChoices.map((option, idx) => {
                                 let displayString =

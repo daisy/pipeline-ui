@@ -22,26 +22,21 @@
     }
 
     &[aria-selected=false]:hover {
-        border: none;
+        box-shadow: 0 0 0 2px var(--select-mix);
         cursor: pointer;
         background-color: var(--bg);
-
     }
     &[aria-selected=true] {
         background-color: var(--bg);
-        border-bottom-color: var(--bg);
+        box-shadow: 0 0 0 2px var(--select-mix);
         color: var(--fg);
         font-weight: bold;
     }
 }
 
 .as-tab {
-    // padding: var(--pad);
-    border: none;
+    border: 2px solid var(--fg-mix-fade);
     border-radius: var(--border-radius);
-    // border-bottom-left-radius: 0;
-    // border-bottom-right-radius: 0;
-    // border: thin solid var(--fg);
     background-color: var(--fg-mix-fade);
     font-weight: normal;
     font-size: larger;
@@ -51,8 +46,7 @@
     gap: calc(var(--pad)/2);
     // font-size: large;
     transition: all .1s ease-in-out;
-    border-bottom: none;
-
+    
     &[aria-selected=false]:hover {
         background-color: var(--bg);
         color: var(--fg);

@@ -23,7 +23,7 @@ import {
 
 import { FormField } from '../Fields/FormField'
 import { JobRequestError } from './jobRequestError'
-import { ScriptName } from './ScriptName'
+import { ScriptName } from './scriptName'
 import {
     getAllOptional,
     getAllRequired,
@@ -34,7 +34,7 @@ import {
     supportsBatch,
     updateArrayValue,
 } from 'shared/utils'
-import { getRelevantFiletypes } from 'shared/scriptFilters'
+import { getRelevantFiletypes } from 'renderer/components/scriptFilters'
 const { App } = window
 
 export function ScriptForm({ job, script }: { job: Job; script: Script }) {
@@ -42,6 +42,7 @@ export function ScriptForm({ job, script }: { job: Job; script: Script }) {
     const [canRunJob, setCanRunJob] = useState(false)
     const submitButtonRef = useRef(null)
 
+    console.log("ScriptForm script:", script)
     let required = getAllRequired(script)
     let optional = getAllOptional(script)
     const { settings } = useWindowStore()

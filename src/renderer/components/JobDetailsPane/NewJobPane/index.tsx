@@ -1,11 +1,11 @@
 /*
 Select a script and submit a new job
 */
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { ScriptForm } from '../../ScriptForm'
 import { useWindowStore } from 'renderer/store'
 import { ID } from 'renderer/utils/utils'
-import { Job } from 'shared/types'
+import { Job, Script } from 'shared/types'
 import {
     prepareJobRequest,
     removeJob,
@@ -24,8 +24,8 @@ import {
     updateSponsorshipMessage,
 } from '../../../utils'
 import { is2StepsScript } from 'shared/utils'
-import { getRelevantScripts } from '../../../../shared/scriptFilters'
-import { FilesSortedByScript } from './FilesSortedByScript'
+import { getRelevantScripts } from '../../scriptFilters'
+import { FilelistWithRelevantScripts } from './FilelistWithRelevantScripts'
 import { DragFileInput } from '../../Fields/DragFileInput'
 import { FileTreeEntry } from 'main/ipcs/fileSystem'
 
@@ -69,6 +69,13 @@ export function NewJobPane({ job }: { job: Job }) {
         }
     }, [])
 
+    useEffect(() => {
+        if (!job) {
+            setFiles([])
+        }
+    }, [job])
+
+    // top level script selection
     let onSelectChange = (e) => {
         let selection = pipeline.scripts.find(
             (script) => script.id == e.target.value
@@ -87,13 +94,13 @@ export function NewJobPane({ job }: { job: Job }) {
         )
     }
 
+    // add a list of files to the current files list and filter out duplicates
     let addFiles = async (newFiles) => {
-        let currentFiles = files.map((f) => f.filepath)
+        let currentFiles = files.map((f) => f.filepath).map(file => file.replace("file://", ""))
         // filter out any duplicates
         let uniqueNewFiles = newFiles.filter(
-            (file) => !currentFiles.includes(file)
+            (file) => currentFiles.indexOf(file) == -1
         )
-
         let uniqueNewFilesThatAreSupported = []
         // assign a filetype to each one
         for (let file of uniqueNewFiles) {
@@ -109,13 +116,19 @@ export function NewJobPane({ job }: { job: Job }) {
         filesCopy = filesCopy.concat(
             uniqueNewFilesThatAreSupported.filter((f) => f.filetype != null)
         )
-        setFiles(filesCopy)
+        setFiles(
+            filesCopy.map((f) =>
+                f.filepath.indexOf('file://') == -1
+                    ? { ...f, filepath: `file://${f.filepath}` }
+                    : f
+            )
+        )
     }
-    let onChange = (filenames) => {
-        console.log("DRagInput onchange", filenames)
-        let resolvedFilenames = resolveItems(filenames)
-        addFiles(resolvedFilenames)
-        // addFiles(filenames)
+    // handle user adding more files and folders
+    // resolve folder contents and add files to the current files list
+    let onDragInputChange = async (filenames) => {
+        let resolvedFilenames = await resolveItems(filenames)
+        await addFiles(resolvedFilenames)
     }
     // recursively list directory contents
     const resolveItems = async (items) => {
@@ -139,38 +152,92 @@ export function NewJobPane({ job }: { job: Job }) {
         }
         return resolvedItems
     }
+
+    let createJob = (script: Script, inputFiles: string[]) => {
+        console.log('createJob')
+        console.log('script', script)
+        console.log('inputFiles', inputFiles)
+
+        let jobRequest = prepareJobRequest(job, script)
+        // console.log('jobRequest:\n', jobRequest)
+
+        let inputsCopy = [...jobRequest.inputs]
+        let sourceInputIdx = inputsCopy.findIndex(
+            (input) => input.name == 'source'
+        )
+        if (sourceInputIdx != -1) {
+            inputsCopy[sourceInputIdx].value = [...inputFiles]
+        }
+
+        jobRequest.inputs = [...inputsCopy]
+
+        App.store.dispatch(
+            updateJob({
+                ...job,
+                script,
+                is2StepsJob: is2StepsScript(script),
+                jobData: {
+                    ...job.jobData,
+                    nicename: script?.nicename ?? '',
+                },
+                jobRequest,
+            })
+        )
+    }
+
+    let uniqueFiletypes = Array.from(new Set(files.map((f) => f.filetype.type)))
+
+    let hasAtLeastOneInput = () => {
+        let inputsCopy = job.jobRequest?.inputs
+        if (inputsCopy && inputsCopy.length > 0) {
+            let anInputValue = inputsCopy.find(
+                (input) => input.value != '' && input.value != null
+            )
+            if (anInputValue) {
+                return true
+            } else {
+                return false
+            }
+        } else {
+            return false
+        }
+    }
     return (
         <>
             <section className="select-script">
-                <div>
-                    <label
-                        id={`${ID(job.internalId)}-select-script`}
-                        htmlFor={`${ID(job.internalId)}-script`}
-                    >
-                        Select a script:
-                    </label>
-                    <select
-                        id={`${ID(job.internalId)}-script`}
-                        onChange={(e) => onSelectChange(e)}
-                        value={job.script ? job.script.id : ''}
-                    >
-                        <option value={null}>None</option>
-                        {pipeline.scripts
-                            .sort((a, b) => (a.nicename > b.nicename ? 1 : -1))
-                            .map((script, idx) => (
-                                <option key={idx} value={script.id}>
-                                    {script.nicename}
-                                    {script.inputs.find((i) =>
-                                        i.mediaType.includes(
-                                            'application/vnd.pipeline.tts-config+xml'
+                {hasAtLeastOneInput() == false && (
+                    <div>
+                        <label
+                            id={`${ID(job.internalId)}-select-script`}
+                            htmlFor={`${ID(job.internalId)}-script`}
+                        >
+                            Select a script:
+                        </label>
+                        <select
+                            id={`${ID(job.internalId)}-script`}
+                            onChange={(e) => onSelectChange(e)}
+                            value={job.script ? job.script.id : ''}
+                        >
+                            <option value={null}>None</option>
+                            {pipeline.scripts
+                                .sort((a, b) =>
+                                    a.nicename > b.nicename ? 1 : -1
+                                )
+                                .map((script, idx) => (
+                                    <option key={idx} value={script.id}>
+                                        {script.nicename}
+                                        {script.inputs.find((i) =>
+                                            i.mediaType.includes(
+                                                'application/vnd.pipeline.tts-config+xml'
+                                            )
                                         )
-                                    )
-                                        ? ' (TTS Enhanced)'
-                                        : ''}
-                                </option>
-                            ))}
-                    </select>
-                </div>
+                                            ? ' (TTS Enhanced)'
+                                            : ''}
+                                    </option>
+                                ))}
+                        </select>
+                    </div>
+                )}
                 <div>
                     <label
                         id={`${ID(job.internalId)}-change-name`}
@@ -216,21 +283,31 @@ export function NewJobPane({ job }: { job: Job }) {
                             The following files can be used in a Pipeline job:
                         </p>
                     )}
-                    <FilesSortedByScript
-                        job={job}
-                        files={files}
-                        getRelevantScripts={getRelevantScripts}
-                    />
-
+                    {uniqueFiletypes.map((filetype, idx) => {
+                        let filesOfType = files
+                            .filter((f) => f.filetype.type == filetype)
+                            .sort((a, b) => (a.name < b.name ? -1 : 1))
+                        return (
+                            <FilelistWithRelevantScripts
+                                key={idx}
+                                files={filesOfType.map((f) => f.filepath)}
+                                relevantScripts={getRelevantScripts(filetype)}
+                                categoryName={filesOfType[0]?.filetype.name}
+                                jobInternalId={job.internalId}
+                                createJob={createJob}
+                            />
+                        )
+                    })}
                     {files.length > 0 && (
                         <p className="suggestion">
-                            Add more files to see more suggestions.
+                            Add more files to see more suggestions. 
+                            <button onClick={() => setFiles([])}>Clear files</button>
                         </p>
                     )}
                     <DragFileInput
                         elemId={`${job.internalId}-new-job-files`}
                         mediaType={[]}
-                        onChange={onChange}
+                        onChange={onDragInputChange}
                     />
 
                     <button

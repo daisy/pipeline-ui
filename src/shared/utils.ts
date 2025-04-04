@@ -1,4 +1,4 @@
-import { Job, NameValue, Script, ScriptInput, ScriptItemBase } from './types'
+import { Job, JobStatus, NameValue, Script, ScriptInput, ScriptItemBase } from './types'
 
 // returns true if the script does not support sequences for input
 // and is not a 2-steps script
@@ -98,4 +98,18 @@ export function getAllOptional(script: Script) {
               ...script.options.filter((i) => !i.required),
           ]
         : []
+}
+
+export function areAllJobsInBatchDone(primaryJob: Job, jobsInBatch: Array<Job>) {
+    let numJobsDone = getCompletedCountInBatch(primaryJob, jobsInBatch)
+    return numJobsDone == jobsInBatch.length
+}
+
+export function getCompletedCountInBatch(primaryJob: Job, jobsInBatch: Array<Job>) {
+    let numJobsDone = jobsInBatch.filter((j) =>
+        [JobStatus.ERROR, JobStatus.FAIL, JobStatus.SUCCESS].includes(
+            j.jobData.status
+        )
+    ).length
+    return numJobsDone
 }

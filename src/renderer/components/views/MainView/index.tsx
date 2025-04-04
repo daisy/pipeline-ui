@@ -31,7 +31,7 @@ export function MainView() {
     const [visibleJobs, setVisibleJobs] = useState([])
 
     useEffect(() => {
-        console.log("use effect []")
+        console.log('use effect []')
         if (!(pipeline.jobs && pipeline.jobs.length > 0)) {
             let newJob_ = newJob(pipeline)
             App.store.dispatch(addJob(newJob_))
@@ -42,7 +42,7 @@ export function MainView() {
     // on navigation received for the tab, we need to refocus the selected tab
     // for the narrators to announce it
     useEffect(() => {
-        console.log("use effect selectedJobId")
+        console.log('use effect selectedJobId')
         if (pipeline.selectedJobId !== '') {
             document
                 .getElementById(`${ID(pipeline.selectedJobId)}-tab`)
@@ -53,7 +53,7 @@ export function MainView() {
     }, [pipeline.selectedJobId])
 
     useEffect(() => {
-        console.log("use effect jobs")
+        console.log('use effect jobs')
         let visibleJobs_ = pipeline.jobs.filter(
             (job) =>
                 (settings.editJobOnNewTab || !job.invisible) &&
@@ -119,8 +119,6 @@ export function MainView() {
                 break
         }
     }
-
-    console.log("mainview()")
     return (
         <>
             <div role="tablist" aria-live="polite" onKeyDown={keyboardActions}>
@@ -136,6 +134,7 @@ export function MainView() {
                         role="tab"
                         type="button"
                         onClick={(e) => {
+                            console.log(job)
                             App.store.dispatch(selectJob(job))
                             document
                                 .getElementById(
@@ -144,7 +143,7 @@ export function MainView() {
                                 ?.focus()
                         }}
                     >
-                        {idx + 1}. {calculateJobName(job)}
+                        {idx + 1}. {calculateJobName(job, pipeline.jobs)}
                     </button>
                 ))}
                 <button
@@ -190,7 +189,7 @@ export function MainView() {
                                 ) : job.jobRequest.batchId == null ? (
                                     <SingleJobDetailsPane job={job} />
                                 ) : (
-                                    <BatchJobDetailsPane 
+                                    <BatchJobDetailsPane
                                         jobs={[
                                             job,
                                             pipeline.jobs.filter(

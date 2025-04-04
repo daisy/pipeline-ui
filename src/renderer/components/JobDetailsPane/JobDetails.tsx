@@ -29,7 +29,6 @@ export function JobDetails({ job }: { job: Job }) {
             [JobState.SUBMITTING, JobState.SUBMITTED].includes(job.state)
         )
     }, [job.state])
-
     console.log('Job details', JSON.stringify(job, null, '  '))
 
     let jobIsBatch =
@@ -171,27 +170,32 @@ export function JobDetails({ job }: { job: Job }) {
                                     Re-run job
                                 </button>
                             )}
-                            <button
-                                onClick={(e) => {
-                                    let job_ = {...job}
-                                    job_.jobRequest = {...job.jobRequest }
-                                    job_.jobData = null
-                                    job_.errors = []                                    
-                                    job_.isPrimaryForBatch = false
-                                    job_.jobRequest.batchId = null
-                                    App.store.dispatch(editJob(job))
-                                }}
-                            >
-                                Edit job
-                            </button>
+
                             {!jobIsBatch && (
-                                <button
-                                    onClick={(e) => {
-                                        App.store.dispatch(removeJob(job))
-                                    }}
-                                >
-                                    Close job
-                                </button>
+                                <>
+                                    <button
+                                        onClick={(e) => {
+                                            let job_ = { ...job }
+                                            job_.jobRequest = {
+                                                ...job.jobRequest,
+                                            }
+                                            job_.jobData = null
+                                            job_.errors = []
+                                            job_.isPrimaryForBatch = false
+                                            job_.jobRequest.batchId = null
+                                            App.store.dispatch(editJob(job))
+                                        }}
+                                    >
+                                        Edit job
+                                    </button>
+                                    <button
+                                        onClick={(e) => {
+                                            App.store.dispatch(removeJob(job))
+                                        }}
+                                    >
+                                        Close job
+                                    </button>
+                                </>
                             )}
                         </div>
                     </>

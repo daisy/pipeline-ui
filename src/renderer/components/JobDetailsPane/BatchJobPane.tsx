@@ -7,62 +7,105 @@ import { Settings } from './Settings'
 import { Results } from './Results'
 
 import { ID, externalLinkClick } from '../../utils/utils'
-import { editJob, removeJob, runJob } from 'shared/data/slices/pipeline'
+import {
+    editJob,
+    removeBatchJob,
+    runJob,
+    cancelBatchJob,
+} from 'shared/data/slices/pipeline'
 import { readableStatus } from 'shared/jobName'
 import { FileLink } from '../FileLink'
 import { useWindowStore } from 'renderer/store'
 import { useState, useEffect } from 'react'
 import { JobDetails } from './JobDetails'
+import { areAllJobsInBatchDone } from 'shared/utils'
+import { JobStatusIcon } from '../SvgIcons'
 
 const { App } = window
 
 export function BatchJobDetailsPane({ jobs }: { jobs: Array<Job> }) {
-    const [canRunJob, setCanRunJob] = useState(false)
-    const [isRerunning, setIsRerunning] = useState(false)
-    const { settings } = useWindowStore()
     const [primaryJob] = useState(jobs.find((j) => j.isPrimaryForBatch))
-    const [selectedJob, setSelectedJob] = useState(
-        jobs.find((j) => j.isPrimaryForBatch)
-    )
+    const [selectedJob, setSelectedJob] = useState(primaryJob)
 
+    // this helps the details pane stay current
     useEffect(() => {
-        setCanRunJob(settings?.downloadFolder?.trim() != '')
-    }, [settings.downloadFolder])
-
-    // useEffect(() => {
-    //     // In case the job is rejected and its state is reset to a previous
-    //     setIsRerunning(
-    //         [JobState.SUBMITTING, JobState.SUBMITTED].includes(job.state)
-    //     )
-    // }, [job.state])
+        let selJob = jobs.find(j => j.internalId == selectedJob.internalId) 
+        setSelectedJob(selJob)
+    }, [jobs])
 
     let selectJob = (job) => {
         setSelectedJob(job)
     }
 
     let onCloseBatch = () => {
-
+        if (!areAllJobsInBatchDone(primaryJob, jobs)) {
+            return
+        }
+        App.store.dispatch(removeBatchJob(jobs))
     }
-    
+
     let onCancelBatch = () => {
-
+        App.store.dispatch(cancelBatchJob(jobs))
     }
 
+    // get the value of the input parameter named 'source'
+    let getSourceValue = (job) => {
+        let sourceInput = job.jobRequest.inputs.find(
+            (input) => input.name == 'source'
+        )
+        return sourceInput?.value
+            ? sourceInput.value.replace('file://', '')
+            : ''
+    }
     return (
         <div className="batch-job">
             <aside>
                 <h2>Jobs in this batch</h2>
                 <ul>
-                    {jobs.map((job) => (
-                        <li><a onClick={(e) => selectJob(job)} aria-title={`Select job in batch`}>
-                            {job.jobRequest.inputs[0].value}
-                            </a>
-                        </li>
-                    ))}
+                    {jobs
+                        .sort((a, b) => {
+                            return getSourceValue(a) < getSourceValue(b)
+                                ? 1
+                                : -1
+                        })
+                        .map((job) => (
+                            <li
+                                aria-selected={
+                                    job.internalId == selectedJob.internalId
+                                }
+                                role="button"
+                                onClick={(e) => selectJob(job)}
+                                aria-title={`Select job in batch`}
+                            >
+                                <span
+                                    className={`status ${
+                                        job.jobData?.status
+                                            ? readableStatus[
+                                                  job.jobData.status
+                                              ].toLowerCase()
+                                            : readableStatus.LAUNCHING.toLowerCase()
+                                    }`}
+                                >
+                                    {JobStatusIcon(job.jobData.status, {
+                                        width: 20,
+                                        height: 20,
+                                    })}
+                                </span>
+                                <span className="filepath">{getSourceValue(job)}</span>
+                            </li>
+                        ))}
                 </ul>
                 <div>
-                    <button onClick={(e) => onCloseBatch()}>Close</button>
-                    <button onClick={(e) => onCancelBatch()}>Cancel remaining</button>
+                    <button
+                        aria-disabled={!areAllJobsInBatchDone(primaryJob, jobs)}
+                        disabled={!areAllJobsInBatchDone(primaryJob, jobs)}
+                        onClick={(e) => onCloseBatch()}
+                    >
+                        Close All
+                    </button>
+                    <button onClick={(e) => onCancelBatch()}>
+                        Cancel remaining
+                    </button>
                 </div>
             </aside>
             <section>

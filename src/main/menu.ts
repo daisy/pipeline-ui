@@ -7,6 +7,7 @@ import { store } from './data/store'
 import { closeApplication } from './windows'
 import { selectEditOnNewTab } from 'shared/data/slices/settings'
 import { selectDownloadPath } from 'shared/data/slices/settings'
+import { areAllJobsInBatchDone, getCompletedCountInBatch } from 'shared/utils'
 
 export function buildMenuTemplate({
     appName,
@@ -34,21 +35,34 @@ export function buildMenuTemplate({
     let multipleJobs = jobs.length > 1
     let status = 'new job'
     let currentJob = jobs.find((j) => j.internalId == selectedJobId)
+    let jobsInBatch = currentJob?.isPrimaryForBatch
+        ? jobs.filter(
+              (j) => j.jobRequest?.batchId == currentJob.jobRequest?.batchId
+          )
+        : []
 
-    if (currentJob?.jobData?.status) {
+    if (currentJob?.isPrimaryForBatch) {
+        let numJobsDone = getCompletedCountInBatch(currentJob, jobsInBatch)
+        status = `Batch status: (${numJobsDone}/${jobsInBatch.length})`
+    } else if (currentJob?.jobData?.status) {
         status = readableStatus[currentJob.jobData.status]
     }
     if (pipelineStatus != PipelineStatus.RUNNING) {
         status = 'unavailable'
     }
 
-    let canDelete =
-        pipelineStatus == PipelineStatus.RUNNING &&
-        currentJob &&
-        currentJob.state == JobState.SUBMITTED &&
-        currentJob.jobData &&
-        currentJob.jobData.status != JobStatus.RUNNING &&
-        currentJob.jobData.status != JobStatus.IDLE
+    let canDelete = true
+    if (currentJob?.isPrimaryForBatch) {
+        canDelete = areAllJobsInBatchDone(currentJob, jobsInBatch)
+    } else {
+        canDelete =
+            pipelineStatus == PipelineStatus.RUNNING &&
+            currentJob &&
+            currentJob.state == JobState.SUBMITTED &&
+            currentJob.jobData &&
+            currentJob.jobData.status != JobStatus.RUNNING &&
+            currentJob.jobData.status != JobStatus.IDLE
+    }
 
     let canRun =
         pipelineStatus == PipelineStatus.RUNNING &&
@@ -56,6 +70,13 @@ export function buildMenuTemplate({
         currentJob.state == JobState.NEW &&
         currentJob.jobRequest != null &&
         selectDownloadPath(store.getState()) != ''
+
+    let canCloseJob = true
+    if (currentJob?.isPrimaryForBatch) {
+        canCloseJob = areAllJobsInBatchDone(currentJob, jobsInBatch)
+    } else {
+        canCloseJob = currentJob && currentJob.state == JobState.SUBMITTED
+    }
 
     let canCreateJob = pipelineStatus == PipelineStatus.RUNNING
 
@@ -150,7 +171,7 @@ export function buildMenuTemplate({
                           },
                       ]
                     : []),
-                ...(currentJob && currentJob.state == JobState.SUBMITTED
+                ...(canCloseJob
                     ? [
                           {
                               label: 'Close job',
@@ -265,9 +286,18 @@ export function buildMenuTemplate({
                                   !j.invisible ||
                                   selectEditOnNewTab(store.getState())
                           )
+                          .filter(
+                              (j: Job) =>
+                                  !j.jobRequest?.hasOwnProperty('batchId') ||
+                                  (j.jobRequest?.batchId != '' &&
+                                      j.isPrimaryForBatch == true)
+                          )
                           .map((j: Job, idx: number) => {
                               let menuItem = {
-                                  label: `${idx + 1}. ${calculateJobName(j)}`,
+                                  label: `${idx + 1}. ${calculateJobName(
+                                      j,
+                                      jobs
+                                  )}`,
                                   click: () => onGotoTab(j),
                               }
                               if (idx < 10) {

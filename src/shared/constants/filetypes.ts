@@ -75,6 +75,11 @@ export const mediaTypesFileFilters: Array<Filetype> = [
         name: 'Open Office Template',
         extensions: ['ott'],
     },
+    {
+        type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        name: 'Word Document',
+        extensions: ['docx'],
+    },
 ]
 
 // this is a set of filetypes that are accepted as primary script inputs

@@ -10,6 +10,7 @@ const DragFileInput: React.FC<FileInputProps> = ({
     onChange,
     allowFile = true,
     allowFolder = true,
+    allowMultiSelections = true,
     enabled = true,
 }) => {
     const [isDragging, setIsDragging] = useState(false)
@@ -19,10 +20,12 @@ const DragFileInput: React.FC<FileInputProps> = ({
         let dialogOptions = []
         if (allowFile) dialogOptions.push('openFile')
         if (allowFolder) dialogOptions.push('openDirectory')
+        if (allowMultiSelections) dialogOptions.push('multiSelections')
+        
         let filename = await App.showOpenFileDialog({
             //@ts-ignore
-            dialogOptions,
-            asFileURL: true,
+            properties: dialogOptions,
+            asFileURL: false,
         })
         // TODO support multiple filenames from the file picker
         if (filename) {

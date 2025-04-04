@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Down, Up, X } from '../SvgIcons'
 
 // a list of files with a browse button
 const FileList = ({ onChange, files }) => {
@@ -17,14 +18,14 @@ const FileList = ({ onChange, files }) => {
         <ul>
             {files.map((file, index) => (
                 <li key={index}>
-                    <span>{file}</span>
+                    <span>{file.replace('file:///', '/')}</span>
                     <button
                         type="button"
                         className="remove-button"
                         onClick={() => removeFile(index)}
                         aria-label={`Remove file ${index + 1}`}
                     >
-                        x
+                        <X width="30" height="30" />
                     </button>
                     {index > 0 && (
                         <button
@@ -33,7 +34,7 @@ const FileList = ({ onChange, files }) => {
                             onClick={() => moveFile(index, index - 1)}
                             aria-label={`Move file ${index + 1} up`}
                         >
-                            ↑
+                            <Up width="30" height="30" />
                         </button>
                     )}
                     {index < files.length - 1 && (
@@ -43,7 +44,7 @@ const FileList = ({ onChange, files }) => {
                             onClick={() => moveFile(index, index + 1)}
                             aria-label={`Move file ${index + 1} down`}
                         >
-                            ↓
+                            <Down width="30" height="30" />
                         </button>
                     )}
                 </li>

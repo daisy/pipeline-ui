@@ -236,6 +236,21 @@ export const pipeline = createSlice({
                 state.selectedJobId = state.jobs[0].internalId
             }
         },
+        // same as above
+        removeBatchJob: (state: PipelineState, param: PayloadAction<Job[]>) => {
+            const removedId = param.payload.map((j) => j.internalId)
+            state.jobs = state.jobs.filter(
+                (j) => !removedId.includes(j.internalId)
+            )
+            if (state.jobs.length === 0) {
+                state.selectedJobId = ''
+            } else if (removedId.includes(state.selectedJobId)) {
+                state.selectedJobId = state.jobs[0].internalId
+            }
+        },
+        cancelBatchJob: (state: PipelineState, param: PayloadAction<Job[]>) => {
+            // TODO
+        },
         /**
          * Request script options from stylesheet parameters endpoint
          *
@@ -378,6 +393,8 @@ export const {
     restoreJob,
     removeJob,
     removeJobs,
+    removeBatchJob,
+    cancelBatchJob,
     selectJob,
     selectNextJob,
     selectPrevJob,

@@ -10,7 +10,9 @@ interface FileInputProps {
     onChange?: (paths: string[]) => void
     allowFile?: boolean
     allowFolder?: boolean
+    allowMultiSelections?: boolean
     enabled?: boolean
+    label?: string
 }
 
 // a browse button
@@ -21,6 +23,7 @@ const FileInput: React.FC<FileInputProps> = ({
     allowFile = true,
     allowFolder = false,
     enabled = true,
+    label = 'Browse',
 }) => {
     const onBrowse = async () => {
         let dialogOptions = []
@@ -44,7 +47,7 @@ const FileInput: React.FC<FileInputProps> = ({
             onClick={onBrowse}
             id={elemId}
         >
-            Browse
+            {label}
         </button>
     )
 }

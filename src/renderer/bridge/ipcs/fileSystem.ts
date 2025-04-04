@@ -47,7 +47,7 @@ export function traverseDirectory(dirpath) {
         ipcRenderer.once(
             events.IPC_EVENT_traverseDirectory,
             (event, res: Array<FileTreeEntry>) => {
-                console.log("traversed", res)
+                console.log("traverseDirectory", res)
                 resolve(res)
             }
         )

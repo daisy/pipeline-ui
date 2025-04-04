@@ -51,6 +51,8 @@ import {
     selectPipeline,
     selectNextJob,
     selectPrevJob,
+    removeBatchJob,
+    cancelBatchJob,
 } from 'shared/data/slices/pipeline'
 import { setupClipboardEvents } from './ipcs/clipboard'
 import { checkForUpdate } from 'shared/data/slices/update'
@@ -159,7 +161,14 @@ function buildMenu() {
             // )
         },
         onRemoveJob: async (job) => {
-            store.dispatch(removeJob(job))
+            console.log("menu onRemoveJob job=", JSON.stringify(job, null, '  '))
+            if (job.isPrimaryForBatch) {
+                let jobsInBatch = jobs.filter(j => j.jobRequest?.batchId == job.jobRequest?.batchId)
+                store.dispatch(removeBatchJob(jobsInBatch))
+            }
+            else {
+                store.dispatch(removeJob(job))
+            }
         },
         onEditJob: async (job) => {
             store.dispatch(editJob(job))

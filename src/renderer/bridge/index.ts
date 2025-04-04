@@ -36,7 +36,7 @@ const API = {
     sayHelloFromBridge: () => console.log('\nHello from bridgeAPI! 👋\n\n'),
     username: process.env.USER,
     showOpenFileDialog: ipcs.showOpenFileDialog,
-    showSaveDialog: ipcs.showSaveDialog,
+    // showSaveDialog: ipcs.showSaveDialog,
     showItemInFolder: ipcs.showItemInFolder,
     openInBrowser: ipcs.openInBrowser,
     pathExists: ipcs.pathExists,

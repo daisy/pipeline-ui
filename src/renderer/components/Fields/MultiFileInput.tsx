@@ -36,6 +36,7 @@ const MultiFileInput: React.FC<MultiFileInputProps> = ({
                 allowFolder={allowFolder}
                 mediaType={mediaType}
                 onChange={addFiles}
+                label={files.length ? 'Add file' : 'Select file'}
             />
             <FileList onChange={(files) => updateFiles(files)} files={files}/>
         </div>

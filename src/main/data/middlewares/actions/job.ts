@@ -43,6 +43,24 @@ export function removeJobs(action: PayloadAction<any>) {
         }
     }
 }
+export function removeBatchJob(action: PayloadAction<any>,  dispatch,
+    getState: GetStateFunction) {
+    // Ask delete confirmation for visible jobs deletion
+    const result = dialog.showMessageBoxSync(MainWindowInstance, {
+        message: `Are you sure you want to close these jobs?`,
+        buttons: ['Yes', 'No'],
+    })
+    // Cancel action if no is selected
+    action = result === 1 ? null : action
+    if (action) {
+        const visibleJobs = selectVisibleJobs(getState())
+        removeJobs(action)
+        // add a job if the batch was the last job
+        if (visibleJobs.length == action.payload.length) {
+            dispatch(addJob(newJob(selectPipeline(getState()))))
+        }
+    }
+}
 
 export function removeJob(
     action: PayloadAction<any>,
@@ -59,7 +77,7 @@ export function removeJob(
     ) {
         // Ask delete confirmation for visible jobs deletion
         const result = dialog.showMessageBoxSync(MainWindowInstance, {
-            message: `Are you sure you want to close this job ?`,
+            message: `Are you sure you want to close this job?`,
             buttons: ['Yes', 'No'],
         })
         // Cancel action if no is selected

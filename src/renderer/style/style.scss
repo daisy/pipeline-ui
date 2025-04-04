@@ -411,9 +411,9 @@ p.warning {
                 }
             }
             li[aria-selected=true] {
-                // font-weight: bold;
-                // background-color: var(--bg);
-                // box-shadow: 0 0 0 2px var(--select-mix);
+                font-weight: bold;
+                background-color: var(--bg);
+                box-shadow: 0 0 0 2px var(--select-mix);
             }
             div.controls {
                 margin-bottom: 5px;

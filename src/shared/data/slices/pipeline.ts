@@ -249,7 +249,18 @@ export const pipeline = createSlice({
             }
         },
         cancelBatchJob: (state: PipelineState, param: PayloadAction<Job[]>) => {
-            // TODO
+            let jobIdsToCancel = param.payload
+                .filter((j) => j.jobData?.status == JobStatus.IDLE)
+                .map((j) => j.internalId)
+
+            state.jobs = state.jobs.filter(
+                (j) => !jobIdsToCancel.includes(j.internalId)
+            )
+            if (state.jobs.length === 0) {
+                state.selectedJobId = ''
+            } else if (jobIdsToCancel.includes(state.selectedJobId)) {
+                state.selectedJobId = state.jobs[0].internalId
+            }
         },
         /**
          * Request script options from stylesheet parameters endpoint

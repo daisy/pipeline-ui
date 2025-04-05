@@ -18,7 +18,7 @@ import { FileLink } from '../FileLink'
 import { useWindowStore } from 'renderer/store'
 import { useState, useEffect } from 'react'
 import { JobDetails } from './JobDetails'
-import { areAllJobsInBatchDone } from 'shared/utils'
+import { areAllJobsInBatchDone, getIdleCountInBatch } from 'shared/utils'
 import { JobStatusIcon } from '../SvgIcons'
 
 const { App } = window
@@ -29,7 +29,7 @@ export function BatchJobDetailsPane({ jobs }: { jobs: Array<Job> }) {
 
     // this helps the details pane stay current
     useEffect(() => {
-        let selJob = jobs.find(j => j.internalId == selectedJob.internalId) 
+        let selJob = jobs.find((j) => j.internalId == selectedJob.internalId)
         setSelectedJob(selJob)
     }, [jobs])
 
@@ -45,7 +45,9 @@ export function BatchJobDetailsPane({ jobs }: { jobs: Array<Job> }) {
     }
 
     let onCancelBatch = () => {
-        App.store.dispatch(cancelBatchJob(jobs))
+        if (getIdleCountInBatch(primaryJob, jobs) > 0) {
+            App.store.dispatch(cancelBatchJob(jobs))
+        }
     }
 
     // get the value of the input parameter named 'source'
@@ -91,19 +93,25 @@ export function BatchJobDetailsPane({ jobs }: { jobs: Array<Job> }) {
                                         height: 20,
                                     })}
                                 </span>
-                                <span className="filepath">{getSourceValue(job)}</span>
+                                <span className="filepath">
+                                    {getSourceValue(job)}
+                                </span>
                             </li>
                         ))}
                 </ul>
-                <div>
+                <div className="controls">
                     <button
-                        aria-disabled={!areAllJobsInBatchDone(primaryJob, jobs)}
                         disabled={!areAllJobsInBatchDone(primaryJob, jobs)}
+                        aria-disabled={!areAllJobsInBatchDone(primaryJob, jobs)}
                         onClick={(e) => onCloseBatch()}
                     >
                         Close All
                     </button>
-                    <button onClick={(e) => onCancelBatch()}>
+                    <button
+                        disabled={!getIdleCountInBatch(primaryJob, jobs)}
+                        aria-disabled={!getIdleCountInBatch(primaryJob, jobs)}
+                        onClick={(e) => onCancelBatch()}
+                    >
                         Cancel remaining
                     </button>
                 </div>

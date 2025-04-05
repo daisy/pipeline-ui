@@ -113,3 +113,8 @@ export function getCompletedCountInBatch(primaryJob: Job, jobsInBatch: Array<Job
     ).length
     return numJobsDone
 }
+
+export function getIdleCountInBatch(primaryJob: Job, jobsInBatch: Array<Job>) {
+    let numJobsIdle = jobsInBatch.filter(j => j.jobData.status == JobStatus.IDLE).length
+    return numJobsIdle
+}

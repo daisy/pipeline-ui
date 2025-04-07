@@ -1,0 +1,31 @@
+# Default configuration file for embedded command line interface dp2
+# Host part of webservice address
+# Leave empty if you wish to use the app_path setting
+#host: http://localhost
+
+# Port part of webservice address
+# Leave empty if you wish to use the app_path setting
+#port: 8181
+
+# Path part of webservice address, as in HOST:PORT/PATH (e.g. http://localhost:8181/ws)
+# Leave empty if you wish to use the app_path setting
+#ws_path: ws
+
+# Timeout for requests to the webservice in seconds
+timeout: 10
+
+# Path to the DAISY Pipeline app
+# If left empty, the PATH is searched for a "DAISY Pipeline" executable
+app_path: "../../../../../DAISY Pipeline.exe"
+
+# Client key for authenticated requests
+#client_key: your-id
+
+# Client secrect for authenticated requests
+#client_secret: your-password
+
+# Print debug messages
+debug: false
+
+# Start the DAISY Pipeline app if it is not running
+starting: true

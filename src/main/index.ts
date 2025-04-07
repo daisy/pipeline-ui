@@ -138,8 +138,8 @@ function buildMenu() {
             // Open the settings window
             ipcMain.emit(IPC.WINDOWS.SETTINGS.CREATE)
         },
-        onGetHelp: async () => {
-            await shell.openExternal('https://daisy.org/pipelineapphelp')
+        onGotoLink: async (link) => {
+            await shell.openExternal(link)
         },
         onNextTab: async () => {
             store.dispatch(selectNextJob(selectEditOnNewTab(store.getState())))

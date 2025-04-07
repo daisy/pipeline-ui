@@ -14,7 +14,7 @@ export function buildMenuTemplate({
     selectedJobId,
     onCreateJob,
     onShowSettings,
-    onGetHelp,
+    onGotoLink,
     onNextTab,
     onPrevTab,
     onGotoTab,
@@ -287,9 +287,25 @@ export function buildMenuTemplate({
             label: '&Help',
             submenu: [
                 {
-                    label: 'Get help',
+                    label: 'Quick start guide',
                     click: () => {
-                        onGetHelp()
+                        onGotoLink(
+                            'https://daisy.org/guidance/info-help/guidance-training/daisy-tools/daisy-pipeline-app-quick-start-guide/'
+                        )
+                    },
+                },
+                {
+                    label: 'Issue tracker',
+                    click: () => {
+                        onGotoLink('https://github.com/daisy/pipeline/issues')
+                    },
+                },
+                {
+                    label: 'Forum',
+                    click: () => {
+                        onGotoLink(
+                            'https://github.com/daisy/pipeline/discussions'
+                        )
                     },
                 },
                 ...(!isMac

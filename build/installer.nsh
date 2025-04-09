@@ -46,11 +46,12 @@
       StrCpy $0 "$0;"
     pathEndsWithSemicolon:
 
-    ${StrStr} $1 $0 "$INSTDIR;"
-    StrCmp $1 "" 0  AppIsInPath
-      StrCpy $0 "$0$INSTDIR;"
-      IntOp $6 0 + 1;
-    AppIsInPath:
+    ; uncomment to install app in path
+    ;${StrStr} $1 $0 "$INSTDIR;"
+    ;StrCmp $1 "" 0  AppIsInPath
+    ;  StrCpy $0 "$0$INSTDIR;"
+    ;  IntOp $6 0 + 1;
+    ;AppIsInPath:
     
     ${StrStr} $1 $0 "$INSTDIR\resources\app.asar.unpacked\resources\daisy-pipeline\cli;"
     StrCmp $1 "" 0  CliInPath
@@ -85,17 +86,18 @@
     IntOp $6 0 + 1;
   CliIsNotInPath:
   
-  StrLen $3 "$INSTDIR;" ; size of instdir
-  StrLen $4 $0 ; size of the path value
-  ${UnStrStr} $1 $0 "$INSTDIR;" ; substring position of instdir in path
-  StrCmp $1 "" AppIsNotInPath 0 ; if substring is empty, no modification, else continue
-    StrLen $5 $1 ; size of the substring
-    IntOp $5 $4 - $5 ; pathSize - substringSize
-    StrCpy $0 $0 $5 ; $0 = substring(str=$0, start=0, len=$5)
-    StrCpy $1 $1 "" $3 ; $1 = substring(str=$1, start=$3)
-    StrCpy $0 "$0$1"
-    IntOp $6 0 + 1;
-  AppIsNotInPath:
+  ; uncomment to remove app of the path
+  ; StrLen $3 "$INSTDIR;" ; size of instdir
+  ; StrLen $4 $0 ; size of the path value
+  ; ${UnStrStr} $1 $0 "$INSTDIR;" ; substring position of instdir in path
+  ; StrCmp $1 "" AppIsNotInPath 0 ; if substring is empty, no modification, else continue
+  ;   StrLen $5 $1 ; size of the substring
+  ;   IntOp $5 $4 - $5 ; pathSize - substringSize
+  ;   StrCpy $0 $0 $5 ; $0 = substring(str=$0, start=0, len=$5)
+  ;   StrCpy $1 $1 "" $3 ; $1 = substring(str=$1, start=$3)
+  ;   StrCpy $0 "$0$1"
+  ;   IntOp $6 0 + 1;
+  ; AppIsNotInPath:
 
   IntCmp $6 0 EndCustomUnInstall
     WriteRegExpandStr HKCU "Environment" "Path" "$0"

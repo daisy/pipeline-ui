@@ -22,6 +22,9 @@ module.exports = {
         identity: 'US Fund for DAISY (SAMG8AWD69)',
         hardenedRuntime: true,
         target: 'pkg',
+        "extendInfo": {
+            "LSUIElement": 1
+        },
     },
     pkg: {
         isRelocatable: false,
@@ -40,15 +43,12 @@ module.exports = {
 
     win: {
         icon: `${FOLDERS.RESOURCES}/icons/logo_256x256.png`,
-        target: ['nsis', 'portable', 'zip'],
+        target: ['nsis'],
     },
-    nsis: {
-        include: 'build/installer.nsh',
-    },
-
     afterSign: 'buildtools/notarize.js',
     asarUnpack: ['resources/daisy-pipeline'],
     nsis: {
+        include: 'build/installer.nsh',
         runAfterFinish: true,
         artifactName: ARTIFACT_NAME + '-setup-${version}.${ext}',
     },

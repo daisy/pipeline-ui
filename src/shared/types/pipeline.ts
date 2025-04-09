@@ -14,6 +14,7 @@ export type Webservice = {
     port?: number
     path?: string
     ssl?: boolean
+    lastStart?: number
 }
 /**
  * Utility function to get base url string from webservice

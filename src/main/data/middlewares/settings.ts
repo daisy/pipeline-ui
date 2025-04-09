@@ -1,6 +1,6 @@
 import { PayloadAction } from '@reduxjs/toolkit'
 import { app, nativeTheme } from 'electron'
-import { info, error } from 'electron-log'
+import { info, error, debug } from 'electron-log'
 import { existsSync, readFileSync, writeFile } from 'fs'
 import { resolve } from 'path'
 import { ENVIRONMENT } from 'shared/constants'
@@ -41,6 +41,7 @@ export function readSettings() {
                 host: '127.0.0.1',
                 port: 0,
                 path: '/ws',
+                lastStart: 0,
             },
             pipelineHome: resolveUnpacked('resources', 'daisy-pipeline'),
             jrePath: resolveUnpacked('resources', 'daisy-pipeline', 'jre'),
@@ -96,8 +97,10 @@ export function readSettings() {
                         : settings.ttsConfig.xmlFilepath,
                 },
             }
-            info(`Settings loaded from ${settingsFile}`)
-            info(JSON.stringify(settings))
+            if (ENVIRONMENT.IS_DEV) {
+                debug(`Settings loaded from ${settingsFile}`)
+                debug(JSON.stringify(settings))
+            }
         } else {
             error(`${settingsFile} not found`)
             throw new Error(`${settingsFile} not found`)
@@ -119,7 +122,7 @@ export function readSettings() {
     }
 
     // Remove pipeline props loading for dev
-    if (ENVIRONMENT.IS_DEV) settings.pipelineInstanceProps = undefined
+    //if (ENVIRONMENT.IS_DEV) settings.pipelineInstanceProps = undefined
 
     return settings
 }
@@ -170,7 +173,7 @@ export function settingsMiddleware({ getState, dispatch }) {
                         new URL(settings.ttsConfig.xmlFilepath),
                         ttsConfigToXml(settings.ttsConfig),
                         () => {
-                            console.log("wrote file, setting engine property")
+                            //console.log("wrote file, setting engine property")
                             const webservice = selectWebservice(getState())
                             let ttsConfig = selectTtsConfig(getState())
                             console.log(ttsConfig)

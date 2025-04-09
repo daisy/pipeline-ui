@@ -47,6 +47,7 @@ export function makeAppWithSingleInstanceLock(fn: () => void) {
         // basic initialisation of the app if
         // it does not have cli args or background launch is not requested
         if (commandLineArgs.length == 0 && !process.argv.includes('--bg')) {
+            app.dock.show()
             fn()
         } else {
             // Command line args are reported or the background launch is requested

@@ -28,4 +28,4 @@ app_path: "../../../../../MacOS/DAISY Pipeline"
 debug: false
 
 # Start the DAISY Pipeline app if it is not running
-starting: true
+starting: false

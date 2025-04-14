@@ -4,7 +4,6 @@
 #   due to its folder location and filename
 
 # Create simlinks to the app in usr local bon to allow its use as cli
-ln -sfn $2/DAISY\ Pipeline.app/Contents/MacOS/DAISY\ Pipeline /usr/local/bin/DAISY\ Pipeline
 ln -sfn $2/DAISY\ Pipeline.app/Contents/Resources/app.asar.unpacked/resources/daisy-pipeline/cli/dp2 /usr/local/bin/dp2
 
 

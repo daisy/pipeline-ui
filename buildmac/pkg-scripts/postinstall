@@ -3,6 +3,10 @@
 #   this file is automatically detected by electron-builder as a postinstall script
 #   due to its folder location and filename
 
+# Create simlinks to the app in usr local bon to allow its use as cli
+ln -sfn $2/DAISY\ Pipeline.app/Contents/Resources/app.asar.unpacked/resources/daisy-pipeline/cli/dp2 /usr/local/bin/dp2
+
+
 remove_app () {
     APP=$1
     # Get a list of all installed app's, filter to only have /Applications and /User/<username>/Applications, filter the requested app, select the first found app

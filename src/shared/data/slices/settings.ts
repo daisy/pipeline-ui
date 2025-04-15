@@ -23,6 +23,7 @@ export const settings = createSlice({
                 host: '127.0.0.1',
                 port: 0,
                 path: '/ws',
+                lastStart: 0,
             },
         } as PipelineInstanceProperties,
         colorScheme: 'system',

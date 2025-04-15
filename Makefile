@@ -38,6 +38,12 @@ endif
 src/resources/daisy-pipeline : engine/target/assembly-$(ENGINE_VERSION)-$(zip_classifier).zip
 	rm("$@");
 	unzip(new File("$<"), new File("$(dir $@)"));
+	rm("$@/cli/config.yml");
+ifeq ($(OS), WINDOWS)
+	cp("bin/modules/prebuild/config_windows.yml", "$@/cli/config.yml");
+else
+	cp("bin/modules/prebuild/config_macos.yml", "$@/cli/config.yml");
+endif
 ifeq ($(OS), MACOSX)
 	// FIXME: unzip() currently does not preserve file permissions \
 	exec("chmod", "+x", "$@/jre/bin/java");
@@ -49,7 +55,6 @@ engine/target/assembly-$(ENGINE_VERSION)-$(zip_classifier).zip : \
 		$(shell Files.walk(Paths.get("engine/src")).filter(Files::isRegularFile).forEach(System.out::println);)
 	exec("$(MAKE)", "-C", "engine", "zip-$(zip_classifier)",         \
 	                                "--", "--without-osgi",          \
-			                        "--without-cli",                 \
 			                        "--without-updater",             \
 			                        "--without-persistence");
 

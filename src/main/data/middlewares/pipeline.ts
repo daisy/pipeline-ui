@@ -53,10 +53,13 @@ import { pipelineAPI } from '../apis/pipeline'
 import { PayloadAction } from '@reduxjs/toolkit'
 import { saveFile, unzipFile } from 'main/factories/ipcs/file'
 import {
+    save,
     selectDownloadPath,
     selectPipelineProperties,
     selectSettings,
     selectTtsConfig,
+    setPipelineProperties,
+    setSettings,
 } from 'shared/data/slices/settings'
 import { ParserException } from 'shared/parser/pipelineXmlConverter/parser'
 import { PipelineInstance } from 'main/factories'
@@ -409,6 +412,20 @@ export function pipelineMiddleware({ getState, dispatch }) {
                                     'useWebservice',
                                     'Pipeline is ready to be used'
                                 )
+                                // Save the pipeline properties in settings
+                                // and save settings
+                                const { onError, onMessage, ...serializable } =
+                                    getPipelineInstance(state).props
+                                dispatch(
+                                    setPipelineProperties({
+                                        ...serializable,
+                                        webservice: {
+                                            ...newWebservice,
+                                            lastStart: Date.now(),
+                                        },
+                                    })
+                                )
+                                dispatch(save())
                                 dispatch(setAlive(alive))
                             })
                             .then(() => fetchScripts(newWebservice))

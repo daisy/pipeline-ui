@@ -172,7 +172,6 @@ export function settingsMiddleware({ getState, dispatch }) {
                         () => {
                             const webservice = selectWebservice(getState())
                             let ttsConfig = selectTtsConfig(getState())
-                            console.log(ttsConfig)
                             let ttsConfigProperty: EngineProperty = {
                                 name: 'org.daisy.pipeline.tts.config',
                                 value: ttsConfig.xmlFilepath,

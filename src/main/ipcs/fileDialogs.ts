@@ -22,7 +22,6 @@ const showOpenFileDialog = async (
     dialogOptions: Electron.OpenDialogOptions,
     asFileURL: boolean = true
 ): Promise<void> => {
-    console.log('showOpenFileDialog', dialogOptions)
     let filePath
     const res = await dialog.showOpenDialog(
         BrowserWindow ? BrowserWindow.getFocusedWindow() : undefined,
@@ -71,7 +70,6 @@ const showOpenFileDialog = async (
 function setupFileDialogEvents() {
     // comes from the renderer process (ipcRenderer.send())
     ipcMain.on(IPC_EVENT_showOpenFileDialog, async (event, payload) => {
-        console.log('IPC event showOpenFileDialog', JSON.stringify(payload))
         await showOpenFileDialog(
             (filePath) => {
                 event.sender.send(IPC_EVENT_showOpenFileDialog, filePath)

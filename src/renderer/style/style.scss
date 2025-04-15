@@ -497,7 +497,7 @@ p.warning {
             border: thin solid var(--fg);
             display: flex;
             flex-direction: column;
-            gap: 1rem;
+            gap: .25rem;
           
         li {
             display: flex;
@@ -527,6 +527,13 @@ p.warning {
                 transition: all 0.2s ease;
                 color: var(--fg);
               }
+        }
+
+        div {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            gap: 1rem;
         }
     }
     

@@ -4,7 +4,7 @@
  */
 
 import { store } from 'main/data/store'
-import { getPipelineInstance } from 'main/data/middlewares/pipeline'
+import { getPipelineInstance } from 'main/data/instance'
 import path from 'path'
 import { spawnSync } from 'child_process'
 import { existsSync } from 'fs'

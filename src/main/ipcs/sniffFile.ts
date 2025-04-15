@@ -1,6 +1,8 @@
-import { createReadStream } from 'fs'
+import * as fs from 'fs-extra'
 import path, { extname } from 'path'
+import { unzipSync } from 'fflate'
 import sax from 'sax'
+import { Readable } from 'stream'
 
 // find more info about the type of file
 // returns "dtbook", "zedai", "xhtml", "html", "xml", "epub3opf", "epub2opf", "daisy3opf", "ncc"
@@ -10,13 +12,38 @@ export async function sniffFile(filepath: string): Promise<string> {
     if (path.basename(filepath).toLowerCase() == 'ncc.html') {
         return 'ncc'
     }
+
     // handle opf, xml and html files with a quick sax parse
-    if (ext == '.opf' || ext === '.xml' || ext === '.html') {
+    if (ext == '.opf' || ext === '.xml' || ext === '.html' || ext == '.epub') {
+        let stream = null
+
+        // get a stream of the input file, whether by extracting it from an archive or just reading it off disk
+        if (ext == '.epub') {
+            // grab the opf file from the epub archive
+            const zipFileHandle = await fs.readFile(filepath)
+            const zipFileArr = new Uint8Array(zipFileHandle)
+            const decompressed = unzipSync(zipFileArr, {
+                // just get the OPF file, not other files
+                filter(file) {
+                    return file.name.length > 4 && file.name.slice(-4) == '.opf'
+                },
+            })
+            if (Object.keys(decompressed).length > 0) {
+                let opfBuffer = decompressed[Object.keys(decompressed)[0]]
+
+                stream = new Readable()
+                stream.push(opfBuffer)
+                stream.push(null)
+            }
+        } else {
+            // read the stream off disk
+            stream = fs.createReadStream(filepath.replace('file:///', '/'))
+        }
+
         return new Promise<string>((resolve) => {
             let daisy3check = false
             let textContent = ''
             const parser = sax.createStream(true)
-            const stream = createReadStream(filepath.replace('file:///', '/'))
 
             parser.on('error', (err: Error) => {
                 // it couldn't be parsed as xml and it has an html extension
@@ -25,7 +52,7 @@ export async function sniffFile(filepath: string): Promise<string> {
                     stream.destroy()
                     resolve('html')
                 }
-                // or there was another type of error and we can't tell any more info about this file 
+                // or there was another type of error and we can't tell any more info about this file
                 else {
                     stream.destroy()
                     resolve(ext)

@@ -23,7 +23,7 @@ import {
     defaultSponsorshipMessage,
     updateSponsorshipMessage,
 } from '../../../utils'
-import { is2StepsScript } from 'shared/utils'
+import { is2StepsScript, isScriptTTSEnhanced } from 'shared/utils'
 import { getRelevantScripts } from '../../scriptFilters'
 import { FilelistWithRelevantScripts } from './FilelistWithRelevantScripts'
 import { DragFileInput } from '../../Fields/DragFileInput'
@@ -96,7 +96,10 @@ export function NewJobPane({ job }: { job: Job }) {
 
     // add a list of files to the current files list and filter out duplicates
     let addFiles = async (newFiles) => {
-        let currentFiles = files.map((f) => f.filepath).map(file => file.replace("file://", ""))
+        console.log("Add files", newFiles)
+        let currentFiles = files
+            .map((f) => f.filepath)
+            .map((file) => file.replace('file://', ''))
         // filter out any duplicates
         let uniqueNewFiles = newFiles.filter(
             (file) => currentFiles.indexOf(file) == -1
@@ -104,7 +107,9 @@ export function NewJobPane({ job }: { job: Job }) {
         let uniqueNewFilesThatAreSupported = []
         // assign a filetype to each one
         for (let file of uniqueNewFiles) {
+            // console.log("Detecting filetype", file)
             let filetype = await App.detectFiletype(file)
+            // console.log('...', filetype)
             if (filetype) {
                 uniqueNewFilesThatAreSupported.push({
                     filepath: file,
@@ -112,6 +117,7 @@ export function NewJobPane({ job }: { job: Job }) {
                 })
             }
         }
+        // console.log("Unique new files that are supported", uniqueNewFilesThatAreSupported)
         let filesCopy = [...files]
         filesCopy = filesCopy.concat(
             uniqueNewFilesThatAreSupported.filter((f) => f.filetype != null)
@@ -132,22 +138,28 @@ export function NewJobPane({ job }: { job: Job }) {
     }
     // recursively list directory contents
     const resolveItems = async (items) => {
+        console.log('Resolve items', items)
+
         let resolvedItems: string[] = []
         for (let item of items) {
-            let dirListing: Array<FileTreeEntry> = await App.traverseDirectory(
-                item
-            )
             let paths = []
-            let gatherPaths = (listing: Array<FileTreeEntry>) => {
-                listing.map((fileTreeEntry) => {
-                    if (fileTreeEntry.type == 'directory') {
-                        gatherPaths(fileTreeEntry.contents)
-                    } else {
-                        paths.push(fileTreeEntry.path)
-                    }
-                })
+            let isFile = await App.isFile(item)
+            if (isFile) {
+                paths.push(item)
+            } else {
+                let dirListing: Array<FileTreeEntry> =
+                    await App.traverseDirectory(item)
+                let gatherPaths = (listing: Array<FileTreeEntry>) => {
+                    listing.map((fileTreeEntry) => {
+                        if (fileTreeEntry.type == 'directory') {
+                            gatherPaths(fileTreeEntry.contents)
+                        } else {
+                            paths.push(fileTreeEntry.path)
+                        }
+                    })
+                }
+                gatherPaths(dirListing)
             }
-            gatherPaths(dirListing)
             resolvedItems = [...resolvedItems, ...paths]
         }
         return resolvedItems
@@ -226,11 +238,7 @@ export function NewJobPane({ job }: { job: Job }) {
                                 .map((script, idx) => (
                                     <option key={idx} value={script.id}>
                                         {script.nicename}
-                                        {script.inputs.find((i) =>
-                                            i.mediaType.includes(
-                                                'application/vnd.pipeline.tts-config+xml'
-                                            )
-                                        )
+                                        {isScriptTTSEnhanced(script)
                                             ? ' (TTS Enhanced)'
                                             : ''}
                                     </option>
@@ -300,8 +308,10 @@ export function NewJobPane({ job }: { job: Job }) {
                     })}
                     {files.length > 0 && (
                         <p className="suggestion">
-                            Add more files to see more suggestions. 
-                            <button onClick={() => setFiles([])}>Clear files</button>
+                            Add more files to see more suggestions.
+                            <button onClick={() => setFiles([])}>
+                                Clear files
+                            </button>
                         </p>
                     )}
                     <DragFileInput

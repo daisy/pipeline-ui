@@ -47,9 +47,18 @@ export function traverseDirectory(dirpath) {
         ipcRenderer.once(
             events.IPC_EVENT_traverseDirectory,
             (event, res: Array<FileTreeEntry>) => {
-                console.log("traverseDirectory", res)
                 resolve(res)
             }
         )
+    })
+}
+
+export function isFile(itemPath) {
+    return new Promise<boolean>((resolve, reject) => {
+        ipcRenderer.send(events.IPC_EVENT_isFile, itemPath)
+        ipcRenderer.once(events.IPC_EVENT_isFile, (event, res: boolean) => {
+            console.log("file system bridge says", itemPath, res)
+            resolve(res)
+        })
     })
 }

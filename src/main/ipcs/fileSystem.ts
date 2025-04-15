@@ -7,6 +7,7 @@ import {
     IPC_EVENT_pathExists,
     IPC_EVENT_sniffEncoding,
     IPC_EVENT_traverseDirectory,
+    IPC_EVENT_isFile,
 } from '../../shared/main-renderer-events'
 import { PLATFORM, scriptInputFiletypes } from 'shared/constants'
 import { sniffFile } from './sniffFile'
@@ -49,6 +50,7 @@ async function detectFiletype(filepath: string): Promise<Filetype> {
     // some special types exist where the result of sniffFile is also the filetype type
     let specialType = scriptInputFiletypes.find((ft) => ft.type == filetypeType)
     if (specialType) {
+        console.log("matches special type", specialType)
         return specialType
     }
 
@@ -86,14 +88,14 @@ export interface FileTreeEntry {
 
 async function traverseDirectory(dirPath): Promise<Array<FileTreeEntry>> {
     try {
-        const entries = await fs.readdir(dirPath, { withFileTypes: true })
-        const fileTree = []
-        for (const entry of entries) {
-            const fullPath = path.join(dirPath, entry.name)
+        let entries = await fs.readdir(dirPath, { withFileTypes: true })
+        let fileTree = []
+        for (let entry of entries) {
+            let fullPath = path.join(dirPath, entry.name)
 
             if (entry.isDirectory()) {
                 // Recursively traverse subdirectories
-                const subDirContents = await traverseDirectory(fullPath)
+                let subDirContents = await traverseDirectory(fullPath)
                 fileTree.push({
                     name: entry.name,
                     type: 'directory',
@@ -102,13 +104,10 @@ async function traverseDirectory(dirPath): Promise<Array<FileTreeEntry>> {
                 })
             } else {
                 // Get file stats
-                const stats = await fs.stat(fullPath)
                 fileTree.push({
                     name: entry.name,
                     type: 'file',
                     path: fullPath,
-                    size: stats.size,
-                    modified: stats.mtime,
                 })
             }
         }
@@ -117,6 +116,13 @@ async function traverseDirectory(dirPath): Promise<Array<FileTreeEntry>> {
         console.error(`Error traversing directory ${dirPath}:`, error)
         return []
     }
+}
+function isFile(itemPath: string) {
+    if (fs.existsSync(itemPath)) {
+        let stats = fs.statSync(itemPath)
+        return stats.isFile()
+    }
+    return false
 }
 
 function setupFileSystemEvents() {
@@ -136,6 +142,10 @@ function setupFileSystemEvents() {
     ipcMain.on(IPC_EVENT_traverseDirectory, async (event, payload) => {
         let res = await traverseDirectory(payload)
         event.sender.send(IPC_EVENT_traverseDirectory, res)
+    })
+    ipcMain.on(IPC_EVENT_isFile, async (event, payload) => {
+        let res = isFile(payload)
+        event.sender.send(IPC_EVENT_isFile, res)
     })
 }
 export { setupFileSystemEvents, pathExists, sniffEncoding }

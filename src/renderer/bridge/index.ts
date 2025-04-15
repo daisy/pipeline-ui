@@ -58,6 +58,7 @@ const API = {
     getDroppedFilePath: (file) => ipcs.getFilePath(file),
     detectFiletype: (filepath) => ipcs.detectFiletype(filepath),
     traverseDirectory: (dirpath) => ipcs.traverseDirectory(dirpath),
+    isFile: (itemPath) => ipcs.isFile(itemPath),
 }
 
 contextBridge.exposeInMainWorld('App', API)

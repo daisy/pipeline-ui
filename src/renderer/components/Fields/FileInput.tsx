@@ -29,12 +29,13 @@ const FileInput: React.FC<FileInputProps> = ({
         let dialogOptions = []
         if (allowFile) dialogOptions.push('openFile')
         if (allowFolder) dialogOptions.push('openDirectory')
+        
         let filename = await App.showOpenFileDialog({
             //@ts-ignore
-            dialogOptions,
+            properties: dialogOptions,
             asFileURL: true,
         })
-        console.log("FileInput", filename)
+        
         if (filename) {
             onChange?.([filename])
         }

@@ -16,6 +16,7 @@ import {
     bindWindowToPipeline,
     makeAppSetup,
     makeAppWithSingleInstanceLock,
+    //parsePipelineCommands,
 } from './factories'
 
 import {
@@ -67,8 +68,10 @@ makeAppWithSingleInstanceLock(async () => {
     // load theme from settings
     nativeTheme.themeSource = selectColorScheme(store.getState())
 
-    // Windows
-    let mainWindow = await makeAppSetup(MainWindow)
+    // Main window creation when the app is not launched in silent mode
+    let mainWindow = await makeAppSetup(
+        !process.argv.includes('--hidden') ? MainWindow : async () => null
+    )
 
     registerSettingsWindowCreationByIPC()
     registerAboutWindowCreationByIPC()
@@ -99,22 +102,34 @@ makeAppWithSingleInstanceLock(async () => {
     store.subscribe(() => {
         buildMenu()
     })
-    // Reopen the main window when trying to launch
-    // the app when it is already launched
+    // Note for command line parsing
+    // - second-instance event is emitted when a new instance is requested
+    // (that is, if we try to relaunch the app in any way, the new instance is killed
+    //  and the existing one receive this event along the passed command line arguments of the killed on)
     app.on(
         'second-instance',
-        (event, commandLine, workingDirectory, additionalData) => {
-            MainWindow().then((window) => {
-                if (window.isMinimized()) {
-                    window.restore()
-                }
-                window.focus()
-            })
+        (
+            event,
+            commandLine,
+            workingDirectory,
+            additionalData: { argv: string[] }
+        ) => {
+            const cliArgs = additionalData?.argv || []
+            if (!commandLine.includes('--hidden') && cliArgs.length == 0) {
+                MainWindow().then((window) => {
+                    if (window.isMinimized()) {
+                        window.restore()
+                    }
+                    window.focus()
+                })
+            }
         }
     )
     if (store.getState().settings.autoCheckUpdate) {
         store.dispatch(checkForUpdate())
     }
+    // Parse pipeline commands
+    //parsePipelineCommands(process.argv)
 })
 
 function buildMenu() {
@@ -140,8 +155,8 @@ function buildMenu() {
             // Open the settings window
             ipcMain.emit(IPC.WINDOWS.SETTINGS.CREATE)
         },
-        onGetHelp: async () => {
-            await shell.openExternal('https://daisy.org/pipelineapphelp')
+        onGotoLink: async (link) => {
+            await shell.openExternal(link)
         },
         onNextTab: async () => {
             store.dispatch(selectNextJob(selectEditOnNewTab(store.getState())))

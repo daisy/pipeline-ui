@@ -161,12 +161,12 @@ function buildMenu() {
             // )
         },
         onRemoveJob: async (job) => {
-            console.log("menu onRemoveJob job=", JSON.stringify(job, null, '  '))
             if (job.isPrimaryForBatch) {
-                let jobsInBatch = jobs.filter(j => j.jobRequest?.batchId == job.jobRequest?.batchId)
+                let jobsInBatch = jobs.filter(
+                    (j) => j.jobRequest?.batchId == job.jobRequest?.batchId
+                )
                 store.dispatch(removeBatchJob(jobsInBatch))
-            }
-            else {
+            } else {
                 store.dispatch(removeJob(job))
             }
         },

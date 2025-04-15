@@ -1,6 +1,6 @@
 import { Script, ScriptInput, ScriptOption } from 'shared/types'
 import { parseXml } from './parser'
-import { supportsBatch } from 'shared/utils'
+import { getFirstRequiredInput, isScriptBatchable } from 'shared/utils'
 
 function scriptXmlToJson(xmlString: string): Script {
     let scriptElm = parseXml(xmlString, 'script')
@@ -21,6 +21,7 @@ function scriptElementToJson(scriptElm: Element): Script {
         version: (versionElm[0] as Element)?.textContent.trim() ?? '',
         homepage: (homepageElm[0] as Element)?.textContent.trim() ?? '',
         batchable: false,
+        multidoc: false,
     }
 
     script.inputs = Array.from(scriptElm.getElementsByTagName('input')).map(
@@ -70,10 +71,14 @@ function scriptElementToJson(scriptElm: Element): Script {
     )
 
     // say whether the script is able to be batch-executed
-    if (supportsBatch(script)) {
+    if (isScriptBatchable(script)) {
         script.batchable = true
         // scripts take one input right now
         script.inputs.map((input) => (input.batchable = true))
+    }
+    let firstRequiredInput = getFirstRequiredInput(script)
+    if (firstRequiredInput?.sequence) {
+        script.multidoc = true
     }
 
     return script

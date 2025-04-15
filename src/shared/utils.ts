@@ -1,22 +1,30 @@
-import { Job, JobStatus, NameValue, Script, ScriptInput, ScriptItemBase } from './types'
+import {
+    Job,
+    JobStatus,
+    NameValue,
+    Script,
+    ScriptInput,
+    ScriptItemBase,
+} from './types'
 
 // returns true if the script does not support sequences for input
 // and is not a 2-steps script
-export function supportsBatch(script: Script) {
+export function isScriptBatchable(script: Script) {
     let hasSequenceForInput =
         script.inputs.find((input) => input.sequence === true) != undefined
     if (hasSequenceForInput) {
-        console.log('already accepts a sequence of files as input')
+        console.log(script.id, 'already accepts a sequence of files as input')
     }
     if (is2StepsScript(script)) {
-        console.log('2 steps script')
+        console.log(script.id, '2 steps script')
     }
     return !is2StepsScript(script) && !hasSequenceForInput
 }
 
-export function getPrimaryInput(script: Script): ScriptInput {
+// return the first required input on the script
+export function getFirstRequiredInput(script: Script): ScriptInput {
     let required = getAllRequired(script)
-    if (required) {
+    if (required && required.length > 0) {
         return required[0] as ScriptInput
     } else {
         return null
@@ -34,7 +42,7 @@ export function updateArrayValue(
 }
 
 // does the job request have multiple values for the input parameter marked 'batchable'?
-export function hasBatchInput(job: Job) {
+export function hasBatchInput(job: Job): boolean {
     if (job.script.batchable) {
         let batchInput = getBatchInput(job.script)
         if (batchInput) {
@@ -47,7 +55,8 @@ export function hasBatchInput(job: Job) {
     }
     return false
 }
-export function getBatchInput(script: Script) {
+// get the first input listed as batchable
+export function getBatchInput(script: Script): ScriptInput {
     if (script.batchable) {
         let batchInput = script.inputs.find((input) => input.batchable)
         return batchInput
@@ -100,12 +109,18 @@ export function getAllOptional(script: Script) {
         : []
 }
 
-export function areAllJobsInBatchDone(primaryJob: Job, jobsInBatch: Array<Job>) {
+export function areAllJobsInBatchDone(
+    primaryJob: Job,
+    jobsInBatch: Array<Job>
+) {
     let numJobsDone = getCompletedCountInBatch(primaryJob, jobsInBatch)
     return numJobsDone == jobsInBatch.length
 }
 
-export function getCompletedCountInBatch(primaryJob: Job, jobsInBatch: Array<Job>) {
+export function getCompletedCountInBatch(
+    primaryJob: Job,
+    jobsInBatch: Array<Job>
+) {
     let numJobsDone = jobsInBatch.filter((j) =>
         [JobStatus.ERROR, JobStatus.FAIL, JobStatus.SUCCESS].includes(
             j.jobData.status
@@ -115,6 +130,19 @@ export function getCompletedCountInBatch(primaryJob: Job, jobsInBatch: Array<Job
 }
 
 export function getIdleCountInBatch(primaryJob: Job, jobsInBatch: Array<Job>) {
-    let numJobsIdle = jobsInBatch.filter(j => j.jobData.status == JobStatus.IDLE).length
+    let numJobsIdle = jobsInBatch.filter(
+        (j) => j.jobData.status == JobStatus.IDLE
+    ).length
     return numJobsIdle
+}
+
+export function isScriptTTSEnhanced(script: Script) {
+    let ttsInput = script.inputs.find((i) =>
+        i.mediaType.includes('application/vnd.pipeline.tts-config+xml')
+    )
+    if (ttsInput) {
+        return true
+    } else {
+        return false
+    }
 }

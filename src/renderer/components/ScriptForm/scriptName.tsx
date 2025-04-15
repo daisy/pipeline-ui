@@ -1,5 +1,6 @@
 import { Script } from 'shared/types'
 import { externalLinkClick } from 'renderer/utils/utils'
+import { isScriptTTSEnhanced } from 'shared/utils'
 const { App } = window
 
 export function ScriptName({
@@ -13,13 +14,7 @@ export function ScriptName({
         <>
             <h1 id={headerId}>
                 {script?.nicename}
-                {script?.inputs.find((i) =>
-                    i.mediaType.includes(
-                        'application/vnd.pipeline.tts-config+xml'
-                    )
-                )
-                    ? ' (TTS Enhanced)'
-                    : ''}
+                {isScriptTTSEnhanced(script) ? ' (TTS Enhanced)' : ''}
             </h1>
             <p>
                 {script?.description}

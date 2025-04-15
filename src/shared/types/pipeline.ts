@@ -290,7 +290,8 @@ export type Script = {
     inputs?: Array<ScriptInput>
     options?: Array<ScriptOption>
     homepage?: string
-    batchable: boolean
+    batchable: boolean // not 2 step and not multidoc
+    multidoc: boolean // the primary input supports an array of documents
 }
 
 export type NameValue = {

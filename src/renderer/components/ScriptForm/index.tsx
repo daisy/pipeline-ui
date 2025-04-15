@@ -29,12 +29,9 @@ import {
     getAllRequired,
     getBatchInput,
     getBatchInputValues,
-    getPrimaryInput,
     hasBatchInput,
-    supportsBatch,
     updateArrayValue,
 } from 'shared/utils'
-import { getRelevantFiletypes } from 'renderer/components/scriptFilters'
 const { App } = window
 
 export function ScriptForm({ job, script }: { job: Job; script: Script }) {
@@ -243,6 +240,7 @@ export function ScriptForm({ job, script }: { job: Job; script: Script }) {
                     )
                 }
                 // the script is batch-able but only has one input
+                // so run it like a single-input job
                 else {
                     let inputs_ = updateArrayValue(
                         batchJobRequestInputValues[0],
@@ -260,7 +258,7 @@ export function ScriptForm({ job, script }: { job: Job; script: Script }) {
                         })
                     )
                 }
-            } else {
+            } else { // the script is not batchable
                 console.log('no batch input')
                 App.store.dispatch(
                     runJob({

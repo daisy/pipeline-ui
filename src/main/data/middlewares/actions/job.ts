@@ -24,7 +24,7 @@ import { ParserException } from 'shared/parser/pipelineXmlConverter/parser'
 import { GetStateFunction } from 'shared/types/store'
 import { createAction, PayloadAction } from '@reduxjs/toolkit'
 import { v4 as uuidv4 } from 'uuid'
-import { getBatchInputValues, getPrimaryInput } from 'shared/utils'
+import { getBatchInputValues, getBatchInput } from 'shared/utils'
 
 export function removeJobs(action: PayloadAction<any>) {
     let removedJobs = action.payload as Job[]
@@ -219,7 +219,7 @@ export function runBatchJobs(
     job.isPrimaryForBatch = true
 
     // get the batch input
-    let batchInput = getPrimaryInput(job.script)
+    let batchInput = getBatchInput(job.script)
     // get the array of inputs
     let batchJobRequestInputValues = getBatchInputValues(job)
 

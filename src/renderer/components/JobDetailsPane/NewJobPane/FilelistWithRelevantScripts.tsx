@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { isScriptTTSEnhanced } from 'shared/utils'
 
 export function FilelistWithRelevantScripts({
     files,
@@ -8,7 +9,9 @@ export function FilelistWithRelevantScripts({
     createJob,
 }) {
     const [selectedFiles, setSelectedFiles] = useState([])
-    const [selectedScript, setSelectedScript] = useState(relevantScripts[0].id)
+    const [selectedScriptId, setSelectedScriptId] = useState(
+        relevantScripts[0].id
+    )
 
     // change the files selection
     let changeFilesSelection = (files) => {
@@ -29,26 +32,49 @@ export function FilelistWithRelevantScripts({
         console.log('selection', selectedFilesCopy)
     }
 
+    let multiSelectEnabled = (scriptId) => {
+        let script = relevantScripts.find((s) => s.id == scriptId)
+        console.log(scriptId)
+        return script?.batchable || script?.multidoc
+    }
     let onSelectScript = (e) => {
-        console.log('onSelectScript', e)
-        setSelectedScript(e.target.value)
+        setSelectedScriptId(e.target.value)
+        if (!multiSelectEnabled(e.target.value)) {
+            setSelectedFiles(selectedFiles.length > 0 ? [selectedFiles[0]] : [])
+        }
     }
     // create a job form for the selected files and chosen script
     let initJob = () => {
-        let script = relevantScripts.find(s => s.id == selectedScript)
+        let script = relevantScripts.find((s) => s.id == selectedScriptId)
         createJob(script, selectedFiles)
     }
+
     return (
         <>
             <div className="files-by-script">
                 <div className="horizontal-input">
                     <select onChange={(e) => onSelectScript(e)}>
                         {relevantScripts.map((script, idx) => (
-                            <option key={idx} value={script.id}>{script.nicename}</option>
+                            <option key={idx} value={script.id}>
+                                {script?.nicename}
+                                {isScriptTTSEnhanced(script)
+                                    ? ' (TTS Enhanced)'
+                                    : ''}
+                            </option>
                         ))}
                     </select>
                     <button onClick={(e) => initJob()}>Create job</button>
                 </div>
+                <p className="suggestion">
+                    {!multiSelectEnabled(selectedScriptId) &&
+                        'This script accepts one file at a time.'}
+                    {relevantScripts.find((s) => s.id == selectedScriptId)
+                        ?.multidoc &&
+                        'Selecting multiple files for this script creates one job with many input documents.'}
+                    {relevantScripts.find((s) => s.id == selectedScriptId)
+                        ?.batchable &&
+                        'Selecting multiple files for this script creates a batch job.'}
+                </p>
                 <ul>
                     {files
                         .sort((a, b) => (a < b ? -1 : 1))
@@ -56,8 +82,16 @@ export function FilelistWithRelevantScripts({
                             <li key={idx}>
                                 <div className="horizontal-input">
                                     <input
-                                        type="checkbox"
-                                        checked={selectedFiles && selectedFiles.indexOf(f) != -1}
+                                        type={
+                                            multiSelectEnabled(selectedScriptId)
+                                                ? 'checkbox'
+                                                : 'radio'
+                                        }
+                                        name="files"
+                                        checked={
+                                            selectedFiles &&
+                                            selectedFiles.indexOf(f) != -1
+                                        }
                                         id={`${jobInternalId}-${categoryName}-${idx}`}
                                         onChange={(e) => {
                                             changeFilesSelection([f])

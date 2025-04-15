@@ -24,9 +24,8 @@ export function formFieldFactory(
     error: string = undefined
 ) {
     let controlId = idprefix
-    let allowFile = item.type == 'anyFileURI'
+    let allowFile = item.type == 'anyFileURI' || item.type == 'anyURI'
     let allowFolder = item.type == 'anyDirURI'
-
     let inputType = findInputType(item.type)
     if (inputType == 'file') {
         if (item.sequence || isBatchableInput(item)) {
@@ -39,6 +38,7 @@ export function formFieldFactory(
                     mediaType={item.mediaType}
                     required={item.required}
                     onChange={(paths) => onChange(paths, item)}
+                    canSort={!isBatchableInput(item)}
                 />
             )
         } else {
@@ -58,6 +58,7 @@ export function formFieldFactory(
                         mediaType={item.mediaType}
                         required={item.required}
                         onChange={(path) => onChange(path, item)}
+                        initialValue={Array.isArray(initialValue) ? initialValue.length > 0 ? initialValue[0] : '' : initialValue}
                     />
                 )
             }

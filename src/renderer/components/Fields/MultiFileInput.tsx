@@ -5,6 +5,7 @@ import { FileList } from './FileList'
 interface MultiFileInputProps extends FileInputProps {
     initialValue?: string[]
     required?: boolean
+    canSort?: boolean
 }
 
 // a list of files with a browse button
@@ -17,6 +18,7 @@ const MultiFileInput: React.FC<MultiFileInputProps> = ({
     initialValue = [],
     enabled = true,
     required = false,
+    canSort = true,
 }) => {
     const [files, setFiles] = useState<string[]>(initialValue)
     
@@ -38,7 +40,7 @@ const MultiFileInput: React.FC<MultiFileInputProps> = ({
                 onChange={addFiles}
                 label={files.length ? 'Add file' : 'Select file'}
             />
-            <FileList onChange={(files) => updateFiles(files)} files={files}/>
+            <FileList onChange={(files) => updateFiles(files)} files={files} canSort={canSort}/>
         </div>
     )
 }

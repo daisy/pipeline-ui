@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Down, Up, X } from '../SvgIcons'
 
 // a list of files with a browse button
-const FileList = ({ onChange, files }) => {
+const FileList = ({ onChange, files, canSort }) => {
     const moveFile = (fromIndex: number, toIndex: number) => {
         const updatedFiles = [...files]
         const [movedFile] = updatedFiles.splice(fromIndex, 1)
@@ -27,7 +27,7 @@ const FileList = ({ onChange, files }) => {
                     >
                         <X width="30" height="30" />
                     </button>
-                    {index > 0 && (
+                    {canSort && index > 0 && (
                         <button
                             type="button"
                             className="move-button"
@@ -37,7 +37,7 @@ const FileList = ({ onChange, files }) => {
                             <Up width="30" height="30" />
                         </button>
                     )}
-                    {index < files.length - 1 && (
+                    {canSort && index < files.length - 1 && (
                         <button
                             type="button"
                             className="move-button"

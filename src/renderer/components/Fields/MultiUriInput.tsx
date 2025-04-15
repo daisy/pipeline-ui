@@ -20,7 +20,7 @@ const MultiUriInput: React.FC<MultiFileInputProps> = ({
 }) => {
     const [files, setFiles] = useState<string[]>(initialValue)
     const [text, setText] = useState<string>('')
-
+    
     const addFiles = (newFiles: string[]) => {
         updateFiles([...files, ...newFiles])
     }
@@ -30,27 +30,31 @@ const MultiUriInput: React.FC<MultiFileInputProps> = ({
     }
     return (
         <div className="multi-file-input">
-            <input
+            <p>Enter a file url or browse for a local file:</p>
+            <div><input
                 type="text"
-                defaultValue={text}
+                value={text}
                 onBlur={(e) => {
                     setText(e.target.value)
-                    e.target.value = ''
                 }}
+                onChange={e => setText(e.target.value)}
             />
-            <button type="button" onClick={(e) => addFiles([text])}>
-                Add
-            </button>
             <FileInput
                 elemId={elemId}
                 allowFile={allowFile}
                 allowFolder={false}
                 mediaType={mediaType}
                 onChange={(f) => {
+                    console.log("browsed for", f)
                     if (f && f.length > 0) setText(f[0])
                 }}
             />
-            <FileList onChange={(files) => updateFiles(files)} files={files} />
+            </div>
+            <button type="button" onClick={(e) => addFiles([text])}>
+                Add
+            </button>
+            
+            <FileList onChange={(files) => updateFiles(files)} files={files} canSort={false}/>
         </div>
     )
 }

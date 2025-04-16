@@ -1,4 +1,4 @@
-import { AboutView } from 'renderer/components/AboutView'
+import { AboutView } from 'renderer/components/views/AboutView'
 
 
 export function AboutScreen() {

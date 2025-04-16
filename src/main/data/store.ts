@@ -5,7 +5,8 @@ import { slices } from 'shared/data/slices'
 import { RootState } from 'shared/types/store'
 import { IPC } from 'shared/constants'
 
-import { readSettings, middlewares } from './middlewares'
+import { middlewares } from './middlewares'
+import { readSettings } from './settings'
 import { getInitialState } from 'shared/data/store'
 
 let preloadedState: RootState = getInitialState()

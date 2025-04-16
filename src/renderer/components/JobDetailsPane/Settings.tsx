@@ -1,12 +1,8 @@
 // job settings, not application settings
 import { useWindowStore } from 'renderer/store'
-import {
-    externalLinkClick,
-    findValue,
-    getAllOptional,
-    getAllRequired,
-} from 'renderer/utils/utils'
+import { externalLinkClick, findValue } from 'renderer/utils/utils'
 import { Job } from 'shared/types'
+import { getAllOptional, getAllRequired } from 'shared/utils'
 
 const { App } = window
 
@@ -18,6 +14,8 @@ export function Settings({ job }: { job: Job }) {
         return <p>Unrecognized script {scriptId}</p>
     }
 
+    console.log("JOB ", JSON.stringify(job, null, ''))
+    
     return (
         <ul>
             <li>

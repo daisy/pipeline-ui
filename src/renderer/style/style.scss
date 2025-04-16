@@ -1,7 +1,8 @@
 @use 'vars.scss' as *;
 @use 'tabs.scss' as *;
 @use 'settings.scss' as *;
-
+@use 'filedrop.scss' as *;
+@use 'sass:color';
 body {
     color: var(--fg);
     background-color: var(--bg);
@@ -13,14 +14,14 @@ body {
     border-color: var(--fg-mix);
 }
 h2, h3 {
-    font-weight: normal;
+    // font-weight: normal;
+    font-size: medium;
 }
 
 button {
-    color: inherit;
-    background-color: inherit;
-    
     font-size: larger;
+    color: var(--fg);
+    background-color: var(--bg);
 
     width: min-content;
     height: min-content;
@@ -32,6 +33,8 @@ button {
     border-radius: var(--border-radius);
     
     white-space: nowrap;
+
+    
 }
 button:disabled {
     color: var(--disabled);
@@ -79,15 +82,6 @@ p.warning {
         span {
             vertical-align: middle;
         }
-    }
-}
-.file-or-folder {
-    input {
-        width: 100%;
-    }
-    button {
-        padding-top: 1px;
-        padding-bottom: 1px;
     }
 }
 .description {
@@ -140,28 +134,28 @@ p.warning {
 .fixed-height-layout {
     display: flex;
     flex-direction: column;
-    gap: calc(1.5 * var(--pad));
+    gap: calc(1 * var(--pad));
     max-height: var(--tab-panel-height);
     min-height: var(--tab-panel-height);
 }
 
 // the tab panel "header" 
 .header {
-    line-height: 1.2;
-    display: grid;
-    grid-template-columns: 60% auto;
-    font-size: large;
-
-    // indent the contents not the heading
-    div > *:not(h1) {
-        margin-left: var(--pad);
-    }
+    font-size: medium;
     h1 {
         white-space: nowrap;
+        margin: 0;
     }
     h1 span {
         font-size: small;
         display: block;
+    }
+    p {
+        margin-top: .5rem;
+
+        a {
+            margin: .5rem;
+        }
     }
 
     button {
@@ -342,6 +336,93 @@ p.warning {
             margin-bottom: calc(var(--pad) * 0.5);
         }
     }
+
+    .batch-job {
+        gap: calc(var(--pad) * 2);
+        display: flex;
+        flex-wrap: wrap;
+
+        & > :first-child {
+        flex-grow: 1;
+        }
+        
+        & > :last-child {
+        flex-basis: 0;
+        flex-grow: 999;
+        min-inline-size: 50%;
+        }
+            
+        aside {
+            border: 1px solid var(--fg-mix-fade);
+
+            h2 {
+                width: min-content;
+                white-space: nowrap;
+            }
+            li {
+                padding: 2px;
+                cursor: pointer;
+                display: flex;
+                flex-direction: row;
+                gap: 1rem;
+
+                a:hover {
+                    background-color: inherit !important;
+                }
+                
+                span.status.completed svg {
+                    fill: green;
+                }
+                span.status.fail svg, span.status.error svg {
+                    fill: red;
+                }
+                span.status.idle svg {
+                    fill: var(--select);
+                }
+                span.status.running svg {
+                    fill: green;
+                    /* animate the icon */
+                    path {
+                        stroke: green;
+                        stroke-width: 8;
+                        stroke-dasharray: 288.5;
+                        stroke-linecap: round;
+                        fill: none;
+                        transform-origin: 50px 50px;
+                        animation:
+                          pathStroke 3.75s infinite ease-in-out,
+                          pathRotate 7.5s infinite cubic-bezier(1,.5,0,.5);
+                    }
+                      
+                    @keyframes pathStroke {
+                        0% {  stroke-dashoffset: -288.5; }
+                        40%, 70% { stroke-dashoffset: 0; }
+                        100% { stroke-dashoffset: 288.5; }
+                    }
+                    
+                    @keyframes pathRotate {
+                        0% {  transform: rotate(0deg); }
+                        50% { transform: rotate(-540deg); }
+                        100% { transform: rotate(-1080deg); }
+                    }
+                }
+                span.filepath {
+                    width: min-content;
+                }
+            }
+            li[aria-selected=true] {
+                font-weight: bold;
+                background-color: var(--bg);
+                box-shadow: 0 0 0 2px var(--select-mix);
+            }
+            div.controls {
+                align-self:flex-end;
+                display: flex;
+                flex-direction: row;
+                gap: .5rem;
+            }
+        }
+    }
 }
 
 .visuallyhidden:not(:focus):not(:active) {
@@ -370,6 +451,26 @@ p.warning {
 }
 
 .new-job {
+    .suggestion {
+        font-style: italic;
+    
+        button {
+            font-size: smaller;
+            margin-left: 1rem;
+        }
+    }
+    
+    &>.file-dropzone {
+        width: 80vw;
+        .drop-target {
+            width: 100%;
+        }
+    }
+    .files-by-script {
+        label.suggestion {
+            color: var(--fg-mix-bold);
+        }
+    }
     input[type=text] {
         width: 25rem;
         font-size: large;
@@ -388,18 +489,54 @@ p.warning {
         border-radius: 4px;
         width: 25rem;
     }
-    div.multi-file-or-folder, div.file-or-folder {
-        .controls-row {
+    .multi-file-input {
+            max-width: 90vw;
+            border-radius: 0.5rem;
+            padding: 1.25rem;
+            overflow: hidden;
+            border: thin solid var(--fg);
             display: flex;
-            gap: var(--pad);
+            flex-direction: column;
+            gap: .25rem;
+          
+        li {
+            display: flex;
+            align-items: center;
+            background-color: var(--fg-mix-fade);
+            border-radius: 0.3rem;
+            
+
+            span {
+                flex-basis: 100%;
+                padding: .25rem;
+                width: min-content;
+            }
+
+            .remove-button, .move-button {
+                background: none;
+                border: none;
+                width: 1.875rem;
+                height: 1.875rem;
+                border-radius: 0.25rem;
+                cursor: pointer;
+                margin-left: 0.375rem;
+                font-weight: bold;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                transition: all 0.2s ease;
+                color: var(--fg);
+              }
+        }
+
+        div {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            gap: 1rem;
         }
     }
-    button.multi-file-or-folder {
-        height: 2rem;
-        width: 2rem;
-        padding: 3px;
-    }
-
+    
     input.interacted:invalid ~ span.field-errors::before,
     div:has(input.interacted:invalid) ~ span.field-errors::before {
         content: "Invalid value";
@@ -414,7 +551,7 @@ p.warning {
         flex-direction: row;
         flex-wrap: wrap;
         gap: calc(var(--pad)*2);
-        font-size: x-large;
+        font-size: large;
         
         
         border-bottom: thin solid var(--fg-mix);
@@ -426,7 +563,9 @@ p.warning {
         &>div {
             display: flex;
             gap: calc(var(--pad)/2);
+            align-items: center;
         }
+        
     }
 
     form {
@@ -435,13 +574,13 @@ p.warning {
         gap: calc(var(--pad) * 2);
         overflow-y: scroll;
 
+        .tip {
+            font-style: italic;
+        }
         .form-sections {
             display: flex;
             flex-direction: column;
             gap: 8%;
-            section {
-                width: 70%;
-            }
             overflow-y: scroll;
 
             ul.fields {
@@ -484,7 +623,6 @@ p.warning {
                     font-size: normal;
                     padding: 0;
                 }
-                
             }
         }    
         .form-buttons {
@@ -578,4 +716,10 @@ button.grayedout:hover {
     position: absolute;
     border-radius: 5px;
     padding: 10px;
+}
+.horizontal-input {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 2rem;
 }

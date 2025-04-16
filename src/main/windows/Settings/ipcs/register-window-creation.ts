@@ -1,6 +1,6 @@
 import { ipcMain } from 'electron'
 
-import { registerWindowCreationByIPC } from 'main/factories'
+import { registerWindowCreationByIPC } from 'main/ipcs'
 import { IPC } from 'shared/constants'
 import { SettingsWindow } from '..'
 

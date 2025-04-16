@@ -236,6 +236,32 @@ export const pipeline = createSlice({
                 state.selectedJobId = state.jobs[0].internalId
             }
         },
+        // same as above
+        removeBatchJob: (state: PipelineState, param: PayloadAction<Job[]>) => {
+            const removedId = param.payload.map((j) => j.internalId)
+            state.jobs = state.jobs.filter(
+                (j) => !removedId.includes(j.internalId)
+            )
+            if (state.jobs.length === 0) {
+                state.selectedJobId = ''
+            } else if (removedId.includes(state.selectedJobId)) {
+                state.selectedJobId = state.jobs[0].internalId
+            }
+        },
+        cancelBatchJob: (state: PipelineState, param: PayloadAction<Job[]>) => {
+            let jobIdsToCancel = param.payload
+                .filter((j) => j.jobData?.status == JobStatus.IDLE)
+                .map((j) => j.internalId)
+
+            state.jobs = state.jobs.filter(
+                (j) => !jobIdsToCancel.includes(j.internalId)
+            )
+            if (state.jobs.length === 0) {
+                state.selectedJobId = ''
+            } else if (jobIdsToCancel.includes(state.selectedJobId)) {
+                state.selectedJobId = state.jobs[0].internalId
+            }
+        },
         /**
          * Request script options from stylesheet parameters endpoint
          *
@@ -251,6 +277,22 @@ export const pipeline = createSlice({
         },
         runJob: (state: PipelineState, param: PayloadAction<Job>) => {
             if (param.payload.jobRequest) {
+                // Retrieve latest JobRequest payload
+                // the runAction will be intercepted by the middleware
+                // To make the required api calls
+                state.jobs = state.jobs.map((job) => {
+                    return job.internalId === param.payload.internalId
+                        ? {
+                              ...job,
+                              jobRequest: param.payload.jobRequest,
+                          }
+                        : job
+                })
+            }
+        },
+        runBatchJobs: (state: PipelineState, param: PayloadAction<Job>) => {
+            if (param.payload.jobRequest) {
+                // TODO is this correct here too as above?
                 // Retrieve latest JobRequest payload
                 // the runAction will be intercepted by the middleware
                 // To make the required api calls
@@ -358,9 +400,12 @@ export const {
     editJob,
     updateJob,
     runJob,
+    runBatchJobs,
     restoreJob,
     removeJob,
     removeJobs,
+    removeBatchJob,
+    cancelBatchJob,
     selectJob,
     selectNextJob,
     selectPrevJob,

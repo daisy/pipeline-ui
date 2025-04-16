@@ -244,7 +244,6 @@ export function updateMiddleware({ getState, dispatch }) {
                     }
                     break
                 case setDownloadProgress.type:
-                    console.log(action.payload)
                     const progress = action.payload as ProgressInfo
                     if (progress != null) {
                         dispatch(

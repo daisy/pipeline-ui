@@ -5,54 +5,50 @@
 // otherwise no influence on the contents of the tab panel
 
 [role=tab] {
-    padding: var(--pad);
+    border: none;
     border-radius: var(--border-radius);
-    border-bottom-left-radius: 0;
-    border-bottom-right-radius: 0;
-    border: thin solid var(--fg);
     
     font-weight: normal;
-    font-size: larger;
     color: var(--fg-mix-bold);
-
+    background-color: var(--fg-mix-fade);
     display: flex;
     gap: calc(var(--pad)/2);
-    font-size: large;
+    
     transition: all .1s ease-in-out;
     border-bottom: none;
     
+    &:first-of-type {
+        border-left: none;
+    }
+
     &[aria-selected=false]:hover {
-        background-color: var(--select-mix);
-        color: var(--fg);
+        box-shadow: 0 0 0 2px var(--select-mix);
+        cursor: pointer;
+        background-color: var(--bg);
     }
     &[aria-selected=true] {
-        background-color: var(--select);
-        color: var(--bg);
-        border-bottom-color: var(--bg);
-        
+        background-color: var(--bg);
+        box-shadow: 0 0 0 2px var(--select-mix);
+        color: var(--fg);
         font-weight: bold;
     }
 }
 
 .as-tab {
-    padding: var(--pad);
+    border: 2px solid var(--fg-mix-fade);
     border-radius: var(--border-radius);
-    border-bottom-left-radius: 0;
-    border-bottom-right-radius: 0;
-    border: thin solid var(--fg);
-    
+    background-color: var(--fg-mix-fade);
     font-weight: normal;
     font-size: larger;
     color: var(--fg-mix-bold);
 
     display: flex;
     gap: calc(var(--pad)/2);
-    font-size: large;
+    // font-size: large;
     transition: all .1s ease-in-out;
-    border-bottom: none;
-
+    
     &[aria-selected=false]:hover {
-        background-color: var(--select-mix);
+        background-color: var(--bg);
         color: var(--fg);
     }
     &[aria-selected=true] {
@@ -68,11 +64,12 @@
     display: flex;
     flex-direction: row;
     flex-wrap: wrap;
+    gap: .25rem;
 }
 
 [role=tabpanel] {
     padding: calc(var(--pad)/2);
-    border: thin solid;
+    // border: thin solid;
     // border-top: none;
     border-top-left-radius: 0;
     height: var(--tab-panel-height);

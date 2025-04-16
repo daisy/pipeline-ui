@@ -1,58 +1,52 @@
 /*
 Fill out fields for a new job and submit it
 */
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { useWindowStore } from 'renderer/store'
+import { findValue, ID } from 'renderer/utils/utils'
+import {
+    removeJob,
+    requestStylesheetParameters,
+    restoreJob,
+    runBatchJobs,
+    runJob,
+    updateJob,
+} from 'shared/data/slices/pipeline'
 import {
     Job,
     JobState,
-    NameValue,
     Script,
+    ScriptInput,
     ScriptItemBase,
     ScriptOption,
 } from 'shared/types'
-import { useState, useEffect, useRef, useMemo } from 'react'
-import { useWindowStore } from 'renderer/store'
+
+import { FormField } from '../Fields/FormField'
+import { JobRequestError } from './jobRequestError'
+import { ScriptName } from './scriptName'
 import {
-    findValue,
     getAllOptional,
     getAllRequired,
-    ID,
-} from 'renderer/utils/utils'
-import {
-    requestStylesheetParameters,
-    restoreJob,
-    runJob,
-} from 'shared/data/slices/pipeline'
-import {
-    addJob,
-    removeJob,
-    updateJob,
-    newJob,
-} from 'shared/data/slices/pipeline'
-
-import { externalLinkClick } from 'renderer/utils/utils'
-import { FormField } from '../Fields/FormField'
-
+    getBatchInput,
+    getBatchInputValues,
+    hasBatchInput,
+    updateArrayValue,
+} from 'shared/utils'
 const { App } = window
-
-// update the array and return a new copy of it
-let updateArrayValue = (value: any, data: ScriptItemBase, arr: NameValue[]) => {
-    let arr2 = arr.map((i) => (i.name == data.name ? { ...i, value } : i))
-    return arr2
-}
 
 export function ScriptForm({ job, script }: { job: Job; script: Script }) {
     const [submitInProgress, setSubmitInProgress] = useState(false)
-    const [error, setError] = useState(false)
     const [canRunJob, setCanRunJob] = useState(false)
     const submitButtonRef = useRef(null)
 
+    console.log("ScriptForm script:", script)
     let required = getAllRequired(script)
     let optional = getAllOptional(script)
     const { settings } = useWindowStore()
 
     useMemo(() => {
+        // menu item triggers this event to submit the form
         App.onScriptFormSubmit('submit-script-form', async () => {
-            // console.log("SUBMIT script form for ", job.script.id)
             if (submitButtonRef && submitButtonRef.current) {
                 submitButtonRef.current.click()
             }
@@ -75,9 +69,6 @@ export function ScriptForm({ job, script }: { job: Job; script: Script }) {
     // - page-width
     // - page-height
 
-    // moved to job datatype
-    // const is2StepsJob =
-    //     optional.findIndex((item) => item.name === 'stylesheet-parameters') > -1
     // Filter out the options that are to be defined in the first step of braille script
     const filteredOptions = [
         'stylesheet',
@@ -92,13 +83,6 @@ export function ScriptForm({ job, script }: { job: Job; script: Script }) {
         optional = optional.filter((item) =>
             filteredOptions.includes(item.name)
         )
-        // .map((item) => {
-        //     if (item.name === 'stylesheet') {
-        //         // deactivate sequence for now on stylesheets
-        //         item.sequence = false
-        //     }
-        //     return item
-        // })
     }
 
     // After requestStylesheetParameters, the engine will return a list of new
@@ -140,9 +124,11 @@ export function ScriptForm({ job, script }: { job: Job; script: Script }) {
     }
 
     let saveValueInJobRequest = (value: any, item: ScriptItemBase) => {
+        console.log('savevalue', value,)
         if (!job.jobRequest) {
             return
         }
+        
         let inputs = [...job.jobRequest.inputs]
         let options = [...job.jobRequest.options]
         let stylesheetParameterOptions = [
@@ -164,7 +150,6 @@ export function ScriptForm({ job, script }: { job: Job; script: Script }) {
                     item,
                     stylesheetParameterOptions
                 )
-                console.log('SSP', stylesheetParameterOptions)
             } else {
                 options = updateArrayValue(value, item, options)
             }
@@ -186,6 +171,7 @@ export function ScriptForm({ job, script }: { job: Job; script: Script }) {
 
     // submit a job
     let onSubmit = async (e) => {
+        console.log("ON JOB SUBMIT")
         e.preventDefault()
         if (job.is2StepsJob && job.stylesheetParameters == null) {
             /*  constraints on the stylesheet parameters :
@@ -234,37 +220,56 @@ export function ScriptForm({ job, script }: { job: Job; script: Script }) {
                     job.jobRequest.options
                 )
             }
-            // autofill tts config option if present
-            // if present, it will be an input to the script but an optional one
 
-            // let ttsConfigOpt = optional.find((o) =>
-            //     o.mediaType?.includes('application/vnd.pipeline.tts-config+xml')
-            // )
-
-            // let ttsConfigExists = await App.pathExists(
-            //     settings.ttsConfig.xmlFilepath
-            // )
-            // let inputs = [...job.jobRequest.inputs]
-            // if (ttsConfigOpt && ttsConfigExists) {
-            //     inputs = updateArrayValue(
-            //         settings.ttsConfig.xmlFilepath,
-            //         ttsConfigOpt,
-            //         inputs
-            //     )
-            // } else if (!ttsConfigExists) {
-            //     App.log(`File does not exist ${settings.ttsConfig.xmlFilepath}`)
-            // }
             setSubmitInProgress(true)
-            App.store.dispatch(
-                runJob({
-                    ...job,
-                    jobRequest: {
-                        ...job.jobRequest,
-                        options: [...options],
-                    },
-                })
-            )
-            //setSubmitInProgress(false)
+
+            if (hasBatchInput(job)) {
+                let batchInput = getBatchInput(job.script)
+                console.log('has batch input')
+                let batchJobRequestInputValues = getBatchInputValues(job)
+                if (batchJobRequestInputValues?.length > 1) {
+                    // run batch job
+                    App.store.dispatch(
+                        runBatchJobs({
+                            ...job,
+                            jobRequest: {
+                                ...job.jobRequest,
+                                options: [...options],
+                            },
+                        })
+                    )
+                }
+                // the script is batch-able but only has one input
+                // so run it like a single-input job
+                else {
+                    let inputs_ = updateArrayValue(
+                        batchJobRequestInputValues[0],
+                        batchInput,
+                        job.jobRequest.inputs
+                    )
+                    App.store.dispatch(
+                        runJob({
+                            ...job,
+                            jobRequest: {
+                                ...job.jobRequest,
+                                inputs: [...inputs_],
+                                options: [...options],
+                            },
+                        })
+                    )
+                }
+            } else { // the script is not batchable
+                console.log('no batch input')
+                App.store.dispatch(
+                    runJob({
+                        ...job,
+                        jobRequest: {
+                            ...job.jobRequest,
+                            options: [...options],
+                        },
+                    })
+                )
+            }
         }
     }
 
@@ -274,48 +279,13 @@ export function ScriptForm({ job, script }: { job: Job; script: Script }) {
                 className="header"
                 aria-labelledby={`${ID(job.internalId)}-script-hd`}
             >
-                <div>
-                    <h1 id={`${ID(job.internalId)}-script-hd`}>
-                        {script?.nicename}
-                        {script?.inputs.find((i) =>
-                            i.mediaType.includes(
-                                'application/vnd.pipeline.tts-config+xml'
-                            )
-                        )
-                            ? ' (TTS Enhanced)'
-                            : ''}
-                    </h1>
-                    <p>
-                        {script?.description}
-                        {script?.inputs.find((i) =>
-                            i.mediaType.includes(
-                                'application/vnd.pipeline.tts-config+xml'
-                            )
-                        )
-                            ? '. Text can be recorded in TTS voices.'
-                            : ''}
-                    </p>
-                    <p>
-                        {script?.homepage ? (
-                            <a
-                                href={script.homepage}
-                                onClick={(e) => externalLinkClick(e, App)}
-                            >
-                                Read the script documentation.
-                            </a>
-                        ) : (
-                            ''
-                        )}
-                    </p>
-                    {job.jobRequestError && (
-                        <p>
-                            An error occured while submitting the form:
-                            <span className="field-errors">
-                                {job.jobRequestError.description}
-                            </span>
-                        </p>
-                    )}
-                </div>
+                <ScriptName
+                    script={script}
+                    headerId={`${ID(job.internalId)}-script-hd`}
+                />
+                {job.jobRequestError && (
+                    <JobRequestError jobRequestError={job.jobRequestError} />
+                )}
             </section>
             <form onSubmit={onSubmit} id={`${ID(job.internalId)}-form`}>
                 <div className="form-sections">
@@ -327,32 +297,39 @@ export function ScriptForm({ job, script }: { job: Job; script: Script }) {
                             <h2 id={`${ID(job.internalId)}-required`}>
                                 Required information
                             </h2>
+                            {script.batchable && (
+                                <p className="tip">
+                                    Add multiple files to run a batch job.
+                                </p>
+                            )}
                             <ul className="fields">
-                                {required.map((item, idx) => (
-                                    <li key={idx}>
-                                        <FormField
-                                            item={item}
-                                            key={idx}
-                                            idprefix={`${ID(job.internalId)}-${
-                                                item.name
-                                            }`}
-                                            onChange={saveValueInJobRequest}
-                                            initialValue={findValue(
-                                                item.name,
-                                                item.kind,
-                                                job.jobRequest,
-                                                item.isStylesheetParameter
-                                            )}
-                                            error={
-                                                job.errors?.find(
-                                                    (e) =>
-                                                        e.fieldName ===
-                                                        item.name
-                                                )?.error
-                                            }
-                                        />
-                                    </li>
-                                ))}
+                                {required.map((item, idx) => {
+                                    return (
+                                        <li key={idx}>
+                                            <FormField
+                                                item={item}
+                                                key={idx}
+                                                idprefix={`${ID(
+                                                    job.internalId
+                                                )}-${item.name}`}
+                                                onChange={saveValueInJobRequest}
+                                                initialValue={findValue(
+                                                    item.name,
+                                                    item.kind,
+                                                    job.jobRequest,
+                                                    item.isStylesheetParameter
+                                                ) ?? []}
+                                                error={
+                                                    job.errors?.find(
+                                                        (e) =>
+                                                            e.fieldName ===
+                                                            item.name
+                                                    )?.error
+                                                }
+                                            />
+                                        </li>
+                                    )
+                                })}
                             </ul>
                         </section>
                     )}
@@ -394,7 +371,7 @@ export function ScriptForm({ job, script }: { job: Job; script: Script }) {
                                                     item.kind,
                                                     job.jobRequest,
                                                     item.isStylesheetParameter
-                                                )}
+                                                ) ?? []}
                                                 error={
                                                     job.errors?.find(
                                                         (e) =>
@@ -427,7 +404,11 @@ export function ScriptForm({ job, script }: { job: Job; script: Script }) {
                         </button>
                     )}
                     {job.is2StepsJob && job.stylesheetParameters == null ? (
-                        <button className="run" type="submit" ref={submitButtonRef}>
+                        <button
+                            className="run"
+                            type="submit"
+                            ref={submitButtonRef}
+                        >
                             Next
                         </button>
                     ) : (

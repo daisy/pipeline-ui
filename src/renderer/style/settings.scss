@@ -322,7 +322,7 @@ $engineColWidth: 8rem;
     label {
         display: block;
     }
-    div {
+    &>div {
         display: flex;
         flex-direction: column;
         gap: 0.5rem;

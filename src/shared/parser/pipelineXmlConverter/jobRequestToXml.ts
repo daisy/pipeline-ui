@@ -1,4 +1,4 @@
-import { JobRequest } from 'shared/types/pipeline'
+import { JobRequest } from 'shared/types'
 
 function jobRequestToXml(jobRequest: JobRequest): string {
     let xmlString = `<?xml version="1.0" encoding="UTF-8" standalone="no"?>

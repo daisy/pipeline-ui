@@ -7,7 +7,7 @@ import { selectSettings } from 'shared/data/slices/settings'
 import { WindowProps } from 'shared/types'
 import { APP_CONFIG } from '~/app.config'
 
-import { PipelineInstance } from '../ipcs/pipeline'
+import { PipelineInstance } from '../../pipeline/pipeline'
 
 /**
  * Bind a window to a pipeline instance.

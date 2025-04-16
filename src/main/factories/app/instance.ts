@@ -1,7 +1,7 @@
 import { app } from 'electron'
 
 import { spawn } from 'child_process'
-import { readSettings } from 'main/data/middlewares'
+import { readSettings } from 'main/data/settings'
 import { runCliTool } from './cli'
 
 async function getWebserviceFromSettings(remain: number, startingTime: number) {

@@ -27,6 +27,7 @@ async function getWebserviceFromSettings(remain: number, startingTime: number) {
 }
 
 const reservedFlag = ['--bg', '--hidden']
+const electronOptions = ['--remote-debugging-port']
 
 export function makeAppWithSingleInstanceLock(fn: () => void) {
     let isElectron = false
@@ -38,6 +39,10 @@ export function makeAppWithSingleInstanceLock(fn: () => void) {
         commandLineArgs = process.argv
             .slice(isElectron ? 2 : 1)
             .filter((arg) => !reservedFlag.includes(arg))
+            .filter(
+                (arg) =>
+                    electronOptions.filter((e) => arg.startsWith(e)).length == 0
+            )
     }
     const isPrimaryInstance = app.requestSingleInstanceLock({
         argv: commandLineArgs,

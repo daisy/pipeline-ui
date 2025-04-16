@@ -1,6 +1,6 @@
 import { app, ipcMain, Menu, nativeImage, Tray } from 'electron'
 import { store } from 'main/data/store'
-import { resolveUnpacked } from 'main/pipeline/utils'
+import { resolveUnpacked } from 'main/utils'
 import { closeApplication, MainWindow } from 'main/windows'
 import { IPC, PLATFORM } from 'shared/constants'
 import {

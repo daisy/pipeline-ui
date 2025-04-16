@@ -1,7 +1,7 @@
 import { app } from 'electron'
 import { info, error, debug } from 'electron-log'
 import { existsSync, readFileSync, writeFile } from 'fs'
-import { resolveUnpacked } from 'main/pipeline/utils'
+import { resolveUnpacked } from 'main/utils'
 import { resolve } from 'path'
 import { ENVIRONMENT } from 'shared/constants'
 import { ttsConfigToXml } from 'shared/parser/pipelineXmlConverter/ttsConfigToXml'

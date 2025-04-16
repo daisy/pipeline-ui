@@ -1,6 +1,7 @@
 import React, { useState, useRef } from 'react'
 import { Upload } from 'lucide-react'
 import { FileTreeEntry } from 'main/ipcs/fileSystem'
+import { mediaTypesFileFilters } from 'shared/constants'
 
 const { App } = window
 
@@ -26,13 +27,14 @@ const FileInput: React.FC<FileInputProps> = ({
     label = 'Browse',
 }) => {
     const onBrowse = async () => {
-        let dialogOptions = []
-        if (allowFile) dialogOptions.push('openFile')
-        if (allowFolder) dialogOptions.push('openDirectory')
-        
+        let dialogOptions = {properties: [], filters: []}
+        if (allowFile) dialogOptions.properties.push('openFile')
+        if (allowFolder) dialogOptions.properties.push('openDirectory')
+        dialogOptions.filters = getFiletypeFilters(mediaType)
+
         let filename = await App.showOpenFileDialog({
             //@ts-ignore
-            properties: dialogOptions,
+            dialogOptions,
             asFileURL: true,
         })
         
@@ -51,6 +53,21 @@ const FileInput: React.FC<FileInputProps> = ({
             {label}
         </button>
     )
+}
+function getFiletypeFilters(mediaType) {
+    let filters_ = mediaTypesFileFilters.filter((mt) => mediaType.includes(mt.type))
+    // merge the values in the filters so that instead of
+    // filters: [{name: 'EPUB', extensions: ['epub']}, {name: 'Package', extensions['opf']}]
+    // we get
+    // filters: [{name: "EPUB, Package", extensions: ['epub', 'opf']}]
+    let filterNames = Array.from(new Set(filters_.map((f) => f.name))).join(', ')
+    let filterExts = Array.from(new Set(filters_.map((f) => f.extensions).flat()))
+
+    let filters = [{ name: filterNames, extensions: filterExts }]
+
+    filters.push({name: "Any file", extensions: ["*"]})
+
+    return filters
 }
 
 export { FileInput }

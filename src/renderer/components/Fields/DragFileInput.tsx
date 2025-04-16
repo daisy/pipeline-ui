@@ -17,14 +17,14 @@ const DragFileInput: React.FC<FileInputProps> = ({
     const dropzoneRef = useRef<HTMLDivElement>(null)
 
     const onBrowse = async () => {
-        let dialogOptions = []
-        if (allowFile) dialogOptions.push('openFile')
-        if (allowFolder) dialogOptions.push('openDirectory')
-        if (allowMultiSelections) dialogOptions.push('multiSelections')
+        let dialogOptions = {properties: [], filters: []}
+        if (allowFile) dialogOptions.properties.push('openFile')
+        if (allowFolder) dialogOptions.properties.push('openDirectory')
+        if (allowMultiSelections) dialogOptions.properties.push('multiSelections')
         
         let filename = await App.showOpenFileDialog({
             //@ts-ignore
-            properties: dialogOptions,
+            dialogOptions,
             asFileURL: false,
         })
         // TODO support multiple filenames from the file picker

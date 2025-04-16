@@ -235,7 +235,13 @@ export function TtsMoreOptionsConfigPane({
                     elemId="lexicon-select"
                     mediaType={['application/pls+xml']}
                     onChange={(filenames) =>
-                        onLexiconChange(Array.isArray(filenames) ? filenames.length ? filenames[0] : '' : filenames)
+                        onLexiconChange(
+                            Array.isArray(filenames)
+                                ? filenames.length
+                                    ? filenames[0]
+                                    : ''
+                                : filenames
+                        )
                     }
                     initialValue={
                         engineProperties.find(

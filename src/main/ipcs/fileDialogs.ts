@@ -26,7 +26,7 @@ const showOpenFileDialog = async (
     const res = await dialog.showOpenDialog(
         BrowserWindow ? BrowserWindow.getFocusedWindow() : undefined,
         // @ts-ignore
-        { properties: dialogOptions }
+        dialogOptions
     )
     if (res.canceled || !res.filePaths || !res.filePaths.length) {
         filePath = undefined
@@ -70,11 +70,12 @@ const showOpenFileDialog = async (
 function setupFileDialogEvents() {
     // comes from the renderer process (ipcRenderer.send())
     ipcMain.on(IPC_EVENT_showOpenFileDialog, async (event, payload) => {
+        
         await showOpenFileDialog(
             (filePath) => {
                 event.sender.send(IPC_EVENT_showOpenFileDialog, filePath)
             },
-            payload.properties,
+            payload.dialogOptions,
             payload.asFileURL
         )
     })

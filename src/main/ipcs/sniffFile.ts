@@ -30,7 +30,6 @@ export async function sniffFile(filepath: string): Promise<string> {
             })
             if (Object.keys(decompressed).length > 0) {
                 let opfBuffer = decompressed[Object.keys(decompressed)[0]]
-
                 stream = new Readable()
                 stream.push(opfBuffer)
                 stream.push(null)
@@ -100,7 +99,7 @@ export async function sniffFile(filepath: string): Promise<string> {
                 }
 
                 // EPUB opf can also be identified from the root element
-                if (ext == '.opf') {
+                if (ext == '.opf' || ext == '.epub') {
                     let version = Object.entries(node.attributes).find(
                         ([key]) => key.startsWith('version')
                     )

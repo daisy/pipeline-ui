@@ -17,8 +17,14 @@ function calculateJobName(job: Job, jobs: Array<Job>) {
     if (job.state == JobState.NEW) {
         jobStatus = ''
     } else {
-        jobStatus = readableStatus[job.jobData.status]
+        if (job.jobData.status) {
+            jobStatus = readableStatus[job.jobData.status] ?? job.jobData.status
+        }
+        else {
+            jobStatus = job.jobRequestError ? 'Error' : ''
+        }
     }
+    
     if (job.jobRequest?.batchId && job?.isPrimaryForBatch) {
         if (jobs) {
             let jobsInBatch = jobs.filter(

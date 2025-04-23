@@ -74,7 +74,8 @@ export async function sniffFile(filepath: string): Promise<string> {
                 // check the namespace on the root element
                 const namespaceValues = {
                     zedai: 'http://www.daisy.org/ns/z3998/authoring/',
-                    dtbook: 'http://www.daisy.org/z3986/2005/dtbook/',
+                    dtbook2005: 'http://www.daisy.org/z3986/2005/dtbook/',
+                    dtbook2002: 'http://www.daisy.org/z3986/2002/dtbook',
                     xhtml: 'http://www.w3.org/1999/xhtml',
                 } as const
 
@@ -82,7 +83,10 @@ export async function sniffFile(filepath: string): Promise<string> {
                     if (namespaces.includes(namespaceValues.zedai)) {
                         stream.destroy()
                         resolve('zedai')
-                    } else if (namespaces.includes(namespaceValues.dtbook)) {
+                    } else if (
+                        namespaces.includes(namespaceValues.dtbook2005) ||
+                        namespaces.includes(namespaceValues.dtbook2002)
+                    ) {
                         stream.destroy()
                         resolve('dtbook')
                     } else {
@@ -131,7 +135,9 @@ export async function sniffFile(filepath: string): Promise<string> {
                     if (tagName == 'dc:Format') {
                         if (
                             textContent.trim().toUpperCase() ==
-                            'ANSI/NISO Z39.86-2005'
+                                'ANSI/NISO Z39.86-2005' ||
+                            textContent.trim().toUpperCase() ==
+                                'ANSI/NISO Z39.86-2002'
                         ) {
                             stream.destroy()
                             resolve('daisy3opf')

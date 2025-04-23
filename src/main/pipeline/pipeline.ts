@@ -19,12 +19,9 @@ import {
     useWebservice,
 } from 'shared/data/slices/pipeline'
 import { pathToFileURL } from 'url'
-import {
-    getAvailablePort,
-    Pipeline2Error,
-    resolveUnpacked,
-    walk,
-} from './utils'
+import { createServer } from 'node:net'
+import { setTimeout } from 'timers/promises'
+import { resolveUnpacked, walk } from '../utils'
 import fs from 'fs-extra'
 import { selectTtsConfig } from 'shared/data/slices/settings'
 
@@ -258,7 +255,7 @@ Then close the program using the port and restart this application.`,
                 'cli',
                 'config.yml'
             )
-            try{
+            try {
                 if (existsSync(cliConfigFile)) {
                     let cliConfig = readFileSync(cliConfigFile, 'utf8')
                     cliConfig = cliConfig
@@ -284,14 +281,13 @@ Then close the program using the port and restart this application.`,
                         )
                     fs.writeFileSync(cliConfigFile, cliConfig)
                 }
-            } catch (error){
+            } catch (error) {
                 // Note : on macos, with the dp2 tool included in the app, the configuration cannot be updated
                 // it raises a permission denied
                 // for now i think i'll just keep it in its current state
                 // as the next dp2 tool should check for the presence of the DAISY Pipeline application
                 //console.log("Warning : could not update the embedded dp2 configuration for reuse", error)
             }
-            
             let ClassFolders = [
                 resolve(this.props.pipelineHome, 'system'),
                 resolve(this.props.pipelineHome, 'modules'),
@@ -572,4 +568,60 @@ ${command} ${args.join(' ')}`
     removeErrorsListener(callerID: string) {
         this.errorsListeners.delete(callerID)
     }
+}
+
+/**
+ *
+ */
+export class Pipeline2Error extends Error {
+    name: string
+
+    constructor(name: string, message?: string, options?: ErrorOptions) {
+        super(message, options)
+        this.name = name
+    }
+}
+
+/**
+ * seek and return an opened port, or return 0 if none is available
+ *
+ * @param startPort
+ * @param endPort
+ * @param host optional hostname or ip adress (default to 127.0.0.1)
+ * @returns a port number, or 0 if no port is available
+ */
+async function getAvailablePort(
+    startPort: number,
+    endPort: number,
+    host: string = '127.0.0.1'
+) {
+    let server = createServer()
+    let portChecked = startPort
+    let portOpened = 0
+
+    // Port seeking : if port is in use, retry with a different port
+    server.on('error', (err: NodeJS.ErrnoException) => {
+        info(`Port ${portChecked.toString()} is not usable : `)
+        info(err)
+        portChecked += 1
+        if (portChecked <= endPort) {
+            info(' -> Checking for ' + portChecked.toString())
+            server.listen(portChecked, host)
+        }
+    })
+    // Listening successfully on a port
+    server.on('listening', (event) => {
+        // close the server if listening a port succesfully
+        server.close(() => {
+            // select the port when the server is closed
+            portOpened = portChecked
+        })
+        info(portChecked.toString() + ' is available')
+    })
+    // Start the port seeking
+    server.listen(portChecked, host)
+    while (portOpened == 0 && portChecked <= endPort) {
+        await setTimeout(1000)
+    }
+    return portOpened
 }

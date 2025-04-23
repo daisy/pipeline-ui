@@ -18,7 +18,7 @@ const FileList = ({ onChange, files, canSort }) => {
         <ul>
             {files.map((file, index) => (
                 <li key={index}>
-                    <span>{file.replace('file:///', '/')}</span>
+                    <span>{decodeURI(file).replace('file:///', '/')}</span>
                     <button
                         type="button"
                         className="remove-button"

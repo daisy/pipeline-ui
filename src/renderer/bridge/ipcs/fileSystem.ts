@@ -26,7 +26,17 @@ export function sniffEncoding(filepath) {
 
 export function getFilePath(file) {
     const path = webUtils.getPathForFile(file)
-    return path
+    if (path !== null) {
+        return new Promise<string>((resolve, reject) => {
+            ipcRenderer.send(events.IPC_EVENT_getFileUrl, path)
+            ipcRenderer.once(
+                events.IPC_EVENT_getFileUrl,
+                (event, res: string) => {
+                    resolve(res)
+                }
+            )
+        })
+    } else return path
 }
 
 export function detectFiletype(filepath) {

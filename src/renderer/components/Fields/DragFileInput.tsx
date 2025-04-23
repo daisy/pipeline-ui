@@ -61,11 +61,11 @@ const DragFileInput: React.FC<FileInputProps> = ({
         e.preventDefault()
         e.stopPropagation()
         setIsDragging(false)
-
-        const newItems: string[] = Array.from(e.dataTransfer.files)
-            .map((item) => App.getDroppedFilePath(item))
-            .filter((item) => item !== null)
-
+        const newItems: string[] = await Promise.all(
+            Array.from(e.dataTransfer.files)
+                .map((item) => App.getDroppedFilePath(item))
+                .filter((item) => item !== null)
+        )
         onChange(newItems)
     }
 

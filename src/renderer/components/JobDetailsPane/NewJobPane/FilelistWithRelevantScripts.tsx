@@ -100,7 +100,7 @@ export function FilelistWithRelevantScripts({
                                     <label
                                         htmlFor={`${jobInternalId}-${categoryName}-${idx}`}
                                     >
-                                        {f.replace('file:///', '/')}
+                                        {decodeURI(f).replace('file:///', '/')}
                                     </label>
                                 </div>
                             </li>

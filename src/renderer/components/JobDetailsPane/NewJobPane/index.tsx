@@ -96,10 +96,8 @@ export function NewJobPane({ job }: { job: Job }) {
 
     // add a list of files to the current files list and filter out duplicates
     let addFiles = async (newFiles) => {
-        console.log("Add files", newFiles)
-        let currentFiles = files
-            .map((f) => f.filepath)
-            .map((file) => file.replace('file://', ''))
+        console.log('Add files', newFiles)
+        let currentFiles = files.map((f) => f.filepath)
         // filter out any duplicates
         let uniqueNewFiles = newFiles.filter(
             (file) => currentFiles.indexOf(file) == -1

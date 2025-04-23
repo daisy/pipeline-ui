@@ -8,16 +8,21 @@ import {
     IPC_EVENT_sniffEncoding,
     IPC_EVENT_traverseDirectory,
     IPC_EVENT_isFile,
+    IPC_EVENT_getFileUrl,
 } from '../../shared/main-renderer-events'
 import { PLATFORM, scriptInputFiletypes } from 'shared/constants'
 import { sniffFile } from './sniffFile'
 import { Filetype } from 'shared/types'
 import path from 'path'
+import { fileURLToPath, pathToFileURL } from 'url'
 
 function pathExists(path) {
     if (path.length == 0) return false
 
-    let path_ = decodeURI(path).replace('file://', '')
+    let path_ = decodeURI(path)
+    if (path_.startsWith('file:')) {
+        path_ = fileURLToPath(path_)
+    }
     // make sure the path is formatted like a path
     if (PLATFORM.IS_WINDOWS) {
         if (path_[0] == '/') {
@@ -38,13 +43,17 @@ function pathExists(path) {
 }
 
 const sniffEncoding = async (filepath: string): Promise<string> => {
-    let filepath_ = filepath
-    filepath_ = decodeURI(filepath_.replace('file:', '').replace('///', '/'))
-    let encoding = await chardet.detectFile(filepath_)
+    if (filepath.startsWith('file:')) {
+        filepath = fileURLToPath(filepath)
+    }
+    let encoding = await chardet.detectFile(filepath)
     return encoding.toString()
 }
 
 async function detectFiletype(filepath: string): Promise<Filetype> {
+    if (filepath.startsWith('file:')) {
+        filepath = fileURLToPath(filepath)
+    }
     let filetypeType = await sniffFile(filepath)
     console.log('file sniffed as ', filetypeType)
     // some special types exist where the result of sniffFile is also the filetype type
@@ -88,6 +97,9 @@ export interface FileTreeEntry {
 
 async function traverseDirectory(dirPath): Promise<Array<FileTreeEntry>> {
     try {
+        if (dirPath.startsWith('file:')) {
+            dirPath = fileURLToPath(dirPath)
+        }
         let entries = await fs.readdir(dirPath, { withFileTypes: true })
         let fileTree = []
         for (let entry of entries) {
@@ -107,7 +119,7 @@ async function traverseDirectory(dirPath): Promise<Array<FileTreeEntry>> {
                 fileTree.push({
                     name: entry.name,
                     type: 'file',
-                    path: fullPath,
+                    path: pathToFileURL(fullPath).href,
                 })
             }
         }
@@ -118,6 +130,9 @@ async function traverseDirectory(dirPath): Promise<Array<FileTreeEntry>> {
     }
 }
 function isFile(itemPath: string) {
+    if (itemPath.startsWith('file:')) {
+        itemPath = fileURLToPath(itemPath)
+    }
     if (fs.existsSync(itemPath)) {
         let stats = fs.statSync(itemPath)
         return stats.isFile()
@@ -146,6 +161,15 @@ function setupFileSystemEvents() {
     ipcMain.on(IPC_EVENT_isFile, async (event, payload) => {
         let res = isFile(payload)
         event.sender.send(IPC_EVENT_isFile, res)
+    })
+    ipcMain.on(IPC_EVENT_getFileUrl, async (event, payload) => {
+        try {
+            let res = pathToFileURL(payload).href
+            event.sender.send(IPC_EVENT_getFileUrl, res)
+        } catch (e) {
+            console.error('Error converting path to file URL:', e)
+            event.sender.send(IPC_EVENT_getFileUrl, null)
+        }
     })
 }
 export { setupFileSystemEvents, pathExists, sniffEncoding }

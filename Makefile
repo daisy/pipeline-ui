@@ -1,4 +1,4 @@
-include engine/make/enable-java-shell.mk
+include engine/.make/enable-java-shell.mk
 
 .PHONY : default
 ifeq ($(OS), WINDOWS)
@@ -7,7 +7,7 @@ else ifeq ($(OS), MACOSX)
 default : dmg
 endif
 
-ENGINE_VERSION := $(shell println(xpath(new File("engine/pom.xml"), "/*/*[local-name()='version']/text()"));)
+ENGINE_VERSION := $(shell println(xpath(new File("engine/assembly/pom.xml"), "/*/*[local-name()='version']/text()"));)
 
 .PHONY : dmg
 dmg : src/resources/daisy-pipeline src/resources/icons/logo_mac_40x40_Template@2x.png
@@ -35,7 +35,7 @@ else ifeq ($(OS), MACOSX)
 zip_classifier := mac
 endif
 
-src/resources/daisy-pipeline : engine/target/assembly-$(ENGINE_VERSION)-$(zip_classifier).zip
+src/resources/daisy-pipeline : engine/assembly/target/assembly-$(ENGINE_VERSION)-$(zip_classifier).zip
 	rm("$@");
 	unzip(new File("$<"), new File("$(dir $@)"));
 	rm("$@/cli/config.yml");
@@ -50,13 +50,8 @@ ifeq ($(OS), MACOSX)
 	exec("chmod", "+x", "$@/jre/lib/jspawnhelper");
 endif
 
-engine/target/assembly-$(ENGINE_VERSION)-$(zip_classifier).zip : \
-		engine/pom.xml \
-		$(shell Files.walk(Paths.get("engine/src")).filter(Files::isRegularFile).forEach(System.out::println);)
-	exec("$(MAKE)", "-C", "engine", "zip-$(zip_classifier)",         \
-	                                "--", "--without-osgi",          \
-			                        "--without-updater",             \
-			                        "--without-persistence");
+engine/assembly/target/assembly-$(ENGINE_VERSION)-$(zip_classifier).zip :
+	exec("$(MAKE)", "-C", "engine", "dist-zip-$(zip_classifier)");
 
 clean :
 ifeq ($(OS), WINDOWS)
@@ -66,6 +61,4 @@ else
 endif
 	rm("src/resources/daisy-pipeline");
 	rm("node_modules/.dev-temp-build");
-	exec("$(MAKE)", "-C", "engine", "clean");
-
-
+	exec("$(MAKE)", "-C", "assembly/engine", "clean");

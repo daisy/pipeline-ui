@@ -50,7 +50,7 @@ export function requestStylesheetParameters(
                     stylesheetParameterOptions.push({
                         name: item.name,
                         value: item.default,
-                        isFile: false,
+                        type: 'string',
                         isStylesheetParameter: true,
                     })
                 })

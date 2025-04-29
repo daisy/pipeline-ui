@@ -19,7 +19,10 @@ function jobRequestToXml(jobRequest: JobRequest): string {
                               .map(
                                   (value) =>
                                       `<item value="${
-                                          value.toString().trim() ?? ''
+                                          convertValueIfPath(
+                                              value,
+                                              input.type
+                                          ) ?? ''
                                       }"/>`
                               )
                               .join('')
@@ -42,7 +45,10 @@ function jobRequestToXml(jobRequest: JobRequest): string {
                               .map(
                                   (value) =>
                                       `<item value="${
-                                          value.toString().trim() ?? ''
+                                          convertValueIfPath(
+                                              value,
+                                              option.type
+                                          ) ?? ''
                                       }"/>`
                               )
                               .join('')
@@ -53,5 +59,11 @@ function jobRequestToXml(jobRequest: JobRequest): string {
   </jobRequest>`
     return xmlString
 }
-
+function convertValueIfPath(value, type) {
+    if (type == 'anyURI' || type == 'anyFileURI' || type == 'anyDirURI') {
+        return value.toString().trim() // encodeURIComponent(value.toString().trim())
+    } else {
+        return value.toString().trim()
+    }
+}
 export { jobRequestToXml }

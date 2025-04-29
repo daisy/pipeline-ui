@@ -485,8 +485,7 @@ export const selectors = {
                             job.jobRequest.inputs &&
                             job.jobRequest.inputs[index].value) ||
                         null,
-                    isFile:
-                        item.type == 'anyFileURI' || item.type == 'anyDirURI',
+                    type: item.type,
                     isStylesheetParameter: false,
                 }
             }),
@@ -498,8 +497,7 @@ export const selectors = {
                             job.jobRequest.options[index].value) ||
                         item.default ||
                         null,
-                    isFile:
-                        item.type == 'anyFileURI' || item.type == 'anyDirURI',
+                    type: item.type,
                     isStylesheetParameter: false,
                 }
             }),

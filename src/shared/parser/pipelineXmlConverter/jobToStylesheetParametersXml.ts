@@ -111,7 +111,9 @@ function jobToStylesheetParametersXml(j: Job): string {
     let sourceDocument = `<sourceDocument>${j.jobRequest.inputs
         .filter(
             (input) =>
-                input.value && input.isFile && !input.name.endsWith('.scss')
+                input.value &&
+                (input.type == 'anyURI' || input.type == 'anyFileURI') &&
+                !input.name.endsWith('.scss')
         )
         .map((input) => `<file href="${input.value}"/>`)
         .join('')}</sourceDocument>`

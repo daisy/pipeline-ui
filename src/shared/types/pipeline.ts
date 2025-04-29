@@ -298,7 +298,7 @@ export type Script = {
 export type NameValue = {
     name: string
     value: any
-    isFile: boolean
+    type: string
     isStylesheetParameter: boolean
 }
 export type Callback = {

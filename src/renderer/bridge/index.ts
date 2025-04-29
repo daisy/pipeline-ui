@@ -5,6 +5,7 @@ import { slices } from 'shared/data/slices'
 import { IPC } from 'shared/constants'
 import { AnyAction } from '@reduxjs/toolkit'
 import { RootState } from 'shared/types/store'
+import 'electron-log/preload'
 
 declare global {
     interface Window {
@@ -43,7 +44,6 @@ const API = {
     whenAboutWindowClosed: ipcs.whenAboutWindowClose,
     sniffEncoding: ipcs.sniffEncoding,
     copyToClipboard: ipcs.copyToClipboard,
-    log: ipcs.log,
     oneTimeFetch: ipcs.oneTimeFetch,
     onScriptFormSubmit: (channel, listener) => ipcRenderer.on(channel, listener),
     // we can add on to this API and restructure it as we move more commands to the redux side

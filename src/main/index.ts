@@ -42,7 +42,6 @@ import {
     selectColorScheme,
     selectEditOnNewTab,
 } from 'shared/data/slices/settings'
-import { setupLogEvents } from './ipcs/log'
 import {
     addJob,
     editJob,
@@ -96,7 +95,6 @@ makeAppWithSingleInstanceLock(async () => {
     setupOpenInBrowserEvents()
     setupFileSystemEvents()
     setupClipboardEvents()
-    setupLogEvents()
     setupOneTimeFetchEvent()
     setupMessageBoxEvent()
     buildMenu()

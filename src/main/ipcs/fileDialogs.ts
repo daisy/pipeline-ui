@@ -18,29 +18,26 @@ dialogOptions: https://www.electronjs.org/docs/latest/api/dialog
 */
 
 const showOpenFileDialog = async (
-    callback: (filepath: string) => void,
     dialogOptions: Electron.OpenDialogOptions,
     asFileURL: boolean = true
 ): Promise<void> => {
-    let filePath
+    let filePaths
     const res = await dialog.showOpenDialog(
         BrowserWindow ? BrowserWindow.getFocusedWindow() : undefined,
         // @ts-ignore
         dialogOptions
     )
     if (res.canceled || !res.filePaths || !res.filePaths.length) {
-        filePath = undefined
+        filePaths = []
     }
-    if (res.filePaths[0]) {
-        filePath = asFileURL
-            ? pathToFileURL(res.filePaths[0]).href
-            : res.filePaths[0]
+    if (res.filePaths) {
+        filePaths = asFileURL
+            ? res.filePaths.map((fp) => pathToFileURL(fp).href)
+            : res.filePaths
     } else {
-        filePath = undefined
+        filePaths = []
     }
-    if (callback && filePath) {
-        callback(filePath)
-    }
+    return filePaths
 }
 
 // const showSaveDialog = async (
@@ -70,14 +67,11 @@ const showOpenFileDialog = async (
 function setupFileDialogEvents() {
     // comes from the renderer process (ipcRenderer.send())
     ipcMain.on(IPC_EVENT_showOpenFileDialog, async (event, payload) => {
-        
-        await showOpenFileDialog(
-            (filePath) => {
-                event.sender.send(IPC_EVENT_showOpenFileDialog, filePath)
-            },
+        let filePaths = await showOpenFileDialog(
             payload.dialogOptions,
             payload.asFileURL
         )
+        event.sender.send(IPC_EVENT_showOpenFileDialog, filePaths)
     })
     // ipcMain.on(IPC_EVENT_showSaveDialog, async (event, payload) => {
     //     await showSaveDialog((filePath) => {

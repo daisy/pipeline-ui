@@ -43,22 +43,16 @@ export function removeJobs(action: PayloadAction<any>) {
         }
     }
 }
-export function removeBatchJob(action: PayloadAction<any>,  dispatch,
-    getState: GetStateFunction) {
-    // Ask delete confirmation for visible jobs deletion
-    const result = dialog.showMessageBoxSync(MainWindowInstance, {
-        message: `Are you sure you want to close these jobs?`,
-        buttons: ['Yes', 'No'],
-    })
-    // Cancel action if no is selected
-    action = result === 1 ? null : action
-    if (action) {
-        const visibleJobs = selectVisibleJobs(getState())
-        removeJobs(action)
-        // add a job if the batch was the last job
-        if (visibleJobs.length == action.payload.length) {
-            dispatch(addJob(newJob(selectPipeline(getState()))))
-        }
+export function removeBatchJob(
+    action: PayloadAction<any>,
+    dispatch,
+    getState: GetStateFunction
+) {
+    const visibleJobs = selectVisibleJobs(getState())
+    removeJobs(action)
+    // add a job if the batch was the last job
+    if (visibleJobs.length == action.payload.length) {
+        dispatch(addJob(newJob(selectPipeline(getState()))))
     }
 }
 
@@ -70,22 +64,11 @@ export function removeJob(
     let removedJob = action.payload as Job
     const currentJobs = selectJobs(getState())
     const visibleJobs = selectVisibleJobs(getState())
-
-    if (
-        removedJob.jobRequest &&
+    const canRemove = removedJob.jobRequest &&
         (getState().settings.editJobOnNewTab || !removedJob.invisible)
-    ) {
-        // Ask delete confirmation for visible jobs deletion
-        const result = dialog.showMessageBoxSync(MainWindowInstance, {
-            message: `Are you sure you want to close this job?`,
-            buttons: ['Yes', 'No'],
-        })
-        // Cancel action if no is selected
-        action = result === 1 ? null : action
-    }
     // #41 : Handle removing the last visible job
     if (
-        action &&
+        canRemove &&
         visibleJobs.length === 1 &&
         removedJob.internalId === visibleJobs[0].internalId
     ) {
@@ -102,13 +85,17 @@ export function removeJob(
         }
     }
     // Remove linked invisible jobs
-    if (action && removedJob.linkedTo && !getState().settings.editJobOnNewTab) {
+    if (
+        canRemove &&
+        removedJob.linkedTo &&
+        !getState().settings.editJobOnNewTab
+    ) {
         const linkedInvisibleJob = currentJobs.find(
             (j) => j.invisible && removedJob.linkedTo == j.internalId
         )
         if (linkedInvisibleJob) dispatch(removeJobSlice(linkedInvisibleJob))
     }
-    if (action && removedJob.jobData && removedJob.jobData.href) {
+    if (canRemove && removedJob.jobData && removedJob.jobData.href) {
         // Remove server-side job using API
         // if it is not already removed
         const deleteJob = pipelineAPI.deleteJob(removedJob)

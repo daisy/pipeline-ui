@@ -59,6 +59,7 @@ const API = {
     detectFiletype: (filepath) => ipcs.detectFiletype(filepath),
     traverseDirectory: (dirpath) => ipcs.traverseDirectory(dirpath),
     isFile: (itemPath) => ipcs.isFile(itemPath),
+    showMessageBoxYesNo: async (msg) => ipcs.showMessageBoxYesNo(msg),
 }
 
 contextBridge.exposeInMainWorld('App', API)

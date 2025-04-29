@@ -10,7 +10,7 @@ import {
 } from 'electron'
 import fs from 'fs-extra'
 
-import { error } from 'electron-log'
+import { error, info } from 'electron-log'
 
 import {
     bindWindowToPipeline,
@@ -35,6 +35,7 @@ import { setupShowInFolderEvents } from './ipcs/folder'
 import { registerFileIPC } from './ipcs/file'
 import { setupFileSystemEvents } from './ipcs/fileSystem'
 import { setupOpenInBrowserEvents } from './ipcs/browser'
+import { setupMessageBoxEvent, showMessageBoxYesNo } from './ipcs/messageBox'
 import { APP_CONFIG } from '~/app.config'
 import { getPipelineInstance } from './data/instance'
 import {
@@ -97,6 +98,7 @@ makeAppWithSingleInstanceLock(async () => {
     setupClipboardEvents()
     setupLogEvents()
     setupOneTimeFetchEvent()
+    setupMessageBoxEvent()
     buildMenu()
 
     store.subscribe(() => {
@@ -180,9 +182,20 @@ function buildMenu() {
                 let jobsInBatch = jobs.filter(
                     (j) => j.jobRequest?.batchId == job.jobRequest?.batchId
                 )
-                store.dispatch(removeBatchJob(jobsInBatch))
+                // Ask delete confirmation for visible jobs deletion
+                let action = showMessageBoxYesNo(
+                    'Are you sure you want to close these jobs?'
+                )
+                if (action) {
+                    store.dispatch(removeBatchJob(jobsInBatch))
+                }
             } else {
-                store.dispatch(removeJob(job))
+                let result = showMessageBoxYesNo(
+                    'Are you sure you want to close this job?'
+                )
+                if (result) {
+                    store.dispatch(removeJob(job))
+                }
             }
         },
         onEditJob: async (job) => {

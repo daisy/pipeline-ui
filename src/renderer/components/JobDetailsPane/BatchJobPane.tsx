@@ -41,7 +41,12 @@ export function BatchJobDetailsPane({ jobs }: { jobs: Array<Job> }) {
         if (!areAllJobsInBatchDone(primaryJob, jobs)) {
             return
         }
-        App.store.dispatch(removeBatchJob(jobs))
+        let result = App.showMessageBoxYesNo(
+            'Are you sure you want to close these jobs?'
+        )
+        if (result) {
+            App.store.dispatch(removeBatchJob(jobs))
+        }
     }
 
     let onCancelBatch = () => {

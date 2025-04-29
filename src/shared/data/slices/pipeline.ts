@@ -19,7 +19,7 @@ import {
     EngineProperty,
     TtsEngineState,
 } from 'shared/types'
-
+import { info } from 'electron-log'
 import { RootState } from 'shared/types/store'
 
 const initialState = {

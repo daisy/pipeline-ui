@@ -12,6 +12,7 @@ import { readableStatus } from 'shared/jobName'
 import { FileLink } from '../FileLink'
 import { useWindowStore } from 'renderer/store'
 import { useState, useEffect } from 'react'
+import { info } from 'electron-log'
 
 const { App } = window
 
@@ -48,8 +49,13 @@ export function JobDetails({ job }: { job: Job }) {
                         Edit job
                     </button>
                     <button
-                        onClick={(e) => {
-                            App.store.dispatch(removeJob(job))
+                        onClick={async (e) => {
+                            let result = await App.showMessageBoxYesNo(
+                                'Are you sure you want to close this job?'
+                            )
+                            if (result) {
+                                App.store.dispatch(removeJob(job))
+                            }
                         }}
                     >
                         Close job
@@ -189,8 +195,18 @@ export function JobDetails({ job }: { job: Job }) {
                                         Edit job
                                     </button>
                                     <button
-                                        onClick={(e) => {
-                                            App.store.dispatch(removeJob(job))
+                                        onClick={async (e) => {
+                                            let result = await App.showMessageBoxYesNo(
+                                                'Are you sure you want to close this job?'
+                                            )
+                                            info(
+                                                `Close job prompt, said ${result}`
+                                            )
+                                            if (result) {
+                                                App.store.dispatch(
+                                                    removeJob(job)
+                                                )
+                                            }
                                         }}
                                     >
                                         Close job

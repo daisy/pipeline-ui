@@ -10,7 +10,7 @@ export function FilelistWithRelevantScripts({
 }) {
     const [selectedFiles, setSelectedFiles] = useState([])
     const [selectedScriptId, setSelectedScriptId] = useState(
-        relevantScripts[0].id
+        relevantScripts[0]?.id ?? null
     )
 
     // change the files selection
@@ -63,7 +63,13 @@ export function FilelistWithRelevantScripts({
                             </option>
                         ))}
                     </select>
-                    <button onClick={(e) => initJob()}>Create job</button>
+                    <button
+                        disabled={selectedFiles.length == 0}
+                        aria-disabled={selectedFiles.length == 0}
+                        onClick={(e) => initJob()}
+                    >
+                        Create job
+                    </button>
                 </div>
                 <p className="suggestion">
                     {!multiSelectEnabled(selectedScriptId) &&

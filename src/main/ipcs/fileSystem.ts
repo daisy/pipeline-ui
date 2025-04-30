@@ -8,6 +8,7 @@ import {
     IPC_EVENT_sniffEncoding,
     IPC_EVENT_traverseDirectory,
     IPC_EVENT_isFile,
+    IPC_EVENT_isDirectory,
     IPC_EVENT_fileURLToPath,
     IPC_EVENT_pathToFileURL,
 } from '../../shared/main-renderer-events'
@@ -126,12 +127,24 @@ async function traverseDirectory(dirPath): Promise<Array<FileTreeEntry>> {
     }
 }
 function isFile(itemPath: string) {
+    let filepath = itemPath
     if (itemPath.startsWith('file:')) {
-        itemPath = fileURLToPath(itemPath)
+        filepath = fileURLToPath(itemPath)
     }
-    if (fs.existsSync(itemPath)) {
-        let stats = fs.statSync(itemPath)
+    if (fs.existsSync(filepath)) {
+        let stats = fs.statSync(filepath)
         return stats.isFile()
+    }
+    return false
+}
+function isDirectory(itemPath: string) {
+    let filepath = itemPath
+    if (itemPath.startsWith('file:')) {
+        filepath = fileURLToPath(itemPath)
+    }
+    if (fs.existsSync(filepath)) {
+        let stats = fs.statSync(filepath)
+        return stats.isDirectory()
     }
     return false
 }
@@ -156,6 +169,10 @@ function setupFileSystemEvents() {
     })
     ipcMain.handle(IPC_EVENT_isFile, (event, payload) => {
         let res = isFile(payload)
+        return res
+    })
+    ipcMain.handle(IPC_EVENT_isDirectory, (event, payload) => {
+        let res = isDirectory(payload)
         return res
     })
     ipcMain.handle(IPC_EVENT_pathToFileURL, (event, payload) => {

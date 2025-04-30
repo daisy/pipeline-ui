@@ -23,6 +23,10 @@ export function isFile(itemPath) {
     return ipcRenderer.invoke(events.IPC_EVENT_isFile, itemPath)
 }
 
+export function isDirectory(itemPath) {
+    return ipcRenderer.invoke(events.IPC_EVENT_isDirectory, itemPath)
+}
+
 export function fileURLToPath(fileurl) {
     return ipcRenderer.invoke(events.IPC_EVENT_fileURLToPath, fileurl)
 }

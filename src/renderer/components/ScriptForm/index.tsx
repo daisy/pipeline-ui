@@ -1,6 +1,7 @@
 /*
 Fill out fields for a new job and submit it
 */
+import { info } from 'electron-log'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useWindowStore } from 'renderer/store'
 import { findValue, ID } from 'renderer/utils/utils'
@@ -39,7 +40,6 @@ export function ScriptForm({ job, script }: { job: Job; script: Script }) {
     const [canRunJob, setCanRunJob] = useState(false)
     const submitButtonRef = useRef(null)
 
-    console.log("ScriptForm script:", script)
     let required = getAllRequired(script)
     let optional = getAllOptional(script)
     const { settings } = useWindowStore()
@@ -123,35 +123,46 @@ export function ScriptForm({ job, script }: { job: Job; script: Script }) {
         )
     }
 
-    let saveValueInJobRequest = (value: any, item: ScriptItemBase) => {
-        console.log('savevalue', value,)
+    let saveValueInJobRequest = async (value: any, item: ScriptItemBase) => {
         if (!job.jobRequest) {
             return
         }
-        
+
         let inputs = [...job.jobRequest.inputs]
         let options = [...job.jobRequest.options]
         let stylesheetParameterOptions = [
             ...job.jobRequest.stylesheetParameterOptions,
         ]
-
+        // convert to URL format if it's a filepath
+        let value_ = value
+        if (['anyURI', 'anyFileURI'].includes(item.type)) {
+            if (Array.isArray(value_)) {
+                let tmp = []
+                for (let v of value_) {
+                    let retval = await App.pathToFileURL(v)
+                    tmp.push(retval)
+                }
+                value_ = [...tmp]
+            } else {
+                value_ = await App.pathToFileURL(value)
+            }
+        }
         if (item.mediaType?.includes('text/css')) {
-            // the css filenames are already formatted by our file widget as 'file:///'...
-            // so i don't think they need to be modified before getting sent to the engine
-            // but this block is a placeholder just in case we have to change it
-            // i haven't tested this on windows as of now
+            // modify anything here before sending to engine
+            // e.g. the filepath format
+            // this block is a placeholder just in case we have to change it
         }
         if (item.kind == 'input') {
-            inputs = updateArrayValue(value, item, inputs)
+            inputs = updateArrayValue(value_, item, inputs)
         } else {
             if (item.isStylesheetParameter) {
                 stylesheetParameterOptions = updateArrayValue(
-                    value,
+                    value_,
                     item,
                     stylesheetParameterOptions
                 )
             } else {
-                options = updateArrayValue(value, item, options)
+                options = updateArrayValue(value_, item, options)
             }
         }
         App.store.dispatch(
@@ -171,7 +182,6 @@ export function ScriptForm({ job, script }: { job: Job; script: Script }) {
 
     // submit a job
     let onSubmit = async (e) => {
-        console.log("ON JOB SUBMIT")
         e.preventDefault()
         if (job.is2StepsJob && job.stylesheetParameters == null) {
             /*  constraints on the stylesheet parameters :
@@ -225,7 +235,6 @@ export function ScriptForm({ job, script }: { job: Job; script: Script }) {
 
             if (hasBatchInput(job)) {
                 let batchInput = getBatchInput(job.script)
-                console.log('has batch input')
                 let batchJobRequestInputValues = getBatchInputValues(job)
                 if (batchJobRequestInputValues?.length > 1) {
                     // run batch job
@@ -258,8 +267,8 @@ export function ScriptForm({ job, script }: { job: Job; script: Script }) {
                         })
                     )
                 }
-            } else { // the script is not batchable
-                console.log('no batch input')
+            } else {
+                // the script is not batchable
                 App.store.dispatch(
                     runJob({
                         ...job,
@@ -313,12 +322,14 @@ export function ScriptForm({ job, script }: { job: Job; script: Script }) {
                                                     job.internalId
                                                 )}-${item.name}`}
                                                 onChange={saveValueInJobRequest}
-                                                initialValue={findValue(
-                                                    item.name,
-                                                    item.kind,
-                                                    job.jobRequest,
-                                                    item.isStylesheetParameter
-                                                ) ?? []}
+                                                initialValue={
+                                                    findValue(
+                                                        item.name,
+                                                        item.kind,
+                                                        job.jobRequest,
+                                                        item.isStylesheetParameter
+                                                    ) ?? []
+                                                }
                                                 error={
                                                     job.errors?.find(
                                                         (e) =>
@@ -366,12 +377,14 @@ export function ScriptForm({ job, script }: { job: Job; script: Script }) {
                                                     item.isStylesheetParameter
                                                 }`}
                                                 onChange={saveValueInJobRequest}
-                                                initialValue={findValue(
-                                                    item.name,
-                                                    item.kind,
-                                                    job.jobRequest,
-                                                    item.isStylesheetParameter
-                                                ) ?? []}
+                                                initialValue={
+                                                    findValue(
+                                                        item.name,
+                                                        item.kind,
+                                                        job.jobRequest,
+                                                        item.isStylesheetParameter
+                                                    ) ?? []
+                                                }
                                                 error={
                                                     job.errors?.find(
                                                         (e) =>
@@ -424,10 +437,17 @@ export function ScriptForm({ job, script }: { job: Job; script: Script }) {
                     <button
                         className="cancel"
                         type="reset"
-                        onClick={(e) => {
-                            App.store.dispatch(
-                                job.linkedTo ? restoreJob(job) : removeJob(job)
+                        onClick={async (e) => {
+                            let result = await App.showMessageBoxYesNo(
+                                'Are you sure you want to close this job?'
                             )
+                            if (result) {
+                                App.store.dispatch(
+                                    job.linkedTo
+                                        ? restoreJob(job)
+                                        : removeJob(job)
+                                )
+                            }
                         }}
                     >
                         Cancel

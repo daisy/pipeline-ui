@@ -1,3 +1,4 @@
+import { debug } from 'electron-log'
 import { JobRequest, Script } from 'shared/types'
 
 // make an HTML-friendly ID string
@@ -76,3 +77,7 @@ export function externalLinkClick(e, app) {
         app.openInBrowser(closest.href)
     }
 }
+
+// get the first item in an array. if empty array, return empty string. if not actually array, return it.
+export let getArr0 = (val) =>
+    Array.isArray(val) ? (val.length > 0 ? val[0] : '') : val

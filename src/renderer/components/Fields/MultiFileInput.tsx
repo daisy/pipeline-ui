@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { FileInput, FileInputProps } from './FileInput'
 import { FileList } from './FileList'
+import { FileAsType } from '../File'
 
 interface MultiFileInputProps extends FileInputProps {
     initialValue?: string[]
@@ -21,12 +22,13 @@ const MultiFileInput: React.FC<MultiFileInputProps> = ({
     canSort = true,
 }) => {
     const [files, setFiles] = useState<string[]>(initialValue)
-    
+
     const addFiles = (newFiles: string[]) => {
-        updateFiles([...files, ...newFiles])
+        // make list unique
+        updateFiles(Array.from(new Set([...files, ...newFiles])))
     }
     let updateFiles = (changedFiles) => {
-        console.log("MultiFileInput files", changedFiles)
+        console.log('MultiFileInput updateFiles', changedFiles)
         setFiles(changedFiles)
         onChange?.(changedFiles)
     }
@@ -40,7 +42,12 @@ const MultiFileInput: React.FC<MultiFileInputProps> = ({
                 onChange={addFiles}
                 label={files.length ? 'Add file' : 'Select file'}
             />
-            <FileList onChange={(files) => updateFiles(files)} files={files} canSort={canSort}/>
+            <FileList
+                showAsType={FileAsType.AS_PATH}
+                onChange={(files) => updateFiles(files)}
+                files={files}
+                canSort={canSort}
+            />
         </div>
     )
 }

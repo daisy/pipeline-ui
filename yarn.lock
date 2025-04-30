@@ -4379,10 +4379,10 @@ electron-devtools-installer@^4.0.0:
   dependencies:
     unzip-crx-3 "^0.2.0"
 
-electron-log@^5.2.4:
-  version "5.3.3"
-  resolved "https://registry.npmjs.org/electron-log/-/electron-log-5.3.3.tgz"
-  integrity sha512-ZOnlgCVfhKC0Nef68L0wDhwhg8nh5QkpEOA+udjpBxcPfTHGgbZbfoCBS6hmAgVHTAWByHNPkHKpSbEOPGZcxA==
+electron-log@^5.3.4:
+  version "5.3.4"
+  resolved "https://registry.yarnpkg.com/electron-log/-/electron-log-5.3.4.tgz#4117d9762d06dbed8e3b878cc468a92ce415a9e0"
+  integrity sha512-QLj0EbsA5R5Yy4vjGlLe7m8hPNZ/Enp7c7a2WH7RUPr0hIOp0vDaC+6bJM0th6+uZKiZGGH5a2aKzvYp3eYwDQ==
 
 electron-publish@24.5.0:
   version "24.5.0"

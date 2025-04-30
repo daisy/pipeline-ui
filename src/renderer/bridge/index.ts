@@ -55,11 +55,13 @@ const API = {
         onSliceUpdate: (actionType, callback) =>
             ipcRenderer.on(actionType, (event, data) => callback(data)),
     },
-    getDroppedFilePath: (file) => ipcs.getFilePath(file),
+    getDroppedFilePath: (fileurl) => ipcs.getDroppedFilePath(fileurl),
     detectFiletype: (filepath) => ipcs.detectFiletype(filepath),
     traverseDirectory: (dirpath) => ipcs.traverseDirectory(dirpath),
-    isFile: (itemPath) => ipcs.isFile(itemPath),
+    isFile: (itempath) => ipcs.isFile(itempath),
     showMessageBoxYesNo: async (msg) => ipcs.showMessageBoxYesNo(msg),
+    pathToFileURL: (filepath) => ipcs.pathToFileURL(filepath),
+    fileURLToPath: (fileurl) => ipcs.fileURLToPath(fileurl),
 }
 
 contextBridge.exposeInMainWorld('App', API)

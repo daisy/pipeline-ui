@@ -13,10 +13,9 @@ async function oneTimeFetch(url) {
 }
 
 function setupOneTimeFetchEvent() {
-    // comes from the renderer process (ipcRenderer.send())
-    ipcMain.on(IPC_EVENT_oneTimeFetch, async (event, payload) => {
+    ipcMain.handle(IPC_EVENT_oneTimeFetch, async (event, payload) => {
         let res = await oneTimeFetch(payload)
-        event.sender.send(IPC_EVENT_oneTimeFetch, res)
+        return res
     })
 }
 export { setupOneTimeFetchEvent, oneTimeFetch }

@@ -45,8 +45,9 @@ export function TtsMoreOptionsConfigPane({
         )?.value ?? '100%'
     )
 
-    let onLexiconChange = (filename) => {
-        onPropertyChange('org.daisy.pipeline.tts.default-lexicon', filename)
+    let onLexiconChange = async (filename) => {
+        let fileurl = await App.pathToFileURL(filename)
+        onPropertyChange('org.daisy.pipeline.tts.default-lexicon', fileurl)
     }
     let onInputChange = (e, propName) => {
         e.preventDefault()
@@ -234,22 +235,14 @@ export function TtsMoreOptionsConfigPane({
                     allowFolder={false}
                     elemId="lexicon-select"
                     mediaType={['application/pls+xml']}
-                    onChange={(filenames) =>
-                        onLexiconChange(
-                            Array.isArray(filenames)
-                                ? filenames.length
-                                    ? filenames[0]
-                                    : ''
-                                : filenames
-                        )
-                    }
-                    initialValue={
+                    onChange={onLexiconChange}
+                    initialValue={[
                         engineProperties.find(
                             (p) =>
                                 p.key ==
                                 'org.daisy.pipeline.tts.default-lexicon'
-                        )?.value ?? ''
-                    }
+                        )?.value ?? '',
+                    ]}
                 />
             </div>
         </>

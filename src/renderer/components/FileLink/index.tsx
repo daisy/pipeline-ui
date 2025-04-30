@@ -9,13 +9,11 @@ Wrap a local or remote file reference in a link element
 Click to open in finder or browser
 */
 export function FileLink({ fileHref, children }: FileLinkProps) {
-    let localPath = fileHref
-        ? decodeURI(fileHref.replace('file:', '').replace('///', '/'))
-        : ''
     let filename = fileHref ? fileHref.slice(fileHref.lastIndexOf('/') + 1) : ''
 
-    let onClick = (e) => {
+    let onClick = async (e) => {
         e.preventDefault()
+        let localPath = await App.fileURLToPath(fileHref)
         if (localPath) App.showItemInFolder(localPath)
         else App.openInBrowser(fileHref)
     }

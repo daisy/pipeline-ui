@@ -1,6 +1,7 @@
 import React, { useState, useRef } from 'react'
 import { Upload } from 'lucide-react'
 import { FileInputProps } from './FileInput'
+import { debug } from 'electron-log'
 const { App } = window
 
 // a drag and drop/browse button
@@ -17,19 +18,20 @@ const DragFileInput: React.FC<FileInputProps> = ({
     const dropzoneRef = useRef<HTMLDivElement>(null)
 
     const onBrowse = async () => {
-        let dialogOptions = {properties: [], filters: []}
+        let dialogOptions = { properties: [], filters: [] }
         if (allowFile) dialogOptions.properties.push('openFile')
         if (allowFolder) dialogOptions.properties.push('openDirectory')
-        if (allowMultiSelections) dialogOptions.properties.push('multiSelections')
-        
-        let filename = await App.showOpenFileDialog({
+        if (allowMultiSelections)
+            dialogOptions.properties.push('multiSelections')
+
+        let filenames = await App.showOpenFileDialog({
             //@ts-ignore
             dialogOptions,
-            asFileURL: false,
         })
-        // TODO support multiple filenames from the file picker
-        if (filename) {
-            onChange?.([filename])
+
+        if (filenames) {
+            onChange?.(filenames)
+            debug('DragFileInput onBrowse', filenames)
         }
     }
 
@@ -61,12 +63,15 @@ const DragFileInput: React.FC<FileInputProps> = ({
         e.preventDefault()
         e.stopPropagation()
         setIsDragging(false)
-        const newItems: string[] = await Promise.all(
-            Array.from(e.dataTransfer.files)
-                .map((item) => App.getDroppedFilePath(item))
-                .filter((item) => item !== null)
-        )
+        let newItems: string[] = []
+        for (let item of Array.from(e.dataTransfer.files)) {
+            let retval = await App.getDroppedFilePath(item)
+            if (retval) {
+                newItems.push(retval)
+            }
+        }
         onChange(newItems)
+        debug('DragFileInput onBrowse', newItems)
     }
 
     return (

@@ -15,10 +15,9 @@ function showMessageBoxYesNo(msg) {
 }
 
 function setupMessageBoxEvent() {
-    // comes from the renderer process (ipcRenderer.send())
-    ipcMain.on(IPC_EVENT_messageBoxYesNo, async (event, payload) => {
+    ipcMain.handle(IPC_EVENT_messageBoxYesNo, async (event, payload) => {
         let res = showMessageBoxYesNo(payload)
-        event.sender.send(IPC_EVENT_messageBoxYesNo, res)
+        return res
     })
 }
 export { setupMessageBoxEvent, showMessageBoxYesNo }

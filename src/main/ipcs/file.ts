@@ -40,6 +40,8 @@ export async function unzipFile(buffer: ArrayBuffer, pathFileURL: string) {
         })
 }
 
+
+
 export function registerFileIPC() {
     ipcMain.handle(
         IPC.FILE.SAVE,
@@ -52,8 +54,4 @@ export function registerFileIPC() {
         async (event, buffer: ArrayBuffer, pathFileURL: string) =>
             unzipFile(buffer, pathFileURL)
     )
-
-    ipcMain.on(IPC.FILE.OPEN, (event, path) => {
-        // Request the opening of a file in the system
-    })
 }

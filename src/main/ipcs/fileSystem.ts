@@ -8,7 +8,8 @@ import {
     IPC_EVENT_sniffEncoding,
     IPC_EVENT_traverseDirectory,
     IPC_EVENT_isFile,
-    IPC_EVENT_getFileUrl,
+    IPC_EVENT_fileURLToPath,
+    IPC_EVENT_pathToFileURL,
 } from '../../shared/main-renderer-events'
 import { PLATFORM, scriptInputFiletypes } from 'shared/constants'
 import { sniffFile } from './sniffFile'
@@ -43,23 +44,18 @@ function pathExists(path) {
 }
 
 const sniffEncoding = async (filepath: string): Promise<string> => {
-    if (filepath.startsWith('file:')) {
-        filepath = fileURLToPath(filepath)
-    }
     let encoding = await chardet.detectFile(filepath)
     return encoding.toString()
 }
 
 async function detectFiletype(filepath: string): Promise<Filetype> {
-    if (filepath.startsWith('file:')) {
-        filepath = fileURLToPath(filepath)
-    }
+    console.log('Detect filetype', filepath)
     let filetypeType = await sniffFile(filepath)
     console.log('file sniffed as ', filetypeType)
     // some special types exist where the result of sniffFile is also the filetype type
     let specialType = scriptInputFiletypes.find((ft) => ft.type == filetypeType)
     if (specialType) {
-        console.log("matches special type", specialType)
+        console.log('matches special type', specialType)
         return specialType
     }
 
@@ -119,7 +115,7 @@ async function traverseDirectory(dirPath): Promise<Array<FileTreeEntry>> {
                 fileTree.push({
                     name: entry.name,
                     type: 'file',
-                    path: pathToFileURL(fullPath).href,
+                    path: fullPath,
                 })
             }
         }
@@ -142,33 +138,42 @@ function isFile(itemPath: string) {
 
 function setupFileSystemEvents() {
     // comes from the renderer process (ipcRenderer.send())
-    ipcMain.on(IPC_EVENT_pathExists, async (event, payload) => {
+    ipcMain.handle(IPC_EVENT_pathExists, async (event, payload) => {
         let res = await pathExists(payload)
-        event.sender.send(IPC_EVENT_pathExists, res)
+        return res
     })
-    ipcMain.on(IPC_EVENT_sniffEncoding, async (event, payload) => {
+    ipcMain.handle(IPC_EVENT_sniffEncoding, async (event, payload) => {
         let res = await sniffEncoding(payload)
-        event.sender.send(IPC_EVENT_sniffEncoding, res)
+        return res
     })
-    ipcMain.on(IPC_EVENT_detectFiletype, async (event, payload) => {
+    ipcMain.handle(IPC_EVENT_detectFiletype, async (event, payload) => {
         let res = await detectFiletype(payload)
-        event.sender.send(IPC_EVENT_detectFiletype, res)
+        return res
     })
-    ipcMain.on(IPC_EVENT_traverseDirectory, async (event, payload) => {
+    ipcMain.handle(IPC_EVENT_traverseDirectory, async (event, payload) => {
         let res = await traverseDirectory(payload)
-        event.sender.send(IPC_EVENT_traverseDirectory, res)
+        return res
     })
-    ipcMain.on(IPC_EVENT_isFile, async (event, payload) => {
+    ipcMain.handle(IPC_EVENT_isFile, (event, payload) => {
         let res = isFile(payload)
-        event.sender.send(IPC_EVENT_isFile, res)
+        return res
     })
-    ipcMain.on(IPC_EVENT_getFileUrl, async (event, payload) => {
+    ipcMain.handle(IPC_EVENT_pathToFileURL, (event, payload) => {
         try {
             let res = pathToFileURL(payload).href
-            event.sender.send(IPC_EVENT_getFileUrl, res)
+            return res
         } catch (e) {
             console.error('Error converting path to file URL:', e)
-            event.sender.send(IPC_EVENT_getFileUrl, null)
+            return null
+        }
+    })
+    ipcMain.handle(IPC_EVENT_fileURLToPath, (event, payload) => {
+        try {
+            let res = fileURLToPath(payload)
+            return res
+        } catch (e) {
+            console.error('Error converting file URL to path:', e)
+            return null
         }
     })
 }

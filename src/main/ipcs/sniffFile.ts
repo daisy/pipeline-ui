@@ -3,14 +3,24 @@ import path, { extname } from 'path'
 import { unzipSync } from 'fflate'
 import sax from 'sax'
 import { Readable } from 'stream'
+import { debug } from 'electron-log'
 
 // find more info about the type of file
 // returns "dtbook", "zedai", "xhtml", "html", "xml", "epub3opf", "epub2opf", "daisy3opf", "ncc"
 // or if none of those fit, it returns the extension
 export async function sniffFile(filepath: string): Promise<string> {
     const ext = extname(filepath).toLowerCase()
+
     if (path.basename(filepath).toLowerCase() == 'ncc.html') {
         return 'ncc'
+    }
+
+    // special case that seems to make the parser hang
+    if (
+        path.basename(filepath).startsWith('.#') ||
+        path.basename(filepath).startsWith('#')
+    ) {
+        return ext
     }
 
     // handle opf, xml and html files with a quick sax parse
@@ -36,13 +46,18 @@ export async function sniffFile(filepath: string): Promise<string> {
             }
         } else {
             // read the stream off disk
-            stream = fs.createReadStream(filepath.replace('file:///', '/'))
+            stream = fs.createReadStream(filepath)
         }
 
         return new Promise<string>((resolve) => {
             let daisy3check = false
             let textContent = ''
-            const parser = sax.createStream(true)
+            let parser
+            try {
+                parser = sax.createStream(true)
+            } catch (err) {
+                resolve(ext)
+            }
 
             parser.on('error', (err: Error) => {
                 // it couldn't be parsed as xml and it has an html extension
@@ -54,6 +69,7 @@ export async function sniffFile(filepath: string): Promise<string> {
                 // or there was another type of error and we can't tell any more info about this file
                 else {
                     stream.destroy()
+                    debug('Parse error', ext)
                     resolve(ext)
                 }
             })

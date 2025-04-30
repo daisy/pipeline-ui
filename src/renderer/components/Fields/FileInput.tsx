@@ -2,29 +2,34 @@ import React, { useState, useRef } from 'react'
 import { Upload } from 'lucide-react'
 import { FileTreeEntry } from 'main/ipcs/fileSystem'
 import { mediaTypesFileFilters } from 'shared/constants'
+import { debug } from 'electron-log'
 
 const { App } = window
 
 interface FileInputProps {
     elemId: string
     mediaType?: string[]
-    onChange?: (paths: string[]) => void
     allowFile?: boolean
     allowFolder?: boolean
     allowMultiSelections?: boolean
     enabled?: boolean
     label?: string
+    onChange?: (paths: string[]) => void
+    initialValue?: string[]
+    required?: boolean
 }
 
 // a browse button
 const FileInput: React.FC<FileInputProps> = ({
     elemId,
     mediaType = ['*'],
-    onChange,
     allowFile = true,
     allowFolder = false,
     enabled = true,
     label = 'Browse',
+    onChange,
+    initialValue = [],
+    required = false,
 }) => {
     const onBrowse = async () => {
         let dialogOptions = {properties: [], filters: []}
@@ -32,14 +37,12 @@ const FileInput: React.FC<FileInputProps> = ({
         if (allowFolder) dialogOptions.properties.push('openDirectory')
         dialogOptions.filters = getFiletypeFilters(mediaType)
 
-        let filename = await App.showOpenFileDialog({
+        let filenames = await App.showOpenFileDialog({
             //@ts-ignore
             dialogOptions,
-            asFileURL: true,
         })
-        
-        if (filename) {
-            onChange?.([filename])
+        if (filenames) {
+            onChange?.(filenames)
         }
     }
 

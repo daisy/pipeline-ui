@@ -17,7 +17,7 @@ import {
     selectNextJob,
     selectPrevJob,
 } from 'shared/data/slices/pipeline'
-import { NewJobPane } from '../../JobDetailsPane/NewJobPane'
+import { NewJobPane } from '../../NewJobPane'
 import { calculateJobName } from 'shared/jobName'
 import { PLATFORM } from 'shared/constants'
 import { Plus } from '../../SvgIcons'

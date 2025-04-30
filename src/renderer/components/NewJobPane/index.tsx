@@ -2,7 +2,7 @@
 Select a script and submit a new job
 */
 import { useState, useMemo, useEffect } from 'react'
-import { ScriptForm } from '../../ScriptForm'
+import { ScriptForm } from '../ScriptForm'
 import { useWindowStore } from 'renderer/store'
 import { ID } from 'renderer/utils/utils'
 import { Job, Script } from 'shared/types'
@@ -22,13 +22,13 @@ const { App } = window
 import {
     defaultSponsorshipMessage,
     updateSponsorshipMessage,
-} from '../../../utils'
+} from '../../utils'
 import { is2StepsScript, isScriptTTSEnhanced } from 'shared/utils'
-import { getRelevantScripts } from '../../scriptFilters'
+import { getRelevantScripts } from '../scriptFilters'
 import { FilelistWithRelevantScripts } from './FilelistWithRelevantScripts'
-import { DragFileInput } from '../../Fields/DragFileInput'
+import { DragFileInput } from '../Fields/DragFileInput'
 import { FileTreeEntry } from 'main/ipcs/fileSystem'
-
+import { debug } from 'electron-log'
 // is dateInMs more than 2 weeks old
 function isExpired(dateInMs: number) {
     if (dateInMs == 0) return true
@@ -98,16 +98,18 @@ export function NewJobPane({ job }: { job: Job }) {
     let addFiles = async (newFiles) => {
         console.log('Add files', newFiles)
         let currentFiles = files.map((f) => f.filepath)
+
         // filter out any duplicates
         let uniqueNewFiles = newFiles.filter(
             (file) => currentFiles.indexOf(file) == -1
         )
+        debug(`Unique new files`, uniqueNewFiles)
         let uniqueNewFilesThatAreSupported = []
         // assign a filetype to each one
         for (let file of uniqueNewFiles) {
-            // console.log("Detecting filetype", file)
+            debug(`Detecting type of ${file}`)
             let filetype = await App.detectFiletype(file)
-            // console.log('...', filetype)
+            debug(`...${filetype}`)
             if (filetype) {
                 uniqueNewFilesThatAreSupported.push({
                     filepath: file,
@@ -115,18 +117,17 @@ export function NewJobPane({ job }: { job: Job }) {
                 })
             }
         }
-        // console.log("Unique new files that are supported", uniqueNewFilesThatAreSupported)
+        debug(
+            `Unique new files that are supported ${JSON.stringify(
+                uniqueNewFilesThatAreSupported
+            )}`
+        )
+
         let filesCopy = [...files]
         filesCopy = filesCopy.concat(
             uniqueNewFilesThatAreSupported.filter((f) => f.filetype != null)
         )
-        setFiles(
-            filesCopy.map((f) =>
-                f.filepath.indexOf('file://') == -1
-                    ? { ...f, filepath: `file://${f.filepath}` }
-                    : f
-            )
-        )
+        setFiles(filesCopy)
     }
     // handle user adding more files and folders
     // resolve folder contents and add files to the current files list
@@ -163,7 +164,7 @@ export function NewJobPane({ job }: { job: Job }) {
         return resolvedItems
     }
 
-    let createJob = (script: Script, inputFiles: string[]) => {
+    let createJob = async (script: Script, inputFiles: string[]) => {
         console.log('createJob')
         console.log('script', script)
         console.log('inputFiles', inputFiles)
@@ -176,8 +177,13 @@ export function NewJobPane({ job }: { job: Job }) {
             (input) => input.name == 'source'
         )
         if (sourceInputIdx != -1) {
-            inputsCopy[sourceInputIdx].value = [...inputFiles]
+            inputsCopy[sourceInputIdx].value = []
+            for (let inputFile of inputFiles) {
+                let retval = await App.pathToFileURL(inputFile)
+                inputsCopy[sourceInputIdx].value.push(retval)
+            }
         }
+        console.log('createJob inputsCopy', inputsCopy)
 
         jobRequest.inputs = [...inputsCopy]
 
@@ -320,8 +326,13 @@ export function NewJobPane({ job }: { job: Job }) {
 
                     <button
                         id={`cancel-job-${job.internalId}`}
-                        onClick={(e) => {
-                            App.store.dispatch(removeJob(job))
+                        onClick={async (e) => {
+                            let result = await App.showMessageBoxYesNo(
+                                'Are you sure you want to close this job?'
+                            )
+                            if (result) {
+                                App.store.dispatch(removeJob(job))
+                            }
                         }}
                     >
                         Cancel

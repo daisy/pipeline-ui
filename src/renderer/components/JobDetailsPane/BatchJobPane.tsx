@@ -20,6 +20,7 @@ import { useState, useEffect } from 'react'
 import { JobDetails } from './JobDetails'
 import { areAllJobsInBatchDone, getIdleCountInBatch } from 'shared/utils'
 import { JobStatusIcon } from '../SvgIcons'
+import { File, FileAsType } from '../File'
 
 const { App } = window
 
@@ -37,11 +38,11 @@ export function BatchJobDetailsPane({ jobs }: { jobs: Array<Job> }) {
         setSelectedJob(job)
     }
 
-    let onCloseBatch = () => {
+    let onCloseBatch = async () => {
         if (!areAllJobsInBatchDone(primaryJob, jobs)) {
             return
         }
-        let result = App.showMessageBoxYesNo(
+        let result = await App.showMessageBoxYesNo(
             'Are you sure you want to close these jobs?'
         )
         if (result) {
@@ -60,9 +61,7 @@ export function BatchJobDetailsPane({ jobs }: { jobs: Array<Job> }) {
         let sourceInput = job.jobRequest.inputs.find(
             (input) => input.name == 'source'
         )
-        return sourceInput?.value
-            ? sourceInput.value.replace('file://', '')
-            : ''
+        return sourceInput?.value ?? ''
     }
     return (
         <div className="batch-job">
@@ -98,9 +97,10 @@ export function BatchJobDetailsPane({ jobs }: { jobs: Array<Job> }) {
                                         height: 20,
                                     })}
                                 </span>
-                                <span className="filepath">
-                                    {getSourceValue(job)}
-                                </span>
+                                <File
+                                    showAsType={FileAsType.AS_PATH}
+                                    fileUrlOrPath={getSourceValue(job)}
+                                />
                             </li>
                         ))}
                 </ul>

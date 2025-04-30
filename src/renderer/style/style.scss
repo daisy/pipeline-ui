@@ -354,13 +354,22 @@ p.warning {
             
         aside {
             border: 1px solid var(--fg-mix-fade);
+            border-radius: 6px;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
 
             h2 {
                 width: min-content;
                 white-space: nowrap;
             }
+            ul {
+                display: flex;
+                flex-direction: column;
+                gap: 1rem;
+            }
             li {
-                padding: 2px;
+                padding: .5rem;
                 cursor: pointer;
                 display: flex;
                 flex-direction: row;
@@ -406,7 +415,7 @@ p.warning {
                         100% { transform: rotate(-1080deg); }
                     }
                 }
-                span.filepath {
+                span.file {
                     width: min-content;
                 }
             }
@@ -414,9 +423,10 @@ p.warning {
                 font-weight: bold;
                 background-color: var(--bg);
                 box-shadow: 0 0 0 2px var(--select-mix);
+                border-radius: 6px;
             }
             div.controls {
-                align-self:flex-end;
+                align-self:center;
                 display: flex;
                 flex-direction: row;
                 gap: .5rem;

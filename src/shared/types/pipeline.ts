@@ -23,8 +23,12 @@ export type Webservice = {
  */
 export function baseurl(ws: Webservice) {
     if (!ws) return ''
+    let host = ws.host
+    if (host == '0.0.0.0') {
+        host = '127.0.0.1'
+    }
     // eslint-disable-next-line
-    return `${ws.ssl ? 'https' : 'http'}://${ws.host}${ws.port ? ':' + ws.port : ''}${ws.path ?? ''}`
+    return `${ws.ssl ? 'https' : 'http'}://${host}${ws.port ? ':' + ws.port : ''}${ws.path ?? ''}`
 }
 
 /**

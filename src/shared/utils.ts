@@ -121,11 +121,13 @@ export function getCompletedCountInBatch(
     primaryJob: Job,
     jobsInBatch: Array<Job>
 ) {
-    let numJobsDone = jobsInBatch.filter((j) =>
-        [JobStatus.ERROR, JobStatus.FAIL, JobStatus.SUCCESS].includes(
-            j.jobData.status
-        )
-    ).length
+    let numJobsDone =
+        jobsInBatch.filter((j) =>
+            [JobStatus.ERROR, JobStatus.FAIL, JobStatus.SUCCESS].includes(
+                j.jobData?.status
+            )
+        ).length + jobsInBatch.filter((j) => j.jobRequestError).length
+
     return numJobsDone
 }
 

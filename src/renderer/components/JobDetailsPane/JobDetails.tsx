@@ -40,27 +40,29 @@ export function JobDetails({ job }: { job: Job }) {
             <h1>Error</h1>
             <div className="details">
                 <p>{job.jobRequestError.description}</p>
-                <div className="form-buttons">
-                    <button
-                        onClick={(e) => {
-                            App.store.dispatch(editJob(job))
-                        }}
-                    >
-                        Edit job
-                    </button>
-                    <button
-                        onClick={async (e) => {
-                            let result = await App.showMessageBoxYesNo(
-                                'Are you sure you want to close this job?'
-                            )
-                            if (result) {
-                                App.store.dispatch(removeJob(job))
-                            }
-                        }}
-                    >
-                        Close job
-                    </button>
-                </div>
+                {!jobIsBatch && (
+                    <div className="form-buttons">
+                        <button
+                            onClick={(e) => {
+                                App.store.dispatch(editJob(job))
+                            }}
+                        >
+                            Edit job
+                        </button>
+                        <button
+                            onClick={async (e) => {
+                                let result = await App.showMessageBoxYesNo(
+                                    'Are you sure you want to close this job?'
+                                )
+                                if (result) {
+                                    App.store.dispatch(removeJob(job))
+                                }
+                            }}
+                        >
+                            Close job
+                        </button>
+                    </div>
+                )}
             </div>
         </>
     ) : (
@@ -196,9 +198,10 @@ export function JobDetails({ job }: { job: Job }) {
                                     </button>
                                     <button
                                         onClick={async (e) => {
-                                            let result = await App.showMessageBoxYesNo(
-                                                'Are you sure you want to close this job?'
-                                            )
+                                            let result =
+                                                await App.showMessageBoxYesNo(
+                                                    'Are you sure you want to close this job?'
+                                                )
                                             if (result) {
                                                 App.store.dispatch(
                                                     removeJob(job)

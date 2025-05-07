@@ -6,6 +6,7 @@ import {
     save,
     selectTtsConfig,
     setAutoCheckUpdate,
+    setDownloadPath,
 } from 'shared/data/slices/settings'
 import { checkForUpdate } from 'shared/data/slices/update'
 import { ttsConfigToXml } from 'shared/parser/pipelineXmlConverter/ttsConfigToXml'
@@ -14,6 +15,7 @@ import { RootState } from 'shared/types/store'
 import { pipelineAPI } from '../apis/pipeline'
 import { selectWebservice } from 'shared/data/slices/pipeline'
 import { settingsFile } from '../settings'
+import { pathToFileURL } from 'url'
 
 function startCheckingUpdates(dispatch) {
     return setInterval(() => {
@@ -32,8 +34,14 @@ export function settingsMiddleware({ getState, dispatch }) {
     let updateCheckInterval = initialSettings.autoCheckUpdate
         ? startCheckingUpdates(dispatch)
         : null
-    return (next) => (action: PayloadAction<any>) => {
-        const returnValue = next(action)
+    return (next) => (action_: PayloadAction<any>) => {
+        let action = action_
+        // make sure we always store the download folder as a URL
+        if (action.type == setDownloadPath.type) {
+            action.payload = pathToFileURL(action.payload).href
+        }
+
+        let returnValue = next(action)
         const { settings } = getState() as RootState
 
         // stop autoCheck action if it has been disabled

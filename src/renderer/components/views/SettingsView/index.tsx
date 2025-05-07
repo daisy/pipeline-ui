@@ -66,9 +66,9 @@ export function SettingsView() {
     const [voiceFilters, setVoiceFilters] = useState([])
 
     // Changed folder
-    const resultsFolderChanged = async (filename) => {
-        let fileurl = await App.pathToFileURL(filename)
-        App.store.dispatch(setDownloadPath(fileurl))
+    const resultsFolderChanged = (filename) => {
+        console.log("resultsFolderChanged", filename)
+        App.store.dispatch(setDownloadPath(filename[0]))
         App.store.dispatch(save())
         //setSaved(true)
     }

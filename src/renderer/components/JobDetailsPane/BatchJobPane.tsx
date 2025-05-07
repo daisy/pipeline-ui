@@ -1,26 +1,15 @@
 /*
 Details of a submitted job
 */
-import { Job, JobState, JobStatus } from '/shared/types'
-import { Messages } from './Messages'
-import { Settings } from './Settings'
-import { Results } from './Results'
+import { Job, JobStatus } from '/shared/types'
 
-import { ID, externalLinkClick } from '../../utils/utils'
-import {
-    editJob,
-    removeBatchJob,
-    runJob,
-    cancelBatchJob,
-} from 'shared/data/slices/pipeline'
+import { removeBatchJob, cancelBatchJob } from 'shared/data/slices/pipeline'
 import { readableStatus } from 'shared/jobName'
-import { FileLink } from '../FileLink'
-import { useWindowStore } from 'renderer/store'
 import { useState, useEffect } from 'react'
 import { JobDetails } from './JobDetails'
 import { areAllJobsInBatchDone, getIdleCountInBatch } from 'shared/utils'
 import { JobStatusIcon } from '../SvgIcons'
-import { File, FileAsType } from '../File'
+import { File, FileAsType } from '../Fields/File'
 
 const { App } = window
 
@@ -63,6 +52,17 @@ export function BatchJobDetailsPane({ jobs }: { jobs: Array<Job> }) {
         )
         return sourceInput?.value ?? ''
     }
+
+    let getStatus = (job) => {
+        if (job.jobRequestError) {
+            return readableStatus.ERROR.toLowerCase()
+        }
+        if (job.jobData?.status) {
+            return readableStatus[job.jobData.status].toLowerCase()
+        }
+        return readableStatus.LAUNCHING.toLowerCase()
+    }
+
     return (
         <div className="batch-job">
             <aside>
@@ -83,19 +83,16 @@ export function BatchJobDetailsPane({ jobs }: { jobs: Array<Job> }) {
                                 onClick={(e) => selectJob(job)}
                                 aria-title={`Select job in batch`}
                             >
-                                <span
-                                    className={`status ${
-                                        job.jobData?.status
-                                            ? readableStatus[
-                                                  job.jobData.status
-                                              ].toLowerCase()
-                                            : readableStatus.LAUNCHING.toLowerCase()
-                                    }`}
-                                >
-                                    {JobStatusIcon(job.jobData.status, {
-                                        width: 20,
-                                        height: 20,
-                                    })}
+                                <span className={`status ${getStatus(job)}`}>
+                                    {JobStatusIcon(
+                                        job.jobData?.status ||
+                                            (job.jobRequestError &&
+                                                JobStatus.ERROR),
+                                        {
+                                            width: 20,
+                                            height: 20,
+                                        }
+                                    )}
                                 </span>
                                 <File
                                     showAsType={FileAsType.AS_PATH}

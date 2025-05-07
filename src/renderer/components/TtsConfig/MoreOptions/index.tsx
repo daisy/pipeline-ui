@@ -36,7 +36,7 @@ export function TtsMoreOptionsConfigPane({
     >(clone(ttsEngineProperties))
 
     const [enginePropsChanged, setEnginePropsChanged] = useState<{
-        [engineKey: string]: boolean
+        [engineKey: string]: string
     }>({})
 
     const [speechRateDisplay, setSpeechRateDisplay] = useState(
@@ -46,8 +46,10 @@ export function TtsMoreOptionsConfigPane({
     )
 
     let onLexiconChange = async (filename) => {
-        let fileurl = await App.pathToFileURL(filename)
-        onPropertyChange('org.daisy.pipeline.tts.default-lexicon', fileurl)
+        if (filename && filename.length > 0) {
+            let fileurl = await App.pathToFileURL(filename[0])
+            onPropertyChange('org.daisy.pipeline.tts.default-lexicon', fileurl)
+        }
     }
     let onInputChange = (e, propName) => {
         e.preventDefault()

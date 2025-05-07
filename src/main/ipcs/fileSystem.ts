@@ -148,7 +148,15 @@ function isDirectory(itemPath: string) {
     }
     return false
 }
-
+function isURL(str: string) {
+    try {
+        // see if it can be a URL object
+        new URL(str)
+    } catch (_) {
+        return false
+    }
+    return true
+}
 function setupFileSystemEvents() {
     // comes from the renderer process (ipcRenderer.send())
     ipcMain.handle(IPC_EVENT_pathExists, async (event, payload) => {
@@ -177,6 +185,9 @@ function setupFileSystemEvents() {
     })
     ipcMain.handle(IPC_EVENT_pathToFileURL, (event, payload) => {
         try {
+            if (isURL(payload)) {
+                return payload
+            }
             let res = pathToFileURL(payload).href
             return res
         } catch (e) {
@@ -186,6 +197,9 @@ function setupFileSystemEvents() {
     })
     ipcMain.handle(IPC_EVENT_fileURLToPath, (event, payload) => {
         try {
+            if (!isURL(payload)) {
+                return payload
+            }
             let res = fileURLToPath(payload)
             return res
         } catch (e) {

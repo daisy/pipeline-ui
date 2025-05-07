@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { FileInput, FileInputProps } from './FileInput'
 import { FileList } from './FileList'
-import { FileAsType } from '../File'
+import { FileAsType } from './File'
 
 interface MultiFileInputProps extends FileInputProps {
     initialValue?: string[]

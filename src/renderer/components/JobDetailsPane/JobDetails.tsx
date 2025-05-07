@@ -30,7 +30,6 @@ export function JobDetails({ job }: { job: Job }) {
             [JobState.SUBMITTING, JobState.SUBMITTED].includes(job.state)
         )
     }, [job.state])
-    console.log('Job details', JSON.stringify(job, null, '  '))
 
     let jobIsBatch =
         job.jobRequest.batchId != null && job.jobRequest.batchId != ''

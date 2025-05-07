@@ -40,13 +40,11 @@ export function TtsPreferredVoicesConfigPane({
     }
 
     let selectDefault = (e, voice) => {
-        console.log('default voices', defaultVoices)
         let tmpVoices = defaultVoices ? [...defaultVoices] : []
         let oldDefaultIdx = tmpVoices?.findIndex(
             (vx) => getLang(vx.lang) == getLang(voice.lang)
         ) ?? -1
         if (oldDefaultIdx != -1) {
-            console.log(getLang(voice.lang), ' has default already')
             tmpVoices.splice(oldDefaultIdx, 1)
         }
         tmpVoices.push(voice)
@@ -59,12 +57,9 @@ export function TtsPreferredVoicesConfigPane({
             (vx) => getLang(vx.lang) == langCode
         )
         if (oldDefaultIdx != -1) {
-            console.log('found at ', oldDefaultIdx)
             tmpVoices.splice(oldDefaultIdx, 1)
             setDefaultVoices(tmpVoices)
             onChangeDefaultVoices(tmpVoices)
-        } else {
-            console.log('not found')
         }
     }
     let preferredRowLength = userPreferredVoices.filter((v) => {

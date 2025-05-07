@@ -144,7 +144,6 @@ export function TtsEnginesConfigPane({
         // TODO : add a setting to let users disable autoconnect on startup
         onChangeTtsEngineProperties(ttsProps)
     }
-    console.log(engineProperties)
     return (
         <>
             <p className="desc">

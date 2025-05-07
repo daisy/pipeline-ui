@@ -96,7 +96,6 @@ export function NewJobPane({ job }: { job: Job }) {
 
     // add a list of files to the current files list and filter out duplicates
     let addFiles = async (newFiles) => {
-        console.log('Add files', newFiles)
         let currentFiles = files.map((f) => f.filepath)
 
         // filter out any duplicates
@@ -137,8 +136,6 @@ export function NewJobPane({ job }: { job: Job }) {
     }
     // recursively list directory contents
     const resolveItems = async (items) => {
-        console.log('Resolve items', items)
-
         let resolvedItems: string[] = []
         for (let item of items) {
             let paths = []
@@ -165,12 +162,7 @@ export function NewJobPane({ job }: { job: Job }) {
     }
 
     let createJob = async (script: Script, inputFiles: string[]) => {
-        console.log('createJob')
-        console.log('script', script)
-        console.log('inputFiles', inputFiles)
-
         let jobRequest = prepareJobRequest(job, script)
-        // console.log('jobRequest:\n', jobRequest)
 
         let inputsCopy = [...jobRequest.inputs]
         let sourceInputIdx = inputsCopy.findIndex(
@@ -183,7 +175,6 @@ export function NewJobPane({ job }: { job: Job }) {
                 inputsCopy[sourceInputIdx].value.push(retval)
             }
         }
-        console.log('createJob inputsCopy', inputsCopy)
 
         jobRequest.inputs = [...inputsCopy]
 

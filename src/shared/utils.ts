@@ -12,12 +12,6 @@ import {
 export function isScriptBatchable(script: Script) {
     let hasSequenceForInput =
         script.inputs.find((input) => input.sequence === true) != undefined
-    if (hasSequenceForInput) {
-        console.log(script.id, 'already accepts a sequence of files as input')
-    }
-    if (is2StepsScript(script)) {
-        console.log(script.id, '2 steps script')
-    }
     return !is2StepsScript(script) && !hasSequenceForInput
 }
 

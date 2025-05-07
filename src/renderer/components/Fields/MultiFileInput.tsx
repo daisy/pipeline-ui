@@ -41,7 +41,6 @@ const MultiFileInput: React.FC<MultiFileInputProps> = ({
         updateFiles(Array.from(new Set([...files, ...newFiles])))
     }
     let updateFiles = (changedFiles) => {
-        console.log('MultiFileInput updateFiles', changedFiles)
         setFiles(changedFiles)
         onChange?.(changedFiles)
     }

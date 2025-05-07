@@ -31,7 +31,6 @@ export function MainView() {
     const [visibleJobs, setVisibleJobs] = useState([])
 
     useEffect(() => {
-        console.log('use effect []')
         if (!(pipeline.jobs && pipeline.jobs.length > 0)) {
             let newJob_ = newJob(pipeline)
             App.store.dispatch(addJob(newJob_))
@@ -42,7 +41,6 @@ export function MainView() {
     // on navigation received for the tab, we need to refocus the selected tab
     // for the narrators to announce it
     useEffect(() => {
-        console.log('use effect selectedJobId')
         if (pipeline.selectedJobId !== '') {
             document
                 .getElementById(`${ID(pipeline.selectedJobId)}-tab`)
@@ -53,7 +51,6 @@ export function MainView() {
     }, [pipeline.selectedJobId])
 
     useEffect(() => {
-        console.log('use effect jobs')
         let visibleJobs_ = pipeline.jobs.filter(
             (job) =>
                 (settings.editJobOnNewTab || !job.invisible) &&
@@ -62,11 +59,6 @@ export function MainView() {
         setVisibleJobs([...visibleJobs_])
     }, [pipeline.jobs])
 
-    // const visibleJobs = pipeline.jobs.filter(
-    //     (job) =>
-    //         (settings.editJobOnNewTab || !job.invisible) &&
-    //         (!job.jobRequest?.batchId || job.isPrimaryForBatch) // job is not part of a batch or it's the primary
-    // )
     const newJobButton = document.getElementById(`new-job-button`)
     /**
      * Keyboard actions on tabs with arrows
@@ -134,7 +126,6 @@ export function MainView() {
                         role="tab"
                         type="button"
                         onClick={(e) => {
-                            console.log(job)
                             App.store.dispatch(selectJob(job))
                             document
                                 .getElementById(

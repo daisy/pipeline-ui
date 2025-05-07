@@ -48,7 +48,6 @@ const MultiUriInput: React.FC<MultiFileInputProps> = ({
                     allowFolder={false}
                     mediaType={mediaType}
                     onChange={(f) => {
-                        console.log('browsed for', f)
                         if (f && f.length > 0) setText(f[0])
                     }}
                 />

@@ -50,13 +50,10 @@ const sniffEncoding = async (filepath: string): Promise<string> => {
 }
 
 async function detectFiletype(filepath: string): Promise<Filetype> {
-    console.log('Detect filetype', filepath)
     let filetypeType = await sniffFile(filepath)
-    console.log('file sniffed as ', filetypeType)
     // some special types exist where the result of sniffFile is also the filetype type
     let specialType = scriptInputFiletypes.find((ft) => ft.type == filetypeType)
     if (specialType) {
-        console.log('matches special type', specialType)
         return specialType
     }
 

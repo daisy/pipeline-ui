@@ -18,22 +18,6 @@ const SingleFileInput: React.FC<FileInputProps> = ({
     required = false,
 }) => {
     const [file, setFile] = useState<string>(getArr0(initialValue))
-    // useEffect(() => {
-    //     console.log('Useeffect File', file)
-    //     const doConversion = async () => {
-    //         console.log('doing conversion')
-    //         if (file.indexOf('file:') != -1) {
-    //             let aspath = await App.fileURLToPath(file)
-    //             console.log('setting value aspath', aspath)
-    //             setFile(aspath)
-    //         } else {
-    //             // else it's already in path format
-    //             console.log('is already path', file)
-    //             setFile(file)
-    //         }
-    //     }
-    //     doConversion()
-    // }, [file])
     let isValid = () => required && file && file.trim() != ''
     // debug("SingleFileInput initialValue", initialValue)
     return (
@@ -53,7 +37,6 @@ const SingleFileInput: React.FC<FileInputProps> = ({
                 mediaType={mediaType}
                 onChange={(values) => {
                     if (values && values.length > 0) {
-                        console.log("FileInput onChange setFile", values[0])
                         setFile(values[0])
                         onChange?.(values)
                     }

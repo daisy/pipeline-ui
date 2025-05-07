@@ -29,12 +29,10 @@ export function FilelistWithRelevantScripts({
         })
 
         setSelectedFiles([...selectedFilesCopy])
-        console.log('selection', selectedFilesCopy)
     }
 
     let multiSelectEnabled = (scriptId) => {
         let script = relevantScripts.find((s) => s.id == scriptId)
-        console.log(scriptId)
         return script?.batchable || script?.multidoc
     }
     let onSelectScript = (e) => {

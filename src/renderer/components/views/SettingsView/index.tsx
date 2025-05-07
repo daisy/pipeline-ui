@@ -67,7 +67,6 @@ export function SettingsView() {
 
     // Changed folder
     const resultsFolderChanged = (filename) => {
-        console.log("resultsFolderChanged", filename)
         App.store.dispatch(setDownloadPath(filename[0]))
         App.store.dispatch(save())
         //setSaved(true)

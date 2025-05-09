@@ -80,6 +80,11 @@ export const mediaTypesFileFilters: Array<Filetype> = [
         name: 'Word Document',
         extensions: ['docx'],
     },
+    {
+        type: 'application/pls+xml',
+        name: 'Lexicon',
+        extensions: ['pls'],
+    },
 ]
 
 // this is a set of filetypes that are accepted as primary script inputs

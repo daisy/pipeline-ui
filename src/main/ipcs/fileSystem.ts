@@ -152,7 +152,11 @@ function isURL(str: string) {
     } catch (_) {
         return false
     }
-    return true
+    // however, this can return a false positive on windows, so check other things too
+    if (str.toLowerCase().startsWith('file://')) {
+        return true
+    }
+    return false
 }
 function setupFileSystemEvents() {
     // comes from the renderer process (ipcRenderer.send())

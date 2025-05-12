@@ -70,6 +70,9 @@ $dark-theme: themeColors($dark-color, $dark-select-color, $dark-error-color-bg, 
     --select: #{map.get($light-theme, 'select')};
     // hovered tab
     --select-mix: #{map.get($light-theme, 'select-mix')};
+
+    --daisy-blue: #192378;
+    --daisy-blue-tint: #3243d4;
 }
 
 // overrides for dark theme

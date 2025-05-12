@@ -3,7 +3,7 @@ import { MainView } from 'renderer/components'
 import { useWindowStore } from 'renderer/store'
 import { start } from 'shared/data/slices/pipeline'
 import { PipelineStatus } from 'shared/types'
-
+import { Running as RunningIcon } from '../../components/Widgets/SvgIcons'
 const queryClient = new QueryClient()
 
 const { App } = window
@@ -17,7 +17,12 @@ export function MainScreen() {
                     {pipeline.status == PipelineStatus.RUNNING ? (
                         <MainView />
                     ) : pipeline.status == PipelineStatus.STARTING ? (
-                        <p>Starting the engine...</p>
+                        <div className="startup">
+                            <p>Starting the engine...</p>
+                            <span className="status running">
+                                <RunningIcon width={200} height={200} />
+                            </span>
+                        </div>
                     ) : (
                         <>
                             <p>Engine is stopped</p>

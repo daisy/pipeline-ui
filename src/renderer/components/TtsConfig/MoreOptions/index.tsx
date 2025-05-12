@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useWindowStore } from 'renderer/store'
 import { setProperties } from 'shared/data/slices/pipeline'
 import { TtsEngineState } from 'shared/types'
-import { SingleFileInput } from 'renderer/components/Fields/SingleFileInput'
+import { SingleFileInput } from 'renderer/components/Widgets/SingleFileInput'
 
 const { App } = window
 

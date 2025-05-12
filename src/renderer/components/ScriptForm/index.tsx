@@ -22,7 +22,7 @@ import {
     ScriptOption,
 } from 'shared/types'
 
-import { FormField } from '../Fields/FormField'
+import { FormField } from '../Widgets/FormField'
 import { JobRequestError } from './jobRequestError'
 import { ScriptName } from './scriptName'
 import {

@@ -19,7 +19,7 @@ import { TtsEnginesConfigPane } from '../../TtsConfig/Engines'
 import { TtsMoreOptionsConfigPane } from '../../TtsConfig/MoreOptions'
 import { TtsBrowseVoicesConfigPane } from '../../TtsConfig/BrowseVoices'
 import { TtsPreferredVoicesConfigPane } from '../../TtsConfig/PreferredVoices'
-import { SingleFileInput } from 'renderer/components/Fields/SingleFileInput'
+import { SingleFileInput } from 'renderer/components/Widgets/SingleFileInput'
 
 const { App } = window // The "App" comes from the bridge
 

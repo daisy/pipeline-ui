@@ -27,3 +27,4 @@ node_modules
 daisy-pipeline
 .vscode/settings.json
 .vscode/launch.json
+sign-installer-mac.sh

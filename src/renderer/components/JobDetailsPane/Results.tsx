@@ -1,6 +1,6 @@
 import { Job } from 'shared/types'
-import { FileLink } from '../FileLink'
-import { MarkdownDescription } from '../Fields/MarkdownDescription'
+import { FileLink } from '../Widgets/FileLink'
+import { MarkdownDescription } from '../Widgets/MarkdownDescription'
 const { App } = window
 
 export function Results({ job }: { job: Job }) {

@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Down, Up, X } from '../SvgIcons'
+import { Down, Up, X } from './SvgIcons'
 import { File, FileAsType } from './File'
 
 // a list of files with a browse button

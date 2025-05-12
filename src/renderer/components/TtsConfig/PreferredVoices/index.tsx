@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { TtsConfig, TtsVoice } from 'shared/types/ttsConfig'
-import { Down, Up } from '../../SvgIcons'
+import { Down, Up } from '../../Widgets/SvgIcons'
 import { voicesTransliterations } from '../BrowseVoices/voiceTransliterations'
 
 export function TtsPreferredVoicesConfigPane({

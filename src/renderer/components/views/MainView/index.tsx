@@ -20,7 +20,7 @@ import {
 import { NewJobPane } from '../../NewJobPane'
 import { calculateJobName } from 'shared/jobName'
 import { PLATFORM } from 'shared/constants'
-import { Plus } from '../../SvgIcons'
+import { Plus } from '../../Widgets/SvgIcons'
 import { BatchJobDetailsPane } from 'renderer/components/JobDetailsPane/BatchJobPane'
 import { SingleJobDetailsPane } from 'renderer/components/JobDetailsPane/SingleJobPane'
 

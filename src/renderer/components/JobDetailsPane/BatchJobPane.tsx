@@ -8,8 +8,8 @@ import { readableStatus } from 'shared/jobName'
 import { useState, useEffect } from 'react'
 import { JobDetails } from './JobDetails'
 import { areAllJobsInBatchDone, getIdleCountInBatch } from 'shared/utils'
-import { JobStatusIcon } from '../SvgIcons'
-import { File, FileAsType } from '../Fields/File'
+import { JobStatusIcon } from '../Widgets/SvgIcons'
+import { File, FileAsType } from '../Widgets/File'
 
 const { App } = window
 

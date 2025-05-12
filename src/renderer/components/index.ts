@@ -1,3 +1,3 @@
-export * from './views/MainView'
-export * from './views/SettingsView'
-export * from './SvgIcons'
+export * from './Views/MainView'
+export * from './Views/SettingsView'
+export * from './Widgets/SvgIcons'

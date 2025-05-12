@@ -26,7 +26,7 @@ import {
 import { is2StepsScript, isScriptTTSEnhanced } from 'shared/utils'
 import { getRelevantScripts } from '../scriptFilters'
 import { FilelistWithRelevantScripts } from './FilelistWithRelevantScripts'
-import { DragFileInput } from '../Fields/DragFileInput'
+import { DragFileInput } from '../Widgets/DragFileInput'
 import { FileTreeEntry } from 'main/ipcs/fileSystem'
 import { debug } from 'electron-log'
 // is dateInMs more than 2 weeks old

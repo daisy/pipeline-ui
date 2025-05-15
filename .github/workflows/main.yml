@@ -40,10 +40,10 @@ jobs:
         uses: actions/setup-java@v2
         with:
           distribution: 'adopt'
-          java-version: '11'
+          java-version: '8'
 
       - name: Check out submodule
-        run: git submodule update --init --recursive
+        run: git submodule update --init
 
       - name: Get yarn cache directory path
         id: yarn-cache-dir-path
@@ -87,7 +87,14 @@ jobs:
       - name: Build EXE if on Windows
         if: ${{ matrix.os == 'windows-latest' }}
         shell: cmd
-        run: engine\\make.exe exe
+        run: engine\\assembly\\make.exe exe
+
+      - name: Store maven.log
+        if: ${{ always() }}
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: "maven-${{matrix.os}}.log"
+          path: engine/maven.log
 
       - name: Upload the DMG
         if: ${{ matrix.os == 'macos-latest' }}

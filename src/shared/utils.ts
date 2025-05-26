@@ -80,7 +80,9 @@ export function is2StepsScript(script: Script) {
     }
     return (
         script.options.findIndex(
-            (item) => item.name == 'stylesheet-parameters'
+            (item) =>
+                item.name == 'stylesheet-parameters' ||
+                item.name == 'braille-translator-stylesheet-parameters'
         ) > -1
     )
 }

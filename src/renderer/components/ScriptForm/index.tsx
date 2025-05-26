@@ -77,8 +77,13 @@ export function ScriptForm({ job, script }: { job: Job; script: Script }) {
         'audio',
         'braille',
         'tts',
+        'braille-translator-stylesheet',
     ]
-    const hiddenOptions = ['transform', 'stylesheet-parameters']
+    const hiddenOptions = [
+        'transform',
+        'stylesheet-parameters',
+        'braille-translator-stylesheet-parameters',
+    ]
     if (job.is2StepsJob) {
         optional = optional.filter((item) =>
             filteredOptions.includes(item.name)
@@ -200,8 +205,9 @@ export function ScriptForm({ job, script }: { job: Job; script: Script }) {
                 (hasAudio &&
                     (hasAudio.value === true || hasAudio.value !== 'false')) ||
                 (hasBraille && hasBraille.value === true) ||
-                job.script.id.endsWith('to-pef')
+                (job.script.id.endsWith('to-pef') || job.script.id.endsWith('ebraille'))
             ) {
+                console.log("Requesting stylesheet parameters")
                 App.store.dispatch(requestStylesheetParameters(job))
             } else {
                 App.store.dispatch(

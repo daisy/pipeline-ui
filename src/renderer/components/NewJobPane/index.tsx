@@ -102,13 +102,13 @@ export function NewJobPane({ job }: { job: Job }) {
         let uniqueNewFiles = newFiles.filter(
             (file) => currentFiles.indexOf(file) == -1
         )
-        debug(`Unique new files`, uniqueNewFiles)
+        // debug(`Unique new files`, uniqueNewFiles)
         let uniqueNewFilesThatAreSupported = []
         // assign a filetype to each one
         for (let file of uniqueNewFiles) {
-            debug(`Detecting type of ${file}`)
+            // debug(`Detecting type of ${file}`)
             let filetype = await App.detectFiletype(file)
-            debug(`...${filetype}`)
+            // debug(`...${filetype}`)
             if (filetype) {
                 uniqueNewFilesThatAreSupported.push({
                     filepath: file,
@@ -116,11 +116,11 @@ export function NewJobPane({ job }: { job: Job }) {
                 })
             }
         }
-        debug(
-            `Unique new files that are supported ${JSON.stringify(
-                uniqueNewFilesThatAreSupported
-            )}`
-        )
+        // debug(
+        //     `Unique new files that are supported ${JSON.stringify(
+        //         uniqueNewFilesThatAreSupported
+        //     )}`
+        // )
 
         let filesCopy = [...files]
         filesCopy = filesCopy.concat(
@@ -212,7 +212,7 @@ export function NewJobPane({ job }: { job: Job }) {
     return (
         <>
             <section className="select-script">
-                {hasAtLeastOneInput() == false && (
+                {hasAtLeastOneInput() == false && files.length == 0 && (
                     <div>
                         <label
                             id={`${ID(job.internalId)}-select-script`}

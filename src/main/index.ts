@@ -16,6 +16,7 @@ import {
     bindWindowToPipeline,
     makeAppSetup,
     makeAppWithSingleInstanceLock,
+    settingsCommands,
     //parsePipelineCommands,
 } from './factories'
 
@@ -24,6 +25,7 @@ import {
     PipelineTray,
     registerAboutWindowCreationByIPC,
     registerSettingsWindowCreationByIPC,
+    SettingsWindow,
 } from './windows'
 
 import { buildMenuTemplate } from './menu'
@@ -114,6 +116,19 @@ makeAppWithSingleInstanceLock(async () => {
             workingDirectory,
             additionalData: { argv: string[] }
         ) => {
+            // Check if a settings command is present in the command line
+            for (const settingCommand of settingsCommands) {
+                if (!commandLine.includes(settingCommand)) {
+                    continue
+                }
+                const settingsWindow = SettingsWindow(`/${settingCommand}`)
+                if (settingsWindow.isMinimized()) {
+                    settingsWindow.restore()
+                }
+                settingsWindow.focus()
+                return
+            }
+            // no settings command, continue with the main window
             const cliArgs = additionalData?.argv || []
             if (!commandLine.includes('--hidden') && cliArgs.length == 0) {
                 MainWindow().then((window) => {
@@ -128,6 +143,18 @@ makeAppWithSingleInstanceLock(async () => {
     if (store.getState().settings.autoCheckUpdate) {
         store.dispatch(checkForUpdate())
     }
+    for (const settingCommand of settingsCommands) {
+        if (!process.argv.includes(settingCommand)) {
+            continue
+        }
+        const settingsWindow = SettingsWindow(`/${settingCommand}`)
+        if (settingsWindow.isMinimized()) {
+            settingsWindow.restore()
+        }
+        settingsWindow.focus()
+        break
+    }
+
     // Parse pipeline commands
     //parsePipelineCommands(process.argv)
 })

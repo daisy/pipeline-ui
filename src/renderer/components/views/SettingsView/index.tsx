@@ -23,19 +23,31 @@ import { SingleFileInput } from 'renderer/components/Widgets/SingleFileInput'
 
 const { App } = window // The "App" comes from the bridge
 
-enum SelectedMenuItem {
-    General,
-    Appearance,
-    Behavior,
-    Updates,
-    TTSBrowseVoices,
-    TTSPreferredVoices,
-    TTSEngines,
-    TTSMoreOptions,
+export enum SettingsMenuItem {
+    General = '/general',
+    Appearance = '/appearance',
+    Behavior = '/behavior',
+    Updates = '/updates',
+    TTSBrowseVoices = '/browse-voices',
+    TTSPreferredVoices = '/preferred-voices',
+    TTSEngines = '/engines',
+    TTSMoreOptions = '/more-options',
 }
+
+export const SettingsMenuItems = Object.values(SettingsMenuItem).filter(
+    (item) => typeof item === 'string'
+)
 type VoiceFilter = { id: string; value: string }
 
-export function SettingsView() {
+type SettingsViewProps = {
+    selectedItem?: SettingsMenuItem
+}
+
+export function SettingsView(
+    props: SettingsViewProps = {
+        selectedItem: SettingsMenuItem.General,
+    }
+) {
     // Current registered settings
     const { settings, pipeline } = useWindowStore()
 
@@ -60,9 +72,16 @@ export function SettingsView() {
         })
     }, [settings])
 
-    const [selectedSection, setSelectedSection] = useState(
-        SelectedMenuItem.General
-    )
+    // NP 2025 06 10 : replaced by hash router
+    // const [selectedSection, setSelectedSection] = useState(
+    //     SelectedMenuItem.General
+    // )
+    const selectedSection = props.selectedItem ?? SettingsMenuItem.General
+    const setSelectedSection = (section: SettingsMenuItem) => {
+        // see the routes/index.tsx for the corresponding hash router
+        window.location.hash = '#/settings' + section
+    }
+
     const [voiceFilters, setVoiceFilters] = useState([])
 
     // Changed folder
@@ -143,14 +162,14 @@ export function SettingsView() {
                 <ul>
                     <li
                         className={
-                            selectedSection == SelectedMenuItem.General
+                            selectedSection == SettingsMenuItem.General
                                 ? 'selected-menu-item'
                                 : ''
                         }
                     >
                         <button
                             onClick={(e) =>
-                                setSelectedSection(SelectedMenuItem.General)
+                                setSelectedSection(SettingsMenuItem.General)
                             }
                         >
                             General
@@ -158,14 +177,14 @@ export function SettingsView() {
                     </li>
                     <li
                         className={
-                            selectedSection == SelectedMenuItem.Appearance
+                            selectedSection == SettingsMenuItem.Appearance
                                 ? 'selected-menu-item'
                                 : ''
                         }
                     >
                         <button
                             onClick={(e) =>
-                                setSelectedSection(SelectedMenuItem.Appearance)
+                                setSelectedSection(SettingsMenuItem.Appearance)
                             }
                         >
                             Appearance
@@ -173,14 +192,14 @@ export function SettingsView() {
                     </li>
                     <li
                         className={
-                            selectedSection == SelectedMenuItem.Behavior
+                            selectedSection == SettingsMenuItem.Behavior
                                 ? 'selected-menu-item'
                                 : ''
                         }
                     >
                         <button
                             onClick={(e) =>
-                                setSelectedSection(SelectedMenuItem.Behavior)
+                                setSelectedSection(SettingsMenuItem.Behavior)
                             }
                         >
                             Behavior
@@ -188,14 +207,14 @@ export function SettingsView() {
                     </li>
                     <li
                         className={
-                            selectedSection == SelectedMenuItem.Updates
+                            selectedSection == SettingsMenuItem.Updates
                                 ? 'selected-menu-item'
                                 : ''
                         }
                     >
                         <button
                             onClick={(e) =>
-                                setSelectedSection(SelectedMenuItem.Updates)
+                                setSelectedSection(SettingsMenuItem.Updates)
                             }
                         >
                             Updates
@@ -207,7 +226,7 @@ export function SettingsView() {
                             <li
                                 className={
                                     selectedSection ==
-                                    SelectedMenuItem.TTSBrowseVoices
+                                    SettingsMenuItem.TTSBrowseVoices
                                         ? 'selected-menu-item'
                                         : ''
                                 }
@@ -215,7 +234,7 @@ export function SettingsView() {
                                 <button
                                     onClick={(e) =>
                                         setSelectedSection(
-                                            SelectedMenuItem.TTSBrowseVoices
+                                            SettingsMenuItem.TTSBrowseVoices
                                         )
                                     }
                                 >
@@ -225,7 +244,7 @@ export function SettingsView() {
                             <li
                                 className={
                                     selectedSection ==
-                                    SelectedMenuItem.TTSPreferredVoices
+                                    SettingsMenuItem.TTSPreferredVoices
                                         ? 'selected-menu-item'
                                         : ''
                                 }
@@ -233,7 +252,7 @@ export function SettingsView() {
                                 <button
                                     onClick={(e) =>
                                         setSelectedSection(
-                                            SelectedMenuItem.TTSPreferredVoices
+                                            SettingsMenuItem.TTSPreferredVoices
                                         )
                                     }
                                 >
@@ -243,7 +262,7 @@ export function SettingsView() {
                             <li
                                 className={
                                     selectedSection ==
-                                    SelectedMenuItem.TTSEngines
+                                    SettingsMenuItem.TTSEngines
                                         ? 'selected-menu-item'
                                         : ''
                                 }
@@ -251,7 +270,7 @@ export function SettingsView() {
                                 <button
                                     onClick={(e) =>
                                         setSelectedSection(
-                                            SelectedMenuItem.TTSEngines
+                                            SettingsMenuItem.TTSEngines
                                         )
                                     }
                                 >
@@ -261,7 +280,7 @@ export function SettingsView() {
                             <li
                                 className={
                                     selectedSection ==
-                                    SelectedMenuItem.TTSMoreOptions
+                                    SettingsMenuItem.TTSMoreOptions
                                         ? 'selected-menu-item'
                                         : ''
                                 }
@@ -269,7 +288,7 @@ export function SettingsView() {
                                 <button
                                     onClick={(e) =>
                                         setSelectedSection(
-                                            SelectedMenuItem.TTSMoreOptions
+                                            SettingsMenuItem.TTSMoreOptions
                                         )
                                     }
                                 >
@@ -282,7 +301,7 @@ export function SettingsView() {
             </nav>
             <form className="settings-form">
                 <div className="fields">
-                    {selectedSection == SelectedMenuItem.General ? (
+                    {selectedSection == SettingsMenuItem.General ? (
                         <div className="form-field">
                             <label htmlFor="resultsFolder">
                                 Results folder
@@ -307,7 +326,7 @@ export function SettingsView() {
                                 ''
                             )}
                         </div>
-                    ) : selectedSection == SelectedMenuItem.Appearance ? (
+                    ) : selectedSection == SettingsMenuItem.Appearance ? (
                         <div className="form-field">
                             <label htmlFor="colorMode">
                                 Interface color mode
@@ -331,7 +350,7 @@ export function SettingsView() {
                                 )}
                             </select>
                         </div>
-                    ) : selectedSection == SelectedMenuItem.Behavior ? (
+                    ) : selectedSection == SettingsMenuItem.Behavior ? (
                         <>
                             <div className="form-field">
                                 <label htmlFor="editJobOnNewTab">
@@ -382,7 +401,7 @@ export function SettingsView() {
                             {/* insert local pipeline settings form part here */}
                             {/* insert remote pipeline settings form part here */}
                         </>
-                    ) : selectedSection == SelectedMenuItem.Updates ? (
+                    ) : selectedSection == SettingsMenuItem.Updates ? (
                         <div className="form-field">
                             <label className="oneline">
                                 <input
@@ -398,7 +417,7 @@ export function SettingsView() {
                                 checking for updates in the background.
                             </span>
                         </div>
-                    ) : selectedSection == SelectedMenuItem.TTSBrowseVoices ? (
+                    ) : selectedSection == SettingsMenuItem.TTSBrowseVoices ? (
                         <div className="tts-browse-voices">
                             {pipeline.ttsVoices ? (
                                 <TtsBrowseVoicesConfigPane
@@ -420,7 +439,7 @@ export function SettingsView() {
                             )}
                         </div>
                     ) : selectedSection ==
-                      SelectedMenuItem.TTSPreferredVoices ? (
+                      SettingsMenuItem.TTSPreferredVoices ? (
                         <div className="tts-preferred-voices">
                             {pipeline.ttsVoices ? (
                                 <TtsPreferredVoicesConfigPane
@@ -442,7 +461,7 @@ export function SettingsView() {
                                 <p>Loading voices...</p>
                             )}
                         </div>
-                    ) : selectedSection == SelectedMenuItem.TTSEngines ? (
+                    ) : selectedSection == SettingsMenuItem.TTSEngines ? (
                         <div className="tts-engines-config">
                             <TtsEnginesConfigPane
                                 ttsEngineProperties={
@@ -453,7 +472,7 @@ export function SettingsView() {
                                 }
                             />
                         </div>
-                    ) : selectedSection == SelectedMenuItem.TTSMoreOptions ? (
+                    ) : selectedSection == SettingsMenuItem.TTSMoreOptions ? (
                         <div className="tts-more-options">
                             <TtsMoreOptionsConfigPane
                                 ttsEngineProperties={

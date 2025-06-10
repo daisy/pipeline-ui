@@ -37,16 +37,19 @@ export function bindWindowToPipeline(
     })
 }
 
-export function createWindow({ id, ...settings }: WindowProps) {
+export function createWindow(
+    { id, ...settings }: WindowProps,
+    hash: string = ''
+) {
     const window = new BrowserWindow(settings)
-    const devServerURL = `${APP_CONFIG.RENDERER.DEV_SERVER.URL}#/${id}`
+
+    const devServerURL = `${APP_CONFIG.RENDERER.DEV_SERVER.URL}#/${id}${hash}`
 
     ENVIRONMENT.IS_DEV
         ? window.loadURL(devServerURL)
         : window.loadFile('index.html', {
-              hash: `/${id}`,
+              hash: `/${id}${hash}`,
           })
-
     window.on('closed', window.destroy)
 
     // bypass CORS

@@ -26,7 +26,8 @@ async function getWebserviceFromSettings(remain: number, startingTime: number) {
     }
 }
 
-const reservedFlag = ['--bg', '--hidden']
+export const reservedFlag = ['--bg', '--hidden']
+export const settingsCommands = ['browse-voices', 'preferred-voices', 'engines']
 const electronOptions = ['--remote-debugging-port']
 
 export function makeAppWithSingleInstanceLock(fn: () => void) {
@@ -34,11 +35,18 @@ export function makeAppWithSingleInstanceLock(fn: () => void) {
     let commandLineArgs = []
     let appLaunchArgs = []
     if (process.argv) {
-        isElectron = process.argv[0].replaceAll('.exe', '').toLowerCase().endsWith('electron')
+        isElectron = process.argv[0]
+            .replaceAll('.exe', '')
+            .toLowerCase()
+            .endsWith('electron')
         appLaunchArgs = process.argv.slice(0, isElectron ? 2 : 1)
         commandLineArgs = process.argv
             .slice(isElectron ? 2 : 1)
-            .filter((arg) => !reservedFlag.includes(arg))
+            .filter(
+                (arg) =>
+                    !reservedFlag.includes(arg) &&
+                    !settingsCommands.includes(arg)
+            )
             .filter(
                 (arg) =>
                     electronOptions.filter((e) => arg.startsWith(e)).length == 0

@@ -1,13 +1,22 @@
-import { SettingsView } from 'renderer/components'
+import { SettingsView, SettingsMenuItem } from 'renderer/components'
 
-export function SettingsScreen() {
+export { SettingsMenuItem } from 'renderer/components'
+
+export type SettingsScreenProps = {
+    selectedItem?: SettingsMenuItem
+}
+export function SettingsScreen(
+    props: SettingsScreenProps = {
+        selectedItem: SettingsMenuItem.General,
+    }
+) {
     return (
         <>
             <header>
                 <h1>Settings</h1>
             </header>
             <main>
-                <SettingsView />
+                <SettingsView selectedItem={props.selectedItem} />
             </main>
         </>
     )

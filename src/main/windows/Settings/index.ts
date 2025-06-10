@@ -36,6 +36,7 @@ export function SettingsWindow(hash: string = '') {
         },
         hash
     )
+    SettingsWindowInstance.menuBarVisible = false
 
     ENVIRONMENT.IS_DEV &&
         SettingsWindowInstance.webContents.openDevTools({ mode: 'detach' })

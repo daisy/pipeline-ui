@@ -67,7 +67,7 @@ jobs:
       - name: Cache downloaded JRE
         uses: actions/cache@v3
         with:
-          path: engine/src/main/jre
+          path: engine/assembly/src/main/jre
           # always update cache using this trick:
           # https://github.com/actions/cache/blob/main/tips-and-workarounds.md#update-a-cache
           key: ${{ runner.os }}-jre-${{ github.run_id }}

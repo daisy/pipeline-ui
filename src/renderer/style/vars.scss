@@ -43,11 +43,11 @@ $dark-theme: themeColors($dark-color, $dark-select-color, $dark-error-color-bg, 
 // define some variables
 // default to light theme
 :root {
-    --font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont;
-    --fw-font-family: monospace;
+    --font-fam: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont;
+    --fw-font-fam: monospace;
     --font-size: 0.9rem;
     --pad: 1rem;
-    --border-radius: 4px;
+    --br: 4px;
     --tab-panel-height: 90vh;
 
     --error-fg: #{map.get($dark-theme, 'error-fg')};

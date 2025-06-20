@@ -8,7 +8,7 @@ body {
     color: var(--fg);
     background-color: var(--bg);
 
-    font-family: var(--font-family);
+    font-family: var(--font-fam);
     font-size: var(--font-size);
 
     margin: calc(.25 * var(--pad));
@@ -33,7 +33,7 @@ button {
 
     border: thin solid;
     border-color: inherit;
-    border-radius: var(--border-radius);
+    border-radius: var(--br);
 
     white-space: nowrap;
 
@@ -46,7 +46,7 @@ button:disabled {
 }
 
 input {
-    border-radius: var(--border-radius);
+    border-radius: var(--br);
     display: block;
     height: calc(1.5 * var(--font-size));
 }
@@ -110,7 +110,7 @@ p.warning {
 
 [role=tabpanel],
 main.about {
-    border-radius: var(--border-radius);
+    border-radius: var(--br);
 
     // i.e. a button that's not a tab but rater in the main body of the tab panel
     button {
@@ -196,7 +196,7 @@ main.about {
     .job-settings {
         ul {
             padding: calc(var(--pad)/2);
-            border-radius: var(--border-radius);
+            border-radius: var(--br);
             gap: calc(var(--pad)/2);
             max-height: 50vh;
             overflow: scroll;
@@ -214,7 +214,7 @@ main.about {
             }
 
             span:last-of-type {
-                font-family: var(--fw-font-family);
+                font-family: var(--fw-font-fam);
             }
         }
     }
@@ -236,7 +236,7 @@ main.about {
 
         .job-messages {
             ul {
-                font-family: var(--fw-font-family);
+                font-family: var(--fw-font-fam);
                 margin-left: var(--pad);
 
                 .error {

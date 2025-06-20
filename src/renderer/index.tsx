@@ -4,7 +4,7 @@ import React from 'react'
 import { WindowStoreProvider } from './store'
 import { AppRoutes } from './routes'
 
-import './style/style.scss'
+import './style2/global.css'
 
 ReactDom.createRoot(document.querySelector('app') as HTMLElement).render(
     <React.StrictMode>

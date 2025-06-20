@@ -1,0 +1,10 @@
+.sponsorship {
+    align-self: center;
+    border: var(--bw) var(--fg) solid;
+    bottom: 5%;
+    position: absolute;
+    border-radius: 5px;
+    padding: 10px;
+
+    
+}

@@ -37,15 +37,10 @@ export function FormField({
             {item.desc ? (
                 <details>
                     <summary>
-                        {item.sequence ? (
-                            <label id={`${idprefix}-label`}>
-                                {item.nicename}
-                            </label>
-                        ) : (
-                            <label htmlFor={idprefix}>{item.nicename}</label>
-                        )}
+                        <label htmlFor={idprefix}>
+                            {item.nicename ?? item.name}
+                        </label>
                     </summary>
-
                     <div className="description">
                         <Markdown
                             remarkPlugins={[remarkGfm]}
@@ -68,10 +63,13 @@ export function FormField({
                         </Markdown>
                     </div>
                 </details>
-            ) : item.sequence ? (
-                <label id={`${idprefix}-label`}>{item.nicename}</label>
             ) : (
-                <label htmlFor={idprefix}>{item.nicename}</label>
+                <label htmlFor={idprefix}>
+                    {item.nicename != ''
+                        ? item.nicename
+                        : item.name.charAt(0).toUpperCase() +
+                          item.name.slice(1)}
+                </label>
             )}
             {control}
             {error && (

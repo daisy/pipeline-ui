@@ -1,0 +1,62 @@
+.new-job {
+    display: grid;
+    grid-template-areas: "select-script drag-drop"
+    "sponsorship sponsorship";
+    grid-template-rows: 80% auto;
+    grid-template-columns: 45% 10% 45%;
+    gap: 2rem;
+    height: 90vh;
+    padding-left: 10%;
+    padding-right: 10%;
+
+    p {
+        align-self: center;
+    }
+    .select-script, .drag-drop-filter-files, .sponsorship {
+        justify-self: center;
+        align-self: center;
+    }
+    .select-script, .drag-drop-filter-files {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+    .drag-drop-filter-files .drop-target {
+        height: 20rem;
+    }
+    .sponsorship {
+        grid-column: 1/3;
+    }
+}
+@media(max-width: 768px) {
+    [role="tabpanel"]:has(.new-job) {
+        display: flex;
+        flex-direction: column;
+
+        .close-tab {
+            align-self: end;
+        }
+    }
+    .new-job {
+        display: flex;
+        flex-direction: column;
+        padding: 0;
+        
+        .select-script, .drag-drop-filter-files {
+            height: 50%;
+            width: 100%;
+        }
+        .select-script {
+            select {
+                width: 100%;
+            }
+        }
+        .drag-drop-filter-files {
+            .drop-target {
+                width: 100%;
+            }
+        }
+    }
+}
+
+ 

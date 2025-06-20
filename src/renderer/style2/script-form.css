@@ -1,0 +1,55 @@
+/* new script form */
+.script-form {
+    gap: 1rem;
+    display: flex;
+    flex-direction: column;
+
+    fieldset {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+        border: solid var(--bw) var(--fg);
+        border-radius: var(--br);
+        padding: 1rem;
+
+        &:has(*:focus) {
+            border-color: var(--primary);
+            legend {
+                color: var(--primary);
+            }
+        }
+    }
+
+    .script-description {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    
+
+    .form-field {
+        display: flex;
+        flex-direction: column;
+        gap: .5rem;
+    }
+
+    .single-file-input {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        gap: 2rem;
+    }
+    span.file {
+        font-family: var(--fw-font-fam);
+    }
+    .description {
+        font-size: smaller;
+    }
+    .controls {
+        button {
+            /* font-size: xx-large; */
+        }
+        
+    }
+}

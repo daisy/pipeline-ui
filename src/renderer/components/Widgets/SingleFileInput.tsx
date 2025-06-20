@@ -21,7 +21,7 @@ const SingleFileInput: React.FC<FileInputProps> = ({
     let isValid = () => required && file && file.trim() != ''
     // debug("SingleFileInput initialValue", initialValue)
     return (
-        <div className="horizontal-input single-file-input">
+        <div className="single-file-input">
             {file == '' || file == null && <span>No file selected</span>}
             {file != '' && (
                 <>

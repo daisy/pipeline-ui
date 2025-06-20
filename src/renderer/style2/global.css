@@ -1,0 +1,134 @@
+@import "reset.css";
+@import "imports.css";
+
+:root {
+    --br: 5px; /* border radius */
+    --bw: 2px; /* border width */
+
+    /* colors */
+    --primary: #192378;
+    --primary-contrast: white;
+    --primary-lt: oklch(from var(--primary) calc(l + .5) c h / .5);
+    --primary-lt-contrast: black;
+    --highlight: #D9CD66;
+    --ok: green;
+    --warning: orange;
+    --error: red;
+    --fg: black;
+    --bg: white;
+    
+    --font-fam: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont;
+    --fw-font-fam: monospace;
+    
+}
+@media (prefers-color-scheme: dark) {
+    :root {
+        --fg: white;
+        --bg: black;
+        --primary: #AAB1EE;
+        --primary-contrast: black;
+        --primary-lt: oklch(from var(--primary) calc(l + 1) c h);
+        --primary-lt-contrast: black;
+    }
+}
+html {
+    height: 100%;
+}
+body {
+    background: var(--bg);
+    color: var(--fg);
+    font-family: var(--font-fam);
+    height: 100%;
+}
+a, a:visited {
+    color: var(--primary);
+}
+a:hover {
+    text-decoration: underline solid 3px var(--primary);
+    text-decoration-style: solid;
+    text-decoration-skip-ink: none;
+}
+
+
+button {
+    border-radius: var(--br);
+    
+    background-color: var(--primary-lt);
+    color: var(--primary-lt-contrast);
+    
+    outline: none;
+    width: min-content;
+    border: var(--bw) solid var(--bg);
+    display: flex;
+    padding: 3px;
+    transition: all 100ms;
+    white-space: nowrap;
+
+    &:hover {
+        border-color: var(--primary);
+    }
+    &:active {
+        color: var(--primary-contrast);    
+        background-color: var(--primary);
+    }
+}
+/* @media (prefers-color-scheme: dark) {
+    button {
+        background-color: var(--primary);
+        color: var(--primary-contrast);
+        border-color: var(--primary);
+
+        &:hover {
+            border-color: var(--primary-lt);
+        }
+        &:active {
+            color: var(--primary-lt-contrast);
+            background-color: var(--primary-lt);
+        }
+    }
+} */
+button.no-border {
+    background-color: var(--bg);
+    border: var(--bw) solid var(--bg); /* invisible border */
+    
+    &:hover {
+        border: var(--bw) var(--primary) solid;
+        color: var(--fg);
+    }
+    &:active {
+        background-color: var(--primary) !important;
+        color: var(--primary-contrast);
+    }
+}
+select {
+    border-width: var(--bw);
+    &:hover {
+        border-color: var(--primary);
+    }
+}
+input {
+    border-radius: var(--br);
+    border-width: var(--bw);
+    &:hover {
+        border-color: var(--primary);
+    }
+    &:active {
+        
+    }
+}
+.is-hidden {
+    display: none !important;
+}
+.visually-hidden {
+    position: absolute;
+    top: auto;
+    overflow: hidden;
+    clip: rect(1px 1px 1px 1px);
+    clip: rect(1px, 1px, 1px, 1px);
+    width: 1px;
+    height: 1px;
+    white-space: nowrap;
+}
+.info {
+    font-style: italic;
+}

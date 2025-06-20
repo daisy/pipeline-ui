@@ -28,11 +28,11 @@ const FileList = ({ onChange, files, canSort, showAsType }) => {
                             />
                             <button
                                 type="button"
-                                className="remove-button"
+                                className="remove-button no-border"
                                 onClick={() => removeFile(index)}
                                 aria-label={`Remove file ${index + 1}`}
                             >
-                                <X width="30" height="30" />
+                                <X width="20" height="20" />
                             </button>
                             {canSort && index > 0 && (
                                 <button

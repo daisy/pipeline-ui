@@ -20,9 +20,10 @@ import {
 import { NewJobPane } from '../../NewJobPane'
 import { calculateJobName } from 'shared/jobName'
 import { PLATFORM } from 'shared/constants'
-import { Plus } from '../../Widgets/SvgIcons'
+import { Plus, X } from '../../Widgets/SvgIcons'
 import { BatchJobDetailsPane } from 'renderer/components/JobDetailsPane/BatchJobPane'
 import { SingleJobDetailsPane } from 'renderer/components/JobDetailsPane/SingleJobPane'
+import { ScriptForm } from 'renderer/components/ScriptForm'
 
 const { App } = window
 
@@ -112,34 +113,47 @@ export function MainView() {
         }
     }
     return (
-        <>
-            <div role="tablist" aria-live="polite" onKeyDown={keyboardActions}>
-                {visibleJobs.map((job, idx) => (
-                    <button
-                        key={idx}
-                        id={`${ID(job.internalId)}-tab`}
-                        aria-selected={pipeline.selectedJobId == job.internalId}
-                        tabIndex={
-                            pipeline.selectedJobId == job.internalId ? 0 : -1
-                        }
-                        aria-controls={`${ID(job.internalId)}-tabpanel`}
-                        role="tab"
-                        type="button"
-                        onClick={(e) => {
-                            App.store.dispatch(selectJob(job))
-                            document
-                                .getElementById(
-                                    `${ID(job.internalId)}-tabpanel`
-                                )
-                                ?.focus()
-                        }}
-                    >
-                        {idx + 1}. {calculateJobName(job, pipeline.jobs)}
-                    </button>
-                ))}
+        <main>
+            <div className="tablist-container">
+                <div role="tablist" onKeyDown={keyboardActions}>
+                    {visibleJobs.map((job, idx) => (
+                        <button
+                            key={idx}
+                            id={`${ID(job.internalId)}-tab`}
+                            aria-selected={
+                                pipeline.selectedJobId == job.internalId
+                            }
+                            tabIndex={
+                                pipeline.selectedJobId == job.internalId
+                                    ? 0
+                                    : -1
+                            }
+                            aria-controls={`${ID(job.internalId)}-tabpanel`}
+                            title={`${idx + 1}. ${calculateJobName(
+                                job,
+                                pipeline.jobs
+                            )}`}
+                            role="tab"
+                            type="button"
+                            onClick={(e) => {
+                                App.store.dispatch(selectJob(job))
+                                document
+                                    .getElementById(
+                                        `${ID(job.internalId)}-tabpanel`
+                                    )
+                                    ?.focus()
+                            }}
+                        >
+                            <span className="focus">
+                                {idx + 1}.{' '}
+                                {calculateJobName(job, pipeline.jobs)}
+                            </span>
+                        </button>
+                    ))}
+                </div>
                 <button
-                    className={'as-tab'}
-                    id={`new-job-button`}
+                    className="add-tab"
+                    id="new-job-button"
                     aria-selected={pipeline.selectedJobId == ''}
                     title={`Create a job (${
                         PLATFORM.IS_MAC ? 'Cmd' : 'Ctrl'
@@ -150,7 +164,7 @@ export function MainView() {
                         App.store.dispatch(selectJob(newJob_))
                     }}
                 >
-                    +
+                    <span className="focus">+</span>
                 </button>
             </div>
             {visibleJobs
@@ -160,43 +174,66 @@ export function MainView() {
                         <div
                             key={idx}
                             className={
-                                job.state == JobState.NEW ? 'new-job' : 'job'
+                                job.internalId != pipeline.selectedJobId
+                                    ? 'is-hidden'
+                                    : ''
                             }
                             id={`${ID(job.internalId)}-tabpanel`}
                             role="tabpanel"
-                            hidden={pipeline.selectedJobId != job.internalId}
                             aria-labelledby={`${ID(job.internalId)}-tab`}
                             tabIndex={0}
                         >
-                            <div
-                                className={`fixed-height-layout ${
-                                    job.state == JobState.NEW
-                                        ? 'new-job'
-                                        : 'job'
-                                }`}
+                            <button
+                                id={`cancel-job-${job.internalId}`}
+                                onClick={async (e) => {
+                                    let result = await App.showMessageBoxYesNo(
+                                        'Are you sure you want to close this job?'
+                                    )
+                                    if (result) {
+                                        App.store.dispatch(removeJob(job))
+                                    }
+                                }}
+                                title="Close tab"
+                                className="close-tab no-border"
                             >
-                                {job.state == JobState.NEW ? (
-                                    <NewJobPane job={job} />
-                                ) : job.jobRequest.batchId == null ? (
-                                    <SingleJobDetailsPane job={job} />
-                                ) : (
-                                    <BatchJobDetailsPane
-                                        jobs={[
-                                            job,
-                                            pipeline.jobs.filter(
-                                                (j) =>
-                                                    j.internalId !=
-                                                        job.internalId &&
-                                                    j.jobRequest?.batchId ==
-                                                        job.jobRequest?.batchId
-                                            ),
-                                        ].flat()}
-                                    />
-                                )}
+                                <X width={20} height={20} />
+                            </button>
+
+                            <div className="tabpanel-contents">
+                                {job.state == JobState.NEW &&
+                                    job.script == null && (
+                                        <NewJobPane job={job} />
+                                    )}
+                                {job.state == JobState.NEW &&
+                                    job.script != null && (
+                                        <ScriptForm job={job} />
+                                    )}
+                                {job.script != null &&
+                                    job.state != JobState.NEW &&
+                                    job.jobRequest.batchId == null && (
+                                        <SingleJobDetailsPane job={job} />
+                                    )}
+                                {job.script != null &&
+                                    job.state != JobState.NEW &&
+                                    job.jobRequest.batchId != null && (
+                                        <BatchJobDetailsPane
+                                            jobs={[
+                                                job,
+                                                pipeline.jobs.filter(
+                                                    (j) =>
+                                                        j.internalId !=
+                                                            job.internalId &&
+                                                        j.jobRequest?.batchId ==
+                                                            job.jobRequest
+                                                                ?.batchId
+                                                ),
+                                            ].flat()}
+                                        />
+                                    )}
                             </div>
                         </div>
                     )
                 })}
-        </>
+        </main>
     )
 }

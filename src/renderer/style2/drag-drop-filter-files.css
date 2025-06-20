@@ -1,0 +1,86 @@
+.drop-target {
+    padding: 2rem;
+    border: var(--bw) dashed var(--fg);
+    border-radius: var(--br);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-items: center;
+    cursor: pointer;
+    transition: all 100ms;
+    color: var(--fg);
+
+    &:hover:not([aria-disabled="true"]) {
+        border-color: var(--primary);
+        border-style: solid;
+    }
+
+    &[aria-disabled="true"] {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+
+    &[data-dragging="true"] {
+        background-color: var(--primary);
+        color: var(--primary-contrast);
+    }
+
+    .drop-target-text {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .browse-button {
+        color: var(--primary);
+        text-decoration: underline;
+        cursor: pointer;
+    }
+
+
+    .file-item {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .file-path {
+        flex: 1;
+        font-family: monospace;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .action-button {
+        padding: 0.25rem;
+        border: none;
+        background: none;
+        color: #6b7280;
+        cursor: pointer;
+        border-radius: 0.25rem;
+
+        &:hover:not([aria-disabled="true"]) {
+            background: #f3f4f6;
+        }
+
+        &[aria-disabled="true"] {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+    }
+
+
+    .remove-button:hover {
+        color: #dc2626;
+        background: #fee2e2;
+    }
+
+    .error-text {
+        color: #dc2626;
+        font-size: 0.875rem;
+        margin-top: 0.5rem;
+    }
+
+}

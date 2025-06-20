@@ -50,7 +50,7 @@ export function FilelistWithRelevantScripts({
     return (
         <>
             <div className="files-by-script">
-                <div className="horizontal-input">
+                <div className="">
                     <select onChange={(e) => onSelectScript(e)}>
                         {relevantScripts.map((script, idx) => (
                             <option key={idx} value={script.id}>
@@ -84,7 +84,7 @@ export function FilelistWithRelevantScripts({
                         .sort((a, b) => (a < b ? -1 : 1))
                         .map((f, idx) => (
                             <li key={idx}>
-                                <div className="horizontal-input">
+                                <div className="">
                                     <input
                                         type={
                                             multiSelectEnabled(selectedScriptId)

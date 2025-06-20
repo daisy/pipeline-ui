@@ -4,7 +4,6 @@ Select a script and submit a new job
 import { useState, useMemo, useEffect } from 'react'
 import { ScriptForm } from '../ScriptForm'
 import { useWindowStore } from 'renderer/store'
-import { ID } from 'renderer/utils/utils'
 import { Job, Script } from 'shared/types'
 import {
     prepareJobRequest,
@@ -23,12 +22,13 @@ import {
     defaultSponsorshipMessage,
     updateSponsorshipMessage,
 } from '../../utils'
-import { is2StepsScript, isScriptTTSEnhanced } from 'shared/utils'
-import { getRelevantScripts } from '../scriptFilters'
-import { FilelistWithRelevantScripts } from './FilelistWithRelevantScripts'
-import { DragFileInput } from '../Widgets/DragFileInput'
-import { FileTreeEntry } from 'main/ipcs/fileSystem'
+import { is2StepsScript } from 'shared/utils'
+
 import { debug } from 'electron-log'
+import { SelectScript } from '../Widgets/SelectScript'
+import { CustomName } from '../Widgets/CustomName'
+import { DragDropFilterFiles } from '../Widgets/DragDropFilterFiles'
+
 // is dateInMs more than 2 weeks old
 function isExpired(dateInMs: number) {
     if (dateInMs == 0) return true
@@ -51,9 +51,9 @@ export function NewJobPane({ job }: { job: Job }) {
     const [showSponsorshipMessage, setShowSponsorshipMessage] = useState(
         isExpired(settings.sponsorshipMessageLastShown)
     )
-    // files is [{filepath, filetype},...]
     const [files, setFiles] = useState([])
 
+    // see if it's time to show the sponsorship message again
     // useMemo runs once per render (unlike useEffect)
     useMemo(() => {
         const fetchData = async () => {
@@ -69,17 +69,10 @@ export function NewJobPane({ job }: { job: Job }) {
         }
     }, [])
 
-    useEffect(() => {
-        if (!job) {
-            setFiles([])
-        }
-    }, [job])
-
     // top level script selection
-    let onSelectChange = (e) => {
-        let selection = pipeline.scripts.find(
-            (script) => script.id == e.target.value
-        )
+    let onSelectChange = (scriptId) => {
+        console.log('on select change 2', scriptId)
+        let selection = pipeline.scripts.find((script) => script.id == scriptId)
         App.store.dispatch(
             updateJob({
                 ...job,
@@ -94,71 +87,9 @@ export function NewJobPane({ job }: { job: Job }) {
         )
     }
 
-    // add a list of files to the current files list and filter out duplicates
-    let addFiles = async (newFiles) => {
-        let currentFiles = files.map((f) => f.filepath)
-
-        // filter out any duplicates
-        let uniqueNewFiles = newFiles.filter(
-            (file) => currentFiles.indexOf(file) == -1
-        )
-        // debug(`Unique new files`, uniqueNewFiles)
-        let uniqueNewFilesThatAreSupported = []
-        // assign a filetype to each one
-        for (let file of uniqueNewFiles) {
-            // debug(`Detecting type of ${file}`)
-            let filetype = await App.detectFiletype(file)
-            // debug(`...${filetype}`)
-            if (filetype) {
-                uniqueNewFilesThatAreSupported.push({
-                    filepath: file,
-                    filetype,
-                })
-            }
-        }
-        // debug(
-        //     `Unique new files that are supported ${JSON.stringify(
-        //         uniqueNewFilesThatAreSupported
-        //     )}`
-        // )
-
-        let filesCopy = [...files]
-        filesCopy = filesCopy.concat(
-            uniqueNewFilesThatAreSupported.filter((f) => f.filetype != null)
-        )
-        setFiles(filesCopy)
-    }
-    // handle user adding more files and folders
-    // resolve folder contents and add files to the current files list
-    let onDragInputChange = async (filenames) => {
-        let resolvedFilenames = await resolveItems(filenames)
-        await addFiles(resolvedFilenames)
-    }
-    // recursively list directory contents
-    const resolveItems = async (items) => {
-        let resolvedItems: string[] = []
-        for (let item of items) {
-            let paths = []
-            let isFile = await App.isFile(item)
-            if (isFile) {
-                paths.push(item)
-            } else {
-                let dirListing: Array<FileTreeEntry> =
-                    await App.traverseDirectory(item)
-                let gatherPaths = (listing: Array<FileTreeEntry>) => {
-                    listing.map((fileTreeEntry) => {
-                        if (fileTreeEntry.type == 'directory') {
-                            gatherPaths(fileTreeEntry.contents)
-                        } else {
-                            paths.push(fileTreeEntry.path)
-                        }
-                    })
-                }
-                gatherPaths(dirListing)
-            }
-            resolvedItems = [...resolvedItems, ...paths]
-        }
-        return resolvedItems
+    let onDragDropFilesChange = (filesArray) => {
+        let filesArrayCopy = [...filesArray]
+        setFiles(filesArrayCopy)
     }
 
     let createJob = async (script: Script, inputFiles: string[]) => {
@@ -192,8 +123,6 @@ export function NewJobPane({ job }: { job: Job }) {
         )
     }
 
-    let uniqueFiletypes = Array.from(new Set(files.map((f) => f.filetype.type)))
-
     let hasAtLeastOneInput = () => {
         let inputsCopy = job.jobRequest?.inputs
         if (inputsCopy && inputsCopy.length > 0) {
@@ -211,138 +140,35 @@ export function NewJobPane({ job }: { job: Job }) {
     }
     return (
         <>
-            <section className="select-script">
-                {hasAtLeastOneInput() == false && files.length == 0 && (
-                    <div>
-                        <label
-                            id={`${ID(job.internalId)}-select-script`}
-                            htmlFor={`${ID(job.internalId)}-script`}
+            <div className="new-job">
+                {files.length == 0 && (
+                    <SelectScript
+                        jobInternalId={job.internalId}
+                        initialSelection={job.script ? job.script.id : null}
+                        scripts={pipeline.scripts}
+                        onSelectChange={onSelectChange}
+                        disabled={files.length != 0}
+                    />
+                )}
+                <p>Or</p>
+                <DragDropFilterFiles
+                    job={job}
+                    createJob={createJob}
+                    onChange={onDragDropFilesChange}
+                    initialValue={files}
+                />
+                {showSponsorshipMessage && (
+                    <div className="sponsorship">
+                        <a
+                            href={sponsorshipMessage.url}
+                            onClick={(e) => externalLinkClick(e, App)}
                         >
-                            Select a script:
-                        </label>
-                        <select
-                            id={`${ID(job.internalId)}-script`}
-                            onChange={(e) => onSelectChange(e)}
-                            value={job.script ? job.script.id : ''}
-                        >
-                            <option value={null}>None</option>
-                            {pipeline.scripts
-                                .sort((a, b) =>
-                                    a.nicename > b.nicename ? 1 : -1
-                                )
-                                .map((script, idx) => (
-                                    <option key={idx} value={script.id}>
-                                        {script.nicename}
-                                        {isScriptTTSEnhanced(script)
-                                            ? ' (TTS Enhanced)'
-                                            : ''}
-                                    </option>
-                                ))}
-                        </select>
+                            {sponsorshipMessage.buttonText}
+                        </a>
+                        <p>{sponsorshipMessage.messageText}</p>
                     </div>
                 )}
-                <div>
-                    <label
-                        id={`${ID(job.internalId)}-change-name`}
-                        htmlFor={`${ID(job.internalId)}-nicename`}
-                    >
-                        Custom job name:
-                    </label>
-                    <input
-                        id={`${ID(job.internalId)}-nicename`}
-                        type="text"
-                        value={
-                            (job.jobRequest && job.jobRequest.nicename) || ''
-                        }
-                        aria-description="Here you can change the current tab's name and its associated job's name."
-                        onChange={(e) => {
-                            const updatedJob: Job = {
-                                ...job,
-                                jobData: {
-                                    ...job.jobData,
-                                },
-                                jobRequest: {
-                                    ...job.jobRequest,
-                                    nicename: e.target.value,
-                                },
-                            }
-                            App.store.dispatch(updateJob(updatedJob))
-                        }}
-                    />
-                </div>
-            </section>
-            {job.script != null ? (
-                <ScriptForm job={job} script={job.script} />
-            ) : (
-                <>
-                    {files.length == 0 && (
-                        <p className="suggestion">
-                            Add files to see script suggestions, or choose a
-                            script above.
-                        </p>
-                    )}
-                    {files.length > 0 && (
-                        <p className="suggestion">
-                            The following files can be used in a Pipeline job:
-                        </p>
-                    )}
-                    {uniqueFiletypes.map((filetype, idx) => {
-                        let filesOfType = files
-                            .filter((f) => f.filetype.type == filetype)
-                            .sort((a, b) => (a.name < b.name ? -1 : 1))
-                        return (
-                            <FilelistWithRelevantScripts
-                                key={idx}
-                                files={filesOfType.map((f) => f.filepath)}
-                                relevantScripts={getRelevantScripts(filetype)}
-                                categoryName={filesOfType[0]?.filetype.name}
-                                jobInternalId={job.internalId}
-                                createJob={createJob}
-                            />
-                        )
-                    })}
-                    {files.length > 0 && (
-                        <p className="suggestion">
-                            Add more files to see more suggestions.
-                            <button onClick={() => setFiles([])}>
-                                Clear files
-                            </button>
-                        </p>
-                    )}
-                    <DragFileInput
-                        elemId={`${job.internalId}-new-job-files`}
-                        mediaType={[]}
-                        onChange={onDragInputChange}
-                    />
-
-                    <button
-                        id={`cancel-job-${job.internalId}`}
-                        onClick={async (e) => {
-                            let result = await App.showMessageBoxYesNo(
-                                'Are you sure you want to close this job?'
-                            )
-                            if (result) {
-                                App.store.dispatch(removeJob(job))
-                            }
-                        }}
-                    >
-                        Cancel
-                    </button>
-                </>
-            )}
-            {job.script == null && showSponsorshipMessage ? (
-                <div className="sponsorship">
-                    <a
-                        href={sponsorshipMessage.url}
-                        onClick={(e) => externalLinkClick(e, App)}
-                    >
-                        {sponsorshipMessage.buttonText}
-                    </a>
-                    <p>{sponsorshipMessage.messageText}</p>
-                </div>
-            ) : (
-                ''
-            )}
+            </div>
         </>
     )
 }

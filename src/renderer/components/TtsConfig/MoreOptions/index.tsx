@@ -149,6 +149,7 @@ export function TtsMoreOptionsConfigPane({
                         }
                     ></input>
                     <button
+                        type="button"
                         className="reset-speech-rate"
                         onClick={(e) => resetSpeechRate(e)}
                     >

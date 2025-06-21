@@ -17,9 +17,9 @@ const FileList = ({ onChange, files, canSort, showAsType }) => {
     }
     return (
         <>
-            {!files.length && <p>No files</p>}
+            {!files.length && <p className='info'>No files</p>}
             {files.length > 0 && (
-                <ul>
+                <ul className="file-list">
                     {files.map((file, index) => (
                         <li key={index}>
                             <File
@@ -28,7 +28,7 @@ const FileList = ({ onChange, files, canSort, showAsType }) => {
                             />
                             <button
                                 type="button"
-                                className="remove-button no-border"
+                                className="remove-button invisible"
                                 onClick={() => removeFile(index)}
                                 aria-label={`Remove file ${index + 1}`}
                             >

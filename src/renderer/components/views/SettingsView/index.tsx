@@ -168,6 +168,7 @@ export function SettingsView(
                         }
                     >
                         <button
+                            type="button"
                             onClick={(e) =>
                                 setSelectedSection(SettingsMenuItem.General)
                             }
@@ -183,6 +184,7 @@ export function SettingsView(
                         }
                     >
                         <button
+                            type="button"
                             onClick={(e) =>
                                 setSelectedSection(SettingsMenuItem.Appearance)
                             }
@@ -198,6 +200,7 @@ export function SettingsView(
                         }
                     >
                         <button
+                            type="button"
                             onClick={(e) =>
                                 setSelectedSection(SettingsMenuItem.Behavior)
                             }
@@ -213,6 +216,7 @@ export function SettingsView(
                         }
                     >
                         <button
+                            type="button"
                             onClick={(e) =>
                                 setSelectedSection(SettingsMenuItem.Updates)
                             }
@@ -232,6 +236,7 @@ export function SettingsView(
                                 }
                             >
                                 <button
+                                    type="button"
                                     onClick={(e) =>
                                         setSelectedSection(
                                             SettingsMenuItem.TTSBrowseVoices
@@ -250,6 +255,7 @@ export function SettingsView(
                                 }
                             >
                                 <button
+                                    type="button"
                                     onClick={(e) =>
                                         setSelectedSection(
                                             SettingsMenuItem.TTSPreferredVoices
@@ -268,6 +274,7 @@ export function SettingsView(
                                 }
                             >
                                 <button
+                                    type="button"
                                     onClick={(e) =>
                                         setSelectedSection(
                                             SettingsMenuItem.TTSEngines
@@ -286,6 +293,7 @@ export function SettingsView(
                                 }
                             >
                                 <button
+                                    type="button"
                                     onClick={(e) =>
                                         setSelectedSection(
                                             SettingsMenuItem.TTSMoreOptions
@@ -302,7 +310,7 @@ export function SettingsView(
             <form className="settings-form">
                 <div className="fields">
                     {selectedSection == SettingsMenuItem.General ? (
-                        <div className="form-field">
+                        <div className="field">
                             <label htmlFor="resultsFolder">
                                 Results folder
                             </label>
@@ -327,7 +335,7 @@ export function SettingsView(
                             )}
                         </div>
                     ) : selectedSection == SettingsMenuItem.Appearance ? (
-                        <div className="form-field">
+                        <div className="field">
                             <label htmlFor="colorMode">
                                 Interface color mode
                             </label>
@@ -352,7 +360,7 @@ export function SettingsView(
                         </div>
                     ) : selectedSection == SettingsMenuItem.Behavior ? (
                         <>
-                            <div className="form-field">
+                            <div className="field">
                                 <label htmlFor="editJobOnNewTab">
                                     Editing jobs in new tabs
                                 </label>
@@ -368,7 +376,7 @@ export function SettingsView(
                                     onChange={editJobOnNewTabChanged}
                                 />
                             </div>
-                            <div className="form-field">
+                            <div className="field">
                                 <label htmlFor="OnMainWindowClosing">
                                     Action on closing the app window
                                 </label>
@@ -402,7 +410,7 @@ export function SettingsView(
                             {/* insert remote pipeline settings form part here */}
                         </>
                     ) : selectedSection == SettingsMenuItem.Updates ? (
-                        <div className="form-field">
+                        <div className="field">
                             <label className="oneline">
                                 <input
                                     id="autoCheckUpdate"

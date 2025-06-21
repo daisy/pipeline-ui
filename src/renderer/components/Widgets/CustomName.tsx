@@ -5,7 +5,7 @@ const { App } = window
 
 export function CustomName({ job }) {
     return (
-        <div className="custom-name">
+        <div className="custom-name field">
             <label htmlFor={`${ID(job.internalId)}-nicename`}>
                 Custom job name:
             </label>

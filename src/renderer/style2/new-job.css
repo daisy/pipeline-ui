@@ -28,15 +28,7 @@
         grid-column: 1/3;
     }
 }
-@media(max-width: 768px) {
-    [role="tabpanel"]:has(.new-job) {
-        display: flex;
-        flex-direction: column;
-
-        .close-tab {
-            align-self: end;
-        }
-    }
+@media(max-width: 1000px) {
     .new-job {
         display: flex;
         flex-direction: column;

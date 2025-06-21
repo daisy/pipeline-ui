@@ -2,23 +2,26 @@
 @import "imports.css";
 
 :root {
-    --br: 5px; /* border radius */
+    --br: 10px; /* border radius */
     --bw: 2px; /* border width */
 
     /* colors */
     --primary: #192378;
     --primary-contrast: white;
-    --primary-lt: oklch(from var(--primary) calc(l + .5) c h / .5);
-    --primary-lt-contrast: black;
     --highlight: #D9CD66;
     --ok: green;
     --warning: orange;
     --error: red;
     --fg: black;
     --bg: white;
+    --bg-off: oklch(from var(--bg) calc(l - 0.02) c h);
     
     --font-fam: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont;
     --fw-font-fam: monospace;
+    --fontsize: 1rem;
+    --fontsize-larger: 110%;
+    --fontsize-smaller: 80%;
+    --box-shadow: 0 0 0 2px var(--primary);
     
 }
 @media (prefers-color-scheme: dark) {
@@ -27,93 +30,80 @@
         --bg: black;
         --primary: #AAB1EE;
         --primary-contrast: black;
-        --primary-lt: oklch(from var(--primary) calc(l + 1) c h);
-        --primary-lt-contrast: black;
+        --bg-off: oklch(from var(--bg) calc(l + 0.2) c h);
     }
 }
 html {
     height: 100%;
 }
 body {
-    background: var(--bg);
+    background-color: var(--bg-off);
     color: var(--fg);
     font-family: var(--font-fam);
+    font-size: var(--fontsize);
     height: 100%;
 }
 a, a:visited {
     color: var(--primary);
 }
 a:hover {
-    text-decoration: underline solid 3px var(--primary);
+    text-decoration: underline solid 4px var(--primary);
     text-decoration-style: solid;
     text-decoration-skip-ink: none;
 }
-
-
+*:focus {
+    outline: none;
+}
+input:focus,button:focus, select:focus{
+    outline: var(--bw) solid var(--highlight);
+}
 button {
+    border: none;
     border-radius: var(--br);
-    
-    background-color: var(--primary-lt);
-    color: var(--primary-lt-contrast);
-    
+    background-color: var(--primary);
+    color: var(--primary-contrast);
     outline: none;
     width: min-content;
-    border: var(--bw) solid var(--bg);
+    padding: 4px;
+
     display: flex;
-    padding: 3px;
     transition: all 100ms;
     white-space: nowrap;
 
     &:hover {
-        border-color: var(--primary);
-    }
-    &:active {
-        color: var(--primary-contrast);    
-        background-color: var(--primary);
-    }
-}
-/* @media (prefers-color-scheme: dark) {
-    button {
-        background-color: var(--primary);
-        color: var(--primary-contrast);
-        border-color: var(--primary);
-
-        &:hover {
-            border-color: var(--primary-lt);
-        }
-        &:active {
-            color: var(--primary-lt-contrast);
-            background-color: var(--primary-lt);
-        }
-    }
-} */
-button.no-border {
-    background-color: var(--bg);
-    border: var(--bw) solid var(--bg); /* invisible border */
-    
-    &:hover {
-        border: var(--bw) var(--primary) solid;
+        box-shadow: var(--box-shadow);
+        background-color: var(--bg);
         color: var(--fg);
     }
     &:active {
-        background-color: var(--primary) !important;
-        color: var(--primary-contrast);
+        transform: scale(95%);
+        
     }
+}
+button.invisible {
+    color: var(--fg);
+    background-color: var(--bg);
+    border: none;
+}
+button.important {
+    font-size: var(--fontsize-larger);
+    font-weight: bold;
+    padding: 8px;   
 }
 select {
     border-width: var(--bw);
     &:hover {
-        border-color: var(--primary);
+        box-shadow: var(--box-shadow);
     }
 }
 input {
     border-radius: var(--br);
     border-width: var(--bw);
     &:hover {
-        border-color: var(--primary);
+        box-shadow: var(--box-shadow);
     }
     &:active {
-        
+        box-shadow: green;
     }
 }
 .is-hidden {

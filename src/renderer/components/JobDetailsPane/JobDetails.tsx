@@ -42,6 +42,7 @@ export function JobDetails({ job }: { job: Job }) {
                 {!jobIsBatch && (
                     <div className="form-buttons">
                         <button
+                            type="button"
                             onClick={(e) => {
                                 App.store.dispatch(editJob(job))
                             }}
@@ -49,6 +50,7 @@ export function JobDetails({ job }: { job: Job }) {
                             Edit job
                         </button>
                         <button
+                            type="button"
                             onClick={async (e) => {
                                 let result = await App.showMessageBoxYesNo(
                                     'Are you sure you want to close this job?'
@@ -168,6 +170,7 @@ export function JobDetails({ job }: { job: Job }) {
                         <div className="form-buttons">
                             {!jobIsBatch && (
                                 <button
+                                    type="button"
                                     onClick={(e) => {
                                         App.store.dispatch(runJob(job))
                                         setIsRerunning(true)
@@ -181,6 +184,7 @@ export function JobDetails({ job }: { job: Job }) {
                             {!jobIsBatch && (
                                 <>
                                     <button
+                                        type="button"
                                         onClick={(e) => {
                                             let job_ = { ...job }
                                             job_.jobRequest = {
@@ -196,6 +200,7 @@ export function JobDetails({ job }: { job: Job }) {
                                         Edit job
                                     </button>
                                     <button
+                                        type="button"
                                         onClick={async (e) => {
                                             let result =
                                                 await App.showMessageBoxYesNo(

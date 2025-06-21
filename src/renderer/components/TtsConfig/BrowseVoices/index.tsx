@@ -408,6 +408,7 @@ export function TtsBrowseVoicesConfigPane({
                             </p>
                         ) : (
                             <button
+                                type="button"
                                 onClick={(e) =>
                                     addToPreferredVoices(
                                         availableVoices.find(

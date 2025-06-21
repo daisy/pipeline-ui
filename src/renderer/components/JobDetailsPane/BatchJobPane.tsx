@@ -103,6 +103,7 @@ export function BatchJobDetailsPane({ jobs }: { jobs: Array<Job> }) {
                 </ul>
                 <div className="controls">
                     <button
+                        type="button"
                         disabled={!areAllJobsInBatchDone(primaryJob, jobs)}
                         aria-disabled={!areAllJobsInBatchDone(primaryJob, jobs)}
                         onClick={(e) => onCloseBatch()}
@@ -110,6 +111,7 @@ export function BatchJobDetailsPane({ jobs }: { jobs: Array<Job> }) {
                         Close All
                     </button>
                     <button
+                        type="button"
                         disabled={!getIdleCountInBatch(primaryJob, jobs)}
                         aria-disabled={!getIdleCountInBatch(primaryJob, jobs)}
                         onClick={(e) => onCancelBatch()}

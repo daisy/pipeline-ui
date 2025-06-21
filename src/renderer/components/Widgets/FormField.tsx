@@ -33,7 +33,7 @@ export function FormField({
     )
 
     return (
-        <div className="form-field">
+        <div className="field">
             {item.desc ? (
                 <details>
                     <summary>

@@ -121,7 +121,7 @@ export function DragDropFilterFiles({
             {files.length > 0 && (
                 <p className="suggestion">
                     Add more files to see more suggestions.
-                    <button onClick={() => updateFiles([])}>Clear files</button>
+                    <button onClick={() => updateFiles([])} type="button" >Clear files</button>
                 </p>
             )}
             <DragFileInput

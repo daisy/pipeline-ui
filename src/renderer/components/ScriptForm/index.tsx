@@ -284,9 +284,10 @@ export function ScriptForm({ job }: { job: Job }) {
     }
 
     return (
-        <section
-            className="script-form"
+        <form
+            className="script"
             aria-label={`Script form for ${job.script.nicename}`}
+            onSubmit={onSubmit}
         >
             <div className="script-description info">
                 <p>
@@ -312,32 +313,33 @@ export function ScriptForm({ job }: { job: Job }) {
                 )}
             </div>
 
-            <fieldset aria-labelledby={`${ID(job.internalId)}-required`} className="required">
-                    {/* <h2 id={`${ID(job.internalId)}-required`}>Input</h2> */}
-                    <legend>Input</legend>
-                    {required.map((item, idx) => {
+            <fieldset
+                aria-labelledby={`${ID(job.internalId)}-required`}
+                className="required"
+            >
+                {/* <h2 id={`${ID(job.internalId)}-required`}>Input</h2> */}
+                <legend>Input</legend>
+                {required.map((item, idx) => {
                     return (
-                        <div key={idx}>
-                            <FormField
-                                item={item}
-                                key={idx}
-                                idprefix={`${ID(job.internalId)}-${item.name}`}
-                                onChange={saveValueInJobRequest}
-                                initialValue={
-                                    findValue(
-                                        item.name,
-                                        item.kind,
-                                        job.jobRequest,
-                                        item.isStylesheetParameter
-                                    ) ?? []
-                                }
-                                error={
-                                    job.errors?.find(
-                                        (e) => e.fieldName === item.name
-                                    )?.error
-                                }
-                            />
-                        </div>
+                        <FormField
+                            item={item}
+                            key={idx}
+                            idprefix={`${ID(job.internalId)}-${item.name}`}
+                            onChange={saveValueInJobRequest}
+                            initialValue={
+                                findValue(
+                                    item.name,
+                                    item.kind,
+                                    job.jobRequest,
+                                    item.isStylesheetParameter
+                                ) ?? []
+                            }
+                            error={
+                                job.errors?.find(
+                                    (e) => e.fieldName === item.name
+                                )?.error
+                            }
+                        />
                     )
                 })}
             </fieldset>
@@ -354,33 +356,29 @@ export function ScriptForm({ job }: { job: Job }) {
                         ) ? (
                             '' // skip it, we don't need to provide a visual field for this option, it's set globally
                         ) : (
-                            
-                                <FormField
-                                    item={item}
-                                    key={`${ID(job.internalId)}-${
-                                        item.name
-                                    }-${
+                            <FormField
+                                item={item}
+                                key={`${ID(job.internalId)}-${item.name}-${
+                                    item.isStylesheetParameter
+                                }-FormField`}
+                                idprefix={`${ID(job.internalId)}-${item.name}-${
+                                    item.isStylesheetParameter
+                                }`}
+                                onChange={saveValueInJobRequest}
+                                initialValue={
+                                    findValue(
+                                        item.name,
+                                        item.kind,
+                                        job.jobRequest,
                                         item.isStylesheetParameter
-                                    }-FormField`}
-                                    idprefix={`${ID(job.internalId)}-${
-                                        item.name
-                                    }-${item.isStylesheetParameter}`}
-                                    onChange={saveValueInJobRequest}
-                                    initialValue={
-                                        findValue(
-                                            item.name,
-                                            item.kind,
-                                            job.jobRequest,
-                                            item.isStylesheetParameter
-                                        ) ?? []
-                                    }
-                                    error={
-                                        job.errors?.find(
-                                            (e) => e.fieldName === item.name
-                                        )?.error
-                                    }
-                                />
-                            
+                                    ) ?? []
+                                }
+                                error={
+                                    job.errors?.find(
+                                        (e) => e.fieldName === item.name
+                                    )?.error
+                                }
+                            />
                         )
                     )}
                 </fieldset>
@@ -395,17 +393,21 @@ export function ScriptForm({ job }: { job: Job }) {
             )}
             <div className="controls">
                 {job.is2StepsJob && job.stylesheetParameters != null && (
-                    <button className="run" onClick={previous}>
+                    <button className="important" onClick={previous} type="button">
                         Back
                     </button>
                 )}
                 {job.is2StepsJob && job.stylesheetParameters == null ? (
-                    <button className="run" type="submit" ref={submitButtonRef}>
+                    <button
+                        className="important"
+                        type="submit"
+                        ref={submitButtonRef}
+                    >
                         Next
                     </button>
                 ) : (
                     <button
-                        className="run"
+                        className="important"
                         type="submit"
                         disabled={!canRunJob || submitInProgress}
                         ref={submitButtonRef}
@@ -414,7 +416,7 @@ export function ScriptForm({ job }: { job: Job }) {
                     </button>
                 )}
             </div>
-        </section>
+        </form>
     )
 }
 /*

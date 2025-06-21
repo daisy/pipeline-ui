@@ -1,4 +1,4 @@
-[role=tablist] {
+[role="tablist"] {
     display: flex;
     flex-direction: row;
     flex-wrap: wrap;
@@ -12,63 +12,37 @@
     align-items: center;
     z-index: 2;
 
-    margin: 0;
+    margin: .5rem;
+    padding: 8px;
+
     background-color: var(--bg);
     color: var(--fg);
 
     border-radius: var(--br);
     border: none;
-    
     outline: none;
-    font-weight: bold;
+    
+    font-size: var(--fontsize-larger);
+
     overflow: hidden;
     text-align: left;
     cursor: pointer;
-
-    span.focus {
-        display: inline-block;
-        margin: 2px;
-        padding: 5px;
-        border-radius: var(--br);
-        white-space: nowrap;
-        width: min-content;
-        border: var(--bg) var(--bw) solid;
-    }
-}
-.add-tab:hover {
-    background-color: var(--bg);
-    
-    span.focus {
-        border-color: var(--primary);
-    }
 }
 
 /* highlight the tab name on focus/hover/select */
-[role="tab"]:focus,
-[role="tab"]:hover,
 [role="tab"]:active,
-[role="tab"][aria-selected="true"], .add-tab:active {
-    border: none;
-    outline: none;
-    background-color: var(--bg);
-    box-shadow: none;
-    span.focus {
-        background: var(--primary);
-        color: var(--primary-contrast);
-    }
+[role="tab"][aria-selected="true"] {
+    background: var(--primary);
+    color: var(--primary-contrast);
 }
 
-[role="tab"][aria-selected="false"] {
-    font-weight: normal;
-    color: oklch(from var(--fg) l c h / 0.8);
-}
 [role="tabpanel"] {
     padding: 0.5rem;
     overflow: auto;
 
     display: grid;
-    grid-template-columns: 95% 5%;
-    grid-template-rows: 5% 95%;
+    grid-template-columns: auto 3rem;
+    grid-template-rows: 3rem auto;
 
     .close-tab {
         grid-column: 2;
@@ -87,4 +61,6 @@
     flex-direction: row;
     border-bottom: var(--bw) solid var(--fg);
 }
-
+.add-tab {
+    height: min-content;
+}

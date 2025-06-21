@@ -144,17 +144,15 @@ export function MainView() {
                                     ?.focus()
                             }}
                         >
-                            <span className="focus">
-                                {idx + 1}.{' '}
-                                {calculateJobName(job, pipeline.jobs)}
-                            </span>
+                            {idx + 1}.{' '}
+                            {calculateJobName(job, pipeline.jobs)}
                         </button>
                     ))}
                 </div>
                 <button
-                    className="add-tab"
+                    type="button"
+                    className="add-tab invisible"
                     id="new-job-button"
-                    aria-selected={pipeline.selectedJobId == ''}
                     title={`Create a job (${
                         PLATFORM.IS_MAC ? 'Cmd' : 'Ctrl'
                     }+N)`}
@@ -164,7 +162,7 @@ export function MainView() {
                         App.store.dispatch(selectJob(newJob_))
                     }}
                 >
-                    <span className="focus">+</span>
+                    +
                 </button>
             </div>
             {visibleJobs
@@ -184,6 +182,7 @@ export function MainView() {
                             tabIndex={0}
                         >
                             <button
+                                type="button"
                                 id={`cancel-job-${job.internalId}`}
                                 onClick={async (e) => {
                                     let result = await App.showMessageBoxYesNo(
@@ -194,7 +193,7 @@ export function MainView() {
                                     }
                                 }}
                                 title="Close tab"
-                                className="close-tab no-border"
+                                className="close-tab invisible"
                             >
                                 <X width={20} height={20} />
                             </button>

@@ -1,5 +1,5 @@
 /* new script form */
-.script-form {
+form.script {
     gap: 1rem;
     display: flex;
     flex-direction: column;
@@ -11,24 +11,22 @@
         border: solid var(--bw) var(--fg);
         border-radius: var(--br);
         padding: 1rem;
+        background-color: var(--bg);
 
-        &:has(*:focus) {
-            border-color: var(--primary);
-            legend {
-                color: var(--primary);
-            }
+        legend {
+            background-color: var(--bg);
+            font-size: larger;
+            border-radius: var(--br);
         }
     }
 
-    .script-description {
+    div.script-description {
         display: flex;
         flex-direction: column;
         gap: 1rem;
     }
 
-    
-
-    .form-field {
+    .field {
         display: flex;
         flex-direction: column;
         gap: .5rem;
@@ -40,16 +38,47 @@
         align-items: center;
         gap: 2rem;
     }
+    .multi-file-input {
+        input {
+            width: 100%;
+        }
+        div {
+            display: flex;
+            flex-direction: row;
+            gap: 1rem;
+        }
+    }
     span.file {
         font-family: var(--fw-font-fam);
     }
     .description {
         font-size: smaller;
     }
-    .controls {
-        button {
-            /* font-size: xx-large; */
+    .file-list {
+        list-style-type: none;
+        padding: 0;
+        margin: 0;
+max-width: 90vw;
+        border-radius: 0.5rem;
+        padding: 1.25rem;
+        overflow: hidden;
+        border: thin solid var(--fg);
+        display: flex;
+        flex-direction: column;
+        gap: .25rem;
+
+        li {
+            display: flex;
+            align-items: center;
+            background-color: var(--bg-off);
+            border-radius: 0.3rem;
+
+
+            span {
+                flex-basis: 100%;
+                padding: .25rem;
+                width: min-content;
+            }
         }
-        
     }
 }

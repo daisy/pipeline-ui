@@ -62,6 +62,7 @@ export function FilelistWithRelevantScripts({
                         ))}
                     </select>
                     <button
+                        type="button"
                         disabled={selectedFiles.length == 0}
                         aria-disabled={selectedFiles.length == 0}
                         onClick={(e) => initJob()}

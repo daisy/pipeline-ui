@@ -19,6 +19,7 @@ export function EngineStatus({ status }) {
                     <div className="starting-engine">
                         <p>Engine is stopped</p>
                         <button
+                            type="button"
                             id="launch-engine"
                             onClick={() => App.store.dispatch(start())}
                         >

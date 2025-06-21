@@ -29,6 +29,7 @@ const UpdateButton = (update: UpdateState) => {
                 </progress>
                 {update.downloadProgress.percent < 100 && (
                     <button
+                        type="button"
                         id="cancel-download"
                         title="Cancel download"
                         onClick={() => {
@@ -43,6 +44,7 @@ const UpdateButton = (update: UpdateState) => {
     } else if (update.updateAvailable) {
         return (
             <button
+                type="button"
                 id="start-install"
                 title={`Update to ${update.updateAvailable.version}`}
                 onClick={() => {
@@ -55,6 +57,7 @@ const UpdateButton = (update: UpdateState) => {
     } else if (update.manualUpdateAvailable === true) {
         return (
             <button
+                type="button"
                 id="open-release-page"
                 title={`Open the release page`}
                 onClick={() => {
@@ -67,6 +70,7 @@ const UpdateButton = (update: UpdateState) => {
     } else {
         return (
             <button
+                type="button"
                 id="check-update"
                 title="Check for updates"
                 onClick={() => {
@@ -153,6 +157,7 @@ export function AboutView({ title }) {
                         </li>
                     </ul>
                     <button
+                        type="button"
                         className="copy"
                         title="Copy information to clipboard"
                         onClick={(e) => copyToClipboard(e)}
@@ -174,7 +179,7 @@ export function AboutView({ title }) {
                     )}
                     <div>
                         {UpdateButton(update)}
-                        <button onClick={(e) => closeAboutBox()}>Close</button>
+                        <button type="button" onClick={(e) => closeAboutBox()}>Close</button>
                     </div>
                 </div>
             </div>

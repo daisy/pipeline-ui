@@ -231,6 +231,7 @@ export function TtsEnginesConfigPane({
                                     {!isConnectedToTTSEngine(engineId) ||
                                     enginePropsChanged[engineId] ? (
                                         <button
+                                            type="button"
                                             onClick={(e) => {
                                                 e.preventDefault()
                                                 connectToTTSEngine(engineId)
@@ -240,6 +241,7 @@ export function TtsEnginesConfigPane({
                                         </button>
                                     ) : isConnectedToTTSEngine(engineId) ? (
                                         <button
+                                            type="button"
                                             onClick={(e) => {
                                                 e.preventDefault()
                                                 disconnectFromTTSEngine(

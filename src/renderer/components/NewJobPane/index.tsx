@@ -26,7 +26,6 @@ import { is2StepsScript } from 'shared/utils'
 
 import { debug } from 'electron-log'
 import { SelectScript } from '../Widgets/SelectScript'
-import { CustomName } from '../Widgets/CustomName'
 import { DragDropFilterFiles } from '../Widgets/DragDropFilterFiles'
 
 // is dateInMs more than 2 weeks old
@@ -141,6 +140,13 @@ export function NewJobPane({ job }: { job: Job }) {
     return (
         <>
             <div className="new-job">
+                <DragDropFilterFiles
+                    job={job}
+                    createJob={createJob}
+                    onChange={onDragDropFilesChange}
+                    initialValue={files}
+                />
+                <p>Or</p>
                 {files.length == 0 && (
                     <SelectScript
                         jobInternalId={job.internalId}
@@ -150,13 +156,6 @@ export function NewJobPane({ job }: { job: Job }) {
                         disabled={files.length != 0}
                     />
                 )}
-                <p>Or</p>
-                <DragDropFilterFiles
-                    job={job}
-                    createJob={createJob}
-                    onChange={onDragDropFilesChange}
-                    initialValue={files}
-                />
                 {showSponsorshipMessage && (
                     <div className="sponsorship">
                         <a

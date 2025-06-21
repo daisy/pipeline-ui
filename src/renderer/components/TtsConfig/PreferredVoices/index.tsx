@@ -161,6 +161,7 @@ export function TtsPreferredVoicesConfigPane({
                                                 ></input>
                                             </div>
                                             <button
+                                                type="button"
                                                 onClick={(e) => {
                                                     removeFromPreferredVoices(v)
                                                 }}
@@ -175,6 +176,7 @@ export function TtsPreferredVoicesConfigPane({
                     </table>
                     {preferredVoicesLanguage != 'All' ? (
                         <button
+                            type="button"
                             onClick={(e) =>
                                 clearDefaultVoice(preferredVoicesLanguage)
                             }

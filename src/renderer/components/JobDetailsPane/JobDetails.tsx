@@ -77,14 +77,14 @@ export function JobDetails({ job }: { job: Job }) {
                     </span>
                 </p>
                 {job.jobData.progress &&
-                    job.jobData?.status == JobStatus.RUNNING ? (
-                        <p aria-live="polite">
-                            Progress:&nbsp;
-                            <span>
-                                {Math.ceil(job.jobData.progress * 100)}%
-                            </span>
-                        </p>
-                    ) : ''}
+                job.jobData?.status == JobStatus.RUNNING ? (
+                    <p aria-live="polite">
+                        Progress:&nbsp;
+                        <span>{Math.ceil(job.jobData.progress * 100)}%</span>
+                    </p>
+                ) : (
+                    ''
+                )}
             </div>
             <details className="job-settings">
                 <summary>

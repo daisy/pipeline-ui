@@ -50,6 +50,7 @@ export function NewJobPane({ job }: { job: Job }) {
     const [showSponsorshipMessage, setShowSponsorshipMessage] = useState(
         isExpired(settings.sponsorshipMessageLastShown)
     )
+
     const [files, setFiles] = useState([])
 
     // see if it's time to show the sponsorship message again
@@ -122,21 +123,6 @@ export function NewJobPane({ job }: { job: Job }) {
         )
     }
 
-    let hasAtLeastOneInput = () => {
-        let inputsCopy = job.jobRequest?.inputs
-        if (inputsCopy && inputsCopy.length > 0) {
-            let anInputValue = inputsCopy.find(
-                (input) => input.value != '' && input.value != null
-            )
-            if (anInputValue) {
-                return true
-            } else {
-                return false
-            }
-        } else {
-            return false
-        }
-    }
     return (
         <>
             <div className="new-job">

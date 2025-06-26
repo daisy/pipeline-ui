@@ -39,7 +39,7 @@ function MessageDisplay(m: Message, key, depth, verbose) {
 }
 
 export function Messages({ job }: { job: Job }) {
-    const [verbose, setVerbose] = useState(true)
+    const [verbose, setVerbose] = useState(false)
 
     return (
         <>
@@ -52,10 +52,9 @@ export function Messages({ job }: { job: Job }) {
                     type="checkbox"
                     //@ts-ignore
                     onClick={(e) => setVerbose(e.target.checked)}
-                    defaultChecked={true}
+                    defaultChecked={verbose}
                 ></input>
             </div>
-            
             <ul>
                 {job.jobData.messages
                     ?.sort(messageSort)

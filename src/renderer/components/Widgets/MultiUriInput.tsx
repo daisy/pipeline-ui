@@ -35,7 +35,7 @@ const MultiUriInput: React.FC<MultiFileInputProps> = ({
             <label htmlFor={`${elemId}-input`}>
                 Enter a file url or browse for a local file:
             </label>
-            <div>
+            <div className="row">
                 <input
                     id={`${elemId}-input`}
                     type="text"

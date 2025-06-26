@@ -15,6 +15,7 @@
     --fg: black;
     --bg: white;
     --bg-off: oklch(from var(--bg) calc(l - 0.02) c h);
+    --inactive: lightgray;
     
     --font-fam: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont;
     --fw-font-fam: monospace;
@@ -94,6 +95,12 @@ button.important {
     font-weight: bold;
     padding: 8px;   
 }
+button[disabled], button[disabled]:hover, button[disabled]:active, button[disabled]:focus {
+    box-shadow: inherit;
+    background-color: var(--inactive);
+    color: var(--fg);
+    transform: none;
+}
 select {
     border-width: var(--bw);
     border-radius: var(--br);
@@ -120,7 +127,7 @@ input[type="checkbox"] {
     height: 1.5rem;
     
 }
-span.file {
+.file {
     font-family: var(--fw-font-fam);
 }
 .is-hidden {
@@ -138,4 +145,10 @@ span.file {
 }
 .info {
     font-style: italic;
+}
+.row {
+    display: flex;
+    flex-direction: row;
+    gap: 1rem;
+    align-items: center;
 }

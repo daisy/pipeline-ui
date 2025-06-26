@@ -36,11 +36,6 @@ form.script {
         input {
             width: 100%;
         }
-        div {
-            display: flex;
-            flex-direction: row;
-            gap: 1rem;
-        }
     }
     .description {
         font-size: smaller;

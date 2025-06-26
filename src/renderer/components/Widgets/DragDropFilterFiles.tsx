@@ -10,9 +10,11 @@ export function DragDropFilterFiles({
     createJob,
     onChange,
     initialValue,
+    onFirstInteraction,
 }) {
     // files is [{filepath, filetype},...]
     const [files, setFiles] = useState(initialValue)
+    const [firstInteraction, setFirstInteraction] = useState(false)
 
     useEffect(() => {
         if (!job) {
@@ -29,6 +31,10 @@ export function DragDropFilterFiles({
     // handle user adding more files and folders
     // resolve folder contents and add files to the current files list
     let onDragInputChange = async (filenames) => {
+        if (!firstInteraction) {
+            setFirstInteraction(true)
+            onFirstInteraction()
+        }
         let resolvedFilenames = await resolveItems(filenames)
         await addFiles(resolvedFilenames)
     }
@@ -103,25 +109,31 @@ export function DragDropFilterFiles({
                     The following files can be used in a Pipeline job:
                 </p>
             )}
-            {uniqueFiletypes.map((filetype, idx) => {
-                let filesOfType = files
-                    .filter((f) => f.filetype.type == filetype)
-                    .sort((a, b) => (a.name < b.name ? -1 : 1))
-                return (
-                    <FilelistWithRelevantScripts
-                        key={idx}
-                        files={filesOfType.map((f) => f.filepath)}
-                        relevantScripts={getRelevantScripts(filetype)}
-                        categoryName={filesOfType[0]?.filetype.name}
-                        jobInternalId={job.internalId}
-                        createJob={createJob}
-                    />
-                )
-            })}
             {files.length > 0 && (
-                <p className="suggestion">
+                <div className="files">
+                    {uniqueFiletypes.map((filetype, idx) => {
+                        let filesOfType = files
+                            .filter((f) => f.filetype.type == filetype)
+                            .sort((a, b) => (a.name < b.name ? -1 : 1))
+                        return (
+                            <FilelistWithRelevantScripts
+                                key={idx}
+                                files={filesOfType.map((f) => f.filepath)}
+                                relevantScripts={getRelevantScripts(filetype)}
+                                categoryName={filesOfType[0]?.filetype.name}
+                                jobInternalId={job.internalId}
+                                createJob={createJob}
+                            />
+                        )
+                    })}
+                </div>
+            )}
+            {files.length > 0 && (
+                <p className="info row">
                     Add more files to see more suggestions.
-                    <button onClick={() => updateFiles([])} type="button">Clear files</button>
+                    <button onClick={() => updateFiles([])} type="button">
+                        Clear files
+                    </button>
                 </p>
             )}
             <DragFileInput

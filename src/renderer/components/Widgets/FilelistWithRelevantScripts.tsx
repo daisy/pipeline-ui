@@ -50,7 +50,7 @@ export function FilelistWithRelevantScripts({
     return (
         <>
             <div className="files-by-script">
-                <div className="">
+                <div className="row">
                     <select onChange={(e) => onSelectScript(e)}>
                         {relevantScripts.map((script, idx) => (
                             <option key={idx} value={script.id}>
@@ -70,7 +70,7 @@ export function FilelistWithRelevantScripts({
                         Create job
                     </button>
                 </div>
-                <p className="suggestion">
+                <p className="info">
                     {!multiSelectEnabled(selectedScriptId) &&
                         'This script accepts one file at a time.'}
                     {relevantScripts.find((s) => s.id == selectedScriptId)
@@ -84,30 +84,29 @@ export function FilelistWithRelevantScripts({
                     {files
                         .sort((a, b) => (a < b ? -1 : 1))
                         .map((f, idx) => (
-                            <li key={idx}>
-                                <div className="">
-                                    <input
-                                        type={
-                                            multiSelectEnabled(selectedScriptId)
-                                                ? 'checkbox'
-                                                : 'radio'
-                                        }
-                                        name="files"
-                                        checked={
-                                            selectedFiles &&
-                                            selectedFiles.indexOf(f) != -1
-                                        }
-                                        id={`${jobInternalId}-${categoryName}-${idx}`}
-                                        onChange={(e) => {
-                                            changeFilesSelection([f])
-                                        }}
-                                    />
-                                    <label
-                                        htmlFor={`${jobInternalId}-${categoryName}-${idx}`}
-                                    >
-                                        {f}
-                                    </label>
-                                </div>
+                            <li key={idx} className="row">
+                                <input
+                                    type={
+                                        multiSelectEnabled(selectedScriptId)
+                                            ? 'checkbox'
+                                            : 'radio'
+                                    }
+                                    name="files"
+                                    checked={
+                                        selectedFiles &&
+                                        selectedFiles.indexOf(f) != -1
+                                    }
+                                    id={`${jobInternalId}-${categoryName}-${idx}`}
+                                    onChange={(e) => {
+                                        changeFilesSelection([f])
+                                    }}
+                                />
+                                <label
+                                    htmlFor={`${jobInternalId}-${categoryName}-${idx}`}
+                                    className="file"
+                                >
+                                    {f}
+                                </label>
                             </li>
                         ))}
                 </ul>

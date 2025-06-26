@@ -39,24 +39,23 @@ function MessageDisplay(m: Message, key, depth, verbose) {
 }
 
 export function Messages({ job }: { job: Job }) {
-    const [verbose, setVerbose] = useState(false)
+    const [verbose, setVerbose] = useState(true)
 
     return (
         <>
-            <div className="messageFilters">
-                <div>
-                    <label htmlFor={`${job.internalId}-verbose`}>
-                        View all messages
-                    </label>
-                    <input
-                        id={`${job.internalId}-verbose`}
-                        type="checkbox"
-                        //@ts-ignore
-                        onClick={(e) => setVerbose(e.target.checked)}
-                        defaultChecked={verbose}
-                    ></input>
-                </div>
+            <div className="field">
+                <label htmlFor={`${job.internalId}-verbose`}>
+                    View all messages
+                </label>
+                <input
+                    id={`${job.internalId}-verbose`}
+                    type="checkbox"
+                    //@ts-ignore
+                    onClick={(e) => setVerbose(e.target.checked)}
+                    defaultChecked={true}
+                ></input>
             </div>
+            
             <ul>
                 {job.jobData.messages
                     ?.sort(messageSort)

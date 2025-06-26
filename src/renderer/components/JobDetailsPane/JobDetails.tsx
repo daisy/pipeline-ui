@@ -34,130 +34,95 @@ export function JobDetails({ job }: { job: Job }) {
     let jobIsBatch =
         job.jobRequest.batchId != null && job.jobRequest.batchId != ''
 
-    return job.jobRequestError ? (
-        <>
-            <h1>Error</h1>
-            <div className="details">
-                <p>{job.jobRequestError.description}</p>
-                {!jobIsBatch && (
-                    <div className="form-buttons">
-                        <button
-                            type="button"
-                            onClick={(e) => {
-                                App.store.dispatch(editJob(job))
-                            }}
-                        >
-                            Edit job
-                        </button>
-                        <button
-                            type="button"
-                            onClick={async (e) => {
-                                let result = await App.showMessageBoxYesNo(
-                                    'Are you sure you want to close this job?'
-                                )
-                                if (result) {
-                                    App.store.dispatch(removeJob(job))
-                                }
-                            }}
-                        >
-                            Close job
-                        </button>
-                    </div>
-                )}
-            </div>
-        </>
-    ) : (
-        <>
-            <section
-                className="header"
-                aria-labelledby={`${ID(job.internalId)}-hd`}
-            >
-                <div>
-                    <h1 id={`${ID(job.internalId)}-hd`}>
-                        {job.jobData.nicename}
-                    </h1>
-                    {/* <p>{job.script.description}</p> */}
-                    <p aria-live="polite">
-                        Status:&nbsp;
-                        <span
-                            className={`status ${
-                                job.jobData?.status
-                                    ? readableStatus[
-                                          job.jobData.status
-                                      ].toLowerCase()
-                                    : readableStatus.LAUNCHING.toLowerCase()
-                            }`}
-                        >
-                            {job.jobData?.status
-                                ? readableStatus[job.jobData.status]
-                                : readableStatus.LAUNCHING}{' '}
-                        </span>
-                    </p>
-                    {job.jobData.progress ? (
-                        <p>
+    if (job.jobRequestError) {
+        return (
+            <>
+                <h2>Error</h2>
+                <div className="details">
+                    <p>{job.jobRequestError.description}</p>
+                    {!jobIsBatch && (
+                        <div className="form-buttons">
+                            <button
+                                type="button"
+                                onClick={(e) => {
+                                    App.store.dispatch(editJob(job))
+                                }}
+                            >
+                                Edit job
+                            </button>
+                        </div>
+                    )}
+                </div>
+            </>
+        )
+    }
+
+    return (
+        <div className="job-details">
+            <div className="job-status info">
+                <p aria-live="polite">
+                    Status:&nbsp;
+                    <span
+                        className={`status ${
+                            job.jobData?.status
+                                ? readableStatus[
+                                      job.jobData.status
+                                  ].toLowerCase()
+                                : readableStatus.LAUNCHING.toLowerCase()
+                        }`}
+                    >
+                        {job.jobData?.status
+                            ? readableStatus[job.jobData.status]
+                            : readableStatus.LAUNCHING}{' '}
+                    </span>
+                </p>
+                {job.jobData.progress &&
+                    job.jobData?.status == JobStatus.RUNNING ? (
+                        <p aria-live="polite">
                             Progress:&nbsp;
                             <span>
                                 {Math.ceil(job.jobData.progress * 100)}%
                             </span>
                         </p>
-                    ) : (
-                        ''
-                    )}
-                    <details
-                        id={`${ID(job.internalId)}-job-settings`}
-                        className="job-settings"
-                    >
-                        <summary>Job Settings</summary>
-                        <Settings job={job} />
-                    </details>
-                </div>
-            </section>
+                    ) : ''}
+            </div>
+            <details className="job-settings">
+                <summary>
+                    <h2>Job Settings</h2>
+                </summary>
+                <Settings job={job} />
+            </details>
 
-            <div className="details">
-                <div className="scrolling-area">
-                    <section
-                        className="job-results"
-                        aria-labelledby={`${ID(job.internalId)}-job-results`}
+            <details className="job-results" open>
+                <summary>
+                    <h2>Results</h2>
+                </summary>
+                {job.jobData.downloadedFolder && (
+                    <FileLink fileHref={job.jobData.downloadedFolder}>
+                        Open results folder
+                    </FileLink>
+                )}
+                <Results job={job} />
+            </details>
+            <details className="job-messages" open>
+                <summary>
+                    <h2>Messages</h2>
+                </summary>
+                {job?.jobData?.log && (
+                    <a
+                        className="loglink"
+                        href={job.jobData.log}
+                        onClick={(e) => externalLinkClick(e, App)}
                     >
-                        <div>
-                            <h2 id={`${ID(job.internalId)}-job-results`}>
-                                Results
-                            </h2>
-                            {job.jobData.downloadedFolder && (
-                                <FileLink
-                                    fileHref={job.jobData.downloadedFolder}
-                                >
-                                    Open results folder
-                                </FileLink>
-                            )}
-                        </div>
-                        <Results job={job} />
-                    </section>
-                    <section
-                        className="job-messages"
-                        aria-labelledby={`${ID(job.internalId)}-job-messages`}
-                    >
-                        <div>
-                            <h2 id={`${ID(job.internalId)}-job-messages`}>
-                                Messages
-                            </h2>
-                            {job?.jobData?.log && (
-                                <a
-                                    className="loglink"
-                                    href={job.jobData.log}
-                                    onClick={(e) => externalLinkClick(e, App)}
-                                >
-                                    View detailed log
-                                </a>
-                            )}
-                        </div>
+                        View full log
+                    </a>
+                )}
 
-                        <Messages job={job} />
-                    </section>
-                </div>
+                <Messages job={job} />
+            </details>
 
-                {job.jobData.status != JobStatus.RUNNING &&
-                job.jobData.status != JobStatus.IDLE ? (
+            {job.jobData.status != JobStatus.RUNNING &&
+                job.jobData.status != JobStatus.IDLE && (
                     <>
                         {!canRunJob && (
                             <div className="warnings">
@@ -199,30 +164,11 @@ export function JobDetails({ job }: { job: Job }) {
                                     >
                                         Edit job
                                     </button>
-                                    <button
-                                        type="button"
-                                        onClick={async (e) => {
-                                            let result =
-                                                await App.showMessageBoxYesNo(
-                                                    'Are you sure you want to close this job?'
-                                                )
-                                            if (result) {
-                                                App.store.dispatch(
-                                                    removeJob(job)
-                                                )
-                                            }
-                                        }}
-                                    >
-                                        Close job
-                                    </button>
                                 </>
                             )}
                         </div>
                     </>
-                ) : (
-                    ''
                 )}
-            </div>
-        </>
+        </div>
     )
 }

@@ -4,18 +4,26 @@ import { MarkdownDescription } from '../Widgets/MarkdownDescription'
 const { App } = window
 
 export function Results({ job }: { job: Job }) {
-    return (
-        <ul aria-live="polite" className="file-list">
+    return job.jobData.results?.namedResults.length > 0 ? (
+        <ul>
             {job.jobData.results?.namedResults.map((item, itemIndex) => (
-                <li key={`result-${itemIndex}`} className="named-result">
-                    <FileLink fileHref={item.href}>
-                        <span className="nicename">{item.nicename}</span>
-                    </FileLink>
-                    <div className="description">
-                        <MarkdownDescription>{item.desc}</MarkdownDescription>
-                    </div>
+                <li>
+                    <span className="nicename">
+                        <FileLink fileHref={item.href}>
+                            {item.nicename}
+                        </FileLink>
+                    </span>
+                    {item.desc && (
+                        <div className="description">
+                            <MarkdownDescription>
+                                {item.desc}
+                            </MarkdownDescription>
+                        </div>
+                    )}
                 </li>
             ))}
         </ul>
+    ) : (
+        <p className="info">No results available</p>
     )
 }

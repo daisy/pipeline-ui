@@ -144,8 +144,10 @@ export function MainView() {
                                     ?.focus()
                             }}
                         >
-                            {idx + 1}.{' '}
-                            {calculateJobName(job, pipeline.jobs)}
+                            <h1>
+                                {idx + 1}.{' '}
+                                {calculateJobName(job, pipeline.jobs)}
+                            </h1>
                         </button>
                     ))}
                 </div>

@@ -146,7 +146,6 @@ export function NewJobPane({ job }: { job: Job }) {
                     onChange={onDragDropFilesChange}
                     initialValue={files}
                 />
-                <p>Or</p>
                 {files.length == 0 && (
                     <SelectScript
                         jobInternalId={job.internalId}
@@ -154,6 +153,7 @@ export function NewJobPane({ job }: { job: Job }) {
                         scripts={pipeline.scripts}
                         onSelectChange={onSelectChange}
                         disabled={files.length != 0}
+                        message={'Or, select a script'}
                     />
                 )}
                 {showSponsorshipMessage && (

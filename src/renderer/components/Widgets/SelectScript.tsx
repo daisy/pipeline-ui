@@ -7,14 +7,16 @@ export function SelectScript({
     jobInternalId,
     onSelectChange,
     disabled,
+    message,
 }) {
     return (
         <div className={`select-script ${disabled ? 'disabled' : ''}`}>
             <label
                 id={`${ID(jobInternalId)}-select-script`}
                 htmlFor={`${ID(jobInternalId)}-script`}
+                className="info"
             >
-                Select a script:
+                {message}:
             </label>
             <select
                 id={`${ID(jobInternalId)}-script`}

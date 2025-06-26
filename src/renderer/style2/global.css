@@ -9,9 +9,9 @@
     --primary: #192378;
     --primary-contrast: white;
     --highlight: #D9CD66;
-    --ok: green;
-    --warning: orange;
-    --error: red;
+    --ok:#277A00;
+    --warning: #A36A00;
+    --error: #DF2935;
     --fg: black;
     --bg: white;
     --bg-off: oklch(from var(--bg) calc(l - 0.02) c h);
@@ -31,6 +31,10 @@
         --primary: #AAB1EE;
         --primary-contrast: black;
         --bg-off: oklch(from var(--bg) calc(l + 0.2) c h);
+        --ok: #57A773;
+        --error: #FF595E;
+        --warning: #FABC2A;
+        
     }
 }
 html {
@@ -66,7 +70,6 @@ button {
     width: min-content;
     padding: 4px;
 
-    display: flex;
     transition: all 100ms;
     white-space: nowrap;
 
@@ -76,14 +79,15 @@ button {
         color: var(--fg);
     }
     &:active {
-        transform: scale(95%);
-        
+        transform: scale(96%);
     }
 }
 button.invisible {
     color: var(--fg);
     background-color: var(--bg);
     border: none;
+    display: flex;
+    align-items: center;
 }
 button.important {
     font-size: var(--fontsize-larger);
@@ -92,6 +96,7 @@ button.important {
 }
 select {
     border-width: var(--bw);
+    border-radius: var(--br);
     &:hover {
         box-shadow: var(--box-shadow);
     }
@@ -99,12 +104,24 @@ select {
 input {
     border-radius: var(--br);
     border-width: var(--bw);
+    font-size: var(--fontsize-larger);
     &:hover {
         box-shadow: var(--box-shadow);
     }
     &:active {
         box-shadow: green;
     }
+}
+input[type="checkbox"] {
+    align-self: start;
+    accent-color: var(--primary);
+    border-radius: var(--br);
+    width: 1.5rem;
+    height: 1.5rem;
+    
+}
+span.file {
+    font-family: var(--fw-font-fam);
 }
 .is-hidden {
     display: none !important;

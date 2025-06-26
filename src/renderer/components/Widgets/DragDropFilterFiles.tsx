@@ -96,7 +96,7 @@ export function DragDropFilterFiles({
     return (
         <div className="drag-drop-filter-files">
             {files.length == 0 && (
-                <p className="info">Add files to see script suggestions.</p>
+                <p className="info">Add files to see script suggestions:</p>
             )}
             {files.length > 0 && (
                 <p className="info">
@@ -121,7 +121,7 @@ export function DragDropFilterFiles({
             {files.length > 0 && (
                 <p className="suggestion">
                     Add more files to see more suggestions.
-                    <button onClick={() => updateFiles([])} type="button" >Clear files</button>
+                    <button onClick={() => updateFiles([])} type="button">Clear files</button>
                 </p>
             )}
             <DragFileInput

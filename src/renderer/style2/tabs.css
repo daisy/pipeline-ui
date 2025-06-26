@@ -2,14 +2,10 @@
     display: flex;
     flex-direction: row;
     flex-wrap: wrap;
-    position: sticky;
-    top: 0;
 }
 
 [role="tab"],
 .add-tab {
-    display: flex;
-    align-items: center;
     z-index: 2;
 
     margin: .5rem;
@@ -23,31 +19,35 @@
     outline: none;
     
     font-size: var(--fontsize-larger);
-
+    
     overflow: hidden;
     text-align: left;
     cursor: pointer;
+
+    h1 {
+        font-weight: normal;
+        font-size: inherit;
+    }
 }
 
-/* highlight the tab name on focus/hover/select */
-[role="tab"]:active,
 [role="tab"][aria-selected="true"] {
     background: var(--primary);
     color: var(--primary-contrast);
+    outline: var(--bw) solid var(--highlight); 
+    h1 {
+        font-weight: bold;
+    }
 }
 
 [role="tabpanel"] {
     padding: 0.5rem;
-    overflow: auto;
 
     display: grid;
-    grid-template-columns: auto 3rem;
-    grid-template-rows: 3rem auto;
+    grid-template-columns: auto min-content;
+    grid-template-rows: min-content auto;
 
     .close-tab {
         grid-column: 2;
-        justify-self: right;
-        align-self: center;
     }
     .close-tab:hover {
         background-color: var(--bg);
@@ -60,6 +60,10 @@
     display: flex;
     flex-direction: row;
     border-bottom: var(--bw) solid var(--fg);
+    position: sticky;
+    top: 0;
+    z-index: 4;
+    background-color: var(--bg-off);
 }
 .add-tab {
     height: min-content;

@@ -1,18 +1,78 @@
 // job settings, not application settings
+import { useEffect, useMemo, useState } from 'react'
 import { useWindowStore } from 'renderer/store'
 import { externalLinkClick, findValue } from 'renderer/utils/utils'
-import { Job } from 'shared/types'
+import { Job, ScriptInput, ScriptOption } from 'shared/types'
 import { getAllOptional, getAllRequired } from 'shared/utils'
 
 const { App } = window
 
+let isFile = (item) => ['anyURI', 'anyFileURI'].includes(item.type)
+
+// return [{name, value}...]
+// it's a display convenience and not accessed for any other reason
+async function getValuesForScriptItems(items, job) {
+    let values = []
+    for (let item of items) {
+        let val = findValue(
+            item.name,
+            item.kind,
+            job.jobRequest,
+            item.isStylesheetParameter
+        )
+
+        if (Array.isArray(val)) {
+            let newVals = []
+            for (let valItem of val) {
+                if (isFile(item)) {
+                    let tmp = await App.fileURLToPath(valItem)
+                    newVals.push(tmp)
+                }
+            }
+            val = [...newVals]
+        } else {
+            if (isFile(item)) {
+                val = await App.fileURLToPath(val)
+            }
+        }
+
+        // @ts-ignore
+        let valObj = { name: item.name, value: val }
+        values.push(valObj)
+    }
+    return values
+}
+function itemValue(item, jobValues) {
+    let entry = jobValues.find((v) => v.name == item.name)
+    let val = entry?.value ?? ''
+    if (Array.isArray(val)) {
+        return val.join(', ')
+    } else {
+        return val
+    }
+}
 export function Settings({ job }: { job: Job }) {
+    const [jobValues, setJobValues] = useState([])
     const { pipeline } = useWindowStore()
     const scriptId = job.jobData?.script?.id || job.script?.id
-    const scriptDetails = pipeline.scripts.filter((s) => s.id == scriptId)[0]
-    if (!scriptDetails) {
-        return <p>Unrecognized script {scriptId}</p>
-    }
+    const scriptDetails = pipeline.scripts.find((s) => s.id == scriptId)
+
+    let scriptRequiredItems = getAllRequired(job.script)
+    let scriptOptionalItems = getAllOptional(job.script)
+
+    useMemo(() => {
+        // put values in the script items, for display convenience and because of async issues
+        const doConversion = async () => {
+            let jobValues_ = await getValuesForScriptItems(
+                [...scriptRequiredItems, ...scriptOptionalItems],
+                job
+            )
+            // @ts-ignore
+            setJobValues(jobValues_)
+        }
+        doConversion()
+    }, [])
+
     return (
         <ul>
             <li>
@@ -30,29 +90,27 @@ export function Settings({ job }: { job: Job }) {
                     )}
                 </span>
             </li>
-            {getAllRequired(scriptDetails).map((item, idx) => (
-                <li key={idx}>
-                    <span>{item.nicename}: </span>
-                    <span>
-                        {findValue(
-                            item.name,
-                            item.kind,
-                            job.jobRequest,
-                            item.isStylesheetParameter
-                        )}
-                    </span>
-                </li>
-            ))}
+            {scriptRequiredItems.map((item, idx) => {
+                return (
+                    <li key={idx}>
+                        <span>{item.nicename}: </span>
+                        <span className={isFile(item) ? 'file' : ''}>
+                            {
+                                // @ts-ignore
+                                itemValue(item, jobValues)
+                            }
+                        </span>
+                    </li>
+                )
+            })}
             {getAllOptional(scriptDetails).map((item, idx) => (
                 <li key={idx}>
                     <span>{item.nicename}: </span>
-                    <span>
-                        {findValue(
-                            item.name,
-                            item.kind,
-                            job.jobRequest,
-                            item.isStylesheetParameter
-                        )}
+                    <span className={isFile(item) ? 'file' : ''}>
+                        {
+                            // @ts-ignore
+                            itemValue(item, jobValues)
+                        }
                     </span>
                 </li>
             ))}

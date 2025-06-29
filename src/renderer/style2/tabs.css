@@ -24,7 +24,7 @@
     text-align: left;
     cursor: pointer;
 
-    h1 {
+    h1, h2 {
         font-weight: normal;
         font-size: inherit;
     }
@@ -33,15 +33,13 @@
 [role="tab"][aria-selected="true"] {
     background: var(--primary);
     color: var(--primary-contrast);
-    outline: var(--bw) solid var(--highlight); 
-    h1 {
+    h1, h2 {
         font-weight: bold;
     }
 }
 
 [role="tabpanel"] {
     padding: 0.5rem;
-
     display: grid;
     grid-template-columns: auto min-content;
     grid-template-rows: min-content auto;
@@ -54,6 +52,8 @@
     }
     .tabpanel-contents {
         grid-row: 1/3;
+        padding-left: 1rem;
+        padding-top: 1rem;
     }
 }
 .tablist-container {

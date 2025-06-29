@@ -1,4 +1,4 @@
-import { TtsConfig, TtsVoice } from 'shared/types/ttsConfig'
+import { TtsVoice } from 'shared/types/ttsConfig'
 import { useState } from 'react'
 export function VoicePreview({ voice }: { voice: TtsVoice }) {
     // return <audio controls src={voice.preview}></audio>

@@ -43,7 +43,7 @@ export function Messages({ job }: { job: Job }) {
 
     return (
         <>
-            <div className="field">
+            <div className="field row">
                 <label htmlFor={`${job.internalId}-verbose`}>
                     View all messages
                 </label>

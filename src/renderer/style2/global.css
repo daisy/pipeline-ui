@@ -6,23 +6,28 @@
     --bw: 2px; /* border width */
 
     /* colors */
-    --primary: #192378;
+    --primary: #3444D5;
     --primary-contrast: white;
+    --secondary: #DDE0F8;
+    --secondary-contrast: black;
     --highlight: #D9CD66;
     --ok:#277A00;
     --warning: #A36A00;
     --error: #DF2935;
     --fg: black;
     --bg: white;
+    --fg-off: oklch(from var(--fg) calc(l + 0.7) c h);
     --bg-off: oklch(from var(--bg) calc(l - 0.02) c h);
     --inactive: lightgray;
+    --inactive-contrast: rgb(70, 70, 70);
     
     --font-fam: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont;
     --fw-font-fam: monospace;
     --fontsize: 1rem;
     --fontsize-larger: 110%;
     --fontsize-smaller: 80%;
-    --box-shadow: 0 0 0 2px var(--primary);
+    --box-shadow-pri: 0 0 0 2px var(--primary);
+    --box-shadow-sec: 0 0 0 2px var(--secondary);
     
 }
 @media (prefers-color-scheme: dark) {
@@ -31,6 +36,7 @@
         --bg: black;
         --primary: #AAB1EE;
         --primary-contrast: black;
+        --fg-off: oklch(from var(--fg) calc(l - 0.3) c h);
         --bg-off: oklch(from var(--bg) calc(l + 0.2) c h);
         --ok: #57A773;
         --error: #FF595E;
@@ -59,28 +65,26 @@ a:hover {
 *:focus {
     outline: none;
 }
-input:focus,button:focus, select:focus{
-    outline: var(--bw) solid var(--highlight);
-}
 button {
     border: none;
     border-radius: var(--br);
-    background-color: var(--primary);
-    color: var(--primary-contrast);
+    background-color: var(--secondary);
+    color: var(--secondary-contrast);
     outline: none;
     width: min-content;
-    padding: 4px;
-
+    padding: 6px;
+    margin: 2px;
     transition: all 100ms;
     white-space: nowrap;
 
     &:hover {
-        box-shadow: var(--box-shadow);
-        background-color: var(--bg);
-        color: var(--fg);
+        box-shadow: var(--box-shadow-pri);
+        outline: none;
     }
     &:active {
         transform: scale(96%);
+        background-color: var(--primary);
+        color: var(--primary-contrast);
     }
 }
 button.invisible {
@@ -98,34 +102,19 @@ button.important {
 button[disabled], button[disabled]:hover, button[disabled]:active, button[disabled]:focus {
     box-shadow: inherit;
     background-color: var(--inactive);
-    color: var(--fg);
+    color: var(--inactive-contrast);
     transform: none;
 }
-select {
-    border-width: var(--bw);
+details > summary {
+    cursor: pointer;
     border-radius: var(--br);
-    &:hover {
-        box-shadow: var(--box-shadow);
-    }
+    padding: 2px;
 }
-input {
-    border-radius: var(--br);
-    border-width: var(--bw);
-    font-size: var(--fontsize-larger);
-    &:hover {
-        box-shadow: var(--box-shadow);
-    }
-    &:active {
-        box-shadow: green;
-    }
+summary::marker {
+    color: var(--primary);
 }
-input[type="checkbox"] {
-    align-self: start;
-    accent-color: var(--primary);
-    border-radius: var(--br);
-    width: 1.5rem;
-    height: 1.5rem;
-    
+summary:hover {
+    box-shadow: var(--box-shadow-pri);
 }
 .file {
     font-family: var(--fw-font-fam);

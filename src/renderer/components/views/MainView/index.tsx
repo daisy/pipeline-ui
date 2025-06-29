@@ -1,7 +1,7 @@
 /*
 Data manager and owner of tab view
 */
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { Job } from 'shared/types'
 import { useWindowStore } from 'renderer/store'
 
@@ -24,6 +24,7 @@ import { Plus, X } from '../../Widgets/SvgIcons'
 import { BatchJobDetailsPane } from 'renderer/components/JobDetailsPane/BatchJobPane'
 import { SingleJobDetailsPane } from 'renderer/components/JobDetailsPane/SingleJobPane'
 import { ScriptForm } from 'renderer/components/ScriptForm'
+import { TabList } from 'renderer/components/Widgets/TabList'
 
 const { App } = window
 
@@ -39,15 +40,12 @@ export function MainView() {
         }
     }, [])
 
-    // on navigation received for the tab, we need to refocus the selected tab
     // for the narrators to announce it
     useEffect(() => {
         if (pipeline.selectedJobId !== '') {
             document
                 .getElementById(`${ID(pipeline.selectedJobId)}-tab`)
                 ?.focus()
-        } else {
-            document.getElementById(`new-job-button`)?.focus()
         }
     }, [pipeline.selectedJobId])
 
@@ -60,101 +58,53 @@ export function MainView() {
         setVisibleJobs([...visibleJobs_])
     }, [pipeline.jobs])
 
-    const newJobButton = document.getElementById(`new-job-button`)
-    /**
-     * Keyboard actions on tabs with arrows
-     * @param e KeyboardEvent
-     */
-    const keyboardActions = (e) => {
+    let onKeyDown = (e) => {
         switch (e.key) {
             case 'ArrowRight':
-                if (newJobButton == document.activeElement) {
-                    App.store.dispatch(selectJob(visibleJobs[0]))
-                    document
-                        .getElementById(`${ID(visibleJobs[0].internalId)}-tab`)
-                        ?.focus()
-                } else if (
-                    pipeline.selectedJobId ==
-                    visibleJobs[visibleJobs.length - 1].internalId
-                ) {
-                    document.getElementById(`new-job-button`)?.focus()
-                } else
-                    App.store.dispatch(selectNextJob(settings.editJobOnNewTab))
-                break
+                console.log("right")
+                App.store.dispatch(selectNextJob(settings.editJobOnNewTab))
             case 'ArrowLeft':
-                if (newJobButton == document.activeElement) {
-                    App.store.dispatch(
-                        selectJob(visibleJobs[visibleJobs.length - 1])
-                    )
-                    document
-                        .getElementById(
-                            `${ID(
-                                visibleJobs[visibleJobs.length - 1].internalId
-                            )}-tab`
-                        )
-                        ?.focus()
-                } else if (
-                    pipeline.selectedJobId == visibleJobs[0].internalId
-                ) {
-                    document.getElementById(`new-job-button`)?.focus()
-                } else
-                    App.store.dispatch(selectPrevJob(settings.editJobOnNewTab))
-                break
+                App.store.dispatch(selectPrevJob(settings.editJobOnNewTab))
             case 'ArrowDown':
                 document
                     .getElementById(`${ID(pipeline.selectedJobId)}-tabpanel`)
                     ?.focus()
-                break
-            case 'Delete':
-                if (pipeline.jobs.length > 0) {
-                    // TODO if requested : possibility to delete the selection
-                }
-                break
         }
     }
     return (
         <main>
             <div className="tablist-container">
-                <div role="tablist" onKeyDown={keyboardActions}>
-                    {visibleJobs.map((job, idx) => (
-                        <button
-                            key={idx}
-                            id={`${ID(job.internalId)}-tab`}
-                            aria-selected={
-                                pipeline.selectedJobId == job.internalId
-                            }
-                            tabIndex={
-                                pipeline.selectedJobId == job.internalId
-                                    ? 0
-                                    : -1
-                            }
-                            aria-controls={`${ID(job.internalId)}-tabpanel`}
-                            title={`${idx + 1}. ${calculateJobName(
-                                job,
-                                pipeline.jobs
-                            )}`}
-                            role="tab"
-                            type="button"
-                            onClick={(e) => {
-                                App.store.dispatch(selectJob(job))
-                                document
-                                    .getElementById(
-                                        `${ID(job.internalId)}-tabpanel`
-                                    )
-                                    ?.focus()
-                            }}
-                        >
-                            <h1>
-                                {idx + 1}.{' '}
-                                {calculateJobName(job, pipeline.jobs)}
-                            </h1>
-                        </button>
-                    ))}
-                </div>
+                <TabList
+                    items={visibleJobs}
+                    onKeyDown={onKeyDown}
+                    getTabId={(job, idx) => `${ID(job.internalId)}-tab`}
+                    getTabAriaSelected={(job, idx) =>
+                        pipeline.selectedJobId == job.internalId
+                    }
+                    getTabIndex={(job, idx) =>
+                        pipeline.selectedJobId == job.internalId ? 0 : -1
+                    }
+                    getTabAriaControls={(job, idx) =>
+                        `${ID(job.internalId)}-tabpanel`
+                    }
+                    getTabTitle={(job, idx) =>
+                        `${idx + 1}. ${calculateJobName(job, pipeline.jobs)}`
+                    }
+                    getTabLabel={(job, idx) => (
+                        <h1>
+                            {idx + 1}. {calculateJobName(job, pipeline.jobs)}
+                        </h1>
+                    )}
+                    onTabClick={(job, idx) => {
+                        App.store.dispatch(selectJob(job))
+                        document
+                            .getElementById(`${ID(job.internalId)}-tabpanel`)
+                            ?.focus()
+                    }}
+                ></TabList>
                 <button
                     type="button"
                     className="add-tab invisible"
-                    id="new-job-button"
                     title={`Create a job (${
                         PLATFORM.IS_MAC ? 'Cmd' : 'Ctrl'
                     }+N)`}

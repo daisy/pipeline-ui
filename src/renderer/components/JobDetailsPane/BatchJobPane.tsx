@@ -4,12 +4,12 @@ Details of a submitted job
 import { Job, JobStatus } from '/shared/types'
 
 import { removeBatchJob, cancelBatchJob } from 'shared/data/slices/pipeline'
-import { readableStatus } from 'shared/jobName'
 import { useState, useEffect } from 'react'
 import { JobDetails } from './JobDetails'
 import { areAllJobsInBatchDone, getIdleCountInBatch } from 'shared/utils'
 import { JobStatusIcon } from '../Widgets/SvgIcons'
 import { File, FileAsType } from '../Widgets/File'
+import { getStatus } from 'renderer/utils'
 
 const { App } = window
 
@@ -52,17 +52,6 @@ export function BatchJobDetailsPane({ jobs }: { jobs: Array<Job> }) {
         )
         return sourceInput?.value ?? ''
     }
-
-    let getStatus = (job) => {
-        if (job.jobRequestError) {
-            return readableStatus.ERROR.toLowerCase()
-        }
-        if (job.jobData?.status) {
-            return readableStatus[job.jobData.status].toLowerCase()
-        }
-        return readableStatus.LAUNCHING.toLowerCase()
-    }
-
     return (
         <div className="batch-job">
             <aside>

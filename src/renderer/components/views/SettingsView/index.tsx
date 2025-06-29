@@ -1,27 +1,20 @@
 import { useEffect, useState } from 'react'
 import { useWindowStore } from 'renderer/store'
-import {
-    ApplicationSettings,
-    ClosingMainWindowAction,
-    ColorScheme,
-} from 'shared/types'
-import {
-    save,
-    setTtsConfig,
-    setDownloadPath,
-    setColorScheme,
-    setAutoCheckUpdate,
-    setClosingMainWindowAction,
-    setEditJobOnNewTab,
-} from 'shared/data/slices/settings'
+import { ApplicationSettings } from 'shared/types'
+import { save, setTtsConfig } from 'shared/data/slices/settings'
 
-import { TtsEnginesConfigPane } from '../../TtsConfig/Engines'
-import { TtsMoreOptionsConfigPane } from '../../TtsConfig/MoreOptions'
-import { TtsBrowseVoicesConfigPane } from '../../TtsConfig/BrowseVoices'
-import { TtsPreferredVoicesConfigPane } from '../../TtsConfig/PreferredVoices'
-import { SingleFileInput } from 'renderer/components/Widgets/SingleFileInput'
+import { Engines } from './Engines'
+import { MoreTTSOptions } from './MoreTTSOptions'
+import { BrowseVoices } from './BrowseVoices'
+import { PreferredVoices } from './PreferredVoices'
+import { ID } from 'renderer/utils'
+import { TabList } from 'renderer/components/Widgets/TabList'
+import { General } from './General'
+import { Appearance } from './Appearance'
+import { Behavior } from './Behavior'
+import { Updates } from './Updates'
 
-const { App } = window // The "App" comes from the bridge
+const { App } = window
 
 export enum SettingsMenuItem {
     General = '/general',
@@ -60,7 +53,7 @@ export function SettingsView(
             ...settings.ttsConfig,
         },
     })
-    //const [saved, setSaved] = useState(true)
+
     useEffect(() => {
         // Reload settings from store if it has changed
         setNewSettings({
@@ -84,43 +77,6 @@ export function SettingsView(
 
     const [voiceFilters, setVoiceFilters] = useState([])
 
-    // Changed folder
-    const resultsFolderChanged = (filename) => {
-        App.store.dispatch(setDownloadPath(filename[0]))
-        App.store.dispatch(save())
-        //setSaved(true)
-    }
-    const colorModeChanged = (e) => {
-        App.store.dispatch(
-            setColorScheme(
-                Object.keys(ColorScheme)[
-                    e.target.selectedIndex
-                ] as keyof typeof ColorScheme
-            )
-        )
-        App.store.dispatch(save())
-        //setSaved(true)
-    }
-    const ClosingActionChanged = (e) => {
-        App.store.dispatch(
-            setClosingMainWindowAction(
-                Object.keys(ClosingMainWindowAction)[
-                    e.target.selectedIndex
-                ] as keyof typeof ClosingMainWindowAction
-            )
-        )
-        App.store.dispatch(save())
-    }
-    const autoCheckUpdateChanged = (e) => {
-        App.store.dispatch(setAutoCheckUpdate(e.target.checked))
-        App.store.dispatch(save())
-    }
-
-    const editJobOnNewTabChanged = (e) => {
-        App.store.dispatch(setEditJobOnNewTab(e.target.checked))
-        App.store.dispatch(save())
-    }
-
     const onTtsVoicesPreferenceChange = (voices) => {
         const newConfig = {
             preferredVoices: [...voices],
@@ -130,7 +86,6 @@ export function SettingsView(
         }
         App.store.dispatch(setTtsConfig(newConfig))
         App.store.dispatch(save())
-        //setSaved(true)
     }
     const onTtsVoicesDefaultsChange = (voices) => {
         const newConfig = {
@@ -151,373 +106,132 @@ export function SettingsView(
         }
         App.store.dispatch(setTtsConfig(newConfig))
         App.store.dispatch(save())
-        //setSaved(true)
     }
     const onTtsVoiceFiltersChange = (vf: VoiceFilter[]) => {
         setVoiceFilters(vf)
     }
+
+    let tabItems = [
+        {
+            label: 'General',
+            section: SettingsMenuItem.General,
+            markup: <General newSettings={newSettings} />,
+        },
+        {
+            label: 'Appearance',
+            section: SettingsMenuItem.Appearance,
+            markup: <Appearance newSettings={newSettings} />,
+        },
+        {
+            label: 'Behavior',
+            section: SettingsMenuItem.Behavior,
+            markup: <Behavior newSettings={newSettings} />,
+        },
+        {
+            label: 'Updates',
+            section: SettingsMenuItem.Updates,
+            markup: <Updates newSettings={newSettings} />,
+        },
+        {
+            label: 'Browse Voices',
+            section: SettingsMenuItem.TTSBrowseVoices,
+            markup: pipeline.ttsVoices ? (
+                <BrowseVoices
+                    availableVoices={pipeline.ttsVoices}
+                    userPreferredVoices={newSettings.ttsConfig.preferredVoices}
+                    onChangePreferredVoices={onTtsVoicesPreferenceChange}
+                    ttsEnginesStates={pipeline.ttsEnginesStates}
+                    onChangeVoiceFilters={onTtsVoiceFiltersChange}
+                    voiceFilters={voiceFilters}
+                />
+            ) : (
+                <p>Loading voices...</p>
+            ),
+        },
+        {
+            label: 'Preferred Voices',
+            section: SettingsMenuItem.TTSPreferredVoices,
+            markup: pipeline.ttsVoices ? (
+                <PreferredVoices
+                    ttsEnginesStates={pipeline.ttsEnginesStates}
+                    userPreferredVoices={newSettings.ttsConfig.preferredVoices}
+                    userDefaultVoices={newSettings.ttsConfig.defaultVoices}
+                    onChangePreferredVoices={onTtsVoicesPreferenceChange}
+                    onChangeDefaultVoices={onTtsVoicesDefaultsChange}
+                />
+            ) : (
+                <p>Loading voices...</p>
+            ),
+        },
+        {
+            label: 'TTS Engines',
+            section: SettingsMenuItem.TTSEngines,
+            markup: (
+                <Engines
+                    ttsEngineProperties={
+                        newSettings.ttsConfig.ttsEngineProperties
+                    }
+                    onChangeTtsEngineProperties={onTtsEnginePropertiesChange}
+                />
+            ),
+        },
+        {
+            label: 'More TTS Options',
+            section: SettingsMenuItem.TTSMoreOptions,
+            markup: (
+                <MoreTTSOptions
+                    ttsEngineProperties={
+                        newSettings.ttsConfig.ttsEngineProperties
+                    }
+                    ttsEnginesStates={pipeline.ttsEnginesStates}
+                    onChangeTtsEngineProperties={onTtsEnginePropertiesChange}
+                />
+            ),
+        },
+    ]
+    let onKeyDown = (e) => {}
+
     return (
-        <div className="settings">
-            <nav className="settings-menu">
-                <ul>
-                    <li
+        <>
+            <h1>Settings</h1>
+            <TabList
+                items={tabItems}
+                onKeyDown={onKeyDown}
+                getTabId={(item, idx) => `${ID(idx)}-tab`}
+                getTabAriaSelected={(item, idx) =>
+                    selectedSection == item.section
+                }
+                getTabIndex={(item, idx) =>
+                    selectedSection == item.section ? 0 : -1
+                }
+                getTabAriaControls={(item, idx) => `${ID(idx)}-tabpanel`}
+                getTabTitle={(item, idx) => item.label}
+                getTabLabel={(item, idx) => <h2>{item.label}</h2>}
+                onTabClick={(item, idx) => {
+                    setSelectedSection(item.section)
+                }}
+            ></TabList>
+            {tabItems.map((item, idx) => {
+                return (
+                    <div
+                        key={idx}
                         className={
-                            selectedSection == SettingsMenuItem.General
-                                ? 'selected-menu-item'
-                                : ''
+                            selectedSection != item.section ? 'is-hidden' : ''
                         }
+                        id={`${ID(idx)}-tabpanel`}
+                        role="tabpanel"
+                        aria-labelledby={`${ID(idx)}-tab`}
+                        tabIndex={0}
                     >
-                        <button
-                            type="button"
-                            onClick={(e) =>
-                                setSelectedSection(SettingsMenuItem.General)
-                            }
-                        >
-                            General
-                        </button>
-                    </li>
-                    <li
-                        className={
-                            selectedSection == SettingsMenuItem.Appearance
-                                ? 'selected-menu-item'
-                                : ''
-                        }
-                    >
-                        <button
-                            type="button"
-                            onClick={(e) =>
-                                setSelectedSection(SettingsMenuItem.Appearance)
-                            }
-                        >
-                            Appearance
-                        </button>
-                    </li>
-                    <li
-                        className={
-                            selectedSection == SettingsMenuItem.Behavior
-                                ? 'selected-menu-item'
-                                : ''
-                        }
-                    >
-                        <button
-                            type="button"
-                            onClick={(e) =>
-                                setSelectedSection(SettingsMenuItem.Behavior)
-                            }
-                        >
-                            Behavior
-                        </button>
-                    </li>
-                    <li
-                        className={
-                            selectedSection == SettingsMenuItem.Updates
-                                ? 'selected-menu-item'
-                                : ''
-                        }
-                    >
-                        <button
-                            type="button"
-                            onClick={(e) =>
-                                setSelectedSection(SettingsMenuItem.Updates)
-                            }
-                        >
-                            Updates
-                        </button>
-                    </li>
-                    <li>
-                        <span className="list-subheading">TTS</span>
-                        <ul>
-                            <li
-                                className={
-                                    selectedSection ==
-                                    SettingsMenuItem.TTSBrowseVoices
-                                        ? 'selected-menu-item'
-                                        : ''
-                                }
-                            >
-                                <button
-                                    type="button"
-                                    onClick={(e) =>
-                                        setSelectedSection(
-                                            SettingsMenuItem.TTSBrowseVoices
-                                        )
-                                    }
-                                >
-                                    Browse Voices
-                                </button>
-                            </li>
-                            <li
-                                className={
-                                    selectedSection ==
-                                    SettingsMenuItem.TTSPreferredVoices
-                                        ? 'selected-menu-item'
-                                        : ''
-                                }
-                            >
-                                <button
-                                    type="button"
-                                    onClick={(e) =>
-                                        setSelectedSection(
-                                            SettingsMenuItem.TTSPreferredVoices
-                                        )
-                                    }
-                                >
-                                    Preferred Voices
-                                </button>
-                            </li>
-                            <li
-                                className={
-                                    selectedSection ==
-                                    SettingsMenuItem.TTSEngines
-                                        ? 'selected-menu-item'
-                                        : ''
-                                }
-                            >
-                                <button
-                                    type="button"
-                                    onClick={(e) =>
-                                        setSelectedSection(
-                                            SettingsMenuItem.TTSEngines
-                                        )
-                                    }
-                                >
-                                    Engines
-                                </button>
-                            </li>
-                            <li
-                                className={
-                                    selectedSection ==
-                                    SettingsMenuItem.TTSMoreOptions
-                                        ? 'selected-menu-item'
-                                        : ''
-                                }
-                            >
-                                <button
-                                    type="button"
-                                    onClick={(e) =>
-                                        setSelectedSection(
-                                            SettingsMenuItem.TTSMoreOptions
-                                        )
-                                    }
-                                >
-                                    More options
-                                </button>
-                            </li>
-                        </ul>
-                    </li>
-                </ul>
-            </nav>
-            <form className="settings-form">
-                <div className="fields">
-                    {selectedSection == SettingsMenuItem.General ? (
-                        <div className="field">
-                            <label htmlFor="resultsFolder">
-                                Results folder
-                            </label>
-                            <span className="description">
-                                A folder where all job results will be
-                                automatically downloaded
-                            </span>
-                            <SingleFileInput
-                                allowFile={false}
-                                allowFolder={true}
-                                onChange={resultsFolderChanged}
-                                initialValue={[newSettings.downloadFolder]}
-                                required={true}
-                                elemId="results-folder"
-                            />
-                            {newSettings.downloadFolder == '' ? (
-                                <span className="warning">
-                                    This field cannot be empty.
-                                </span>
-                            ) : (
-                                ''
-                            )}
-                        </div>
-                    ) : selectedSection == SettingsMenuItem.Appearance ? (
-                        <div className="field">
-                            <label htmlFor="colorMode">
-                                Interface color mode
-                            </label>
-                            <span className="description">
-                                Select the interface color scheme to use
-                            </span>
-                            <select
-                                id="colorMode"
-                                onChange={(e) => colorModeChanged(e)}
-                                value={newSettings.colorScheme}
-                            >
-                                {Object.entries(ColorScheme).map(
-                                    ([k, v]: [string, string]) => {
-                                        return (
-                                            <option key={k} value={k}>
-                                                {v}
-                                            </option>
-                                        )
-                                    }
-                                )}
-                            </select>
-                        </div>
-                    ) : selectedSection == SettingsMenuItem.Behavior ? (
-                        <>
-                            <div className="field">
-                                <label htmlFor="editJobOnNewTab">
-                                    Editing jobs in new tabs
-                                </label>
-                                <span className="description">
-                                    If checked, editing a job will open a
-                                    pre-filled new job instead of reusing the
-                                    existing job.
-                                </span>
-                                <input
-                                    type="checkbox"
-                                    id="editJobOnNewTab"
-                                    checked={newSettings.editJobOnNewTab}
-                                    onChange={editJobOnNewTabChanged}
-                                />
+                        <form onSubmit={() => window.close()}>
+                            <fieldset>{item.markup}</fieldset>
+                            <div className="controls">
+                                <button type="submit">Close</button>
                             </div>
-                            <div className="field">
-                                <label htmlFor="OnMainWindowClosing">
-                                    Action on closing the app window
-                                </label>
-                                <span className="description">
-                                    Choose here if you want to keep the
-                                    application running in the tray or quit the
-                                    application when closing the jobs window.
-                                    <br />
-                                    If the application should stay in the tray,
-                                    you can choose if you want to keep jobs
-                                    opened or if they should be closed when the
-                                    window is closed.
-                                </span>
-                                <select
-                                    id="OnMainWindowClosing"
-                                    onChange={(e) => ClosingActionChanged(e)}
-                                    value={newSettings.onClosingMainWindow}
-                                >
-                                    {Object.entries(
-                                        ClosingMainWindowAction
-                                    ).map(([k, v]: [string, string]) => {
-                                        return (
-                                            <option key={k} value={k}>
-                                                {v}
-                                            </option>
-                                        )
-                                    })}
-                                </select>
-                            </div>
-                            {/* insert local pipeline settings form part here */}
-                            {/* insert remote pipeline settings form part here */}
-                        </>
-                    ) : selectedSection == SettingsMenuItem.Updates ? (
-                        <div className="field">
-                            <label className="oneline">
-                                <input
-                                    id="autoCheckUpdate"
-                                    type="checkbox"
-                                    checked={newSettings.autoCheckUpdate}
-                                    onChange={autoCheckUpdateChanged}
-                                />
-                                <span>Check for updates in background</span>
-                            </label>
-                            <span className="description">
-                                Choose here if you want to keep the application
-                                checking for updates in the background.
-                            </span>
-                        </div>
-                    ) : selectedSection == SettingsMenuItem.TTSBrowseVoices ? (
-                        <div className="tts-browse-voices">
-                            {pipeline.ttsVoices ? (
-                                <TtsBrowseVoicesConfigPane
-                                    availableVoices={pipeline.ttsVoices}
-                                    userPreferredVoices={
-                                        newSettings.ttsConfig.preferredVoices
-                                    }
-                                    onChangePreferredVoices={
-                                        onTtsVoicesPreferenceChange
-                                    }
-                                    ttsEnginesStates={pipeline.ttsEnginesStates}
-                                    onChangeVoiceFilters={
-                                        onTtsVoiceFiltersChange
-                                    }
-                                    voiceFilters={voiceFilters}
-                                />
-                            ) : (
-                                <p>Loading voices...</p>
-                            )}
-                        </div>
-                    ) : selectedSection ==
-                      SettingsMenuItem.TTSPreferredVoices ? (
-                        <div className="tts-preferred-voices">
-                            {pipeline.ttsVoices ? (
-                                <TtsPreferredVoicesConfigPane
-                                    ttsEnginesStates={pipeline.ttsEnginesStates}
-                                    userPreferredVoices={
-                                        newSettings.ttsConfig.preferredVoices
-                                    }
-                                    userDefaultVoices={
-                                        newSettings.ttsConfig.defaultVoices
-                                    }
-                                    onChangePreferredVoices={
-                                        onTtsVoicesPreferenceChange
-                                    }
-                                    onChangeDefaultVoices={
-                                        onTtsVoicesDefaultsChange
-                                    }
-                                />
-                            ) : (
-                                <p>Loading voices...</p>
-                            )}
-                        </div>
-                    ) : selectedSection == SettingsMenuItem.TTSEngines ? (
-                        <div className="tts-engines-config">
-                            <TtsEnginesConfigPane
-                                ttsEngineProperties={
-                                    newSettings.ttsConfig.ttsEngineProperties
-                                }
-                                onChangeTtsEngineProperties={
-                                    onTtsEnginePropertiesChange
-                                }
-                            />
-                        </div>
-                    ) : selectedSection == SettingsMenuItem.TTSMoreOptions ? (
-                        <div className="tts-more-options">
-                            <TtsMoreOptionsConfigPane
-                                ttsEngineProperties={
-                                    newSettings.ttsConfig.ttsEngineProperties
-                                }
-                                ttsEnginesStates={pipeline.ttsEnginesStates}
-                                onChangeTtsEngineProperties={
-                                    onTtsEnginePropertiesChange
-                                }
-                            />
-                        </div>
-                    ) : (
-                        ''
-                    )}
-                </div>
-                <div className="save-settings">
-                    <button
-                        id="save-settings"
-                        type="submit"
-                        onClick={() => window.close()}
-                        className="save-button"
-                        // disabled={
-                        //     JSON.stringify({ ...settings }) !=
-                        //     JSON.stringify({ ...newSettings })
-                        // }
-                    >
-                        Close
-                    </button>
-                    {/* {saved ? (
-                        <span className="confirm-save" aria-live="polite">
-                            Saved
-                        </span>
-                    ) : (
-                        ''
-                    )} */}
-                </div>
-            </form>
-        </div>
+                        </form>
+                    </div>
+                )
+            })}
+        </>
     )
 }

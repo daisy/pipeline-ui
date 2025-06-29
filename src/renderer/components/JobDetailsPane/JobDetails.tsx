@@ -6,12 +6,13 @@ import { Messages } from './Messages'
 import { Settings } from './Settings'
 import { Results } from './Results'
 
-import { ID, externalLinkClick } from '../../utils/utils'
+import { ID, externalLinkClick, getStatus } from '../../utils/utils'
 import { editJob, removeJob, runJob } from 'shared/data/slices/pipeline'
 import { readableStatus } from 'shared/jobName'
 import { FileLink } from '../Widgets/FileLink'
 import { useWindowStore } from 'renderer/store'
 import { useState, useEffect } from 'react'
+import { JobStatusIcon } from '../Widgets/SvgIcons'
 import { debug } from 'electron-log'
 
 const { App } = window
@@ -60,7 +61,7 @@ export function JobDetails({ job }: { job: Job }) {
     return (
         <div className="job-details">
             <div className="job-status info">
-                <p aria-live="polite">
+                <p aria-live="polite" className="row">
                     Status:&nbsp;
                     <span
                         className={`status ${
@@ -74,6 +75,16 @@ export function JobDetails({ job }: { job: Job }) {
                         {job.jobData?.status
                             ? readableStatus[job.jobData.status]
                             : readableStatus.LAUNCHING}{' '}
+                    </span>
+                    <span className={`status ${getStatus(job)}`}>
+                        {JobStatusIcon(
+                            job.jobData?.status ||
+                                (job.jobRequestError && JobStatus.ERROR),
+                            {
+                                width: 20,
+                                height: 20,
+                            }
+                        )}
                     </span>
                 </p>
                 {job.jobData.progress &&
@@ -132,7 +143,7 @@ export function JobDetails({ job }: { job: Job }) {
                                 </p>
                             </div>
                         )}
-                        <div className="form-buttons">
+                        <div className="row">
                             {!jobIsBatch && (
                                 <button
                                     type="button"

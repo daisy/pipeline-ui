@@ -11,6 +11,19 @@
         display: flex;
         flex-direction: column;
         gap: 0.5rem;
+        font-size: var(--fontsize-larger);
+        padding: .5rem;
+        background-color: var(--bg);
+        
+        .completed {
+            color: var(--ok);
+        }
+        .error {
+            color: var(--error);
+        }
+        .running {
+            color: var(--primary);
+        }
     }
 
     .job-settings, .job-results {

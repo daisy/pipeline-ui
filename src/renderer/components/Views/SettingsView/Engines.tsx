@@ -1,17 +1,8 @@
 import { useEffect, useState } from 'react'
 import { useWindowStore } from 'renderer/store'
 import { PipelineAPI } from 'shared/data/apis/pipeline'
-import {
-    selectTtsVoices,
-    setProperties,
-    setTtsEngineState,
-    setTtsVoices,
-} from 'shared/data/slices/pipeline'
-import {
-    TtsEngineProperty,
-    TtsEngineState,
-    TtsVoice,
-} from 'shared/types/ttsConfig'
+import { selectTtsVoices, setProperties } from 'shared/data/slices/pipeline'
+import { TtsEngineProperty } from 'shared/types/ttsConfig'
 
 const enginePropertyKeys = [
     'org.daisy.pipeline.tts.azure.key',
@@ -23,11 +14,6 @@ const engineIds = [
     'org.daisy.pipeline.tts.google',
 ]
 
-const pipelineAPI = new PipelineAPI(
-    (url, ...args) => window.fetch(url, ...args),
-    console.info
-)
-
 const { App } = window
 
 // Clone operation to ensure the full array is copied and avoid
@@ -36,7 +22,7 @@ const clone = (propsArray: Array<{ key: string; value: string }>) => [
     ...propsArray.map((kv) => ({ key: kv.key, value: kv.value })),
 ]
 
-export function TtsEnginesConfigPane({
+export function Engines({
     ttsEngineProperties,
     onChangeTtsEngineProperties,
 }: {
@@ -145,8 +131,8 @@ export function TtsEnginesConfigPane({
         onChangeTtsEngineProperties(ttsProps)
     }
     return (
-        <>
-            <p className="desc">
+        <div className="tts-engines">
+            <p className="info">
                 After configuring these engines with the required credentials,
                 they will be available under 'Voices'.
             </p>
@@ -192,9 +178,9 @@ export function TtsEnginesConfigPane({
                                                 }
                                                 required
                                             />
-                                            {!(engineProperties.find(
+                                            {!engineProperties.find(
                                                 (p) => p.key == propkey
-                                            )?.value) && (
+                                            )?.value && (
                                                 <span className="required-field-message">
                                                     This field is required
                                                 </span>
@@ -260,6 +246,6 @@ export function TtsEnginesConfigPane({
                     </li>
                 ))}
             </ul>
-        </>
+        </div>
     )
 }

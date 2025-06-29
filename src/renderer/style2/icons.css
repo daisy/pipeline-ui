@@ -1,3 +1,27 @@
+span:has(svg) {
+    display: flex;
+}
+.completed svg {
+    fill: var(--ok);
+    path {
+        stroke: var(--ok);
+    }
+}
+.fail svg,
+.error svg {
+    fill: var(--error);
+    path {
+        stroke: var(--error);
+    }
+}
+
+.waiting svg {
+    fill: var(--warning);
+    path {
+        stroke: var(--warning);
+    }
+}
+
 /* in-progress icon */
 .running svg {
     fill: var(--primary);

@@ -1,0 +1,231 @@
+.app-settings {
+    display: grid;
+    grid-template-areas: "heading heading"
+        "nav content";
+    padding: 1rem;
+    grid-template-columns: 12rem auto;
+    grid-template-rows: 4rem auto;
+    height: 100%;
+    h1 {
+        grid-area: heading;
+    }
+    div[role="tablist"] {
+        grid-area: nav;
+        flex-direction: column;
+    }
+    div[role="tabpanel"] {
+        display: block;
+    }
+    form {
+        grid-area: content;
+        fieldset {
+            height: 70vh;
+        }
+    }
+    .voice-filters {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        
+        div.field {
+            display: flex;
+            flex-direction: row;       
+            &>:first-child {
+                width: 10rem;
+            }
+        }
+        
+    }
+    .voice-selection {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+    .voice-details {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+        background-color: var(--bg-off);
+        border-radius: var(--br);
+        padding: 4px;
+        
+        p.selected-voice {
+            font-size: var(--fontsize-larger);
+        }
+        
+        button, label, input {
+            font-weight: normal;
+            font-size: 1.1rem;
+            border: thin solid;
+            padding: 5px;
+            text-decoration: none;
+        }
+
+        .voice-preview {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            
+            input {
+                width: 70%;
+            }
+            audio {
+                height: 2rem;
+            }
+        }
+    }
+    .tts-preferred-voices {
+        display: flex;
+        flex-direction: column;
+        
+        div[role=region] {
+            overflow: auto;
+            height: 90%;
+        }
+        p {
+            margin-block-start: 0;
+            select {
+                margin-left: 5px;
+                margin-right: 5px;
+            }
+        }
+
+        table {
+            font-size: smaller;
+            border-collapse: collapse;
+            width: 100%;
+            th {
+                background-color: var(--fg);
+                color: var(--bg);
+                position: sticky;
+                top: 0;
+                padding: 5px;
+            }
+            td {
+                padding: .25rem;
+                padding-left: .5rem;
+                padding-right: .5rem;
+            }
+            
+            label {
+                font-weight: normal;
+            }
+            td.actions {
+                label {
+                    white-space: nowrap;
+                }
+                div:has(input) {
+                    display: flex;
+                    flex-direction: row;
+                    justify-content: space-between;
+                    align-items: center;
+                }
+            }
+            td.voiceName {
+                max-width: 8rem;
+                white-space: wrap;
+            }
+            button {
+                height: min-content;
+                padding: 2px;
+            }
+        }
+    }
+    .tts-engines {
+
+        ul {
+            list-style-type: none;
+            display: flex;
+            flex-direction: column;
+            padding: 0;
+
+            &>li {
+            font-weight: bold;
+            font-size: larger;
+            &>ul {
+                font-size: medium;
+                margin-top: calc(var(--pad) * 1);
+                display: flex;
+                flex-direction: column;
+                gap: var(--pad);
+
+                &>li {
+                    display: flex;
+                    flex-direction: row;
+
+                    label {
+                        width: 5rem;
+                    }
+                    button, .input, .input input {
+                        width: 70%;
+                    }
+                }
+                .required-field-message, .error, .disabled {
+                    font-style: italic;
+                    font-weight: normal;
+                    color: var(--warning);
+                    details {
+                        width:100% !important;
+                        summary {
+                            width:100% !important;
+                        }
+                    }
+                }
+                .connecting {
+                    font-style: italic;
+                    font-weight: normal;
+                }
+            }   
+        }
+        }
+        
+
+        /* don't show engine messages if the engine is disabled. they don't make sense. */
+        li:has(input:invalid) .disabled {
+            display: none;
+        }
+        
+        .Connected::after {
+            content: ' ✅';
+        }
+        .Disconnected::after {
+            content: ' ❌';
+        }
+        .required-field-message {
+            display: block;
+        }
+    }
+    .more-tts-options {
+        display: flex;
+        flex-direction: column;
+        gap: calc(1.5 * var(--pad));
+
+        .note {
+            font-style: italic;
+            padding-top: 0;
+            margin-top: 2px;
+        }
+        label {
+            display: block;
+        }
+        &>div {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        input[type=range] {
+            width: 10rem;
+        }
+        .reset-speech-rate {
+            width: min-content;
+            height: min-content;
+            font-size: medium;
+            padding: 2px;
+            
+        }
+        .speech-rate-controls {
+            display: flex;
+            flex-direction: row;
+        }
+    }
+}

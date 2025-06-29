@@ -1,45 +1,13 @@
 /* new script form */
 form.script {
-    gap: 1rem;
-    display: flex;
-    flex-direction: column;
 
-    fieldset {
-        display: flex;
-        flex-direction: column;
-        gap: 1rem;
-        border: solid var(--bw) var(--fg);
-        border-radius: var(--br);
-        padding: 1rem;
-        background-color: var(--bg);
-
-        legend {
-            background-color: var(--bg);
-            font-size: larger;
-            border-radius: var(--br);
-        }
-    }
-
-    div.script-description, .field {
+    div.script-description {
         display: flex;
         flex-direction: column;
         gap: 0.5rem;
     }
 
-    .single-file-input {
-        display: flex;
-        flex-direction: row;
-        align-items: center;
-        gap: 2rem;
-    }
-    .multi-file-input {
-        input {
-            width: 100%;
-        }
-    }
-    .description {
-        font-size: smaller;
-    }
+    
     .file-list {
         list-style-type: none;
         padding: 0;
@@ -65,6 +33,10 @@ form.script {
                 padding: .25rem;
                 width: min-content;
             }
+        }
+        .option-description {
+            background-color: var(--bg-off);
+            font-size: smaller;
         }
     }
 }

@@ -3,7 +3,7 @@ import { TtsVoice } from 'shared/types/ttsConfig'
 import { voicesTransliterations } from './voiceTransliterations'
 import { VoicePreview } from './VoicePreview'
 
-export function TtsBrowseVoicesConfigPane({
+export function BrowseVoices({
     availableVoices,
     userPreferredVoices,
     onChangePreferredVoices,
@@ -193,7 +193,7 @@ export function TtsBrowseVoicesConfigPane({
     return (
         <>
             <div className="voice-filters">
-                <div>
+                <div className="field">
                     <label htmlFor="select-language">Language</label>
                     <select
                         id="select-language"
@@ -216,7 +216,7 @@ export function TtsBrowseVoicesConfigPane({
                             ))}
                     </select>
                 </div>
-                <div>
+                <div className="field">
                     <label htmlFor="select-engine">Engine</label>
                     <select
                         id="select-engine"
@@ -244,7 +244,7 @@ export function TtsBrowseVoicesConfigPane({
                             ))}
                     </select>
                 </div>
-                <div>
+                <div className="field">
                     <label htmlFor="select-dialect">Dialect</label>
                     <select
                         id="select-dialect"
@@ -282,7 +282,7 @@ export function TtsBrowseVoicesConfigPane({
                             ))}
                     </select>
                 </div>
-                <div>
+                <div className="field">
                     <label htmlFor="select-gender">Gender/Age</label>
                     <select
                         id="select-gender"
@@ -323,7 +323,7 @@ export function TtsBrowseVoicesConfigPane({
                             ))}
                     </select>
                 </div>
-                <div>
+                <div className="field">
                     <label htmlFor="select-voice">Voice</label>
                     <select
                         id="select-voice"

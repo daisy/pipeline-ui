@@ -75,7 +75,6 @@ export function NewJobPane({ job }: { job: Job }) {
 
     // top level script selection
     let onSelectChange = (scriptId) => {
-        console.log('on select change 2', scriptId)
         let selection = pipeline.scripts.find((script) => script.id == scriptId)
         App.store.dispatch(
             updateJob({

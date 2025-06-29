@@ -11,14 +11,8 @@ const { App } = window
 const clone = (propsArray: Array<{ key: string; value: string }>) => [
     ...propsArray.map((kv) => ({ key: kv.key, value: kv.value })),
 ]
-const propertyKeys = [
-    'org.daisy.pipeline.tts.default-lexicon',
-    'org.daisy.pipeline.tts.mp3.bitrate',
-    'org.daisy.pipeline.tts.google.samplerate',
-    'org.daisy.pipeline.tts.speech-rate',
-]
 
-export function TtsMoreOptionsConfigPane({
+export function MoreTTSOptions({
     ttsEngineProperties,
     onChangeTtsEngineProperties,
     ttsEnginesStates,
@@ -29,7 +23,6 @@ export function TtsMoreOptionsConfigPane({
     ) => void
     ttsEnginesStates: { [key: string]: TtsEngineState }
 }) {
-    const { pipeline } = useWindowStore()
     // Clone array and objects in it to avoid updating the original props
     const [engineProperties, setEngineProperties] = useState<
         Array<{ key: string; value: string }>
@@ -115,7 +108,7 @@ export function TtsMoreOptionsConfigPane({
     }
 
     return (
-        <>
+        <div className="more-tts-options">
             <div>
                 <label htmlFor="speechRate">
                     Speech rate: {speechRateDisplay}
@@ -248,6 +241,6 @@ export function TtsMoreOptionsConfigPane({
                     ]}
                 />
             </div>
-        </>
+        </div>
     )
 }

@@ -44,13 +44,18 @@
         margin-left: 2rem;
     }
     .files {
-        .info {
-            font-size: smaller;
-        }
-
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+        
         ul {
             list-style-type: none;
         }
+    }
+    .files-by-script {
+        /* border-radius: var(--br);
+        border: var(--bw) var(--fg-off) solid;
+        padding: 8px; */
     }
     .files-by-script > .row select {
         flex-grow: 0;

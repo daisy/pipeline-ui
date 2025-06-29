@@ -36,7 +36,7 @@ form.script {
         }
         .option-description {
             background-color: var(--bg-off);
-            font-size: smaller;
+            font-size: var(--fontsize-smaller);
         }
     }
 }

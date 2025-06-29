@@ -91,7 +91,7 @@
         }
 
         table {
-            font-size: smaller;
+            font-size: var(--fontsize-smaller);
             border-collapse: collapse;
             width: 100%;
             th {

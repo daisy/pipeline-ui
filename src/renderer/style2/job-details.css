@@ -7,13 +7,16 @@
         display: inline;
         vertical-align: middle;
     }
-    div.job-status {
+    .job-status, .job-settings, .job-results, .job-messages {
+        padding: .5rem;
+        background-color: var(--bg);
+        border-radius: var(--br);
+    }
+    .job-status {
         display: flex;
         flex-direction: column;
         gap: 0.5rem;
         font-size: var(--fontsize-larger);
-        padding: .5rem;
-        background-color: var(--bg);
         
         .completed {
             color: var(--ok);
@@ -45,7 +48,6 @@
             
             &:hover {
                 background-color: var(--bg-off);
-                box-shadow: 0 0 0 1px var(--highlight);
             }
             span:first-of-type {
                 font-weight: bolder;
@@ -56,58 +58,10 @@
         }
     }
 
-    .jodb-results {
-            width: min-content;
-            white-space: nowrap;
-
-            .file-list {
-                margin-left: var(--pad);
-            }
-
-            /* the outer list item, e.g. "Results folder" */
-            .file-list>li {
-                display: flex;
-                flex-direction: column;
-                gap: var(--pad);
-            }
-
-            /* the inner list e.g. .filelist > ul > li.named-result */
-            li.named-result {
-                display: flex;
-                flex-direction: row;
-                gap: var(--pad);
-                width: 80vw;
-                flex-wrap: wrap;
-
-                &>* {
-                    flex-grow: 1;
-                    flex-basis: calc((30rem - 100%) * 999);
-                }
-
-                &> :nth-last-child(n+ 5),
-                &> :nth-last-child(n+ 5)~* {
-                    flex-basis: 100%;
-                }
-
-
-                .nicename {
-                    font-weight: bold;
-                }
-
-                .description {
-                    font-style: italic;
-                    font-size: medium;
-
-                    
-                    &>* {
-                        white-space: normal;
-                    }
-                }
-            }
-        }
 
     .job-messages {
         background-color: var(--bg);
+        
         ul {
             font-family: var(--fw-font-fam);
             margin-left: var(--pad);

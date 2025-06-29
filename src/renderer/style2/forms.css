@@ -25,7 +25,7 @@ select {
     margin: 4px;
     margin-left: 0;
     &:hover {
-        box-shadow: var(--box-shadow-pri);
+        box-shadow: var(--box-shadow-params) var(--primary);
     }
 }
 input {
@@ -33,7 +33,7 @@ input {
     border-width: var(--bw);
     font-size: var(--fontsize-larger);
     &:hover {
-        box-shadow: var(--box-shadow-pri);
+        box-shadow: var(--box-shadow-params) var(--primary);
     }
     transition: 100ms all;
 }
@@ -62,5 +62,5 @@ input[type="checkbox"] {
     }
 }
 .description {
-    font-size: smaller;
+    font-size: var(--fontsize-smaller);
 }

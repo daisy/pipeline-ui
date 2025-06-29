@@ -18,16 +18,14 @@
     --bg: white;
     --fg-off: oklch(from var(--fg) calc(l + 0.7) c h);
     --bg-off: oklch(from var(--bg) calc(l - 0.02) c h);
-    --inactive: lightgray;
-    --inactive-contrast: rgb(70, 70, 70);
+    --inactive: rgb(70, 70, 70);
     
     --font-fam: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont;
     --fw-font-fam: monospace;
     --fontsize: 1rem;
     --fontsize-larger: 110%;
-    --fontsize-smaller: 80%;
-    --box-shadow-pri: 0 0 0 2px var(--primary);
-    --box-shadow-sec: 0 0 0 2px var(--secondary);
+    --fontsize-smaller: 90%;
+    --box-shadow-params: 0 0 0 2px;
     
 }
 @media (prefers-color-scheme: dark) {
@@ -78,7 +76,7 @@ button {
     white-space: nowrap;
 
     &:hover {
-        box-shadow: var(--box-shadow-pri);
+        box-shadow: var(--box-shadow-params) var(--primary);
         outline: none;
     }
     &:active {
@@ -100,10 +98,11 @@ button.important {
     padding: 8px;   
 }
 button[disabled], button[disabled]:hover, button[disabled]:active, button[disabled]:focus {
-    box-shadow: inherit;
-    background-color: var(--inactive);
-    color: var(--inactive-contrast);
+    background-color: inherit;
+    color: var(--inactive);
     transform: none;
+    box-shadow: var(--box-shadow-params) var(--inactive);
+    cursor: not-allowed;
 }
 details > summary {
     cursor: pointer;
@@ -114,7 +113,7 @@ summary::marker {
     color: var(--primary);
 }
 summary:hover {
-    box-shadow: var(--box-shadow-pri);
+    box-shadow: var(--box-shadow-params) var(--primary);
 }
 .file {
     font-family: var(--fw-font-fam);
@@ -132,8 +131,11 @@ summary:hover {
     height: 1px;
     white-space: nowrap;
 }
-.info {
+/* .info {
     font-style: italic;
+} */
+.info {
+    font-size: var(--fontsize-smaller);
 }
 .row {
     display: flex;

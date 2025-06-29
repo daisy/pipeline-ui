@@ -106,7 +106,7 @@ export function DragDropFilterFiles({
             )}
             {files.length > 0 && (
                 <p className="info">
-                    The following files can be used in a Pipeline job:
+                    The following files can be used in Pipeline jobs:
                 </p>
             )}
             {files.length > 0 && (

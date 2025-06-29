@@ -37,9 +37,7 @@ export function FormField({
             {item.desc ? (
                 <details>
                     <summary>
-                        <label htmlFor={idprefix}>
-                            {item.nicename ?? item.name}
-                        </label>
+                        {item.nicename ?? item.name}
                     </summary>
                     <div className="description">
                         <Markdown

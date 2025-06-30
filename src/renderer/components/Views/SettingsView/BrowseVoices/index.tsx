@@ -404,7 +404,7 @@ export function BrowseVoices({
                         ></VoicePreview>
                         {preferredVoices.find((v) => v.id == voiceId) ? (
                             <p className="voice-already-exists">
-                                <i>This voice is in your list.</i>
+                            This voice has been added to your list.
                             </p>
                         ) : (
                             <button

@@ -18,10 +18,6 @@ export function Updates({ newSettings }) {
                 checked={newSettings.autoCheckUpdate}
                 onChange={autoCheckUpdateChanged}
             />
-            <span className="description">
-                Choose here if you want to keep the application checking for
-                updates in the background.
-            </span>
         </div>
     )
 }

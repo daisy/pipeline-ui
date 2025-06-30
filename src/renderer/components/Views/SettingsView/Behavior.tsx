@@ -44,15 +44,6 @@ export function Behavior({ newSettings }) {
                 <label htmlFor="OnMainWindowClosing">
                     Action on closing the app window
                 </label>
-                <span className="description">
-                    Choose here if you want to keep the application running in
-                    the tray or quit the application when closing the jobs
-                    window.
-                    <br />
-                    If the application should stay in the tray, you can choose
-                    if you want to keep jobs opened or if they should be closed
-                    when the window is closed.
-                </span>
                 <select
                     id="OnMainWindowClosing"
                     onChange={(e) => ClosingActionChanged(e)}

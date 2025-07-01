@@ -26,6 +26,26 @@ const FileList = ({ onChange, files, canSort, showAsType }) => {
                                 showAsType={showAsType}
                                 fileUrlOrPath={file}
                             />
+                            {canSort && index > 0 && (
+                                <button
+                                    type="button"
+                                    className="move-button invisible"
+                                    onClick={() => moveFile(index, index - 1)}
+                                    aria-label={`Move file ${index + 1} up`}
+                                >
+                                    <Up width="20" height="20" />
+                                </button>
+                            )}
+                            {canSort && index < files.length - 1 && (
+                                <button
+                                    type="button"
+                                    className="move-button invisible"
+                                    onClick={() => moveFile(index, index + 1)}
+                                    aria-label={`Move file ${index + 1} down`}
+                                >
+                                    <Down width="20" height="20" />
+                                </button>
+                            )}
                             <button
                                 type="button"
                                 className="remove-button invisible"
@@ -34,26 +54,6 @@ const FileList = ({ onChange, files, canSort, showAsType }) => {
                             >
                                 <X width="20" height="20" />
                             </button>
-                            {canSort && index > 0 && (
-                                <button
-                                    type="button"
-                                    className="move-button"
-                                    onClick={() => moveFile(index, index - 1)}
-                                    aria-label={`Move file ${index + 1} up`}
-                                >
-                                    <Up width="30" height="30" />
-                                </button>
-                            )}
-                            {canSort && index < files.length - 1 && (
-                                <button
-                                    type="button"
-                                    className="move-button"
-                                    onClick={() => moveFile(index, index + 1)}
-                                    aria-label={`Move file ${index + 1} down`}
-                                >
-                                    <Down width="30" height="30" />
-                                </button>
-                            )}
                         </li>
                     ))}
                 </ul>

@@ -11,6 +11,8 @@
     --secondary: #DDE0F8;
     --secondary-contrast: black;
     --highlight: #D9CD66;
+    --hover: oklch(from var(--secondary) calc(l + 0.05) c h);
+    --hover-contrast: var(--secondary-contrast);
     --ok:#277A00;
     --warning: #A36A00;
     --error: #DF2935;
@@ -61,9 +63,9 @@ a:hover {
     text-decoration-skip-ink: none;
 }
 /* it looks weird with the tab panel highlighted, because basically it always has focus */
-*:not([role="tabpanel"]):focus {
+*:focus {
     outline: none;
-    box-shadow: var(--box-shadow-params) var(--highlight);
+    box-shadow: var(--box-shadow-params) var(--highlight); 
 }
 button {
     border: none;

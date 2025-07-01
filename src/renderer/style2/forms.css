@@ -45,6 +45,10 @@ input[type="checkbox"] {
     height: 1.5rem;
     
 }
+input[type="radio"] {
+    height: 1rem;
+    width: 1rem;
+}
 input:invalid {
     box-shadow: var(--box-shadow-params) var(--error);
 }
@@ -54,10 +58,10 @@ input:invalid {
     gap: 0.5rem;
 }
 .single-file-input {
-        display: flex;
-        flex-direction: row;
-        align-items: center;
-        gap: 2rem;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 2rem;
 }
 .multi-file-input {
     input {

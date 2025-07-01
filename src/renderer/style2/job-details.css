@@ -45,9 +45,11 @@
             flex-wrap: wrap;
             transition: all 100ms;
             padding: .25rem;
+            border-radius: var(--br);
             
             &:hover {
-                background-color: var(--bg-off);
+                background-color: var(--hover);
+                color: var(--hover-contrast);
             }
             span:first-of-type {
                 font-weight: bolder;

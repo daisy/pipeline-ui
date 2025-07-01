@@ -51,6 +51,14 @@
         ul {
             list-style-type: none;
         }
+        li {
+            border-radius: var(--br);
+            padding: 3px;
+        }
+        li:hover {
+            background-color: var(--hover);
+            color: var(--hover-contrast);
+        }
     }
     .files-by-script {
         /* border-radius: var(--br);

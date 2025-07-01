@@ -3,7 +3,7 @@
     border: var(--bw) var(--fg) solid;
     bottom: 5%;
     position: absolute;
-    border-radius: 5px;
+    border-radius: var(--br);
     padding: 10px;
 
     

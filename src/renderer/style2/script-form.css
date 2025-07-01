@@ -13,7 +13,7 @@ form.script {
         padding: 0;
         margin: 0;
         max-width: 90vw;
-        border-radius: 0.5rem;
+        border-radius: var(--br);
         padding: 1.25rem;
         overflow: hidden;
         border: thin solid var(--fg);
@@ -25,8 +25,11 @@ form.script {
             display: flex;
             align-items: center;
             background-color: var(--bg-off);
-            border-radius: 0.3rem;
-
+            border-radius: var(--br);
+            &:hover {
+                background-color: var(--hover);
+                color: var(--hover-contrast);
+            }
 
             span {
                 flex-basis: 100%;

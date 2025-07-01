@@ -21,8 +21,8 @@
     }
 
     &[data-dragging="true"] {
-        background-color: var(--primary);
-        color: var(--primary-contrast);
+        background-color: var(--secondary);
+        color: var(--secondary-contrast);
     }
 
     .drop-target-text {

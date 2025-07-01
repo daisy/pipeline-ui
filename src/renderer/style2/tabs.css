@@ -39,7 +39,6 @@
 }
 
 [role="tabpanel"] {
-    padding: 0.5rem;
     display: grid;
     grid-template-columns: auto min-content;
     grid-template-rows: min-content auto;
@@ -48,15 +47,17 @@
     .close-tab {
         grid-column: 2;
     }
-    .close-tab:hover {
-        background-color: var(--bg);
-    }
     .tabpanel-contents {
         grid-row: 1/3;
         padding-left: 1rem;
         padding-top: 1rem;
     }
+    &:focus {
+        box-shadow: none; /* trying this bc it looks weird with the app-wide yellow outlining */
+        border-radius: 0; /* in case we use the yellow outlining after all, this flattens out the border so it matches the underlying shape */
+    }
 }
+
 .tablist-container {
     display: flex;
     flex-direction: row;

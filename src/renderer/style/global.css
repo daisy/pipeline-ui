@@ -62,7 +62,7 @@ a:hover {
     text-decoration-style: solid;
     text-decoration-skip-ink: none;
 }
-/* it looks weird with the tab panel highlighted, because basically it always has focus */
+
 *:focus {
     outline: none;
     box-shadow: var(--box-shadow-params) var(--highlight); 

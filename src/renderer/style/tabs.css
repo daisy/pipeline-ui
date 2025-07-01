@@ -28,6 +28,10 @@
         font-weight: normal;
         font-size: inherit;
     }
+    &:active {
+        background-color: var(--bg);
+        color: var(--fg);
+    }
 }
 
 [role="tab"][aria-selected="true"] {

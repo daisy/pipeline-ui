@@ -1,37 +1,38 @@
 .app-settings {
-    display: grid;
-    grid-template-areas: "heading heading"
-        "nav content";
-    padding: 1rem;
-    grid-template-columns: 12rem auto;
-    grid-template-rows: 4rem auto;
+    display: flex;
+    flex-direction: row;
+    gap: 1.5rem;
     height: 100%;
-    h1 {
-        grid-area: heading;
-    }
+    padding: 1rem;
+    
     div[role="tablist"] {
-        grid-area: nav;
         flex-direction: column;
+        background-color: var(--bg-off);
+        position: sticky;
+        top: 0;
     }
     div[role="tabpanel"] {
+        overflow: scroll;
         display: block;
+        width: 100%;
+        padding: 0;
     }
-    form {
-        grid-area: content;
-        fieldset {
-            height: 70vh;
-        }
+    fieldset {
+        
+        min-height: 70vh;
     }
+    
     .voice-filters {
         display: flex;
         flex-direction: column;
         gap: 0.5rem;
         
         div.field {
-            display: flex;
             flex-direction: row;       
+            flex-wrap: wrap;
+
             &>:first-child {
-                width: 10rem;
+                width: clamp(5rem, 10rem, 10rem);
             }
         }
         
@@ -53,7 +54,7 @@
             font-size: var(--fontsize-larger);
         }
         
-        button, label, input {
+        label, input {
             font-weight: normal;
             font-size: 1.1rem;
             border: thin solid;
@@ -77,7 +78,8 @@
     .tts-preferred-voices {
         display: flex;
         flex-direction: column;
-        
+        gap: 1.5rem;
+
         div[role=region] {
             overflow: auto;
             height: 90%;
@@ -91,43 +93,46 @@
         }
 
         table {
-            font-size: var(--fontsize-smaller);
-            border-collapse: collapse;
-            width: 100%;
-            th {
-                background-color: var(--fg);
-                color: var(--bg);
-                position: sticky;
-                top: 0;
-                padding: 5px;
+            border: var(--bw) solid var(--secondary);
+            border-radius: var(--br);
+            border-spacing: 0;
+            border-collapse: separate;
+
+            caption {
+                font-size: x-large;
+                font-weight: bolder;
+                text-align: left;
+                
             }
-            td {
-                padding: .25rem;
-                padding-left: .5rem;
-                padding-right: .5rem;
+            th, td {
+                padding: 0.25rem;
+            }
+            tr {
+                text-align: left;
+            }
+            tr:hover {
+                box-shadow: var(--box-shadow-params) var(--primary);
+                border-radius: var(--br);
+            }
+            thead th {
+                background-color: var(--secondary);
+                color: var(--secondary-contrast);
+            
+                &:first-of-type {
+                    border-top-left-radius: calc(var(--br) - 3px);
+                }
+                &:last-of-type {
+                    border-top-right-radius: calc(var(--br) - 3px);
+                }
+            }
+            tbody th {
+                width: 10rem;
+                text-align:left;
             }
             
-            label {
-                font-weight: normal;
-            }
-            td.actions {
-                label {
-                    white-space: nowrap;
-                }
-                div:has(input) {
-                    display: flex;
-                    flex-direction: row;
-                    justify-content: space-between;
-                    align-items: center;
-                }
-            }
             td.voiceName {
                 max-width: 8rem;
                 white-space: wrap;
-            }
-            button {
-                height: min-content;
-                padding: 2px;
             }
         }
     }
@@ -138,54 +143,39 @@
             display: flex;
             flex-direction: column;
             padding: 0;
-
-            &>li {
-            font-weight: bold;
-            font-size: larger;
-            &>ul {
-                font-size: medium;
-                margin-top: calc(var(--pad) * 1);
-                display: flex;
-                flex-direction: column;
-                gap: var(--pad);
-
-                &>li {
-                    display: flex;
-                    flex-direction: row;
-
-                    label {
-                        width: 5rem;
-                    }
-                    button, .input, .input input {
-                        width: 70%;
-                    }
-                }
-                .required-field-message, .error, .disabled {
-                    font-style: italic;
-                    font-weight: normal;
-                    color: var(--warning);
-                    details {
-                        width:100% !important;
-                        summary {
-                            width:100% !important;
-                        }
-                    }
-                }
-                .connecting {
-                    font-style: italic;
-                    font-weight: normal;
-                }
-            }   
+            gap: 2rem;
         }
+
+        li {
+            display: flex;
+            flex-direction: column;
+            gap: .5rem;
         }
-        
+
+        h2 {
+            font-size: var(--fontsize-larger);
+        }
+
+        .field {
+            flex-direction: row;
+
+            &>*:first-child {
+                font-weight: bolder;
+                flex-grow: 0;
+                flex-shrink: 0;
+                flex-basis: 8rem;
+            }
+            input {
+                width: 100%;
+            }
+        }
 
         /* don't show engine messages if the engine is disabled. they don't make sense. */
         li:has(input:invalid) .disabled {
             display: none;
         }
         
-        .Connected::after {
+        .available::after {
             content: ' ✅';
         }
         .Disconnected::after {
@@ -198,15 +188,11 @@
     .more-tts-options {
         display: flex;
         flex-direction: column;
-        gap: calc(1.5 * var(--pad));
+        gap: 1.5rem;
 
-        .note {
-            font-style: italic;
-            padding-top: 0;
-            margin-top: 2px;
-        }
         label {
             display: block;
+            font-weight: bolder;
         }
         &>div {
             display: flex;
@@ -215,13 +201,6 @@
         }
         input[type=range] {
             width: 10rem;
-        }
-        .reset-speech-rate {
-            width: min-content;
-            height: min-content;
-            font-size: medium;
-            padding: 2px;
-            
         }
         .speech-rate-controls {
             display: flex;

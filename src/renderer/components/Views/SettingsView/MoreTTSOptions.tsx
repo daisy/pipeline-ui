@@ -109,47 +109,43 @@ export function MoreTTSOptions({
 
     return (
         <div className="more-tts-options">
-            <div>
+            <div className="field">
                 <label htmlFor="speechRate">
                     Speech rate: {speechRateDisplay}
                 </label>
-                <div className="speech-rate-controls">
-                    <input
-                        id="speechRate"
-                        type="range"
-                        max="200"
-                        min="25"
-                        value={
-                            engineProperties.find(
-                                (prop) =>
-                                    prop.key ==
-                                    'org.daisy.pipeline.tts.speech-rate'
-                            )?.value // if the value is non-null
-                                ? engineProperties
-                                      .find(
-                                          (prop) =>
-                                              prop.key ==
-                                              'org.daisy.pipeline.tts.speech-rate'
-                                      )
-                                      .value.slice(0, -1) // use the value minus the '%' at the end
-                                : '100' // otherwise default to 100
-                        }
-                        onChange={(e) =>
-                            onInputChange(
-                                e,
-                                'org.daisy.pipeline.tts.speech-rate'
-                            )
-                        }
-                    ></input>
-                    <button
-                        type="button"
-                        className="reset-speech-rate"
-                        onClick={(e) => resetSpeechRate(e)}
-                    >
-                        Reset
-                    </button>
-                </div>
-                <p className="note">
+
+                <input
+                    id="speechRate"
+                    type="range"
+                    max="200"
+                    min="25"
+                    value={
+                        engineProperties.find(
+                            (prop) =>
+                                prop.key == 'org.daisy.pipeline.tts.speech-rate'
+                        )?.value // if the value is non-null
+                            ? engineProperties
+                                  .find(
+                                      (prop) =>
+                                          prop.key ==
+                                          'org.daisy.pipeline.tts.speech-rate'
+                                  )
+                                  .value.slice(0, -1) // use the value minus the '%' at the end
+                            : '100' // otherwise default to 100
+                    }
+                    onChange={(e) =>
+                        onInputChange(e, 'org.daisy.pipeline.tts.speech-rate')
+                    }
+                ></input>
+                <button
+                    type="button"
+                    className="reset-speech-rate"
+                    onClick={(e) => resetSpeechRate(e)}
+                >
+                    Reset
+                </button>
+
+                <p className="info">
                     {enginesWithSpeechRateSupport.length > 0 ? (
                         <>
                             Setting the speech rate is currently supported on
@@ -172,7 +168,7 @@ export function MoreTTSOptions({
                     )}
                 </p>
             </div>
-            <div>
+            <div className="field">
                 <label htmlFor="bitrate">MP3 bitrate</label>
                 <select
                     id="bitrate"
@@ -195,7 +191,7 @@ export function MoreTTSOptions({
                     <option value="320">320 kbps</option>
                 </select>
             </div>
-            <div>
+            <div className="field">
                 <label htmlFor="samplerate">Sample rate</label>
                 <select
                     id="samplerate"
@@ -220,11 +216,11 @@ export function MoreTTSOptions({
                     <option value="44100">44100 Hz</option>
                     <option value="48000">48000 Hz</option>
                 </select>
-                <p className="note">
+                <p className="info">
                     Sample rate is currently supported on Google Cloud.
                 </p>
             </div>
-            <div>
+            <div className="field">
                 <label htmlFor="lexicon-select">Choose a lexicon:</label>
                 <SingleFileInput
                     allowFile={true}

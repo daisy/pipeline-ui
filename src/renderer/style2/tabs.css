@@ -43,7 +43,8 @@
     display: grid;
     grid-template-columns: auto min-content;
     grid-template-rows: min-content auto;
-
+    border-radius: var(--br);
+    
     .close-tab {
         grid-column: 2;
     }

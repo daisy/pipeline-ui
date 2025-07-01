@@ -2,62 +2,24 @@ main.about {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 1em;
+    gap: 1rem;
     height: 100%;
+    margin: 2rem;
 
-    .info {
+    p.versions {
         display: flex;
-        flex-direction: column;
-        justify-content: space-between;
-        height: 100%;
-        margin-bottom: var(--pad);
+        flex-direction: row;
+        margin-bottom: 1rem;
+        background-color: var(--bg-off);
 
-        p.versions {
-            display: flex;
-            flex-direction: row;
-            gap: 0.25em;
-            width: 90%;
-            margin: 0;
+        ul {
+            list-style-type: none;
+            padding: 0;
         }
 
-        button.copy {
-            border: none;
+        button {
+            height: min-content;
             align-self: center;
-        }
-
-        button.copy:hover {
-            background-color: var(--bg);
-            color: var(--select-mix);
-        }
-
-        .actions {
-            width: 100%;
-            display: flex;
-            flex-direction: column;
-            gap: 0.5rem;
-        }
-
-        .actions>div {
-            display: flex;
-            flex-direction: row;
-            justify-content: space-around;
-            margin-top: 0.5rem;
-        }
-
-        .actions p {
-            display: block;
-            margin: 0;
-            margin-bottom: 1em;
-            margin-bottom: 0;
-            width: 80%;
-        }
-
-        .actions>progress {
-            width: 100%;
-        }
-
-        .actions:last-child {
-            margin-right: 0em;
         }
     }
 }

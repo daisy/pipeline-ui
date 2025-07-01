@@ -1,6 +1,15 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { TtsVoice } from 'shared/types/ttsConfig'
 import { voicesTransliterations } from './BrowseVoices/voiceTransliterations'
+import { X } from 'renderer/components/Widgets/SvgIcons'
+
+// return the first part of the language code (e.g. 'en' for 'en-US')
+// or return the whole thing if there is no dash
+function getLang(str) {
+    let trimmed = str.trim()
+    let idxOfDash = trimmed.indexOf('-')
+    return str.slice(0, idxOfDash == -1 ? undefined : idxOfDash)
+}
 
 export function PreferredVoices({
     userPreferredVoices,
@@ -13,10 +22,17 @@ export function PreferredVoices({
         ...userPreferredVoices,
     ])
     const [defaultVoices, setDefaultVoices] = useState([...userDefaultVoices])
-    const [preferredVoicesLanguage, setPreferredVoicesLanguage] =
-        useState('All')
+    const [uniqueLanguages, setUniqueLanguages] = useState([])
 
     let languageNames = new Intl.DisplayNames(['en'], { type: 'language' })
+
+    useEffect(() => {
+        let uniqueLangs = Array.from(
+            new Set(preferredVoices.map((v) => getLang(v.lang)))
+        )
+        setUniqueLanguages(uniqueLangs)
+        console.log(uniqueLangs)
+    }, [preferredVoices])
 
     let removeFromPreferredVoices = (voice: TtsVoice) => {
         if (defaultVoices.find((vx) => vx.id == voice.id)) {
@@ -28,14 +44,6 @@ export function PreferredVoices({
         tmpVoices.splice(idx, 1)
         setPreferredVoices(tmpVoices)
         onChangePreferredVoices(tmpVoices)
-    }
-
-    // return the first part of the language code (e.g. 'en' for 'en-US')
-    // or return the whole thing if there is no dash
-    let getLang = (str) => {
-        let trimmed = str.trim()
-        let idxOfDash = trimmed.indexOf('-')
-        return str.slice(0, idxOfDash == -1 ? undefined : idxOfDash)
     }
 
     let selectDefault = (e, voice) => {
@@ -62,37 +70,116 @@ export function PreferredVoices({
             onChangeDefaultVoices(tmpVoices)
         }
     }
-    let preferredRowLength = userPreferredVoices.filter((v) => {
-        if (preferredVoicesLanguage == 'All') {
-            return true
-        } else {
-            return getLang(v.lang) == preferredVoicesLanguage
-        }
-    }).length
-    let selectPreferredVoicesLanguage = (e) => {
-        setPreferredVoicesLanguage(e.target.value)
-    }
+
     return (
-        <>
-            <p id="preferred-table-title">
-                View
-                <select onChange={(e) => selectPreferredVoicesLanguage(e)}>
-                    <option value="All">All</option>
-                    {Array.from(
-                        new Set(userPreferredVoices.map((v) => getLang(v.lang)))
+        <div className="tts-preferred-voices">
+            {uniqueLanguages
+                .sort((a, b) => (a > b ? 1 : -1))
+                .map((lang) => {
+                    return (
+                        <>
+                            <table
+                                aria-colcount={5}
+                                aria-rowcount={
+                                    userPreferredVoices.filter(
+                                        (v) => getLang(v.lang) == getLang(lang)
+                                    ).length
+                                }
+                            >
+                                <caption>
+                                    {languageNames.of(getLang(lang))}
+                                </caption>
+                                <thead>
+                                    <tr>
+                                        <th>Name</th>
+                                        <th>Engine</th>
+                                        <th>Language</th>
+                                        <th>Gender/Age</th>
+                                        <th>Set default</th>
+                                        <th>Remove</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {userPreferredVoices
+                                        .filter(
+                                            (v) =>
+                                                getLang(v.lang) == getLang(lang)
+                                        )
+                                        .sort((a, b) =>
+                                            a.name > b.name ? 1 : -1
+                                        )
+                                        .map((v, idx) => (
+                                            <tr key={v.id}>
+                                                <th className="voiceName">
+                                                    {voicesTransliterations[
+                                                        v.name
+                                                    ] ?? v.name}
+                                                </th>
+
+                                                <td>
+                                                    {ttsEnginesStates[v.engine]
+                                                        ?.name ?? v.engine}
+                                                </td>
+                                                <td>
+                                                    {languageNames.of(v.lang)}
+                                                </td>
+                                                <td>{v.gender}</td>
+                                                <td className="set-default">
+                                                    <input
+                                                        type="radio"
+                                                        name={getLang(v.lang)}
+                                                        id={`cb-${v.id}`}
+                                                        onChange={(e) =>
+                                                            selectDefault(e, v)
+                                                        }
+                                                        aria-label={`Set ${
+                                                            v.name
+                                                        } as the default voice for ${languageNames.of(
+                                                            getLang(v.lang)
+                                                        )}`}
+                                                        defaultChecked={
+                                                            defaultVoices?.find(
+                                                                (vx) =>
+                                                                    vx.id ==
+                                                                    v.id
+                                                            ) != undefined
+                                                        }
+                                                    ></input>
+                                                </td>
+                                                <td>
+                                                    <button
+                                                        type="button"
+                                                        className="invisible"
+                                                        onClick={(e) => {
+                                                            removeFromPreferredVoices(
+                                                                v
+                                                            )
+                                                        }}
+                                                        aria-label={`Remove ${v.name} from preferred voices`}
+                                                    >
+                                                        <X
+                                                            width={20}
+                                                            height={20}
+                                                        />
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                </tbody>
+                            </table>
+                            <div className="row">
+                                <p>
+                                    The default voice for{' '}
+                                    {languageNames.of(getLang(lang))} is{' '}
+                                    <b>{defaultVoices.find((v) => getLang(v.lang) == lang)
+                                        ?.name ?? 'not set'}</b>
+                                </p>
+                                <button disabled={!defaultVoices.find((v) => getLang(v.lang) == lang)} onClick={(e) => clearDefaultVoice(lang)}>Clear default</button>
+                            </div>
+                        </>
                     )
-                        .sort((a: string, b: string) =>
-                            languageNames.of(a) < languageNames.of(b) ? -1 : 1
-                        )
-                        .map((lang: string, idx: number) => (
-                            <option value={lang} key={lang}>
-                                {languageNames.of(lang)}
-                            </option>
-                        ))}
-                </select>
-                preferred voices. Showing {preferredRowLength}{' '}
-                {preferredRowLength == 1 ? 'row' : 'rows'}.
-            </p>
+                })}
+            {/* <h2>{}</h2>
             <div
                 role="region"
                 aria-labelledby="preferred-table-title"
@@ -182,7 +269,7 @@ export function PreferredVoices({
                 ) : (
                     ''
                 )}
-            </div>
-        </>
+            </div> */}
+        </div>
     )
 }

@@ -130,119 +130,113 @@ export function Engines({
         // TODO : add a setting to let users disable autoconnect on startup
         onChangeTtsEngineProperties(ttsProps)
     }
+    let getPropkeyLabel = (propkey, engineId) => {
+        // the propkey looks like org.daisy.pipeline.tts.enginename.propkeyname
+        // label the form field as "Propkeyname"
+        let propkey_ = propkey.replace(engineId + '.', '')
+        return propkey_.charAt(0).toUpperCase() + propkey_.substring(1)
+    }
+    let getEngineLabel = (engineId) => {
+        console.log(pipeline.ttsEnginesStates)
+        return (
+            pipeline.ttsEnginesStates[engineId.split('.').reverse()[0]]?.name ??
+            engineId
+        )
+    }
+    let hasRequiredValues = (engineId) => {
+        console.log(engineProperties)
+        console.log(engineId)
+        let incompleteEngineValues = engineProperties.filter(
+            (prop) => prop.key.indexOf(engineId) != -1 && prop.value == ''
+        )
+        return incompleteEngineValues.length == 0
+    }
     return (
         <div className="tts-engines">
-            <p className="info">
+            <p>
                 After configuring these engines with the required credentials,
                 they will be available under 'Voices'.
             </p>
             <ul>
                 {engineIds.map((engineId, idx) => (
                     <li key={engineId + '-' + idx}>
-                        {pipeline.ttsEnginesStates[
-                            engineId.split('.').reverse()[0]
-                        ]?.name ?? engineId}
+                        <h2>{getEngineLabel(engineId)}</h2>
+                        {enginePropertyKeys
+                            .filter((propkey) => propkey.includes(engineId))
+                            .map((propkey, idx) => (
+                                <div className="field" key={idx}>
+                                    <label htmlFor={propkey}>
+                                        {getPropkeyLabel(propkey, engineId)}
+                                    </label>
 
-                        <ul>
-                            {enginePropertyKeys
-                                .filter((propkey) => propkey.includes(engineId))
-                                .map((propkey, idx) => (
-                                    <li key={propkey + '-' + idx}>
-                                        <label htmlFor={propkey}>
-                                            {(() => {
-                                                // the propkey looks like org.daisy.pipeline.tts.enginename.propkeyname
-                                                // label the form field as "Propkeyname"
-                                                let propkey_ = propkey.replace(
-                                                    engineId + '.',
-                                                    ''
-                                                )
-                                                return (
-                                                    propkey_
-                                                        .charAt(0)
-                                                        .toUpperCase() +
-                                                    propkey_.substring(1)
-                                                )
-                                            })()}
-                                        </label>
-                                        <div className="input">
-                                            <input
-                                                id={propkey}
-                                                type="text"
-                                                onChange={(e) =>
-                                                    onPropertyChange(e, propkey)
-                                                }
-                                                value={
-                                                    engineProperties.find(
-                                                        (p) => p.key == propkey
-                                                    )?.value ?? ''
-                                                }
-                                                required
-                                            />
-                                            {!engineProperties.find(
+                                    <input
+                                        id={propkey}
+                                        type="text"
+                                        onChange={(e) =>
+                                            onPropertyChange(e, propkey)
+                                        }
+                                        value={
+                                            engineProperties.find(
                                                 (p) => p.key == propkey
-                                            )?.value && (
-                                                <span className="required-field-message">
-                                                    This field is required
-                                                </span>
-                                            )}
-                                        </div>
-                                    </li>
-                                ))}
-                            {engineMessage[engineId] && (
-                                <li className={engineStatus[engineId]}>
-                                    {engineMessage[engineId].split('\n')
-                                        .length === 1 ? (
-                                        <span>{engineMessage[engineId]}</span>
-                                    ) : (
-                                        <details>
-                                            <summary>
-                                                {
-                                                    engineMessage[
-                                                        engineId
-                                                    ].split('\n')[0]
-                                                }
-                                            </summary>
-                                            {engineMessage[engineId]
-                                                .split('\n')
-                                                .slice(1)
-                                                .join('\n')}
-                                        </details>
-                                    )}
-                                </li>
-                            )}
-                            {['azure', 'google'].includes(
-                                engineId.split('.').slice(-1)[0]
-                            ) && (
-                                <li>
-                                    {!isConnectedToTTSEngine(engineId) ||
-                                    enginePropsChanged[engineId] ? (
-                                        <button
-                                            type="button"
-                                            onClick={(e) => {
-                                                e.preventDefault()
-                                                connectToTTSEngine(engineId)
-                                            }}
-                                        >
-                                            Connect
-                                        </button>
-                                    ) : isConnectedToTTSEngine(engineId) ? (
-                                        <button
-                                            type="button"
-                                            onClick={(e) => {
-                                                e.preventDefault()
-                                                disconnectFromTTSEngine(
-                                                    engineId
-                                                )
-                                            }}
-                                        >
-                                            Disconnect
-                                        </button>
-                                    ) : (
-                                        ''
-                                    )}
-                                </li>
-                            )}
-                        </ul>
+                                            )?.value ?? ''
+                                        }
+                                        required={true}
+                                    />
+                                </div>
+                            ))}
+                        {engineMessage[engineId] && (
+                            <div className={engineStatus[engineId]}>
+                                {engineMessage[engineId].split('\n').length ===
+                                1 ? (
+                                    <span>{engineMessage[engineId]}</span>
+                                ) : (
+                                    <details>
+                                        <summary>
+                                            {
+                                                engineMessage[engineId].split(
+                                                    '\n'
+                                                )[0]
+                                            }
+                                        </summary>
+                                        {engineMessage[engineId]
+                                            .split('\n')
+                                            .slice(1)
+                                            .join('\n')}
+                                    </details>
+                                )}
+                            </div>
+                        )}
+                        {['azure', 'google'].includes(
+                            engineId.split('.').slice(-1)[0]
+                        ) && (
+                            <>
+                                {!isConnectedToTTSEngine(engineId) ||
+                                enginePropsChanged[engineId] ? (
+                                    <button
+                                        type="button"
+                                        onClick={(e) => {
+                                            e.preventDefault()
+                                            connectToTTSEngine(engineId)
+                                        }}
+                                        disabled={!hasRequiredValues(engineId)}
+                                    >
+                                        Connect
+                                    </button>
+                                ) : isConnectedToTTSEngine(engineId) ? (
+                                    <button
+                                        type="button"
+                                        onClick={(e) => {
+                                            e.preventDefault()
+                                            disconnectFromTTSEngine(engineId)
+                                        }}
+                                    >
+                                        Disconnect
+                                    </button>
+                                ) : (
+                                    ''
+                                )}
+                            </>
+                        )}
                     </li>
                 ))}
             </ul>

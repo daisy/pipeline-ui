@@ -60,8 +60,10 @@ a:hover {
     text-decoration-style: solid;
     text-decoration-skip-ink: none;
 }
-*:focus {
+/* it looks weird with the tab panel highlighted, because basically it always has focus */
+*:not([role="tabpanel"]):focus {
     outline: none;
+    box-shadow: var(--box-shadow-params) var(--highlight);
 }
 button {
     border: none;
@@ -114,6 +116,7 @@ summary::marker {
 }
 summary:hover {
     box-shadow: var(--box-shadow-params) var(--primary);
+    border-radius: var(--br);
 }
 .file {
     font-family: var(--fw-font-fam);

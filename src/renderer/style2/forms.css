@@ -45,6 +45,9 @@ input[type="checkbox"] {
     height: 1.5rem;
     
 }
+input:invalid {
+    box-shadow: var(--box-shadow-params) var(--error);
+}
 .field {
     display: flex;
     flex-direction: column;

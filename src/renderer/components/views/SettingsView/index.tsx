@@ -193,24 +193,26 @@ export function SettingsView(
 
     return (
         <>
-            <h1>Settings</h1>
-            <TabList
-                items={tabItems}
-                onKeyDown={onKeyDown}
-                getTabId={(item, idx) => `${ID(idx)}-tab`}
-                getTabAriaSelected={(item, idx) =>
-                    selectedSection == item.section
-                }
-                getTabIndex={(item, idx) =>
-                    selectedSection == item.section ? 0 : -1
-                }
-                getTabAriaControls={(item, idx) => `${ID(idx)}-tabpanel`}
-                getTabTitle={(item, idx) => item.label}
-                getTabLabel={(item, idx) => <h2>{item.label}</h2>}
-                onTabClick={(item, idx) => {
-                    setSelectedSection(item.section)
-                }}
-            ></TabList>
+            <div className="sidebar">
+                <h1>Settings</h1>
+                <TabList
+                    items={tabItems}
+                    onKeyDown={onKeyDown}
+                    getTabId={(item, idx) => `${ID(idx)}-tab`}
+                    getTabAriaSelected={(item, idx) =>
+                        selectedSection == item.section
+                    }
+                    getTabIndex={(item, idx) =>
+                        selectedSection == item.section ? 0 : -1
+                    }
+                    getTabAriaControls={(item, idx) => `${ID(idx)}-tabpanel`}
+                    getTabTitle={(item, idx) => item.label}
+                    getTabLabel={(item, idx) => <h2>{item.label}</h2>}
+                    onTabClick={(item, idx) => {
+                        setSelectedSection(item.section)
+                    }}
+                ></TabList>
+            </div>
             {tabItems.map((item, idx) => {
                 return (
                     <div

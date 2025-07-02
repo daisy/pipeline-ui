@@ -50,6 +50,12 @@
             &:hover {
                 background-color: var(--hover);
                 color: var(--hover-contrast);
+                a {
+                    color: var(--hover-contrast-links);
+                    &:hover {
+                        text-decoration-color: var(--hover-contrast-links);
+                    }
+                }
             }
             span:first-of-type {
                 font-weight: bolder;
@@ -146,6 +152,11 @@
         li:not([aria-current="true"]):hover {
             background-color: var(--hover);
             color: var(--hover-contrast);
+
+            svg {
+                background-color: var(--bg);
+                border-radius: var(--br);
+            }
         }
     }
 
@@ -160,5 +171,16 @@
         grid-template-columns: 100%;
         grid-template-rows: min-content auto;
         gap: 2rem;
+
+        .sidebar {
+            padding: .5rem;
+
+            .controls {
+                justify-self: center;
+            }
+        }
+        
+
+
     }
 }

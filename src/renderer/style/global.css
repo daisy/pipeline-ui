@@ -13,6 +13,8 @@
     --highlight: #D9CD66;
     --hover: oklch(from var(--secondary) calc(l + 0.05) c h);
     --hover-contrast: var(--secondary-contrast);
+    --hover-contrast-links: var(--secondary-contrast);
+
     --ok:#277A00;
     --warning: #A36A00;
     --error: #DF2935;
@@ -41,6 +43,10 @@
         --ok: #57A773;
         --error: #FF595E;
         --warning: #FABC2A;
+
+        --hover: oklch(from var(--secondary) calc(l - 0.2) c h);
+        --hover-contrast: var(--secondary-contrast);
+        --hover-contrast-links: #0E1344;
         
     }
 }

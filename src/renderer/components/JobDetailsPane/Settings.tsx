@@ -1,8 +1,8 @@
-// job settings, not application settings
+// these settings represent the parameters used by a job (as opposed to the application settings dialog)
 import { useEffect, useMemo, useState } from 'react'
 import { useWindowStore } from 'renderer/store'
 import { externalLinkClick, findValue } from 'renderer/utils/utils'
-import { Job, ScriptInput, ScriptOption } from 'shared/types'
+import { Job } from 'shared/types'
 import { getAllOptional, getAllRequired } from 'shared/utils'
 
 const { App } = window
@@ -71,8 +71,7 @@ export function Settings({ job }: { job: Job }) {
             setJobValues(jobValues_)
         }
         doConversion()
-    }, [])
-
+    }, [jobValues])
     return (
         <ul>
             <li>

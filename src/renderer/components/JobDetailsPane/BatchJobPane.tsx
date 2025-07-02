@@ -9,7 +9,7 @@ import { JobDetails } from './JobDetails'
 import { areAllJobsInBatchDone, getIdleCountInBatch } from 'shared/utils'
 import { JobStatusIcon } from '../Widgets/SvgIcons'
 import { File, FileAsType } from '../Widgets/File'
-import { getStatus } from 'renderer/utils'
+import { getStatus, ID } from 'renderer/utils'
 
 const { App } = window
 
@@ -54,42 +54,52 @@ export function BatchJobDetailsPane({ jobs }: { jobs: Array<Job> }) {
     }
     return (
         <div className="batch-job">
-            <aside>
-                <h2>Jobs in this batch</h2>
-                <ul>
-                    {jobs
-                        .sort((a, b) => {
-                            return getSourceValue(a) < getSourceValue(b)
-                                ? 1
-                                : -1
-                        })
-                        .map((job) => (
-                            <li
-                                aria-selected={
-                                    job.internalId == selectedJob.internalId
-                                }
-                                role="button"
-                                onClick={(e) => selectJob(job)}
-                                aria-title={`Select job in batch`}
-                            >
-                                <span className={`status ${getStatus(job)}`}>
-                                    {JobStatusIcon(
-                                        job.jobData?.status ||
-                                            (job.jobRequestError &&
-                                                JobStatus.ERROR),
-                                        {
-                                            width: 20,
-                                            height: 20,
-                                        }
-                                    )}
-                                </span>
-                                <File
-                                    showAsType={FileAsType.AS_PATH}
-                                    fileUrlOrPath={getSourceValue(job)}
-                                />
-                            </li>
-                        ))}
-                </ul>
+            <section
+                className="sidebar"
+                aria-labelledby={`${ID(primaryJob.internalId)}-sidebar`}
+            >
+                <details open>
+                    <summary>
+                        <h2 id={`${ID(primaryJob.internalId)}-sidebar`}>
+                            Jobs in this batch
+                        </h2>
+                    </summary>
+
+                    <ul>
+                        {jobs
+                            .sort((a, b) => {
+                                return getSourceValue(a) < getSourceValue(b)
+                                    ? 1
+                                    : -1
+                            })
+                            .map((job) => (
+                                <li
+                                    aria-current={
+                                        job.internalId == selectedJob.internalId
+                                    }
+                                    onClick={(e) => selectJob(job)}
+                                >
+                                    <span
+                                        className={`status ${getStatus(job)}`}
+                                    >
+                                        {JobStatusIcon(
+                                            job.jobData?.status ||
+                                                (job.jobRequestError &&
+                                                    JobStatus.ERROR),
+                                            {
+                                                width: 20,
+                                                height: 20,
+                                            }
+                                        )}
+                                    </span>
+                                    <File
+                                        showAsType={FileAsType.AS_PATH}
+                                        fileUrlOrPath={getSourceValue(job)}
+                                    />
+                                </li>
+                            ))}
+                    </ul>
+                </details>
                 <div className="controls">
                     <button
                         type="button"
@@ -108,8 +118,14 @@ export function BatchJobDetailsPane({ jobs }: { jobs: Array<Job> }) {
                         Cancel remaining
                     </button>
                 </div>
-            </aside>
-            <section>
+            </section>
+            <section aria-labelledby={`${ID(selectedJob.internalId)}-hd`}>
+                <h2
+                    id={`${ID(selectedJob.internalId)}-hd`}
+                    className="visually-hidden"
+                >
+                    Job details for selected job
+                </h2>
                 <JobDetails job={selectedJob} />
             </section>
         </div>

@@ -137,15 +137,12 @@ export function Engines({
         return propkey_.charAt(0).toUpperCase() + propkey_.substring(1)
     }
     let getEngineLabel = (engineId) => {
-        console.log(pipeline.ttsEnginesStates)
         return (
             pipeline.ttsEnginesStates[engineId.split('.').reverse()[0]]?.name ??
             engineId
         )
     }
     let hasRequiredValues = (engineId) => {
-        console.log(engineProperties)
-        console.log(engineId)
         let incompleteEngineValues = engineProperties.filter(
             (prop) => prop.key.indexOf(engineId) != -1 && prop.value == ''
         )

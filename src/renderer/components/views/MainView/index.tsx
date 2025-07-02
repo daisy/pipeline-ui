@@ -1,7 +1,7 @@
 /*
 Data manager and owner of tab view
 */
-import { useEffect, useState, useRef } from 'react'
+import { useEffect, useState } from 'react'
 import { Job } from 'shared/types'
 import { useWindowStore } from 'renderer/store'
 
@@ -10,17 +10,15 @@ import { JobState } from 'shared/types'
 
 import {
     addJob,
-    removeJob,
-    updateJob,
-    newJob,
+    removeJob, newJob,
     selectJob,
     selectNextJob,
-    selectPrevJob,
+    selectPrevJob
 } from 'shared/data/slices/pipeline'
 import { NewJobPane } from '../../NewJobPane'
 import { calculateJobName } from 'shared/jobName'
 import { PLATFORM } from 'shared/constants'
-import { Plus, X } from '../../Widgets/SvgIcons'
+import { X } from '../../Widgets/SvgIcons'
 import { BatchJobDetailsPane } from 'renderer/components/JobDetailsPane/BatchJobPane'
 import { SingleJobDetailsPane } from 'renderer/components/JobDetailsPane/SingleJobPane'
 import { ScriptForm } from 'renderer/components/ScriptForm'
@@ -33,7 +31,7 @@ export function MainView() {
     const [visibleJobs, setVisibleJobs] = useState([])
 
     useEffect(() => {
-        if (!(pipeline.jobs && pipeline.jobs.length > 0)) {
+        if (!pipeline.jobs || pipeline.jobs.length > 0) {
             let newJob_ = newJob(pipeline)
             App.store.dispatch(addJob(newJob_))
             App.store.dispatch(selectJob(newJob_))

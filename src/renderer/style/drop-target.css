@@ -21,8 +21,13 @@
     }
 
     &[data-dragging="true"] {
-        background-color: var(--secondary);
-        color: var(--secondary-contrast);
+        background-color: var(--hover);
+        color: var(--hover-contrast);
+        .browse-button {
+            color: var(--hover-contrast-links);
+            text-decoration-color: var(--hover-contrast-links);
+        }
+        
     }
 
     .drop-target-text {

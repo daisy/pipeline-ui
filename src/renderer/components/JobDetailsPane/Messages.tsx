@@ -18,7 +18,7 @@ function MessageDisplay(m: Message, key, depth, verbose) {
     return (
         <>
             {verbose || m.level == 'ERROR' || m.level == 'WARNING' ? (
-                <li key={key} className={MessageLevel[m.level].toLowerCase()}>
+                <li key={key} className={'msg-' + MessageLevel[m.level].toLowerCase()}>
                     {m.level == 'INFO'
                         ? m.content
                         : `${m.level} - ${m.content}`}

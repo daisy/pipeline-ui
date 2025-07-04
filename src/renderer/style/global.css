@@ -90,14 +90,13 @@ button {
         outline: none;
     }
     &:active {
-        transform: scale(96%);
         background-color: var(--primary);
         color: var(--primary-contrast);
     }
 }
 button.invisible {
     color: var(--fg);
-    background-color: var(--bg);
+    background-color: inherit;
     border: none;
     display: flex;
     align-items: center;
@@ -110,7 +109,6 @@ button.important {
 button[disabled], button[disabled]:hover, button[disabled]:active, button[disabled]:focus {
     background-color: inherit;
     color: var(--inactive);
-    transform: none;
     box-shadow: var(--box-shadow-params) var(--inactive);
     cursor: not-allowed;
 }

@@ -7,7 +7,7 @@ export function Results({ job }: { job: Job }) {
     return job.jobData.results?.namedResults.length > 0 ? (
         <ul>
             {job.jobData.results?.namedResults.map((item, itemIndex) => (
-                <li>
+                <li key={itemIndex}>
                     <span className="nicename">
                         <FileLink fileHref={item.href}>
                             {item.nicename}

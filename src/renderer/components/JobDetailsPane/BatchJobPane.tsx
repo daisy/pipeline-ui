@@ -36,18 +36,6 @@ export function BatchJobDetailsPane({ jobs }: { jobs: Array<Job> }) {
         setSelectedJob(job)
     }
 
-    let onCloseBatch = async () => {
-        if (!areAllJobsInBatchDone(primaryJob, jobs)) {
-            return
-        }
-        let result = await App.showMessageBoxYesNo(
-            'Are you sure you want to close these jobs?'
-        )
-        if (result) {
-            App.store.dispatch(removeBatchJob(jobs))
-        }
-    }
-
     let onCancelBatch = () => {
         if (getIdleCountInBatch(primaryJob, jobs) > 0) {
             App.store.dispatch(cancelBatchJob(jobs))
@@ -140,14 +128,6 @@ export function BatchJobDetailsPane({ jobs }: { jobs: Array<Job> }) {
                     />
                 </details>
                 <div className="controls">
-                    <button
-                        type="button"
-                        disabled={!areAllJobsInBatchDone(primaryJob, jobs)}
-                        aria-disabled={!areAllJobsInBatchDone(primaryJob, jobs)}
-                        onClick={(e) => onCloseBatch()}
-                    >
-                        Close All
-                    </button>
                     <button
                         type="button"
                         disabled={!getIdleCountInBatch(primaryJob, jobs)}

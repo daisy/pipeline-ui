@@ -117,7 +117,8 @@
 .batch-job {
     display: grid;
     grid-template-columns: 25rem auto;
-    
+    gap: 2rem;
+
     summary {
         margin-right: 0.5rem;
     }
@@ -134,7 +135,7 @@
             flex-direction: row;
             gap: 1rem;
             align-items: center;
-
+            width: 100%;
             .file {
                 white-space: normal;
             }
@@ -159,16 +160,11 @@
         grid-template-rows: min-content auto;
         gap: 2rem;
 
-        .sidebar {
-            padding: .5rem;
-
-            [role="tab"] {
-                width: 100%;
-            }
-            
+        [role="tab"] {
+            margin: 0;
         }
-        
-
-
+        [role="tablist"] {
+            gap: .5rem;
+        }
     }
 }

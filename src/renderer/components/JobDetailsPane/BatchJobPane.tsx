@@ -127,6 +127,7 @@ export function BatchJobDetailsPane({ jobs }: { jobs: Array<Job> }) {
                         }}
                     />
                 </details>
+                {getIdleCountInBatch(primaryJob, jobs) != 0 && 
                 <div className="controls">
                     <button
                         type="button"
@@ -136,7 +137,7 @@ export function BatchJobDetailsPane({ jobs }: { jobs: Array<Job> }) {
                     >
                         Cancel remaining
                     </button>
-                </div>
+                </div>}
             </div>
             <div
                 id={`${ID(selectedJob.internalId)}-batch-tabpanel`}

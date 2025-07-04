@@ -10,6 +10,7 @@ import { areAllJobsInBatchDone, getIdleCountInBatch } from 'shared/utils'
 import { JobStatusIcon } from '../Widgets/SvgIcons'
 import { File, FileAsType } from '../Widgets/File'
 import { getStatus, ID } from 'renderer/utils'
+import { TabList } from '../Widgets/TabList'
 
 const { App } = window
 
@@ -22,6 +23,14 @@ export function BatchJobDetailsPane({ jobs }: { jobs: Array<Job> }) {
         let selJob = jobs.find((j) => j.internalId == selectedJob.internalId)
         setSelectedJob(selJob)
     }, [jobs])
+
+    useEffect(() => {
+        if (selectedJob.internalId !== '') {
+            document
+                .getElementById(`${ID(selectedJob.internalId)}-batch-tab`)
+                ?.focus()
+        }
+    }, [selectedJob])
 
     let selectJob = (job) => {
         setSelectedJob(job)
@@ -52,53 +61,83 @@ export function BatchJobDetailsPane({ jobs }: { jobs: Array<Job> }) {
         )
         return sourceInput?.value ?? ''
     }
+
+    let onKeyDown = (e) => {
+        let selJobIdx = selectedJob
+            ? jobs.findIndex((j) => j.internalId == selectedJob.internalId)
+            : -1
+
+        switch (e.key) {
+            case 'ArrowDown':
+                if (selJobIdx >= jobs.length - 1 || selJobIdx < 0) {
+                    setSelectedJob(jobs[0])
+                } else {
+                    setSelectedJob(jobs[selJobIdx + 1])
+                }
+                break
+            case 'ArrowUp':
+                if (selJobIdx <= 0 || selJobIdx > jobs.length) {
+                    setSelectedJob(jobs[0])
+                } else {
+                    setSelectedJob(jobs[selJobIdx - 1])
+                }
+                break
+        }
+    }
+
     return (
         <div className="batch-job">
-            <section
-                className="sidebar"
-                aria-labelledby={`${ID(primaryJob.internalId)}-sidebar`}
-            >
+            <div className="sidebar">
                 <details open>
                     <summary>
                         <h2 id={`${ID(primaryJob.internalId)}-sidebar`}>
                             Jobs in this batch
                         </h2>
                     </summary>
-
-                    <ul>
-                        {jobs
-                            .sort((a, b) => {
-                                return getSourceValue(a) < getSourceValue(b)
-                                    ? 1
-                                    : -1
-                            })
-                            .map((job) => (
-                                <li
-                                    aria-current={
-                                        job.internalId == selectedJob.internalId
-                                    }
-                                    onClick={(e) => selectJob(job)}
-                                >
-                                    <span
-                                        className={`status ${getStatus(job)}`}
-                                    >
-                                        {JobStatusIcon(
-                                            job.jobData?.status ||
-                                                (job.jobRequestError &&
-                                                    JobStatus.ERROR),
-                                            {
-                                                width: 20,
-                                                height: 20,
-                                            }
-                                        )}
-                                    </span>
-                                    <File
-                                        showAsType={FileAsType.AS_PATH}
-                                        fileUrlOrPath={getSourceValue(job)}
-                                    />
-                                </li>
-                            ))}
-                    </ul>
+                    <TabList
+                        items={jobs}
+                        onKeyDown={onKeyDown}
+                        getTabId={(job, idx) =>
+                            `${ID(job.internalId)}-batch-tab`
+                        }
+                        getTabAriaSelected={(job, idx) =>
+                            job.internalId == selectedJob.internalId
+                        }
+                        getTabIndex={(job, idx) =>
+                            selectedJob.internalId == job.internalId ? 0 : -1
+                        }
+                        getTabAriaControls={(job, idx) =>
+                            `${ID(job.internalId)}-batch-tabpanel`
+                        }
+                        getTabTitle={(job, idx) => getSourceValue(job)}
+                        getTabLabel={(job, idx) => (
+                            <>
+                                <span className={`status ${getStatus(job)}`}>
+                                    {JobStatusIcon(
+                                        job.jobData?.status ||
+                                            (job.jobRequestError &&
+                                                JobStatus.ERROR),
+                                        {
+                                            width: 20,
+                                            height: 20,
+                                        }
+                                    )}
+                                </span>
+                                <File
+                                    showAsType={FileAsType.AS_PATH}
+                                    fileUrlOrPath={getSourceValue(job)}
+                                />
+                            </>
+                        )}
+                        onTabClick={(job, idx) => {
+                            selectJob(job)
+                            document
+                                .getElementById(
+                                    `${ID(job.internalId)}-batch-tabpanel`
+                                )
+                                ?.focus()
+                        }}
+                    />
                 </details>
                 <div className="controls">
                     <button
@@ -118,16 +157,15 @@ export function BatchJobDetailsPane({ jobs }: { jobs: Array<Job> }) {
                         Cancel remaining
                     </button>
                 </div>
-            </section>
-            <section aria-labelledby={`${ID(selectedJob.internalId)}-hd`}>
-                <h2
-                    id={`${ID(selectedJob.internalId)}-hd`}
-                    className="visually-hidden"
-                >
-                    Job details for selected job
-                </h2>
+            </div>
+            <div
+                id={`${ID(selectedJob.internalId)}-batch-tabpanel`}
+                aria-labelledby={`${ID(selectedJob.internalId)}-batch-tab`}
+                role="tabpanel"
+                tabIndex={0}
+            >
                 <JobDetails job={selectedJob} />
-            </section>
+            </div>
         </div>
     )
 }

@@ -189,8 +189,35 @@ export function SettingsView(
             ),
         },
     ]
-    let onKeyDown = (e) => {}
+    let setFocus = (id) => document.getElementById(id)?.focus()
+    let onKeyDown = (e) => {
+        let selIdx = tabItems.findIndex(
+            (item) => item.section == selectedSection
+        )
+        switch (e.key) {
+            case 'ArrowDown':
+                if (selIdx >= tabItems.length - 1 || selIdx < 0) {
+                    setSelectedSection(tabItems[0].section)
+                    setFocus(`${ID(0)}-tab`)
+                } else {
+                    setSelectedSection(tabItems[selIdx + 1].section)
+                    setFocus(`${ID(selIdx + 1)}-tab`)
+                }
+                break
+            case 'ArrowUp':
+                if (selIdx <= 0 || selIdx > tabItems.length) {
+                    setSelectedSection(tabItems[tabItems.length - 1].section)
+                    setFocus(`${ID(tabItems.length - 1)}-tab`)
+                } else {
+                    setSelectedSection(tabItems[selIdx - 1].section)
+                    setFocus(`${ID(selIdx - 1)}-tab`)
+                }
+                break
+        }
+    }
 
+    let getSelectedItem = () =>
+        tabItems.find((item) => item.section == selectedSection)
     return (
         <>
             <div className="sidebar">
@@ -200,7 +227,7 @@ export function SettingsView(
                     onKeyDown={onKeyDown}
                     getTabId={(item, idx) => `${ID(idx)}-tab`}
                     getTabAriaSelected={(item, idx) =>
-                        selectedSection == item.section
+                        getSelectedItem() == item
                     }
                     getTabIndex={(item, idx) =>
                         selectedSection == item.section ? 0 : -1
@@ -210,30 +237,24 @@ export function SettingsView(
                     getTabLabel={(item, idx) => <h2>{item.label}</h2>}
                     onTabClick={(item, idx) => {
                         setSelectedSection(item.section)
+                        setFocus(`${ID(idx)}-tabpanel`)
                     }}
                 ></TabList>
             </div>
-            {tabItems.map((item, idx) => {
-                return (
-                    <div
-                        key={idx}
-                        className={
-                            selectedSection != item.section ? 'is-hidden' : ''
-                        }
-                        id={`${ID(idx)}-tabpanel`}
-                        role="tabpanel"
-                        aria-labelledby={`${ID(idx)}-tab`}
-                        tabIndex={0}
-                    >
-                        <form onSubmit={() => window.close()}>
-                            <fieldset>{item.markup}</fieldset>
-                            <div className="controls">
-                                <button type="submit">Close</button>
-                            </div>
-                        </form>
+            <div
+                id={`${ID(selectedSection)}-tabpanel`}
+                role="tabpanel"
+                aria-labelledby={`${ID(selectedSection)}-tab`}
+                tabIndex={0}
+            >
+                <form onSubmit={() => window.close()}>
+                    <fieldset>{getSelectedItem().markup}</fieldset>
+                    <div className="controls">
+                        <button type="submit">Close</button>
                     </div>
-                )
-            })}
+                </form>
+            </div>
+            )
         </>
     )
 }

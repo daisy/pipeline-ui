@@ -1,7 +1,7 @@
 /*
 Data manager and owner of tab view
 */
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Job } from 'shared/types'
 import { useWindowStore } from 'renderer/store'
 
@@ -10,10 +10,11 @@ import { JobState } from 'shared/types'
 
 import {
     addJob,
-    removeJob, newJob,
+    removeJob,
+    newJob,
     selectJob,
     selectNextJob,
-    selectPrevJob
+    selectPrevJob,
 } from 'shared/data/slices/pipeline'
 import { NewJobPane } from '../../NewJobPane'
 import { calculateJobName } from 'shared/jobName'
@@ -59,16 +60,19 @@ export function MainView() {
     let onKeyDown = (e) => {
         switch (e.key) {
             case 'ArrowRight':
-                console.log("right")
                 App.store.dispatch(selectNextJob(settings.editJobOnNewTab))
+                break
             case 'ArrowLeft':
                 App.store.dispatch(selectPrevJob(settings.editJobOnNewTab))
-            case 'ArrowDown':
-                document
-                    .getElementById(`${ID(pipeline.selectedJobId)}-tabpanel`)
-                    ?.focus()
+                break
         }
     }
+    let getSelectedJob = () => {
+        return pipeline.jobs.find(
+            (job) => job.internalId == pipeline.selectedJobId
+        )
+    }
+
     return (
         <main>
             <div className="tablist-container">
@@ -115,74 +119,63 @@ export function MainView() {
                     +
                 </button>
             </div>
-            {visibleJobs
-                .filter((job) => settings.editJobOnNewTab || !job.invisible)
-                .map((job: Job, idx) => {
-                    return (
-                        <div
-                            key={idx}
-                            className={
-                                job.internalId != pipeline.selectedJobId
-                                    ? 'is-hidden'
-                                    : ''
-                            }
-                            id={`${ID(job.internalId)}-tabpanel`}
-                            role="tabpanel"
-                            aria-labelledby={`${ID(job.internalId)}-tab`}
-                            tabIndex={0}
-                        >
-                            <button
-                                type="button"
-                                id={`cancel-job-${job.internalId}`}
-                                onClick={async (e) => {
-                                    let result = await App.showMessageBoxYesNo(
-                                        'Are you sure you want to close this job?'
-                                    )
-                                    if (result) {
-                                        App.store.dispatch(removeJob(job))
-                                    }
-                                }}
-                                title="Close tab"
-                                className="close-tab invisible"
-                            >
-                                <X width={20} height={20} />
-                            </button>
+            <div
+                id={`${ID(pipeline.selectedJobId)}-tabpanel`}
+                role="tabpanel"
+                aria-labelledby={`${ID(pipeline.selectedJobId)}-tab`}
+                tabIndex={0}
+            >
+                <button
+                    type="button"
+                    id={`cancel-job-${pipeline.selectedJobId}`}
+                    onClick={async (e) => {
+                        let result = await App.showMessageBoxYesNo(
+                            'Are you sure you want to close this job?'
+                        )
+                        if (result) {
+                            App.store.dispatch(removeJob(getSelectedJob()))
+                        }
+                    }}
+                    title="Close tab"
+                    className="close-tab invisible"
+                >
+                    <X width={20} height={20} />
+                </button>
 
-                            <div className="tabpanel-contents">
-                                {job.state == JobState.NEW &&
-                                    job.script == null && (
-                                        <NewJobPane job={job} />
-                                    )}
-                                {job.state == JobState.NEW &&
-                                    job.script != null && (
-                                        <ScriptForm job={job} />
-                                    )}
-                                {job.script != null &&
-                                    job.state != JobState.NEW &&
-                                    job.jobRequest.batchId == null && (
-                                        <SingleJobDetailsPane job={job} />
-                                    )}
-                                {job.script != null &&
-                                    job.state != JobState.NEW &&
-                                    job.jobRequest.batchId != null && (
-                                        <BatchJobDetailsPane
-                                            jobs={[
-                                                job,
-                                                pipeline.jobs.filter(
-                                                    (j) =>
-                                                        j.internalId !=
-                                                            job.internalId &&
-                                                        j.jobRequest?.batchId ==
-                                                            job.jobRequest
-                                                                ?.batchId
-                                                ),
-                                            ].flat()}
-                                        />
-                                    )}
-                            </div>
-                        </div>
-                    )
-                })}
+                <div className="tabpanel-contents">
+                    {getSelectedJob().state == JobState.NEW &&
+                        getSelectedJob().script == null && (
+                            <NewJobPane job={getSelectedJob()} />
+                        )}
+                    {getSelectedJob().state == JobState.NEW &&
+                        getSelectedJob().script != null && (
+                            <ScriptForm job={getSelectedJob()} />
+                        )}
+                    {getSelectedJob().script != null &&
+                        getSelectedJob().state != JobState.NEW &&
+                        getSelectedJob().jobRequest.batchId == null && (
+                            <SingleJobDetailsPane job={getSelectedJob()} />
+                        )}
+                    {getSelectedJob().script != null &&
+                        getSelectedJob().state != JobState.NEW &&
+                        getSelectedJob().jobRequest.batchId != null && (
+                            <BatchJobDetailsPane
+                                jobs={[
+                                    getSelectedJob(),
+                                    pipeline.jobs.filter(
+                                        (j) =>
+                                            j.internalId !=
+                                                getSelectedJob().internalId &&
+                                            j.jobRequest?.batchId ==
+                                                getSelectedJob().jobRequest
+                                                    ?.batchId
+                                    ),
+                                ].flat()}
+                            />
+                        )}
+                </div>
+            </div>
+            )
         </main>
     )
 }

@@ -15,12 +15,6 @@ export function DragDropFilterFiles({
     const [files, setFiles] = useState(initialValue)
     const [firstInteraction, setFirstInteraction] = useState(false)
 
-    // useEffect(() => {
-    //     if (!job) {
-    //         updateFiles([])
-    //     }
-    // }, [job])
-
     let updateFiles = (files_) => {
         let filesCopy = [...files_]
         setFiles(filesCopy)

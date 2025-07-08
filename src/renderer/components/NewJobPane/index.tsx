@@ -125,9 +125,6 @@ export function NewJobPane({ job }: { job: Job }) {
     return (
         <>
             <div className="new-job">
-                <ul>
-                    {files.map((f, idx) => <li key={idx}>{f.filepath}</li>)}
-                </ul>
                 <DragDropFilterFiles
                     job={job}
                     createJob={createJob}

@@ -3,14 +3,12 @@ import { ID } from 'renderer/utils/utils'
 
 export function SelectScript({
     scripts,
-    initialSelection,
     jobInternalId,
     onSelectChange,
-    disabled,
     message,
 }) {
     return (
-        <div className={`select-script ${disabled ? 'disabled' : ''}`}>
+        <div className="select-script">
             <label
                 id={`${ID(jobInternalId)}-select-script`}
                 htmlFor={`${ID(jobInternalId)}-script`}
@@ -23,8 +21,6 @@ export function SelectScript({
                 onChange={(e) => {
                     onSelectChange(e.target.value)
                 }}
-                value={initialSelection}
-                disabled={disabled}
             >
                 <option value={null}>None</option>
                 {scripts

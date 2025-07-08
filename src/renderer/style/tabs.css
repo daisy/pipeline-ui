@@ -72,5 +72,6 @@
     background-color: var(--bg-off);
 }
 .add-tab {
-    height: min-content;
+    font-size: var(--fontsize-larger);
+    width: 3rem;
 }

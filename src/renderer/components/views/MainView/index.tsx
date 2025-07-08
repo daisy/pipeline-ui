@@ -20,7 +20,7 @@ import {
 import { NewJobPane } from '../../NewJobPane'
 import { calculateJobName } from 'shared/jobName'
 import { PLATFORM } from 'shared/constants'
-import { X } from '../../Widgets/SvgIcons'
+import { Plus, X } from '../../Widgets/SvgIcons'
 import { BatchJobDetailsPane } from 'renderer/components/JobDetailsPane/BatchJobPane'
 import { SingleJobDetailsPane } from 'renderer/components/JobDetailsPane/SingleJobPane'
 import { ScriptForm } from 'renderer/components/ScriptForm'
@@ -177,17 +177,6 @@ export function MainView() {
                                     }
                                 } else {
                                     // remove a single job
-                                    // if not done, can't remove it
-                                    if (
-                                        ![
-                                            JobStatus.ERROR,
-                                            JobStatus.FAIL,
-                                            JobStatus.SUCCESS,
-                                        ].includes(job.jobData?.status)
-                                    ) {
-                                        return
-                                    }
-
                                     let result = await App.showMessageBoxYesNo(
                                         'Are you sure you want to close this job?'
                                     )

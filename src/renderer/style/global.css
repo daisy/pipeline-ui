@@ -109,8 +109,11 @@ button.important {
 button[disabled], button[disabled]:hover, button[disabled]:active, button[disabled]:focus {
     background-color: inherit;
     color: var(--inactive);
-    box-shadow: inset var(--box-shadow-params) var(--inactive);
     cursor: not-allowed;
+
+}
+button[disabled]:hover {
+    box-shadow: none;
 }
 details > summary {
     cursor: pointer;

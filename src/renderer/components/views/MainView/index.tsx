@@ -2,7 +2,7 @@
 Data manager and owner of tab view
 */
 import { useEffect, useRef, useState } from 'react'
-import { Job } from 'shared/types'
+import { Job, JobStatus } from 'shared/types'
 import { useWindowStore } from 'renderer/store'
 
 import { ID } from 'renderer/utils/utils'
@@ -77,7 +77,23 @@ export function MainView() {
                 break
         }
     }
-
+    let isDone = (job) => {
+        if (job.jobRequest && job.jobRequest.batchId) {
+            let jobsInBatch = pipeline.jobs.filter(
+                (j) =>
+                    j.jobRequest &&
+                    j.jobRequest.batchId &&
+                    j.jobRequest.batchId == job.jobRequest.batchId
+            )
+            return areAllJobsInBatchDone(job, jobsInBatch)
+        } else {
+            return (
+                [JobStatus.ERROR, JobStatus.FAIL, JobStatus.SUCCESS].includes(
+                    job.jobData?.status
+                ) || job.state == JobState.NEW
+            )
+        }
+    }
     return (
         <main>
             <div className="tablist-container">
@@ -138,27 +154,19 @@ export function MainView() {
                         tabIndex={0}
                     >
                         <button
+                            disabled={!isDone(job)}
                             type="button"
                             id={`cancel-job-${job.internalId}`}
                             onClick={async (e) => {
                                 if (job.jobRequest?.batchId) {
                                     // remove all jobs in batch
-                                    let jobsInBatch = pipeline.jobs
-                                        .filter(
-                                            (j) =>
-                                                j.jobRequest &&
-                                                j.jobRequest.batchId
-                                        )
-                                        .filter(
-                                            (j) =>
-                                                j.jobRequest.batchId ==
+                                    let jobsInBatch = pipeline.jobs.filter(
+                                        (j) =>
+                                            j.jobRequest &&
+                                            j.jobRequest.batchId &&
+                                            j.jobRequest.batchId ==
                                                 job.jobRequest.batchId
-                                        )
-                                    if (
-                                        !areAllJobsInBatchDone(job, jobsInBatch)
-                                    ) {
-                                        return
-                                    }
+                                    )
                                     let result = await App.showMessageBoxYesNo(
                                         'Are you sure you want to close these jobs?'
                                     )
@@ -169,6 +177,17 @@ export function MainView() {
                                     }
                                 } else {
                                     // remove a single job
+                                    // if not done, can't remove it
+                                    if (
+                                        ![
+                                            JobStatus.ERROR,
+                                            JobStatus.FAIL,
+                                            JobStatus.SUCCESS,
+                                        ].includes(job.jobData?.status)
+                                    ) {
+                                        return
+                                    }
+
                                     let result = await App.showMessageBoxYesNo(
                                         'Are you sure you want to close this job?'
                                     )

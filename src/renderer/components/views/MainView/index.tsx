@@ -32,9 +32,6 @@ const { App } = window
 export function MainView() {
     const { pipeline, settings } = useWindowStore()
     const [visibleJobs, setVisibleJobs] = useState([])
-    // const [selectedJob, setSelectedJob] = useState(
-    //     pipeline.jobs.find((job) => job.internalId == pipeline.selectedJobId)
-    // )
 
     useEffect(() => {
         if (!(pipeline.jobs && pipeline.jobs.length > 0)) {
@@ -81,8 +78,6 @@ export function MainView() {
         }
     }
 
-    let getSelectedJob = () =>
-        pipeline.jobs.find((job) => job.internalId == pipeline.selectedJobId)
     return (
         <main>
             <div className="tablist-container">
@@ -129,93 +124,108 @@ export function MainView() {
                     +
                 </button>
             </div>
-            <div
-                id={`${ID(pipeline.selectedJobId)}-tabpanel`}
-                role="tabpanel"
-                aria-labelledby={`${ID(pipeline.selectedJobId)}-tab`}
-                tabIndex={0}
-            >
-                <button
-                    type="button"
-                    id={`cancel-job-${pipeline.selectedJobId}`}
-                    onClick={async (e) => {
-                        if (getSelectedJob().isPrimaryForBatch) {
-                            // remove all jobs in batch
-                            let jobsInBatch = pipeline.jobs
-                                .filter(
-                                    (j) => j.jobRequest && j.jobRequest.batchId
-                                )
-                                .filter(
-                                    (j) =>
-                                        j.jobRequest.batchId ==
-                                        getSelectedJob().jobRequest.batchId
-                                )
-                            if (
-                                !areAllJobsInBatchDone(
-                                    getSelectedJob(),
-                                    jobsInBatch
-                                )
-                            ) {
-                                return
-                            }
-                            let result = await App.showMessageBoxYesNo(
-                                'Are you sure you want to close these jobs?'
-                            )
-                            if (result) {
-                                App.store.dispatch(removeBatchJob(jobsInBatch))
-                            }
-                        } else {
-                            // remove a single job
-                            let result = await App.showMessageBoxYesNo(
-                                'Are you sure you want to close this job?'
-                            )
-                            if (result) {
-                                App.store.dispatch(removeJob(getSelectedJob()))
-                            }
-                        }
-                    }}
-                    title="Close tab"
-                    className="close-tab invisible"
-                >
-                    <X width={20} height={20} />
-                </button>
-
-                {getSelectedJob() && (
-                    <div className="tabpanel-contents">
-                        {getSelectedJob().state == JobState.NEW &&
-                            getSelectedJob().script == null && (
-                                <NewJobPane job={getSelectedJob()} />
-                            )}
-                        {getSelectedJob().state == JobState.NEW &&
-                            getSelectedJob().script != null && (
-                                <ScriptForm job={getSelectedJob()} />
-                            )}
-                        {getSelectedJob().script != null &&
-                            getSelectedJob().state != JobState.NEW &&
-                            getSelectedJob().jobRequest.batchId == null && (
-                                <SingleJobDetailsPane job={getSelectedJob()} />
-                            )}
-                        {getSelectedJob().script != null &&
-                            getSelectedJob().state != JobState.NEW &&
-                            getSelectedJob().jobRequest.batchId != null && (
-                                <BatchJobDetailsPane
-                                    jobs={[
-                                        getSelectedJob(),
-                                        pipeline.jobs.filter(
+            {visibleJobs.map((job, idx) => {
+                return (
+                    <div
+                        className={`${
+                            job.internalId == pipeline.selectedJobId
+                                ? ''
+                                : 'is-hidden'
+                        }`}
+                        id={`${ID(job.internalId)}-tabpanel`}
+                        role="tabpanel"
+                        aria-labelledby={`${ID(job.internalId)}-tab`}
+                        tabIndex={0}
+                    >
+                        <button
+                            type="button"
+                            id={`cancel-job-${job.internalId}`}
+                            onClick={async (e) => {
+                                if (job.isPrimaryForBatch) {
+                                    // remove all jobs in batch
+                                    let jobsInBatch = pipeline.jobs
+                                        .filter(
                                             (j) =>
-                                                j.internalId !=
-                                                    getSelectedJob()
-                                                        .internalId &&
-                                                j.jobRequest?.batchId ==
-                                                    getSelectedJob().jobRequest
-                                                        ?.batchId
-                                        ),
-                                    ].flat()}
-                                />
-                            )}
+                                                j.jobRequest &&
+                                                j.jobRequest.batchId
+                                        )
+                                        .filter(
+                                            (j) =>
+                                                j.jobRequest.batchId ==
+                                                job.jobRequest.batchId
+                                        )
+                                    if (
+                                        !areAllJobsInBatchDone(job, jobsInBatch)
+                                    ) {
+                                        return
+                                    }
+                                    let result = await App.showMessageBoxYesNo(
+                                        'Are you sure you want to close these jobs?'
+                                    )
+                                    if (result) {
+                                        App.store.dispatch(
+                                            removeBatchJob(jobsInBatch)
+                                        )
+                                    }
+                                } else {
+                                    // remove a single job
+                                    let result = await App.showMessageBoxYesNo(
+                                        'Are you sure you want to close this job?'
+                                    )
+                                    if (result) {
+                                        App.store.dispatch(removeJob(job))
+                                    }
+                                }
+                            }}
+                            title="Close tab"
+                            className="close-tab invisible"
+                        >
+                            <X width={20} height={20} />
+                        </button>
+
+                        {job && (
+                            <div className="tabpanel-contents">
+                                {job.state == JobState.NEW &&
+                                    job.script == null && (
+                                        <NewJobPane
+                                            job={pipeline.jobs.find(
+                                                (j) =>
+                                                    j.internalId ==
+                                                    pipeline.selectedJobId
+                                            )}
+                                        />
+                                    )}
+                                {job.state == JobState.NEW &&
+                                    job.script != null && (
+                                        <ScriptForm job={job} />
+                                    )}
+                                {job.script != null &&
+                                    job.state != JobState.NEW &&
+                                    job.jobRequest.batchId == null && (
+                                        <SingleJobDetailsPane job={job} />
+                                    )}
+                                {job.script != null &&
+                                    job.state != JobState.NEW &&
+                                    job.jobRequest.batchId != null && (
+                                        <BatchJobDetailsPane
+                                            jobs={[
+                                                job,
+                                                pipeline.jobs.filter(
+                                                    (j) =>
+                                                        j.internalId !=
+                                                            job.internalId &&
+                                                        j.jobRequest?.batchId ==
+                                                            job.jobRequest
+                                                                ?.batchId
+                                                ),
+                                            ].flat()}
+                                        />
+                                    )}
+                            </div>
+                        )}
                     </div>
-                )}
-            </div>
+                )
+            })}
         </main>
     )
 }

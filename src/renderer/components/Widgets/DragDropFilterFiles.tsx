@@ -10,31 +10,27 @@ export function DragDropFilterFiles({
     createJob,
     onChange,
     initialValue,
-    onFirstInteraction,
 }) {
     // files is [{filepath, filetype},...]
     const [files, setFiles] = useState(initialValue)
     const [firstInteraction, setFirstInteraction] = useState(false)
 
-    useEffect(() => {
-        if (!job) {
-            updateFiles([])
-        }
-    }, [job])
+    // useEffect(() => {
+    //     if (!job) {
+    //         updateFiles([])
+    //     }
+    // }, [job])
 
-    let updateFiles = (files) => {
-        setFiles(files)
-        onChange(files)
+    let updateFiles = (files_) => {
+        let filesCopy = [...files_]
+        setFiles(filesCopy)
+        onChange(filesCopy)
     }
 
     let uniqueFiletypes = Array.from(new Set(files.map((f) => f.filetype.type)))
     // handle user adding more files and folders
     // resolve folder contents and add files to the current files list
     let onDragInputChange = async (filenames) => {
-        if (!firstInteraction) {
-            setFirstInteraction(true)
-            onFirstInteraction()
-        }
         let resolvedFilenames = await resolveItems(filenames)
         await addFiles(resolvedFilenames)
     }

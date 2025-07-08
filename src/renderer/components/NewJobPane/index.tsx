@@ -52,10 +52,6 @@ export function NewJobPane({ job }: { job: Job }) {
     )
 
     const [files, setFiles] = useState([])
-    // this isn't currently used but might be handy in the future, depending on user feedback
-    // one idea was to have different behavior once the user interacted with the drag and drop, e.g. to not show the select-script
-    // dropdown anymore
-    const [usedDragDrop, setUsedDragDrop] = useState(false)
 
     // see if it's time to show the sponsorship message again
     // useMemo runs once per render (unlike useEffect)
@@ -129,24 +125,24 @@ export function NewJobPane({ job }: { job: Job }) {
     return (
         <>
             <div className="new-job">
+                <ul>
+                    {files.map((f, idx) => <li key={idx}>{f.filepath}</li>)}
+                </ul>
                 <DragDropFilterFiles
                     job={job}
                     createJob={createJob}
-                    onChange={onDragDropFilesChange}
                     initialValue={files}
-                    onFirstInteraction={() => setUsedDragDrop(true)}
+                    onChange={onDragDropFilesChange}
                 />
                 {files.length == 0 && (
                     <SelectScript
                         jobInternalId={job.internalId}
-                        initialSelection={job.script ? job.script.id : null}
                         scripts={pipeline.scripts}
                         onSelectChange={onSelectChange}
-                        disabled={files.length != 0}
                         message={'Or, select a script'}
                     />
                 )}
-                {showSponsorshipMessage && usedDragDrop == false && (
+                {showSponsorshipMessage && (
                     <div className="sponsorship">
                         <a
                             href={sponsorshipMessage.url}

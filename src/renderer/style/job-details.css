@@ -79,15 +79,15 @@
             margin-left: var(--pad);
             list-style-type: none;
 
-            .error {
+            .error, .msg-error {
                 color: var(--error);
             }
 
-            .info {
+            .info, .msg-info {
                 color: var(--fg);
             }
 
-            .warning {
+            .warning, .msg-warning {
                 color: var(--warning);
             }
 

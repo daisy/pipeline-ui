@@ -141,7 +141,7 @@ export function MainView() {
                             type="button"
                             id={`cancel-job-${job.internalId}`}
                             onClick={async (e) => {
-                                if (job.isPrimaryForBatch) {
+                                if (job.jobRequest?.batchId) {
                                     // remove all jobs in batch
                                     let jobsInBatch = pipeline.jobs
                                         .filter(

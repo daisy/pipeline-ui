@@ -17,13 +17,13 @@ import {
     selectPrevJob,
     removeBatchJob,
 } from 'shared/data/slices/pipeline'
-import { NewJobPane } from '../../NewJobPane'
+import { NewJobPane } from './NewJobPane'
 import { calculateJobName } from 'shared/jobName'
 import { PLATFORM } from 'shared/constants'
 import { X } from '../../Widgets/SvgIcons'
-import { BatchJobDetailsPane } from 'renderer/components/JobDetailsPane/BatchJobPane'
-import { SingleJobDetailsPane } from 'renderer/components/JobDetailsPane/SingleJobPane'
-import { ScriptForm } from 'renderer/components/ScriptForm'
+import { BatchJobDetailsPane } from 'renderer/components/Views/MainView/JobDetailsPane/BatchJobPane'
+import { SingleJobDetailsPane } from 'renderer/components/Views/MainView/JobDetailsPane/SingleJobPane'
+import { ScriptForm } from 'renderer/components/Views/MainView/ScriptForm'
 import { TabList } from 'renderer/components/Widgets/TabList'
 import { areAllJobsInBatchDone } from 'shared/utils'
 

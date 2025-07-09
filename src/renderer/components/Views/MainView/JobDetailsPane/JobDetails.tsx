@@ -6,13 +6,13 @@ import { Messages } from './Messages'
 import { Settings } from './Settings'
 import { Results } from './Results'
 
-import { externalLinkClick, getStatus } from '../../utils/utils'
+import { externalLinkClick, getStatus } from '../../../../utils/utils'
 import { editJob, runJob } from 'shared/data/slices/pipeline'
 import { readableStatus } from 'shared/jobName'
-import { FileLink } from '../Widgets/FileLink'
+import { FileLink } from '../../../Widgets/FileLink'
 import { useWindowStore } from 'renderer/store'
 import { useState, useEffect } from 'react'
-import { JobStatusIcon } from '../Widgets/SvgIcons'
+import { JobStatusIcon } from '../../../Widgets/SvgIcons'
 
 const { App } = window
 

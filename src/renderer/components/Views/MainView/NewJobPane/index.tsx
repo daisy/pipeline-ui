@@ -16,11 +16,11 @@ const { App } = window
 import {
     defaultSponsorshipMessage,
     updateSponsorshipMessage,
-} from '../../utils'
+} from '../../../../utils'
 import { is2StepsScript } from 'shared/utils'
 
-import { SelectScript } from '../Widgets/SelectScript'
-import { DragDropFilterFiles } from '../Widgets/DragDropFilterFiles'
+import { SelectScript } from '../../../Widgets/SelectScript'
+import { DragDropFilterFiles } from '../../../Widgets/DragDropFilterFiles'
 
 // is dateInMs more than 2 weeks old
 function isExpired(dateInMs: number) {

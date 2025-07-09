@@ -7,10 +7,10 @@ import { cancelBatchJob } from 'shared/data/slices/pipeline'
 import { useState, useEffect } from 'react'
 import { JobDetails } from './JobDetails'
 import { getIdleCountInBatch } from 'shared/utils'
-import { JobStatusIcon } from '../Widgets/SvgIcons'
-import { File, FileAsType } from '../Widgets/File'
+import { JobStatusIcon } from '../../../Widgets/SvgIcons'
+import { File, FileAsType } from '../../../Widgets/File'
 import { getStatus, ID } from 'renderer/utils'
-import { TabList } from '../Widgets/TabList'
+import { TabList } from '../../../Widgets/TabList'
 
 const { App } = window
 

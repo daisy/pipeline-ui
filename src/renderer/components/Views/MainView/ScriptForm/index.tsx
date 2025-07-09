@@ -12,7 +12,7 @@ import {
 } from 'shared/data/slices/pipeline'
 import { Job, JobState, ScriptItemBase, ScriptOption } from 'shared/types'
 
-import { FormField } from '../Widgets/FormField'
+import { FormField } from '../../../Widgets/FormField'
 import {
     getAllOptional,
     getAllRequired,
@@ -21,7 +21,7 @@ import {
     hasBatchInput,
     updateArrayValue,
 } from 'shared/utils'
-import { CustomName } from '../Widgets/CustomName'
+import { CustomName } from '../../../Widgets/CustomName'
 const { App } = window
 
 export function ScriptForm({ job }: { job: Job }) {

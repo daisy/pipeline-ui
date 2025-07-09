@@ -152,6 +152,7 @@ export function MainView() {
                         role="tabpanel"
                         aria-labelledby={`${ID(job.internalId)}-tab`}
                         tabIndex={0}
+                        key={idx}
                     >
                         <button
                             disabled={!isDone(job)}

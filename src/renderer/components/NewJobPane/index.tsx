@@ -133,7 +133,7 @@ export function NewJobPane({ job }: { job: Job }) {
                 />
                 {files.length == 0 && (
                     <SelectScript
-                        jobInternalId={job.internalId}
+                        jobInternalId={job?.internalId}
                         scripts={pipeline.scripts}
                         onSelectChange={onSelectChange}
                         message={'Or, select a script'}

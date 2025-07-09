@@ -111,7 +111,7 @@ export function DragDropFilterFiles({
                                 files={filesOfType.map((f) => f.filepath)}
                                 relevantScripts={getRelevantScripts(filetype)}
                                 categoryName={filesOfType[0]?.filetype.name}
-                                jobInternalId={job.internalId}
+                                jobInternalId={job?.internalId}
                                 createJob={createJob}
                             />
                         )
@@ -127,7 +127,7 @@ export function DragDropFilterFiles({
                 </p>
             )}
             <DragFileInput
-                elemId={`${job.internalId}-new-job-files`}
+                elemId={`${job?.internalId}-new-job-files`}
                 mediaType={[]}
                 onChange={onDragInputChange}
             />

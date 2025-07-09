@@ -24,18 +24,6 @@ export function BatchJobDetailsPane({ jobs }: { jobs: Array<Job> }) {
         setSelectedJob(selJob)
     }, [jobs])
 
-    useEffect(() => {
-        if (selectedJob.internalId !== '') {
-            document
-                .getElementById(`${ID(selectedJob.internalId)}-batch-tab`)
-                ?.focus()
-        }
-    }, [selectedJob])
-
-    let selectJob = (job) => {
-        setSelectedJob(job)
-    }
-
     let onCancelBatch = () => {
         if (getIdleCountInBatch(primaryJob, jobs) > 0) {
             App.store.dispatch(cancelBatchJob(jobs))
@@ -55,21 +43,30 @@ export function BatchJobDetailsPane({ jobs }: { jobs: Array<Job> }) {
             ? jobs.findIndex((j) => j.internalId == selectedJob.internalId)
             : -1
 
+        let jobToSelect = null
         switch (e.key) {
             case 'ArrowDown':
                 if (selJobIdx >= jobs.length - 1 || selJobIdx < 0) {
-                    setSelectedJob(jobs[0])
+                    jobToSelect = jobs[0]
                 } else {
-                    setSelectedJob(jobs[selJobIdx + 1])
+                    jobToSelect = jobs[selJobIdx + 1]
                 }
                 break
             case 'ArrowUp':
                 if (selJobIdx <= 0 || selJobIdx > jobs.length) {
-                    setSelectedJob(jobs[0])
+                    jobToSelect = jobs[0]
                 } else {
-                    setSelectedJob(jobs[selJobIdx - 1])
+                    jobToSelect = jobs[selJobIdx - 1]
                 }
                 break
+        }
+        if (jobToSelect) {
+            if (jobToSelect.internalId) {
+                document
+                    .getElementById(`${ID(jobToSelect.internalId)}-batch-tab`)
+                    ?.focus()
+            }
+            setSelectedJob(jobToSelect)
         }
     }
 
@@ -118,7 +115,7 @@ export function BatchJobDetailsPane({ jobs }: { jobs: Array<Job> }) {
                             </>
                         )}
                         onTabClick={(job, idx) => {
-                            selectJob(job)
+                            setSelectedJob(job)
                             document
                                 .getElementById(
                                     `${ID(job.internalId)}-batch-tabpanel`
@@ -127,17 +124,13 @@ export function BatchJobDetailsPane({ jobs }: { jobs: Array<Job> }) {
                         }}
                     />
                 </details>
-                {getIdleCountInBatch(primaryJob, jobs) != 0 && 
-                <div className="controls">
-                    <button
-                        type="button"
-                        disabled={!getIdleCountInBatch(primaryJob, jobs)}
-                        aria-disabled={!getIdleCountInBatch(primaryJob, jobs)}
-                        onClick={(e) => onCancelBatch()}
-                    >
-                        Cancel remaining
-                    </button>
-                </div>}
+                {getIdleCountInBatch(primaryJob, jobs) != 0 && (
+                    <div className="controls">
+                        <button type="button" onClick={(e) => onCancelBatch()}>
+                            Cancel remaining
+                        </button>
+                    </div>
+                )}
             </div>
             <div
                 id={`${ID(selectedJob.internalId)}-batch-tabpanel`}

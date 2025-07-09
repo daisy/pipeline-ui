@@ -3,10 +3,10 @@ Details of a submitted job
 */
 import { Job, JobStatus } from '/shared/types'
 
-import { removeBatchJob, cancelBatchJob } from 'shared/data/slices/pipeline'
+import { cancelBatchJob } from 'shared/data/slices/pipeline'
 import { useState, useEffect } from 'react'
 import { JobDetails } from './JobDetails'
-import { areAllJobsInBatchDone, getIdleCountInBatch } from 'shared/utils'
+import { getIdleCountInBatch } from 'shared/utils'
 import { JobStatusIcon } from '../Widgets/SvgIcons'
 import { File, FileAsType } from '../Widgets/File'
 import { getStatus, ID } from 'renderer/utils'

@@ -1,7 +1,7 @@
 import { FilelistWithRelevantScripts } from './FilelistWithRelevantScripts'
 import { getRelevantScripts } from '../scriptFilters'
 import { DragFileInput } from '../Widgets/DragFileInput'
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { FileTreeEntry } from 'main/ipcs/fileSystem'
 const { App } = window
 

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { isScriptTTSEnhanced } from 'shared/utils'
 
 export function FilelistWithRelevantScripts({

@@ -1,8 +1,8 @@
 /*
 Data manager and owner of tab view
 */
-import { useEffect, useRef, useState } from 'react'
-import { Job, JobStatus } from 'shared/types'
+import { useEffect, useState } from 'react'
+import { JobStatus } from 'shared/types'
 import { useWindowStore } from 'renderer/store'
 
 import { ID } from 'renderer/utils/utils'
@@ -20,7 +20,7 @@ import {
 import { NewJobPane } from '../../NewJobPane'
 import { calculateJobName } from 'shared/jobName'
 import { PLATFORM } from 'shared/constants'
-import { Plus, X } from '../../Widgets/SvgIcons'
+import { X } from '../../Widgets/SvgIcons'
 import { BatchJobDetailsPane } from 'renderer/components/JobDetailsPane/BatchJobPane'
 import { SingleJobDetailsPane } from 'renderer/components/JobDetailsPane/SingleJobPane'
 import { ScriptForm } from 'renderer/components/ScriptForm'

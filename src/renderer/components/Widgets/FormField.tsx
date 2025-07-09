@@ -6,7 +6,7 @@ import { ScriptItemBase } from 'shared/types'
 import { formFieldFactory } from './formFieldFactory'
 import Markdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
-import { externalLinkClick, findInputType } from 'renderer/utils'
+import { externalLinkClick } from 'renderer/utils'
 const { App } = window
 
 // item.mediaType is a file type e.g. application/x-dtbook+xml

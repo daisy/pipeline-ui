@@ -1,7 +1,6 @@
 import { Job } from 'shared/types'
 import { FileLink } from '../Widgets/FileLink'
 import { MarkdownDescription } from '../Widgets/MarkdownDescription'
-const { App } = window
 
 export function Results({ job }: { job: Job }) {
     return job.jobData.results?.namedResults.length > 0 ? (

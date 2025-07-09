@@ -1,5 +1,4 @@
-import { debug } from 'electron-log'
-import { JobRequest, Script } from 'shared/types'
+import { JobRequest } from 'shared/types'
 import { readableStatus } from 'shared/jobName'
 
 // make an HTML-friendly ID string

@@ -1,7 +1,6 @@
 // a browse button with a non-editable text field showing the selected file
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { FileInput, FileInputProps } from './FileInput'
-import { debug } from 'electron-log'
 import { getArr0 } from 'renderer/utils'
 import { File, FileAsType } from './File'
 

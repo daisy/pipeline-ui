@@ -1,15 +1,10 @@
 /*
 Select a script and submit a new job
 */
-import { useState, useMemo, useEffect } from 'react'
-import { ScriptForm } from '../ScriptForm'
+import { useState, useMemo } from 'react'
 import { useWindowStore } from 'renderer/store'
 import { Job, Script } from 'shared/types'
-import {
-    prepareJobRequest,
-    removeJob,
-    updateJob,
-} from 'shared/data/slices/pipeline'
+import { prepareJobRequest, updateJob } from 'shared/data/slices/pipeline'
 import {
     save,
     setSponsorshipMessageLastShown,
@@ -24,7 +19,6 @@ import {
 } from '../../utils'
 import { is2StepsScript } from 'shared/utils'
 
-import { debug } from 'electron-log'
 import { SelectScript } from '../Widgets/SelectScript'
 import { DragDropFilterFiles } from '../Widgets/DragDropFilterFiles'
 

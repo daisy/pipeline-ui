@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react'
 import { useWindowStore } from 'renderer/store'
-import { PipelineAPI } from 'shared/data/apis/pipeline'
 import { selectTtsVoices, setProperties } from 'shared/data/slices/pipeline'
 import { TtsEngineProperty } from 'shared/types/ttsConfig'
 

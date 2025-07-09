@@ -6,14 +6,13 @@ import { Messages } from './Messages'
 import { Settings } from './Settings'
 import { Results } from './Results'
 
-import { ID, externalLinkClick, getStatus } from '../../utils/utils'
-import { editJob, removeJob, runJob } from 'shared/data/slices/pipeline'
+import { externalLinkClick, getStatus } from '../../utils/utils'
+import { editJob, runJob } from 'shared/data/slices/pipeline'
 import { readableStatus } from 'shared/jobName'
 import { FileLink } from '../Widgets/FileLink'
 import { useWindowStore } from 'renderer/store'
 import { useState, useEffect } from 'react'
 import { JobStatusIcon } from '../Widgets/SvgIcons'
-import { debug } from 'electron-log'
 
 const { App } = window
 

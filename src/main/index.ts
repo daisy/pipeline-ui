@@ -1,23 +1,15 @@
 import {
-    app,
-    BrowserWindow,
-    ipcMain,
-    Menu,
-    MenuItemConstructorOptions,
-    shell,
-    nativeTheme,
-    dialog,
+    app, ipcMain,
+    Menu, shell,
+    nativeTheme
 } from 'electron'
-import fs from 'fs-extra'
 
-import { error, info } from 'electron-log'
+import { error } from 'electron-log'
 
 import {
-    bindWindowToPipeline,
     makeAppSetup,
     makeAppWithSingleInstanceLock,
-    settingsCommands,
-    //parsePipelineCommands,
+    settingsCommands
 } from './factories'
 
 import {
@@ -31,8 +23,8 @@ import {
 import { buildMenuTemplate } from './menu'
 
 import { registerStoreIPC, store } from './data/store'
-import { setupFileDialogEvents, showOpenFileDialog } from './ipcs/fileDialogs'
-import { ENVIRONMENT, IPC } from 'shared/constants'
+import { setupFileDialogEvents } from './ipcs/fileDialogs'
+import { IPC } from 'shared/constants'
 import { setupShowInFolderEvents } from './ipcs/folder'
 import { registerFileIPC } from './ipcs/file'
 import { setupFileSystemEvents } from './ipcs/fileSystem'
@@ -47,19 +39,15 @@ import {
 import {
     addJob,
     editJob,
-    newJob,
-    runJob,
-    removeJob,
+    newJob, removeJob,
     selectJob,
     selectPipeline,
     selectNextJob,
     selectPrevJob,
-    removeBatchJob,
-    cancelBatchJob,
+    removeBatchJob
 } from 'shared/data/slices/pipeline'
 import { setupClipboardEvents } from './ipcs/clipboard'
 import { checkForUpdate } from 'shared/data/slices/update'
-import path from 'path'
 import { setupOneTimeFetchEvent } from './ipcs/one-time-fetch'
 
 makeAppWithSingleInstanceLock(async () => {

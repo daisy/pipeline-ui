@@ -1,8 +1,5 @@
-import React, { useState, useRef } from 'react'
-import { Upload } from 'lucide-react'
-import { FileTreeEntry } from 'main/ipcs/fileSystem'
+import React from 'react'
 import { mediaTypesFileFilters } from 'shared/constants'
-import { debug } from 'electron-log'
 
 const { App } = window
 

@@ -1,6 +1,5 @@
-import { useState, useEffect } from 'react'
-import { Job, Message, MessageLevel, JobStatus } from 'shared/types'
-const { App } = window
+import { useState } from 'react'
+import { Job, Message, MessageLevel } from 'shared/types'
 
 let messageSort = (a, b) => (a.sequence < b.sequence ? b : a)
 

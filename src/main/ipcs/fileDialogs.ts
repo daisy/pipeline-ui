@@ -1,9 +1,7 @@
-import { ipcMain, dialog, BrowserWindow, shell } from 'electron'
-import { debug } from 'electron-log'
+import { ipcMain, dialog, BrowserWindow } from 'electron'
 // helper functions
 import {
-    IPC_EVENT_showItemInFolder,
-    IPC_EVENT_showOpenFileDialog,
+    IPC_EVENT_showOpenFileDialog
 } from '../../shared/main-renderer-events'
 
 /*

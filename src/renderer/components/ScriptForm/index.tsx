@@ -1,30 +1,18 @@
 /*
 Fill out fields for a new job and submit it
 */
-import { info } from 'electron-log'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useWindowStore } from 'renderer/store'
 import { externalLinkClick, findValue, ID } from 'renderer/utils/utils'
 import {
-    removeJob,
     requestStylesheetParameters,
-    restoreJob,
     runBatchJobs,
     runJob,
     updateJob,
 } from 'shared/data/slices/pipeline'
-import {
-    Job,
-    JobState,
-    Script,
-    ScriptInput,
-    ScriptItemBase,
-    ScriptOption,
-} from 'shared/types'
+import { Job, JobState, ScriptItemBase, ScriptOption } from 'shared/types'
 
 import { FormField } from '../Widgets/FormField'
-import { JobRequestError } from './jobRequestError'
-import { ScriptName } from './scriptName'
 import {
     getAllOptional,
     getAllRequired,
@@ -393,7 +381,11 @@ export function ScriptForm({ job }: { job: Job }) {
             )}
             <div className="controls">
                 {job.is2StepsJob && job.stylesheetParameters != null && (
-                    <button className="important" onClick={previous} type="button">
+                    <button
+                        className="important"
+                        onClick={previous}
+                        type="button"
+                    >
                         Back
                     </button>
                 )}

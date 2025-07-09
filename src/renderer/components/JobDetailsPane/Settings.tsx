@@ -1,5 +1,5 @@
 // these settings represent the parameters used by a job (as opposed to the application settings dialog)
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 import { useWindowStore } from 'renderer/store'
 import { externalLinkClick, findValue } from 'renderer/utils/utils'
 import { Job } from 'shared/types'

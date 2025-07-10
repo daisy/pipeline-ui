@@ -55,7 +55,11 @@ const MultiUriInput: React.FC<MultiFileInputProps> = ({
                     }}
                 />
             </div>
-            <button type="button" onClick={(e) => addFiles([text])}>
+            <button
+                disabled={text.trim() == ''}
+                type="button"
+                onClick={(e) => addFiles([text])}
+            >
                 Add
             </button>
 

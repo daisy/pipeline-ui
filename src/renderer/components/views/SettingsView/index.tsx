@@ -97,7 +97,10 @@ export function SettingsView(
         App.store.dispatch(setTtsConfig(newConfig))
         App.store.dispatch(save())
     }
-    const onTtsVoicesPreferredAndDefaultChange = (preferredVoices, defaultVoices) => {
+    const onTtsVoicesPreferredAndDefaultChange = (
+        preferredVoices,
+        defaultVoices
+    ) => {
         const newConfig = {
             preferredVoices: [...preferredVoices],
             defaultVoices: [...defaultVoices],
@@ -168,7 +171,9 @@ export function SettingsView(
                     userDefaultVoices={newSettings.ttsConfig.defaultVoices}
                     onChangePreferredVoices={onTtsVoicesPreferenceChange}
                     onChangeDefaultVoices={onTtsVoicesDefaultsChange}
-                    onChangePreferredAndDefaultVoices={onTtsVoicesPreferredAndDefaultChange}
+                    onChangePreferredAndDefaultVoices={
+                        onTtsVoicesPreferredAndDefaultChange
+                    }
                 />
             ) : (
                 <p>Loading voices...</p>

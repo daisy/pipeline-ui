@@ -144,6 +144,11 @@
             td.gender, td.set-default {
                 text-align: center;
             }
+            tr:hover td.remove {
+                button svg {
+                    stroke: var(--secondary-contrast);
+                }
+            }
         }
     }
     .tts-engines {

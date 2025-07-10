@@ -1,7 +1,6 @@
 import { ipcMain } from 'electron'
 import { IPC } from 'shared/constants'
 import { writeFile } from 'fs/promises'
-import { info } from 'electron-log'
 import { dirname, resolve } from 'path'
 import { fileURLToPath } from 'url'
 import { existsSync, mkdirSync } from 'fs'

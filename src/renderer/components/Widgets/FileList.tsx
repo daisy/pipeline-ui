@@ -1,6 +1,5 @@
-import { useState } from 'react'
 import { Down, Up, X } from './SvgIcons'
-import { File, FileAsType } from './File'
+import { File } from './File'
 
 // a list of files with a browse button
 const FileList = ({ onChange, files, canSort, showAsType }) => {
@@ -17,43 +16,43 @@ const FileList = ({ onChange, files, canSort, showAsType }) => {
     }
     return (
         <>
-            {!files.length && <p>No files</p>}
+            {!files.length && <p className='info'>No files</p>}
             {files.length > 0 && (
-                <ul>
+                <ul className="file-list">
                     {files.map((file, index) => (
                         <li key={index}>
                             <File
                                 showAsType={showAsType}
                                 fileUrlOrPath={file}
                             />
-                            <button
-                                type="button"
-                                className="remove-button"
-                                onClick={() => removeFile(index)}
-                                aria-label={`Remove file ${index + 1}`}
-                            >
-                                <X width="30" height="30" />
-                            </button>
                             {canSort && index > 0 && (
                                 <button
                                     type="button"
-                                    className="move-button"
+                                    className="move-button invisible"
                                     onClick={() => moveFile(index, index - 1)}
                                     aria-label={`Move file ${index + 1} up`}
                                 >
-                                    <Up width="30" height="30" />
+                                    <Up width="20" height="20" />
                                 </button>
                             )}
                             {canSort && index < files.length - 1 && (
                                 <button
                                     type="button"
-                                    className="move-button"
+                                    className="move-button invisible"
                                     onClick={() => moveFile(index, index + 1)}
                                     aria-label={`Move file ${index + 1} down`}
                                 >
-                                    <Down width="30" height="30" />
+                                    <Down width="20" height="20" />
                                 </button>
                             )}
+                            <button
+                                type="button"
+                                className="remove-button invisible"
+                                onClick={() => removeFile(index)}
+                                aria-label={`Remove file ${index + 1}`}
+                            >
+                                <X width="20" height="20" />
+                            </button>
                         </li>
                     ))}
                 </ul>

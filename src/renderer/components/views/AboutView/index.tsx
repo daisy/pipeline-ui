@@ -3,7 +3,6 @@ import { useWindowStore } from 'renderer/store'
 import { externalLinkClick } from 'renderer/utils'
 import { PipelineStatus } from 'shared/types'
 import { Copy } from '../../Widgets/SvgIcons'
-import daisyLogo from './daisy_high.jpg'
 import pipelineLogo from './logo_64x64.png'
 import packageJson from '../../../../../package.json'
 import { UpdateState } from 'shared/types'
@@ -29,6 +28,7 @@ const UpdateButton = (update: UpdateState) => {
                 </progress>
                 {update.downloadProgress.percent < 100 && (
                     <button
+                        type="button"
                         id="cancel-download"
                         title="Cancel download"
                         onClick={() => {
@@ -43,6 +43,7 @@ const UpdateButton = (update: UpdateState) => {
     } else if (update.updateAvailable) {
         return (
             <button
+                type="button"
                 id="start-install"
                 title={`Update to ${update.updateAvailable.version}`}
                 onClick={() => {
@@ -55,6 +56,7 @@ const UpdateButton = (update: UpdateState) => {
     } else if (update.manualUpdateAvailable === true) {
         return (
             <button
+                type="button"
                 id="open-release-page"
                 title={`Open the release page`}
                 onClick={() => {
@@ -67,6 +69,7 @@ const UpdateButton = (update: UpdateState) => {
     } else {
         return (
             <button
+                type="button"
                 id="check-update"
                 title="Check for updates"
                 onClick={() => {
@@ -132,50 +135,50 @@ export function AboutView({ title }) {
             >
                 Visit the DAISY Pipeline homepage
             </a>
-            <div className="info">
-                <p className="versions">
-                    <ul>
-                        <li>App version: {version}</li>
-                        <li>Engine version: {engineVersion}</li>
-                        <li>
-                            Engine is{'  '}
-                            <span>
-                                {engineStatus.status ==
-                                PipelineStatus.RUNNING ? (
-                                    <>
-                                        <b>{engineStatus.status}</b> on{' '}
-                                        <code>{engineStatus.address}</code>
-                                    </>
-                                ) : (
-                                    <>{engineStatus.status}</>
-                                )}
-                            </span>
-                        </li>
-                    </ul>
-                    <button
-                        className="copy"
-                        title="Copy information to clipboard"
-                        onClick={(e) => copyToClipboard(e)}
-                    >
-                        <Copy width="30" height="30" />
+            <p className="versions">
+                <ul>
+                    <li>App version: {version}</li>
+                    <li>Engine version: {engineVersion}</li>
+                    <li>
+                        Engine is{'  '}
+                        <span>
+                            {engineStatus.status == PipelineStatus.RUNNING ? (
+                                <>
+                                    <b>{engineStatus.status}</b> on{' '}
+                                    <code>{engineStatus.address}</code>
+                                </>
+                            ) : (
+                                <>{engineStatus.status}</>
+                            )}
+                        </span>
+                    </li>
+                </ul>
+                <button
+                    type="button"
+                    className="copy invisible"
+                    title="Copy information to clipboard"
+                    onClick={(e) => copyToClipboard(e)}
+                >
+                    <Copy width="30" height="30" />
+                </button>
+            </p>
+            <div className="actions">
+                {update.updateMessage && (
+                    <p className="updateMessage">
+                        <label
+                            {...(update.downloadProgress
+                                ? { htmlFor: 'update-download-progress' }
+                                : {})}
+                        >
+                            {update.updateMessage}
+                        </label>
+                    </p>
+                )}
+                <div>
+                    {UpdateButton(update)}
+                    <button type="button" onClick={(e) => closeAboutBox()}>
+                        Close
                     </button>
-                </p>
-                <div className="actions">
-                    {update.updateMessage && (
-                        <p className="updateMessage">
-                            <label
-                                {...(update.downloadProgress
-                                    ? { htmlFor: 'update-download-progress' }
-                                    : {})}
-                            >
-                                {update.updateMessage}
-                            </label>
-                        </p>
-                    )}
-                    <div>
-                        {UpdateButton(update)}
-                        <button onClick={(e) => closeAboutBox()}>Close</button>
-                    </div>
                 </div>
             </div>
         </main>

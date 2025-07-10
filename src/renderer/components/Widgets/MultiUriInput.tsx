@@ -32,9 +32,12 @@ const MultiUriInput: React.FC<MultiFileInputProps> = ({
     }
     return (
         <div className="multi-file-input">
-            <p>Enter a file url or browse for a local file:</p>
-            <div>
+            <label htmlFor={`${elemId}-input`}>
+                Enter a file url or browse for a local file:
+            </label>
+            <div className="row">
                 <input
+                    id={`${elemId}-input`}
                     type="text"
                     value={text}
                     onBlur={(e) => {

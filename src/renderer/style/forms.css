@@ -1,0 +1,73 @@
+form {
+    gap: 1rem;
+    display: flex;
+    flex-direction: column;
+}
+fieldset {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    border: solid var(--bw) var(--fg-off);
+    border-radius: var(--br);
+    padding: 1rem;
+    background-color: var(--bg);
+
+    legend {
+        background-color: var(--bg);
+        font-size: larger;
+        border-radius: var(--br);
+    }
+}
+select {
+    border-width: var(--bw);
+    border-radius: var(--br);
+    padding: 2px;
+    margin: 4px;
+    margin-left: 0;
+    &:hover {
+        box-shadow: var(--box-shadow-params) var(--primary);
+    }
+}
+input {
+    border-radius: var(--br);
+    border-width: var(--bw);
+    font-size: var(--fontsize-larger);
+    &:hover {
+        box-shadow: var(--box-shadow-params) var(--primary);
+    }
+    transition: 100ms all;
+}
+input[type="checkbox"] {
+    align-self: start;
+    accent-color: var(--primary);
+    border-radius: var(--br);
+    width: 1.5rem;
+    height: 1.5rem;
+    
+}
+input[type="radio"] {
+    height: 1rem;
+    width: 1rem;
+}
+input:invalid {
+    box-shadow: var(--box-shadow-params) var(--error);
+}
+.field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+.single-file-input {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 2rem;
+}
+.multi-file-input {
+    input {
+        width: 100%;
+    }
+}
+.description {
+    font-size: var(--fontsize-smaller);
+}

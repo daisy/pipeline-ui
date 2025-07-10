@@ -15,14 +15,13 @@ import {
     selectWebservice,
     updateJob,
 } from 'shared/data/slices/pipeline'
-import { dialog } from 'electron'
 import { MainWindowInstance } from 'main/windows'
 import { removeJob as removeJobSlice } from 'shared/data/slices/pipeline'
 import { error, info } from 'electron-log'
 import { startMonitor } from './monitor'
 import { ParserException } from 'shared/parser/pipelineXmlConverter/parser'
 import { GetStateFunction } from 'shared/types/store'
-import { createAction, PayloadAction } from '@reduxjs/toolkit'
+import { PayloadAction } from '@reduxjs/toolkit'
 import { v4 as uuidv4 } from 'uuid'
 import { getBatchInputValues, getBatchInput } from 'shared/utils'
 

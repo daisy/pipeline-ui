@@ -46,13 +46,11 @@ async function validate(type, value) {
     ) {
         isValid = typeof value === 'number'
     } else if (type == 'nonNegativeInteger') {
-        isValid = typeof value === 'number' && value > 0
+        isValid = typeof value === 'number' && value >= 0
     } else if (['xsd:float', 'xsd:double', 'xsd:decimal'].includes(type)) {
-        isValid = typeof value === 'number' // TODO
+        isValid = typeof value === 'number'
     } else if (type == 'anyURI') {
-        // TODO
-    } else if (type == '') {
-        isValid = typeof value === 'string'
+        isValid = true // TODO
     } else {
         isValid = true
     }

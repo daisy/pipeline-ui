@@ -1,6 +1,5 @@
 import { configureStore, createAction, PayloadAction } from '@reduxjs/toolkit'
 import { ipcMain, BrowserWindow } from 'electron'
-import { PipelineStatus } from 'shared/types'
 import { slices } from 'shared/data/slices'
 import { RootState } from 'shared/types/store'
 import { IPC } from 'shared/constants'

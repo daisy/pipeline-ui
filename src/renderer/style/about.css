@@ -1,0 +1,25 @@
+main.about {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    height: 100%;
+    margin: 2rem;
+
+    p.versions {
+        display: flex;
+        flex-direction: row;
+        margin-bottom: 1rem;
+        background-color: var(--bg-off);
+
+        ul {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        button {
+            height: min-content;
+            align-self: center;
+        }
+    }
+}

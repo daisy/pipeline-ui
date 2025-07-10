@@ -1,5 +1,5 @@
 const { App } = window
-import { useMemo, useState, useEffect } from 'react'
+import { useMemo, useState } from 'react'
 
 export enum FileAsType {
     AS_URL,

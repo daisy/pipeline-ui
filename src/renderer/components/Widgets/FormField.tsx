@@ -6,7 +6,7 @@ import { ScriptItemBase } from 'shared/types'
 import { formFieldFactory } from './formFieldFactory'
 import Markdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
-import { externalLinkClick, findInputType } from 'renderer/utils'
+import { externalLinkClick } from 'renderer/utils'
 const { App } = window
 
 // item.mediaType is a file type e.g. application/x-dtbook+xml
@@ -33,19 +33,12 @@ export function FormField({
     )
 
     return (
-        <div className="form-field">
+        <div className="field">
             {item.desc ? (
                 <details>
                     <summary>
-                        {item.sequence ? (
-                            <label id={`${idprefix}-label`}>
-                                {item.nicename}
-                            </label>
-                        ) : (
-                            <label htmlFor={idprefix}>{item.nicename}</label>
-                        )}
+                        {item.nicename ?? item.name}
                     </summary>
-
                     <div className="description">
                         <Markdown
                             remarkPlugins={[remarkGfm]}
@@ -68,10 +61,13 @@ export function FormField({
                         </Markdown>
                     </div>
                 </details>
-            ) : item.sequence ? (
-                <label id={`${idprefix}-label`}>{item.nicename}</label>
             ) : (
-                <label htmlFor={idprefix}>{item.nicename}</label>
+                <label htmlFor={idprefix}>
+                    {item.nicename != ''
+                        ? item.nicename
+                        : item.name.charAt(0).toUpperCase() +
+                          item.name.slice(1)}
+                </label>
             )}
             {control}
             {error && (

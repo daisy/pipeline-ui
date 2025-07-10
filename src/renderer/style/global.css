@@ -1,0 +1,158 @@
+@import "reset.css";
+@import "imports.css";
+
+:root {
+    --br: 10px; /* border radius */
+    --bw: 2px; /* border width */
+
+    /* colors */
+    --primary: #3444D5;
+    --primary-contrast: white;
+    --secondary: #DDE0F8;
+    --secondary-contrast: black;
+    --highlight: #D9CD66;
+    --hover: oklch(from var(--secondary) calc(l + 0.05) c h);
+    --hover-contrast: var(--secondary-contrast);
+    --hover-contrast-links: var(--secondary-contrast);
+
+    --ok:#277A00;
+    --warning: #A36A00;
+    --error: #DF2935;
+    --fg: black;
+    --bg: white;
+    --fg-off: oklch(from var(--fg) calc(l + 0.7) c h);
+    --bg-off: oklch(from var(--bg) calc(l - 0.02) c h);
+    --inactive: rgb(70, 70, 70);
+    
+    --font-fam: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont;
+    --fw-font-fam: monospace;
+    --fontsize: 1rem;
+    --fontsize-larger: 110%;
+    --fontsize-smaller: 90%;
+    --box-shadow-params: 0 0 0 2px;
+    
+}
+@media (prefers-color-scheme: dark) {
+    :root {
+        --fg: white;
+        --bg: black;
+        --primary: #AAB1EE;
+        --primary-contrast: black;
+        --fg-off: oklch(from var(--fg) calc(l - 0.3) c h);
+        --bg-off: oklch(from var(--bg) calc(l + 0.2) c h);
+        --ok: #57A773;
+        --error: #FF595E;
+        --warning: #FABC2A;
+
+        --hover: oklch(from var(--secondary) calc(l - 0.2) c h);
+        --hover-contrast: var(--secondary-contrast);
+        --hover-contrast-links: #0E1344;
+        
+    }
+}
+html {
+    height: 100%;
+}
+body {
+    background-color: var(--bg-off);
+    color: var(--fg);
+    font-family: var(--font-fam);
+    font-size: var(--fontsize);
+    height: 100%;
+}
+a, a:visited {
+    color: var(--primary);
+}
+a:hover {
+    text-decoration: underline solid 4px var(--primary);
+    text-decoration-style: solid;
+    text-decoration-skip-ink: none;
+}
+
+*:focus {
+    outline: none;
+    box-shadow: var(--box-shadow-params) var(--highlight); 
+}
+button {
+    border: none;
+    border-radius: var(--br);
+    background-color: var(--secondary);
+    color: var(--secondary-contrast);
+    outline: none;
+    width: min-content;
+    padding: 6px;
+    margin: 2px;
+    transition: all 100ms;
+    white-space: nowrap;
+
+    &:hover {
+        box-shadow: var(--box-shadow-params) var(--primary);
+        outline: none;
+    }
+    &:active {
+        background-color: var(--primary);
+        color: var(--primary-contrast);
+    }
+}
+button.invisible {
+    color: var(--fg);
+    background-color: inherit;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+button.important {
+    font-size: var(--fontsize-larger);
+    font-weight: bold;
+    padding: 8px;   
+}
+button[disabled], button[disabled]:hover, button[disabled]:active, button[disabled]:focus {
+    background-color: inherit;
+    color: var(--inactive);
+    cursor: not-allowed;
+
+}
+button[disabled]:hover {
+    box-shadow: none;
+}
+details > summary {
+    cursor: pointer;
+    border-radius: var(--br);
+    padding: 2px;
+}
+summary::marker {
+    color: var(--primary);
+}
+summary:hover {
+    box-shadow: var(--box-shadow-params) var(--primary);
+    border-radius: var(--br);
+}
+.file {
+    font-family: var(--fw-font-fam);
+}
+.is-hidden {
+    display: none !important;
+}
+.visually-hidden {
+    position: absolute;
+    top: auto;
+    overflow: hidden;
+    clip: rect(1px 1px 1px 1px);
+    clip: rect(1px, 1px, 1px, 1px);
+    width: 1px;
+    height: 1px;
+    white-space: nowrap;
+}
+/* .info {
+    font-style: italic;
+} */
+.info {
+    font-size: var(--fontsize-smaller);
+}
+.row {
+    display: flex;
+    flex-direction: row;
+    gap: 1rem;
+    align-items: center;
+}

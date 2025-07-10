@@ -42,7 +42,7 @@ function calculateJobName(job: Job, jobs: Array<Job>) {
             return `${jobName} (${numJobsDone}/${jobsInBatch.length})`
         }
     } else {
-        return `${jobName} ${jobStatus}`
+        return `${jobName} ${jobStatus ? '-' : ''} ${jobStatus}`.trim()
     }
 }
 

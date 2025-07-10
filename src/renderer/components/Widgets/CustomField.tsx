@@ -151,7 +151,7 @@ export function CustomField({
                             })}
                         </select>
                         {hasLongDescriptions && (
-                            <section id={controlId + '-details'}>
+                            <>
                                 {valueChoices.map((option, idx) => {
                                     const displayed = idx == selectedOption
                                     const selectedOptionDescription =
@@ -173,11 +173,12 @@ export function CustomField({
                                                 idx +
                                                 '-details'
                                             }
-                                            className={
-                                                !displayed
-                                                    ? 'visuallyhidden'
-                                                    : ''
-                                            }
+                                            className={`option-description
+                                                ${
+                                                    !displayed
+                                                        ? ' is-hidden'
+                                                        : ''
+                                                }`}
                                             style={{ margin: 0 }}
                                         >
                                             <MarkdownDescription>
@@ -186,7 +187,7 @@ export function CustomField({
                                         </p>
                                     )
                                 })}
-                            </section>
+                            </>
                         )}
                     </>
                 )

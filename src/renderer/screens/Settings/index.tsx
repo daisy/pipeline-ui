@@ -11,13 +11,8 @@ export function SettingsScreen(
     }
 ) {
     return (
-        <>
-            <header>
-                <h1>Settings</h1>
-            </header>
-            <main>
-                <SettingsView selectedItem={props.selectedItem} />
-            </main>
-        </>
+        <main className="app-settings">
+            <SettingsView selectedItem={props.selectedItem} />
+        </main>
     )
 }

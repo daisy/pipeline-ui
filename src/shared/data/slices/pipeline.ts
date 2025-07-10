@@ -7,7 +7,6 @@ import {
     Script,
     Webservice,
     PipelineState,
-    baseurl,
     JobData,
     JobState,
     JobRequest,
@@ -15,11 +14,9 @@ import {
     JobStatus,
     Alive,
     TtsVoice,
-    TtsEngineProperty,
     EngineProperty,
     TtsEngineState,
 } from 'shared/types'
-import { info } from 'electron-log'
 import { RootState } from 'shared/types/store'
 
 const initialState = {
@@ -36,6 +33,17 @@ const initialState = {
     ttsEnginesStates: {},
 } as PipelineState
 
+function isNonPrimaryInBatch(job) {
+    console.log("isNonPrimaryInBatch", job)
+    let retval = (
+        job &&
+        job.jobRequest &&
+        job.jobRequest.batchId &&
+        !job.isPrimaryForBatch
+    )
+    console.log(retval)
+    return retval
+}
 export const pipeline = createSlice({
     name: 'pipeline',
     initialState,
@@ -325,6 +333,7 @@ export const pipeline = createSlice({
             let selectedJobIndex = state.jobs.findIndex(
                 (j) => j.internalId == state.selectedJobId
             )
+
             let i = 0
             do {
                 selectedJobIndex =
@@ -332,8 +341,9 @@ export const pipeline = createSlice({
                     state.jobs.length
                 ++i
             } while (
-                !alsoSelectInvisible &&
-                state.jobs[selectedJobIndex].invisible &&
+                (!alsoSelectInvisible &&
+                state.jobs[selectedJobIndex].invisible) || 
+                isNonPrimaryInBatch(state.jobs[selectedJobIndex]) && 
                 i < state.jobs.length
             )
             state.selectedJobId = state.jobs[selectedJobIndex].internalId
@@ -353,8 +363,9 @@ export const pipeline = createSlice({
                     state.jobs.length
                 ++i
             } while (
-                !alsoSelectInvisible &&
-                state.jobs[selectedJobIndex].invisible &&
+                (!alsoSelectInvisible &&
+                state.jobs[selectedJobIndex].invisible) ||
+                isNonPrimaryInBatch(state.jobs[selectedJobIndex]) &&
                 i < state.jobs.length
             )
             state.selectedJobId = state.jobs[selectedJobIndex].internalId

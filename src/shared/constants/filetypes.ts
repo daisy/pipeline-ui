@@ -124,6 +124,7 @@ scriptInputFiletypes = scriptInputFiletypes.concat(
             mt.type != 'text/css' &&
             mt.type != 'application/xml' &&
             mt.type != 'application/vnd.pipeline.tts-config+xml' &&
+            mt.type != 'application/pls+xml' &&
             mt.type != '*'
     )
 )

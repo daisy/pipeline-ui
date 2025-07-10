@@ -1,5 +1,5 @@
-import { debug } from 'electron-log'
-import { JobRequest, Script } from 'shared/types'
+import { JobRequest } from 'shared/types'
+import { readableStatus } from 'shared/jobName'
 
 // make an HTML-friendly ID string
 export let ID = (id) => `z-${id}`
@@ -81,3 +81,13 @@ export function externalLinkClick(e, app) {
 // get the first item in an array. if empty array, return empty string. if not actually array, return it.
 export let getArr0 = (val) =>
     Array.isArray(val) ? (val.length > 0 ? val[0] : '') : val
+
+export function getStatus(job) {
+    if (job.jobRequestError) {
+        return readableStatus.ERROR.toLowerCase()
+    }
+    if (job.jobData?.status) {
+        return readableStatus[job.jobData.status].toLowerCase()
+    }
+    return readableStatus.LAUNCHING.toLowerCase()
+}

@@ -45,7 +45,7 @@ export function WindowStoreProvider({ children }) {
                 })
             })
         })
-        // Add App listerners here
+        // Add App listeners here
     }, [])
 
     const sharedStore = {

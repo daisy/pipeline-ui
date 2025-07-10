@@ -17,6 +17,7 @@ export function PreferredVoices({
     userDefaultVoices,
     onChangePreferredVoices,
     onChangeDefaultVoices,
+    onChangePreferredAndDefaultVoices
 }) {
     const [preferredVoices, setPreferredVoices] = useState([
         ...userPreferredVoices,
@@ -31,19 +32,22 @@ export function PreferredVoices({
             new Set(preferredVoices.map((v) => getLang(v.lang)))
         )
         setUniqueLanguages(uniqueLangs)
-        console.log(uniqueLangs)
     }, [preferredVoices])
 
     let removeFromPreferredVoices = (voice: TtsVoice) => {
-        if (defaultVoices.find((vx) => vx.id == voice.id)) {
-            clearDefaultVoice(voice.lang)
-        }
+        
 
         let tmpVoices = [...preferredVoices]
         let idx = tmpVoices.findIndex((v) => v.id == voice.id)
         tmpVoices.splice(idx, 1)
         setPreferredVoices(tmpVoices)
-        onChangePreferredVoices(tmpVoices)
+        if (defaultVoices.find((vx) => vx.id == voice.id)) {
+            let newDefaultVoices = clearDefaultVoice(getLang(voice.lang), false)
+            onChangePreferredAndDefaultVoices(tmpVoices, newDefaultVoices)
+        }
+        else {
+            onChangePreferredVoices(tmpVoices)
+        }
     }
 
     let selectDefault = (e, voice) => {
@@ -59,7 +63,7 @@ export function PreferredVoices({
         setDefaultVoices(tmpVoices)
         onChangeDefaultVoices(tmpVoices)
     }
-    let clearDefaultVoice = (langCode) => {
+    let clearDefaultVoice = (langCode, notify = true) => {
         let tmpVoices = defaultVoices ? [...defaultVoices] : []
         let oldDefaultIdx = tmpVoices.findIndex(
             (vx) => getLang(vx.lang) == langCode
@@ -67,17 +71,22 @@ export function PreferredVoices({
         if (oldDefaultIdx != -1) {
             tmpVoices.splice(oldDefaultIdx, 1)
             setDefaultVoices(tmpVoices)
-            onChangeDefaultVoices(tmpVoices)
+            // in the case that the preferred voices are also changing, we don't want to raise the onChange here
+            // because the settings file ends up being wrong
+            if (notify) {
+                onChangeDefaultVoices(tmpVoices)
+            }
         }
+        return tmpVoices
     }
 
     return (
         <div className="tts-preferred-voices">
             {uniqueLanguages
                 .sort((a, b) => (a > b ? 1 : -1))
-                .map((lang) => {
+                .map((lang, idx) => {
                     return (
-                        <>
+                        <div key={idx}>
                             <table
                                 aria-colcount={5}
                                 aria-rowcount={
@@ -100,7 +109,7 @@ export function PreferredVoices({
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {userPreferredVoices
+                                    {preferredVoices
                                         .filter(
                                             (v) =>
                                                 getLang(v.lang) == getLang(lang)
@@ -123,7 +132,9 @@ export function PreferredVoices({
                                                 <td>
                                                     {languageNames.of(v.lang)}
                                                 </td>
-                                                <td>{v.gender}</td>
+                                                <td className="gender">
+                                                    {v.gender}
+                                                </td>
                                                 <td className="set-default">
                                                     <input
                                                         type="radio"
@@ -144,9 +155,16 @@ export function PreferredVoices({
                                                                     v.id
                                                             ) != undefined
                                                         }
+                                                        checked={
+                                                            defaultVoices?.find(
+                                                                (vx) =>
+                                                                    vx.id ==
+                                                                    v.id
+                                                            ) != undefined
+                                                        }
                                                     ></input>
                                                 </td>
-                                                <td>
+                                                <td className="remove">
                                                     <button
                                                         type="button"
                                                         className="invisible"
@@ -171,105 +189,26 @@ export function PreferredVoices({
                                 <p>
                                     The default voice for{' '}
                                     {languageNames.of(getLang(lang))} is{' '}
-                                    <b>{defaultVoices.find((v) => getLang(v.lang) == lang)
-                                        ?.name ?? 'not set'}</b>
+                                    <b>
+                                        {defaultVoices.find(
+                                            (v) => getLang(v.lang) == lang
+                                        )?.name ?? 'not set'}
+                                    </b>
+                                    .
                                 </p>
-                                <button disabled={!defaultVoices.find((v) => getLang(v.lang) == lang)} onClick={(e) => clearDefaultVoice(lang)}>Clear default</button>
+                                {defaultVoices.find(
+                                    (v) => getLang(v.lang) == lang
+                                ) && (
+                                    <button
+                                        onClick={(e) => clearDefaultVoice(lang)}
+                                    >
+                                        Clear default
+                                    </button>
+                                )}
                             </div>
-                        </>
+                        </div>
                     )
                 })}
-            {/* <h2>{}</h2>
-            <div
-                role="region"
-                aria-labelledby="preferred-table-title"
-                tabIndex={0}
-            >
-                <table aria-colcount={5} aria-rowcount={preferredRowLength}>
-                    <thead>
-                        <tr>
-                            <th>Name</th>
-                            <th>Engine</th>
-                            <th>Language</th>
-                            <th>Gender/Age</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {userPreferredVoices
-                            .filter((v) => {
-                                if (preferredVoicesLanguage == 'All') {
-                                    return true
-                                } else {
-                                    return (
-                                        getLang(v.lang) ==
-                                        preferredVoicesLanguage
-                                    )
-                                }
-                            })
-                            .sort((a, b) => (a.name > b.name ? 1 : -1))
-                            .map((v, idx) => (
-                                <tr key={v.id}>
-                                    <td className="voiceName">
-                                        {voicesTransliterations[v.name] ??
-                                            v.name}
-                                    </td>
-                                    <td>
-                                        {ttsEnginesStates[v.engine]?.name ??
-                                            v.engine}
-                                    </td>
-                                    <td>{languageNames.of(v.lang)}</td>
-                                    <td>{v.gender}</td>
-                                    <td className="actions">
-                                        <div>
-                                            <label htmlFor={`cb-${v.id}`}>
-                                                Set as default for{' '}
-                                                {languageNames.of(
-                                                    getLang(v.lang)
-                                                )}
-                                            </label>
-                                            <input
-                                                type="radio"
-                                                name={getLang(v.lang)}
-                                                id={`cb-${v.id}`}
-                                                onChange={(e) =>
-                                                    selectDefault(e, v)
-                                                }
-                                                defaultChecked={
-                                                    defaultVoices?.find(
-                                                        (vx) => vx.id == v.id
-                                                    ) != undefined
-                                                }
-                                            ></input>
-                                        </div>
-                                        <button
-                                            type="button"
-                                            onClick={(e) => {
-                                                removeFromPreferredVoices(v)
-                                            }}
-                                            title={`Remove ${v.name}`}
-                                        >
-                                            Remove voice
-                                        </button>
-                                    </td>
-                                </tr>
-                            ))}
-                    </tbody>
-                </table>
-                {preferredVoicesLanguage != 'All' ? (
-                    <button
-                        type="button"
-                        onClick={(e) =>
-                            clearDefaultVoice(preferredVoicesLanguage)
-                        }
-                    >
-                        Clear default for{' '}
-                        {languageNames.of(preferredVoicesLanguage)}
-                    </button>
-                ) : (
-                    ''
-                )}
-            </div> */}
         </div>
     )
 }

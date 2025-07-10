@@ -137,9 +137,12 @@
                 text-align:left;
             }
             
-            td.voiceName {
+            th.voiceName {
                 max-width: 8rem;
                 white-space: wrap;
+            }
+            td.gender, td.set-default {
+                text-align: center;
             }
         }
     }

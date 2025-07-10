@@ -1,9 +1,12 @@
 import { updateJob } from 'shared/data/slices/pipeline'
 import { ID } from 'renderer/utils/utils'
 import { Job } from 'shared/types'
+import { useState } from 'react'
 const { App } = window
 
 export function CustomName({ job }) {
+    const [value, setValue] = useState((job.jobRequest && job.jobRequest.nicename) || '')
+
     return (
         <div className="custom-name field">
             <label htmlFor={`${ID(job.internalId)}-nicename`}>
@@ -12,9 +15,9 @@ export function CustomName({ job }) {
             <input
                 id={`${ID(job.internalId)}-nicename`}
                 type="text"
-                value={(job.jobRequest && job.jobRequest.nicename) || ''}
+                value={value}
                 title="Change the current job's name."
-                onChange={(e) => {
+                onBlur={(e) => {
                     const updatedJob: Job = {
                         ...job,
                         jobData: {
@@ -26,6 +29,9 @@ export function CustomName({ job }) {
                         },
                     }
                     App.store.dispatch(updateJob(updatedJob))
+                }}
+                onChange={(e) => {
+                    setValue(e.target.value)
                 }}
             />
         </div>

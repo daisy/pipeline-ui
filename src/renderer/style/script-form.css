@@ -29,6 +29,9 @@ form.script {
             &:hover {
                 background-color: var(--hover);
                 color: var(--hover-contrast);
+                button svg {
+                    stroke: var(--hover-contrast);
+                }
             }
 
             span {

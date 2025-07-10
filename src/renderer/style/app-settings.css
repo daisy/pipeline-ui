@@ -146,7 +146,7 @@
             }
             tr:hover td.remove {
                 button svg {
-                    stroke: var(--secondary-contrast);
+                    stroke: var(--hover-contrast);
                 }
             }
         }

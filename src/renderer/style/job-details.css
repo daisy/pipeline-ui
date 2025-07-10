@@ -147,12 +147,6 @@
             }
         }
     }
-
-    .controls {
-        display: flex;
-        justify-self: center;
-        gap: 1rem;
-    }
 }
 @media(max-width: 1000px) {
     .batch-job {

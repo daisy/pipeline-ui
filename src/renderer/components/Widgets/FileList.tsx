@@ -16,7 +16,7 @@ const FileList = ({ onChange, files, canSort, showAsType }) => {
     }
     return (
         <>
-            {!files.length && <p className='info'>No files</p>}
+            {!files.length && <p className='file-list no-files'>No files</p>}
             {files.length > 0 && (
                 <ul className="file-list">
                     {files.map((file, index) => (

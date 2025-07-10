@@ -14,6 +14,7 @@ interface FileInputProps {
     onChange?: (paths: string[]) => void
     initialValue?: string[]
     required?: boolean
+    showHint?: boolean
 }
 
 // a browse button

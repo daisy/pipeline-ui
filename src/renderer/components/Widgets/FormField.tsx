@@ -36,9 +36,7 @@ export function FormField({
         <div className="field">
             {item.desc ? (
                 <details>
-                    <summary>
-                        {item.nicename ?? item.name}
-                    </summary>
+                    <summary>{item.nicename ?? item.name}</summary>
                     <div className="description">
                         <Markdown
                             remarkPlugins={[remarkGfm]}

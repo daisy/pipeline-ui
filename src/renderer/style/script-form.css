@@ -45,4 +45,7 @@ form.script {
             font-size: var(--fontsize-smaller);
         }
     }
+    .no-files {
+        padding: 2rem;
+    }
 }

@@ -301,40 +301,38 @@ export function ScriptForm({ job }: { job: Job }) {
                 )}
             </div>
 
-            <fieldset
-                aria-labelledby={`${ID(job.internalId)}-required`}
-                className="required"
-            >
-                {/* <h2 id={`${ID(job.internalId)}-required`}>Input</h2> */}
-                <legend>Input</legend>
-                {required.map((item, idx) => {
-                    return (
-                        <FormField
-                            item={item}
-                            key={idx}
-                            idprefix={`${ID(job.internalId)}-${item.name}`}
-                            onChange={saveValueInJobRequest}
-                            initialValue={
-                                findValue(
-                                    item.name,
-                                    item.kind,
-                                    job.jobRequest,
-                                    item.isStylesheetParameter
-                                ) ?? []
-                            }
-                            error={
-                                job.errors?.find(
-                                    (e) => e.fieldName === item.name
-                                )?.error
-                            }
-                        />
-                    )
-                })}
-            </fieldset>
-
+            {required.length > 0 && (
+                <fieldset
+                    aria-labelledby={`${ID(job.internalId)}-required`}
+                    className="required"
+                >
+                    <legend>Input</legend>
+                    {required.map((item, idx) => {
+                        return (
+                            <FormField
+                                item={item}
+                                key={idx}
+                                idprefix={`${ID(job.internalId)}-${item.name}`}
+                                onChange={saveValueInJobRequest}
+                                initialValue={
+                                    findValue(
+                                        item.name,
+                                        item.kind,
+                                        job.jobRequest,
+                                        item.isStylesheetParameter
+                                    ) ?? []
+                                }
+                                error={
+                                    job.errors?.find(
+                                        (e) => e.fieldName === item.name
+                                    )?.error
+                                }
+                            />
+                        )
+                    })}
+                </fieldset>
+            )}
             {optional.length > 0 && (
-                // <section aria-labelledby={`${ID(job.internalId)}-optional`} className="optional">
-                //     <h2 id={`${ID(job.internalId)}-optional`}>Options</h2>
                 <fieldset className="optional">
                     <legend>Options</legend>
                     <CustomName job={job} />

@@ -156,3 +156,8 @@ summary:hover {
     gap: 1rem;
     align-items: center;
 }
+.controls {
+    display: flex;
+    justify-self: center;
+    gap: 1rem;
+}

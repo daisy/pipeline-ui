@@ -17,7 +17,7 @@ export function PreferredVoices({
     userDefaultVoices,
     onChangePreferredVoices,
     onChangeDefaultVoices,
-    onChangePreferredAndDefaultVoices
+    onChangePreferredAndDefaultVoices,
 }) {
     const [preferredVoices, setPreferredVoices] = useState([
         ...userPreferredVoices,
@@ -35,8 +35,6 @@ export function PreferredVoices({
     }, [preferredVoices])
 
     let removeFromPreferredVoices = (voice: TtsVoice) => {
-        
-
         let tmpVoices = [...preferredVoices]
         let idx = tmpVoices.findIndex((v) => v.id == voice.id)
         tmpVoices.splice(idx, 1)
@@ -44,8 +42,7 @@ export function PreferredVoices({
         if (defaultVoices.find((vx) => vx.id == voice.id)) {
             let newDefaultVoices = clearDefaultVoice(getLang(voice.lang), false)
             onChangePreferredAndDefaultVoices(tmpVoices, newDefaultVoices)
-        }
-        else {
+        } else {
             onChangePreferredVoices(tmpVoices)
         }
     }
@@ -148,13 +145,6 @@ export function PreferredVoices({
                                                         } as the default voice for ${languageNames.of(
                                                             getLang(v.lang)
                                                         )}`}
-                                                        defaultChecked={
-                                                            defaultVoices?.find(
-                                                                (vx) =>
-                                                                    vx.id ==
-                                                                    v.id
-                                                            ) != undefined
-                                                        }
                                                         checked={
                                                             defaultVoices?.find(
                                                                 (vx) =>

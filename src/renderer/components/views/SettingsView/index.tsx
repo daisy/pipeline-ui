@@ -88,9 +88,15 @@ export function SettingsView(
         App.store.dispatch(save())
     }
     const onTtsVoicesDefaultsChange = (voices) => {
+        // make sure the default voices are also preferred voices
+        let tmpVoices = [...voices]
+        tmpVoices = tmpVoices.filter((vx) =>
+            settings.ttsConfig.preferredVoices.find((v) => v.id == vx.id)
+        )
+
         const newConfig = {
             preferredVoices: [...settings.ttsConfig.preferredVoices],
-            defaultVoices: [...voices],
+            defaultVoices: [...tmpVoices],
             ttsEngineProperties: [...settings.ttsConfig.ttsEngineProperties],
             xmlFilepath: newSettings.ttsConfig.xmlFilepath,
         }
@@ -101,9 +107,14 @@ export function SettingsView(
         preferredVoices,
         defaultVoices
     ) => {
+        // make sure the default voices are also preferred voices
+        let tmpVoices = [...defaultVoices]
+        tmpVoices = tmpVoices.filter((vx) =>
+            settings.ttsConfig.preferredVoices.find((v) => v.id == vx.id)
+        )
         const newConfig = {
             preferredVoices: [...preferredVoices],
-            defaultVoices: [...defaultVoices],
+            defaultVoices: [...tmpVoices],
             ttsEngineProperties: [...settings.ttsConfig.ttsEngineProperties],
             xmlFilepath: newSettings.ttsConfig.xmlFilepath,
         }

@@ -281,7 +281,7 @@ export function SettingsView(
                     </div>
                 </form>
             </div>
-            )
+            
         </>
     )
 }

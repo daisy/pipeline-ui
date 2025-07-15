@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { TtsVoice } from 'shared/types/ttsConfig'
 import { voicesTransliterations } from './BrowseVoices/voiceTransliterations'
 import { X } from 'renderer/components/Widgets/SvgIcons'
+import { SettingsMenuItem } from '.'
 
 // return the first part of the language code (e.g. 'en' for 'en-US')
 // or return the whole thing if there is no dash
@@ -18,6 +19,7 @@ export function PreferredVoices({
     onChangePreferredVoices,
     onChangeDefaultVoices,
     onChangePreferredAndDefaultVoices,
+    onSelectSection,
 }) {
     const [preferredVoices, setPreferredVoices] = useState([
         ...userPreferredVoices,
@@ -79,6 +81,17 @@ export function PreferredVoices({
 
     return (
         <div className="tts-preferred-voices">
+            <p className="info">
+                Add voices via the{' '}
+                <a
+                    onClick={() =>
+                        onSelectSection(SettingsMenuItem.TTSBrowseVoices)
+                    }
+                >
+                    Browse Voices
+                </a>{' '}
+                page.
+            </p>
             {uniqueLanguages
                 .sort((a, b) => (a > b ? 1 : -1))
                 .map((lang, idx) => {

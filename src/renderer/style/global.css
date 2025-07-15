@@ -62,6 +62,7 @@ body {
 }
 a, a:visited {
     color: var(--primary);
+    cursor: pointer;
 }
 a:hover {
     text-decoration: underline solid 4px var(--primary);

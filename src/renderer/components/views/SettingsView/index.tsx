@@ -19,8 +19,6 @@ const { App } = window
 export enum SettingsMenuItem {
     General = '/general',
     Appearance = '/appearance',
-    Behavior = '/behavior',
-    Updates = '/updates',
     TTSBrowseVoices = '/browse-voices',
     TTSPreferredVoices = '/preferred-voices',
     TTSEngines = '/engines',
@@ -134,7 +132,7 @@ export function SettingsView(
     const onTtsVoiceFiltersChange = (vf: VoiceFilter[]) => {
         setVoiceFilters(vf)
     }
-
+    
     let tabItems = [
         {
             label: 'General',
@@ -157,6 +155,7 @@ export function SettingsView(
                     ttsEnginesStates={pipeline.ttsEnginesStates}
                     onChangeVoiceFilters={onTtsVoiceFiltersChange}
                     voiceFilters={voiceFilters}
+                    onSelectSection={setSelectedSection}
                 />
             ) : (
                 <p>Loading voices...</p>
@@ -175,6 +174,7 @@ export function SettingsView(
                     onChangePreferredAndDefaultVoices={
                         onTtsVoicesPreferredAndDefaultChange
                     }
+                    onSelectSection={setSelectedSection}
                 />
             ) : (
                 <p>Loading voices...</p>

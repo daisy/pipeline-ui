@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { TtsVoice } from 'shared/types/ttsConfig'
 import { voicesTransliterations } from './voiceTransliterations'
 import { VoicePreview } from './VoicePreview'
+import { SettingsMenuItem } from '..'
 
 export function BrowseVoices({
     availableVoices,
@@ -10,6 +11,7 @@ export function BrowseVoices({
     ttsEnginesStates,
     voiceFilters,
     onChangeVoiceFilters,
+    onSelectSection,
 }) {
     const [preferredVoices, setPreferredVoices] = useState([
         ...userPreferredVoices,
@@ -189,7 +191,6 @@ export function BrowseVoices({
         ]
         onChangeVoiceFilters(filters)
     }
-
     return (
         <>
             <div className="voice-filters">
@@ -404,7 +405,17 @@ export function BrowseVoices({
                         ></VoicePreview>
                         {preferredVoices.find((v) => v.id == voiceId) ? (
                             <p className="voice-already-exists">
-                            This voice has been added to your list.
+                                This voice has been added to{' '}
+                                <a
+                                    onClick={() =>
+                                        onSelectSection(
+                                            SettingsMenuItem.TTSPreferredVoices
+                                        )
+                                    }
+                                >
+                                    your list
+                                </a>
+                                .
                             </p>
                         ) : (
                             <button

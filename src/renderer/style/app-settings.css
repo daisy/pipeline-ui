@@ -101,7 +101,13 @@
                 margin-right: 5px;
             }
         }
-
+        p.info {
+            font-size: 100%; /* override the default smaller 'info' fontsize */
+            background-color: var(--bg-off);
+            padding: 4px;
+            border-radius: var(--br);
+        }
+        
         table {
             border: var(--bw) solid var(--secondary);
             border-radius: var(--br);

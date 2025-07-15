@@ -17,9 +17,17 @@
         width: 100%;
         padding: 0;
     }
-    fieldset {
-        
+    fieldset {    
         min-height: 70vh;
+    }
+    div.field {
+        background-color: var(--bg-off);
+        border-radius: var(--br);
+        padding: 4px;
+
+        label {
+            font-weight: bold;
+        }
     }
     
     .voice-filters {
@@ -38,7 +46,6 @@
                 flex-grow: 3;
             }
         }
-        
     }
     .voice-selection {
         display: flex;

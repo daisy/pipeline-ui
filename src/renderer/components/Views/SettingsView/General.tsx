@@ -1,5 +1,7 @@
 import { save, setDownloadPath } from 'shared/data/slices/settings'
 import { SingleFileInput } from 'renderer/components/Widgets/SingleFileInput'
+import { Behavior } from './Behavior'
+import { Updates } from './Updates'
 const { App } = window
 
 export function General({ newSettings }) {
@@ -9,6 +11,7 @@ export function General({ newSettings }) {
     }
 
     return (
+        <>
         <div className="field">
             <label htmlFor="resultsFolder">Results folder</label>
             <span className="description">
@@ -28,5 +31,8 @@ export function General({ newSettings }) {
                 ''
             )}
         </div>
+        <Behavior newSettings={newSettings} />
+        <Updates newSettings={newSettings} />
+        </>
     )
 }

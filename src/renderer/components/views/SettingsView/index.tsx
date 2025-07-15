@@ -147,16 +147,6 @@ export function SettingsView(
             markup: <Appearance newSettings={newSettings} />,
         },
         {
-            label: 'Behavior',
-            section: SettingsMenuItem.Behavior,
-            markup: <Behavior newSettings={newSettings} />,
-        },
-        {
-            label: 'Updates',
-            section: SettingsMenuItem.Updates,
-            markup: <Updates newSettings={newSettings} />,
-        },
-        {
             label: 'Browse Voices',
             section: SettingsMenuItem.TTSBrowseVoices,
             markup: pipeline.ttsVoices ? (

@@ -270,7 +270,7 @@ export function ScriptForm({ job }: { job: Job }) {
             }
         }
     }
-
+    
     return (
         <form
             className="script"
@@ -335,7 +335,11 @@ export function ScriptForm({ job }: { job: Job }) {
             {optional.length > 0 && (
                 <fieldset className="optional">
                     <legend>Options</legend>
-                    <CustomName job={job} />
+                    {(!job.is2StepsJob ||
+                        (job.is2StepsJob &&
+                            job.stylesheetParameters == null)) && (
+                        <CustomName job={job} />
+                    )}
                     {optional.map((item) =>
                         item.mediaType?.includes(
                             'application/vnd.pipeline.tts-config+xml'

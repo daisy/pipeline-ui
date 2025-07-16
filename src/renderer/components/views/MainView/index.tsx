@@ -77,7 +77,7 @@ export function MainView() {
                 break
         }
     }
-    let isDone = (job) => {
+    let canClose = (job) => {
         if (job.jobRequest && job.jobRequest.batchId) {
             let jobsInBatch = pipeline.jobs.filter(
                 (j) =>
@@ -86,12 +86,14 @@ export function MainView() {
                     j.jobRequest.batchId == job.jobRequest.batchId
             )
             return areAllJobsInBatchDone(job, jobsInBatch)
-        } else {
+        } else if (job.jobData?.status) {
             return (
                 [JobStatus.ERROR, JobStatus.FAIL, JobStatus.SUCCESS].includes(
                     job.jobData?.status
                 ) || job.state == JobState.NEW
             )
+        } else if (job.jobRequestError) {
+            return true
         }
     }
     return (
@@ -155,7 +157,7 @@ export function MainView() {
                         key={idx}
                     >
                         <button
-                            disabled={!isDone(job)}
+                            disabled={!canClose(job)}
                             type="button"
                             id={`cancel-job-${job.internalId}`}
                             onClick={async (e) => {

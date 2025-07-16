@@ -199,15 +199,21 @@
         }
 
         /* don't show engine messages if the engine is disabled. they don't make sense. */
-        li:has(input:invalid) .disabled {
+        li:has(input:invalid) .disabled details {
             display: none;
         }
-        
-        .available::after {
-            content: ' ✅';
-        }
-        .Disconnected::after {
-            content: ' ❌';
+        .engine-status {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            gap: 1rem;
+
+            &.available svg {
+                fill: var(--ok);
+            }
+            &.disabled svg {
+                fill: var(--error);
+            }
         }
         .required-field-message {
             display: block;

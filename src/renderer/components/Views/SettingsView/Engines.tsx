@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { TTSEngineStatusIcon } from 'renderer/components/Widgets/SvgIcons'
 import { useWindowStore } from 'renderer/store'
 import { selectTtsVoices, setProperties } from 'shared/data/slices/pipeline'
 import { TtsEngineProperty } from 'shared/types/ttsConfig'
@@ -181,7 +182,9 @@ export function Engines({
                                 </div>
                             ))}
                         {engineMessage[engineId] && (
-                            <div className={engineStatus[engineId]}>
+                            <div
+                                className={`engine-status ${engineStatus[engineId]}`}
+                            >
                                 {engineMessage[engineId].split('\n').length ===
                                 1 ? (
                                     <span>{engineMessage[engineId]}</span>
@@ -200,6 +203,10 @@ export function Engines({
                                             .join('\n')}
                                     </details>
                                 )}
+                                {TTSEngineStatusIcon(engineStatus[engineId], {
+                                    width: 20,
+                                    height: 20,
+                                })}
                             </div>
                         )}
                         {['azure', 'google'].includes(

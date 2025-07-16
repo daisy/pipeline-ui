@@ -80,12 +80,12 @@ export function formFieldFactory(
         return (
             <input
                 type="number"
-                min={inputType == 'nonNegativeInteger' ? 1 : 'any'}
+                min={inputType == 'nonNegativeInteger' ? 0 : 'any'}
                 step={inputType == 'float' ? 0.01 : 1}
                 required={item.required}
                 onChange={(e) => onChange(e.target.value, item)}
                 id={controlId}
-                defaultValue={initialValue}
+                defaultValue={inputType}
                 aria-label={item.nicename ?? item.name}
             ></input>
         )

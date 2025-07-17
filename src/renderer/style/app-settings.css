@@ -18,7 +18,7 @@
         padding: 0;
     }
     fieldset {    
-        min-height: 70vh;
+        min-height: 85vh;
     }
     div.field {
         background-color: var(--bg-off);

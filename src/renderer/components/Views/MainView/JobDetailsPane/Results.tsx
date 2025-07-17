@@ -3,7 +3,7 @@ import { FileLink } from '../../../Widgets/FileLink'
 import { MarkdownDescription } from '../../../Widgets/MarkdownDescription'
 
 export function Results({ job }: { job: Job }) {
-    return job.jobData.results?.namedResults.length > 0 ? (
+    return (
         <ul>
             {job.jobData.results?.namedResults.map((item, itemIndex) => (
                 <li key={itemIndex}>
@@ -22,7 +22,5 @@ export function Results({ job }: { job: Job }) {
                 </li>
             ))}
         </ul>
-    ) : (
-        <p className="info">No results available</p>
     )
 }

@@ -103,17 +103,24 @@ export function JobDetails({ job }: { job: Job }) {
                 <Settings job={job} />
             </details>
 
-            <details className="job-results" open>
-                <summary>
-                    <h2>Results</h2>
-                </summary>
+            <div className="job-results">
+                <h2>Results</h2>
                 {job.jobData.downloadedFolder && (
                     <FileLink fileHref={job.jobData.downloadedFolder}>
                         Open results folder
                     </FileLink>
                 )}
-                <Results job={job} />
-            </details>
+
+                {job.jobData.results?.namedResults.length > 0 ? (
+                    <details>
+                        <summary>All results</summary>
+
+                        <Results job={job} />
+                    </details>
+                ) : (
+                    <p className="info">No results available</p>
+                )}
+            </div>
             <details className="job-messages" open>
                 <summary>
                     <h2>Messages</h2>

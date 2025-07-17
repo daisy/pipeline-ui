@@ -17,6 +17,14 @@
             padding-right: 1rem;
         }
     }
+    .job-results ul {
+        padding: 0;
+    }
+    .job-results {
+        display: flex;
+        flex-direction: column;
+        gap: .5rem;
+    }
     .job-status {
         display: flex;
         flex-direction: column;

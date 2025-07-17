@@ -48,4 +48,11 @@ form.script {
     .no-files {
         padding: 2rem;
     }
+    .custom-documentation {
+        margin: 1rem;
+        font-size: var(--fontsize-smaller);
+        &>p {
+            font-weight: bold;
+        }
+    }
 }

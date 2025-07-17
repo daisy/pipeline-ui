@@ -2,11 +2,13 @@
 // item.type can be:
 // anyFileURI, anyDirURI, xsd:string, xsd:dateTime, xsd:boolean, xsd:integer, xsd:float, xsd:double, xsd:decimal
 
-import { ScriptItemBase } from 'shared/types'
+import { ScriptItemBase, TypeChoice } from 'shared/types'
 import { formFieldFactory } from './formFieldFactory'
 import Markdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
-import { externalLinkClick } from 'renderer/utils'
+import { externalLinkClick, findInputType } from 'renderer/utils'
+import { useWindowStore } from 'renderer/store'
+import { CustomFieldDocumentation } from './CustomFieldDocumentation'
 const { App } = window
 
 // item.mediaType is a file type e.g. application/x-dtbook+xml
@@ -23,6 +25,8 @@ export function FormField({
     initialValue: any // the initial value for the field
     error?: string // error message to display
 }) {
+    const { pipeline } = useWindowStore()
+
     // create the widget for this item (checkbox, file picker, etc)
     let control = formFieldFactory(
         item,
@@ -31,12 +35,31 @@ export function FormField({
         initialValue,
         error
     )
+    let typeChoices = []
+    let datatype = pipeline.datatypes.find((dt) => dt.id == item.type) ?? null
+    
+    let isCustomFieldWithSpecialDocumentation =
+        findInputType(item) == 'custom' &&
+        datatype != null &&
+        datatype.choices != null &&
+        datatype.choices.filter((item) => !item.hasOwnProperty('value'))
+            .length > 0
+
+    if (isCustomFieldWithSpecialDocumentation) {
+        typeChoices = datatype.choices.filter(
+            (item) => !item.hasOwnProperty('value')
+        )
+    }
 
     return (
         <div className="field">
             {item.desc ? (
                 <details>
-                    <summary>{item.nicename ?? item.name}</summary>
+                    <summary>
+                        <label htmlFor={idprefix}>
+                        {item.nicename ?? item.name}
+                        </label>
+                    </summary>
                     <div className="description">
                         <Markdown
                             remarkPlugins={[remarkGfm]}
@@ -58,6 +81,9 @@ export function FormField({
                             {item.desc}
                         </Markdown>
                     </div>
+                    {isCustomFieldWithSpecialDocumentation && (
+                        <CustomFieldDocumentation datatypes={typeChoices} />
+                    )}
                 </details>
             ) : (
                 <label htmlFor={idprefix}>

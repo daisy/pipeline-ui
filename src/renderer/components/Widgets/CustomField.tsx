@@ -70,7 +70,7 @@ export function CustomField({
         if (typeChoices.length) {
             return (
                 <div className="custom-field">
-                    <CustomFieldDocumentation datatypes={typeChoices} />
+                    {/* <CustomFieldDocumentation datatypes={typeChoices} /> */}
                     <ControlledInput
                         type="text"
                         required={item.required}
@@ -120,9 +120,6 @@ export function CustomField({
                                     ? ''
                                     : value
                             }
-                            aria-details={
-                                controlId + '-' + selectedOption + '-details'
-                            }
                             multiple={false}
                         >
                             {valueChoices.map((option, idx) => {
@@ -136,9 +133,6 @@ export function CustomField({
                                     // @ts-ignore
                                     <option
                                         key={controlId + '-' + idx}
-                                        aria-details={
-                                            controlId + '-' + idx + '-details'
-                                        }
                                         value={option.value}
                                     >
                                         {option.documentation
@@ -161,12 +155,6 @@ export function CustomField({
                                             .join('\n')
                                     return (
                                         <p
-                                            id={
-                                                controlId +
-                                                '-' +
-                                                idx +
-                                                '-details'
-                                            }
                                             key={
                                                 controlId +
                                                 '-' +

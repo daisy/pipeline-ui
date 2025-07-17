@@ -3,6 +3,7 @@ import { getRelevantScripts } from '../scriptFilters'
 import { DragFileInput } from '../Widgets/DragFileInput'
 import { useState } from 'react'
 import { FileTreeEntry } from 'main/ipcs/fileSystem'
+import { ID } from 'renderer/utils'
 const { App } = window
 
 export function DragDropFilterFiles({
@@ -95,35 +96,8 @@ export function DragDropFilterFiles({
                 <p className="info">Add files to see script suggestions:</p>
             )}
             {files.length > 0 && (
-                <p className="info">
-                    The following files can be used in Pipeline jobs:
-                </p>
-            )}
-            {files.length > 0 && (
-                <div className="files">
-                    {uniqueFiletypes.map((filetype, idx) => {
-                        let filesOfType = files
-                            .filter((f) => f.filetype.type == filetype)
-                            .sort((a, b) => (a.name < b.name ? -1 : 1))
-                        return (
-                            <FilelistWithRelevantScripts
-                                key={idx}
-                                files={filesOfType.map((f) => f.filepath)}
-                                relevantScripts={getRelevantScripts(filetype)}
-                                categoryName={filesOfType[0]?.filetype.name}
-                                jobInternalId={job?.internalId}
-                                createJob={createJob}
-                            />
-                        )
-                    })}
-                </div>
-            )}
-            {files.length > 0 && (
                 <p className="info row">
                     Add more files to see more suggestions.
-                    <button onClick={() => updateFiles([])} type="button">
-                        Clear files
-                    </button>
                 </p>
             )}
             <DragFileInput
@@ -131,6 +105,38 @@ export function DragDropFilterFiles({
                 mediaType={[]}
                 onChange={onDragInputChange}
             />
+
+            {files.length > 0 && (
+                <p className="info">
+                    The following files can be used in Pipeline jobs:
+                </p>
+            )}
+            {files.length > 0 && (
+                <>
+                    <div className="files">
+                        {uniqueFiletypes.map((filetype, idx) => {
+                            let filesOfType = files
+                                .filter((f) => f.filetype.type == filetype)
+                                .sort((a, b) => (a.name < b.name ? -1 : 1))
+                            return (
+                                <FilelistWithRelevantScripts
+                                    key={idx}
+                                    files={filesOfType.map((f) => f.filepath)}
+                                    relevantScripts={getRelevantScripts(
+                                        filetype
+                                    )}
+                                    categoryName={filesOfType[0]?.filetype.name}
+                                    jobInternalId={job?.internalId}
+                                    createJob={createJob}
+                                />
+                            )
+                        })}
+                    </div>
+                    <button onClick={() => updateFiles([])} type="button">
+                        Clear files
+                    </button>
+                </>
+            )}
         </div>
     )
 }

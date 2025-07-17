@@ -44,14 +44,14 @@ export function Messages({ job }: { job: Job }) {
         <>
             <div className="field row">
                 <label htmlFor={`${job.internalId}-verbose`}>
-                    View all messages
+                    Show errors and warnings only
                 </label>
                 <input
                     id={`${job.internalId}-verbose`}
                     type="checkbox"
                     //@ts-ignore
-                    onClick={(e) => setVerbose(e.target.checked)}
-                    defaultChecked={verbose}
+                    onClick={(e) => setVerbose(!e.target.checked)}
+                    defaultChecked={!verbose}
                 ></input>
             </div>
             <ul>

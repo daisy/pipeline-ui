@@ -161,4 +161,5 @@ summary:hover {
     display: flex;
     justify-self: center;
     gap: 1rem;
+    margin-bottom: 1rem;
 }

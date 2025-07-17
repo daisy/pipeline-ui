@@ -55,4 +55,18 @@ form.script {
             font-weight: bold;
         }
     }
+    details.option-description {
+        margin-left: 1rem;
+        background-color: var(--bg-off);
+        border-radius: var(--br);
+        padding: 4px;
+        font-size: var(--fontsize-smaller);
+        summary {
+            list-style-type: none;
+            width: min-content;
+            color: var(--primary);
+            text-decoration: underline;
+            white-space: nowrap;
+        }
+    }
 }

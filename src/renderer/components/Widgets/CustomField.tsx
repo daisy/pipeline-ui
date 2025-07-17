@@ -153,27 +153,40 @@ export function CustomField({
                                             .split('\n')
                                             .slice(1)
                                             .join('\n')
-                                    return (
-                                        <p
-                                            key={
-                                                controlId +
-                                                '-' +
-                                                idx +
-                                                '-details'
-                                            }
-                                            className={`option-description
-                                                ${
+                                    if (selectedOptionDescription.length > 0) {
+                                        return (
+                                            <details
+                                                key={
+                                                    controlId +
+                                                    '-' +
+                                                    idx +
+                                                    '-div'
+                                                }
+                                                className={`${
                                                     !displayed
                                                         ? ' is-hidden'
                                                         : ''
-                                                }`}
-                                            style={{ margin: 0 }}
-                                        >
-                                            <MarkdownDescription>
-                                                {selectedOptionDescription}
-                                            </MarkdownDescription>
-                                        </p>
-                                    )
+                                                } option-description`}
+                                            >
+                                                <summary>Details</summary>
+                                                <p
+                                                    key={
+                                                        controlId +
+                                                        '-' +
+                                                        idx +
+                                                        '-details'
+                                                    }
+                                                    style={{ margin: 0 }}
+                                                >
+                                                    <MarkdownDescription>
+                                                        {
+                                                            selectedOptionDescription
+                                                        }
+                                                    </MarkdownDescription>
+                                                </p>
+                                            </details>
+                                        )
+                                    }
                                 })}
                             </>
                         )}

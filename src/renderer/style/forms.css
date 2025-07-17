@@ -6,7 +6,7 @@ form {
 fieldset {
     display: flex;
     flex-direction: column;
-    gap: 1rem;
+    gap: 1.5rem;
     border: solid var(--bw) var(--fg-off);
     border-radius: var(--br);
     padding: 1rem;

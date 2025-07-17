@@ -20,7 +20,7 @@ import {
 import { NewJobPane } from './NewJobPane'
 import { calculateJobName } from 'shared/jobName'
 import { PLATFORM } from 'shared/constants'
-import { X } from '../../Widgets/SvgIcons'
+import { Plus, X } from '../../Widgets/SvgIcons'
 import { BatchJobDetailsPane } from 'renderer/components/Views/MainView/JobDetailsPane/BatchJobPane'
 import { SingleJobDetailsPane } from 'renderer/components/Views/MainView/JobDetailsPane/SingleJobPane'
 import { ScriptForm } from 'renderer/components/Views/MainView/ScriptForm'
@@ -95,6 +95,9 @@ export function MainView() {
         } else if (job.jobRequestError) {
             return true
         }
+        else if (job.state == JobState.NEW) {
+            return true
+        }
     }
     return (
         <main>
@@ -139,7 +142,7 @@ export function MainView() {
                         App.store.dispatch(selectJob(newJob_))
                     }}
                 >
-                    +
+                    <Plus width={20} height={20} />
                 </button>
             </div>
             {visibleJobs.map((job, idx) => {

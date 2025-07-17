@@ -7,23 +7,12 @@
         display: inline;
         vertical-align: middle;
     }
-    .job-status, .job-settings, .job-results, .job-messages {
-        padding: .5rem;
-        background-color: var(--bg);
-        border-radius: var(--br);
 
-        &>*:not(summary) {
-            padding-left: 1rem;
-            padding-right: 1rem;
-        }
+    .error {
+        color: var(--error);
     }
-    .job-results ul {
-        padding: 0;
-    }
-    .job-results {
-        display: flex;
-        flex-direction: column;
-        gap: .5rem;
+    .warning {
+        color: var(--warning);
     }
     .job-status {
         display: flex;
@@ -42,10 +31,32 @@
         }
     }
 
-    .job-settings, .job-results {
+    /* the big areas in this view */
+    .job-status, .job-configuration, .job-results, .job-messages {
+        padding: .5rem;
+        background-color: var(--bg);
+        border-radius: var(--br);
+    }
+    .job-configuration ul, .job-results ul {
+        padding-left: 1rem;
+    }
+    .job-results {
+        /* the main results folder link */
+        &>a.filelink {
+            font-size: 120%;
+        }
+    }
+    
+    .job-results, .job-messages {
+        display: flex;
+        flex-direction: column;
+        gap: .75rem;
+    }
+    
+    .job-configuration, .job-results {
         ul {
             border-radius: var(--br);
-            background-color: var(--bg);
+            background-color: var(--bg-off);
             display: flex;
             flex-direction: column;
             gap: .5rem;
@@ -70,7 +81,6 @@
                 }
             }
             span:first-of-type {
-                font-weight: bolder;
                 flex-grow: 0;
                 flex-shrink: 0;
                 flex-basis: 15rem;
@@ -81,13 +91,21 @@
 
     .job-messages {
         background-color: var(--bg);
-        
+        details>ul {
+            border: var(--bw) var(--fg-off) solid;
+            border-radius: var(--br);
+            background-color: var(--bg-off);
+        }
+        label {
+            font-size: var(--fontsize-smaller);
+        }
         ul {
             font-family: var(--fw-font-fam);
-            margin-left: var(--pad);
+            padding-left: 1rem;
             list-style-type: none;
+            
 
-            .error, .msg-error {
+            .msg-error {
                 color: var(--error);
             }
 
@@ -95,7 +113,7 @@
                 color: var(--fg);
             }
 
-            .warning, .msg-warning {
+            .msg-warning {
                 color: var(--warning);
             }
 

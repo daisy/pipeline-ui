@@ -1,7 +1,7 @@
 /*
 Details of a submitted job
 */
-import { Job, JobState, JobStatus } from '/shared/types'
+import { Job, JobState, JobStatus, MessageLevel } from '/shared/types'
 import { Messages } from './Messages'
 import { Settings } from './Settings'
 import { Results } from './Results'
@@ -57,6 +57,28 @@ export function JobDetails({ job }: { job: Job }) {
         )
     }
 
+    let searchMessages = (msgs, level) => {
+        let found = msgs.find((m) => {
+            console.log(m)
+            let isThisOne = m.level == level
+            let childrenHaveIt = searchMessages(m.messages, level)
+            return isThisOne || childrenHaveIt
+        })
+        return found
+    }
+    let hasErrors = (job) => {
+        if (!job.jobData || !job.jobData.messages) {
+            return false
+        }
+
+        return searchMessages(job.jobData.messages, MessageLevel.ERROR)
+    }
+    let hasWarnings = (job) => {
+        if (!job.jobData || !job.jobData.messages) {
+            return false
+        }
+        return searchMessages(job.jobData.messages, MessageLevel.WARNING)
+    }
     return (
         <div className="job-details">
             <div className="job-status info">
@@ -96,18 +118,18 @@ export function JobDetails({ job }: { job: Job }) {
                     ''
                 )}
             </div>
-            <details className="job-settings">
+            <details className="job-configuration">
                 <summary>
-                    <h2>Job Settings</h2>
+                    <h2>Job Configuration</h2>
                 </summary>
                 <Settings job={job} />
             </details>
 
-            <div className="job-results">
+            <section className="job-results">
                 <h2>Results</h2>
                 {job.jobData.downloadedFolder && (
                     <FileLink fileHref={job.jobData.downloadedFolder}>
-                        Open results folder
+                        Open folder
                     </FileLink>
                 )}
 
@@ -120,11 +142,34 @@ export function JobDetails({ job }: { job: Job }) {
                 ) : (
                     <p className="info">No results available</p>
                 )}
-            </div>
-            <details className="job-messages" open>
-                <summary>
-                    <h2>Messages</h2>
-                </summary>
+            </section>
+            <section className="job-messages">
+                <h2>Messages</h2>
+                {hasErrors(job) && hasWarnings(job) && (
+                    <p>
+                        <span className="error">Error(s)</span> and{' '}
+                        <span className="warning">warning(s)</span> found. See
+                        below for more information.
+                    </p>
+                )}
+                {hasErrors(job) && !hasWarnings(job) && (
+                    <p>
+                        <span className="error">Error(s)</span> found. See below
+                        for more information.
+                    </p>
+                )}
+                {!hasErrors(job) && hasWarnings(job) && (
+                    <p>
+                        <span className="warning">Warning(s)</span> found. See
+                        below for more information.
+                    </p>
+                )}
+
+                <details>
+                    <summary>Show messages</summary>
+                    <Messages job={job} />
+                </details>
+
                 {job?.jobData?.log && (
                     <a
                         className="loglink"
@@ -134,9 +179,7 @@ export function JobDetails({ job }: { job: Job }) {
                         View full log
                     </a>
                 )}
-
-                <Messages job={job} />
-            </details>
+            </section>
 
             {job.jobData.status != JobStatus.RUNNING &&
                 job.jobData.status != JobStatus.IDLE && (
@@ -152,6 +195,7 @@ export function JobDetails({ job }: { job: Job }) {
                         <div className="row">
                             {!jobIsBatch && (
                                 <button
+                                    className="important"
                                     type="button"
                                     onClick={(e) => {
                                         App.store.dispatch(runJob(job))
@@ -166,6 +210,7 @@ export function JobDetails({ job }: { job: Job }) {
                             {!jobIsBatch && (
                                 <>
                                     <button
+                                        className="important"
                                         type="button"
                                         onClick={(e) => {
                                             let job_ = { ...job }

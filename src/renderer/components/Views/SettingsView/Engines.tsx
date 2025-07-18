@@ -143,10 +143,15 @@ export function Engines({
         )
     }
     let hasRequiredValues = (engineId) => {
-        let incompleteEngineValues = engineProperties.filter(
-            (prop) => prop.key.indexOf(engineId) != -1 && prop.value == ''
+        let propsForEngine = engineProperties.filter(
+            (prop) => prop.key.indexOf(engineId) != -1
         )
-        return incompleteEngineValues.length == 0
+        let incompleteEngineValues = propsForEngine.filter(
+            (prop) => prop.value.trim() == ''
+        )
+
+        console.log(engineId, engineProperties, incompleteEngineValues)
+        return propsForEngine.length > 0 && incompleteEngineValues.length == 0
     }
     return (
         <div className="tts-engines">
@@ -165,7 +170,6 @@ export function Engines({
                                     <label htmlFor={propkey}>
                                         {getPropkeyLabel(propkey, engineId)}
                                     </label>
-
                                     <input
                                         id={propkey}
                                         type="text"
@@ -177,7 +181,6 @@ export function Engines({
                                                 (p) => p.key == propkey
                                             )?.value ?? ''
                                         }
-                                        required={true}
                                     />
                                 </div>
                             ))}
@@ -215,7 +218,7 @@ export function Engines({
                             <>
                                 {!isConnectedToTTSEngine(engineId) ||
                                 enginePropsChanged[engineId] ? (
-                                    <button
+                                    <><button
                                         type="button"
                                         onClick={(e) => {
                                             e.preventDefault()
@@ -225,6 +228,8 @@ export function Engines({
                                     >
                                         Connect
                                     </button>
+                                    {!hasRequiredValues(engineId) && <p className="warning info">Please fill out all values for this engine</p>}
+                                    </>
                                 ) : isConnectedToTTSEngine(engineId) ? (
                                     <button
                                         type="button"

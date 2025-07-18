@@ -132,7 +132,7 @@ export function SettingsView(
     const onTtsVoiceFiltersChange = (vf: VoiceFilter[]) => {
         setVoiceFilters(vf)
     }
-    
+
     let tabItems = [
         {
             label: 'General',
@@ -259,7 +259,11 @@ export function SettingsView(
                 ></TabList>
             </div>
             <div
-                id={`${ID(selectedSection)}-tabpanel`}
+                id={`${ID(
+                    tabItems.findIndex(
+                        (item) => item.section == selectedSection
+                    )
+                )}-tabpanel`}
                 role="tabpanel"
                 aria-labelledby={`${ID(selectedSection)}-tab`}
                 tabIndex={0}
@@ -271,7 +275,6 @@ export function SettingsView(
                     </div>
                 </form>
             </div>
-            
         </>
     )
 }

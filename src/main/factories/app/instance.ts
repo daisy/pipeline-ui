@@ -73,7 +73,10 @@ export function makeAppWithSingleInstanceLock(fn: () => void) {
                 ...(isElectron ? [appLaunchArgs[1]] : []),
                 // If command line arguments are provided (for cli usage),
                 // launch the app in hidden mode
-                ...(commandLineArgs.length > 0 ? ['--hidden'] : []),
+                ...(commandLineArgs.length > 0 ||
+                process.argv.includes('--hidden')
+                    ? ['--hidden']
+                    : []),
             ]
             console.log(
                 'Launching the app in the background and wait for the webservice ...'

@@ -218,6 +218,9 @@
         .required-field-message {
             display: block;
         }
+        .warning {
+            color: var(--warning);
+        }
     }
     .more-tts-options {
         display: flex;

@@ -112,10 +112,11 @@ button[disabled], button[disabled]:hover, button[disabled]:active, button[disabl
     background-color: inherit;
     color: var(--inactive);
     cursor: not-allowed;
+    box-shadow: var(--box-shadow-params) var(--fg-off);
 
 }
 button[disabled]:hover {
-    box-shadow: none;
+    /* box-shadow: none; */
 }
 details > summary {
     cursor: pointer;

@@ -298,7 +298,11 @@ async function buildPipeline(platform = null) {
     }
     const { cmd: mvn, home: mvnHome } = await getMaven()
     console.info(' > Using maven command : ', mvn)
-    let java_home = await getJDK()
+    // MD 21 Jul 2025 getJDK doesn't work with Java 8 (it has no jlink)
+    // just use whatever is set in JAVA_HOME
+    // let java_home = await getJDK()
+    let java_home = process.env.JAVA_HOME
+
     console.info(' > Using java home : ', java_home)
     const targetedPlatform = getJDKPlatform(platform ?? os.platform())
     let makeCmd = 'make'

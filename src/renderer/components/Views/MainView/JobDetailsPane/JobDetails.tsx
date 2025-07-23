@@ -164,11 +164,12 @@ export function JobDetails({ job }: { job: Job }) {
                         below for more information.
                     </p>
                 )}
-
-                <details>
-                    <summary>Show messages</summary>
-                    <Messages job={job} />
-                </details>
+                {job.jobData.messages && job.jobData.messages.length > 0 ? (
+                    <details>
+                        <summary>Show messages</summary>
+                        <Messages job={job} />
+                    </details>
+                ) : <p>No messages</p>}
 
                 {job?.jobData?.log && (
                     <a

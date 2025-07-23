@@ -150,7 +150,6 @@ export function Engines({
             (prop) => prop.value.trim() == ''
         )
 
-        console.log(engineId, engineProperties, incompleteEngineValues)
         return propsForEngine.length > 0 && incompleteEngineValues.length == 0
     }
     return (

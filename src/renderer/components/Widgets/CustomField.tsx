@@ -168,7 +168,7 @@ export function CustomField({
                                                         : ''
                                                 } option-description`}
                                             >
-                                                <summary>Details</summary>
+                                                <summary>More info</summary>
                                                 <p
                                                     key={
                                                         controlId +

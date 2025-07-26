@@ -44,6 +44,7 @@ interface Response {
 interface RequestInit {
     method?: string
     body?: {}
+    headers?: {}
     signals?: AbortSignal
 }
 /**
@@ -56,7 +57,8 @@ export class PipelineAPI {
     fetchFunc: (url: string, options?: RequestInit) => Promise<Response>
     info: (message?: any, ...optionalParams: any[]) => void
     // Cache to avoid multiple fetches on the same url
-    fetchCache: Map<string, {count:number,request:Promise<any>}> = new Map()
+    fetchCache: Map<string, { count: number; request: Promise<any> }> =
+        new Map()
 
     constructor(fetchFunc, info?) {
         this.fetchFunc = fetchFunc
@@ -78,32 +80,41 @@ export class PipelineAPI {
         webserviceUrlBuilder: (ws: Webservice) => string,
         parser: (text: string) => T,
         options?: RequestInit
-    ) : (ws?: Webservice) => Promise<T> {
+    ): (ws?: Webservice) => Promise<T> {
         return (ws?: Webservice) => {
             const url = webserviceUrlBuilder(ws)
             const fetcher = (launch = 1) => {
-                this.info(`createPipelineFetchFunction - Fetching ${launch}`, url, JSON.stringify(options))
-                this.fetchCache.set(
+                this.info(
+                    `createPipelineFetchFunction - Fetching ${launch}`,
                     url,
-                    {   count: launch,
-                        request: this.fetchFunc(url, {
-                            ...options,
-                            signals: options?.signals ?? AbortSignal.timeout(5000),
-                        })
-                            .then((response: Response) => {
-                                this.info(`createPipelineFetchFunction - Response ${launch} to request` , url, JSON.stringify(options))
-                                // Try to delete the cache if the fetch is successful
-                                this.fetchCache.delete(url)
-                                return response.text()
-                            })
-                            .then((text: string) => parser(text))
-                            .catch((e) => {
-                                this.info(`createPipelineFetchFunction - Error ${launch}`, url)
-                                this.fetchCache.delete(url)
-                                throw e
-                        })
-                    }
+                    JSON.stringify(options)
                 )
+                this.fetchCache.set(url, {
+                    count: launch,
+                    request: this.fetchFunc(url, {
+                        ...options,
+                        signals: options?.signals ?? AbortSignal.timeout(5000),
+                    })
+                        .then((response: Response) => {
+                            this.info(
+                                `createPipelineFetchFunction - Response ${launch} to request`,
+                                url,
+                                JSON.stringify(options)
+                            )
+                            // Try to delete the cache if the fetch is successful
+                            this.fetchCache.delete(url)
+                            return response.text()
+                        })
+                        .then((text: string) => parser(text))
+                        .catch((e) => {
+                            this.info(
+                                `createPipelineFetchFunction - Error ${launch}`,
+                                url
+                            )
+                            this.fetchCache.delete(url)
+                            throw e
+                        }),
+                })
                 return this.fetchCache.get(url).request
             }
             if (this.fetchCache.has(url)) {
@@ -114,7 +125,9 @@ export class PipelineAPI {
                 )
                 const lastCache = this.fetchCache.get(url)
                 // concatenate a new fetch to the existing promise
-                return lastCache.request.then(() => fetcher(lastCache.count + 1))
+                return lastCache.request.then(() =>
+                    fetcher(lastCache.count + 1)
+                )
             } else {
                 // Launching the first fetch
                 return fetcher()
@@ -226,6 +239,9 @@ export class PipelineAPI {
             (text) => voicesToJson(text),
             {
                 method: 'POST',
+                headers: {
+                    'Content-Type': 'application/xml',
+                },
                 body: ttsConfigToXml(ttsConfig),
             }
         )

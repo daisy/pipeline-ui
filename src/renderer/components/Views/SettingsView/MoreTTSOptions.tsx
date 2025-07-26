@@ -100,9 +100,22 @@ export function MoreTTSOptions({
             ttsEnginesStates[engine].features &&
             ttsEnginesStates[engine].features?.find((f) =>
                 ['speech-rate'].includes(f)
-            )
+            ) &&
+            ttsEnginesStates[engine].status == 'available'
         ) {
             enginesWithSpeechRateSupport.push(engine)
+        }
+    }
+    let enginesWithSampleRateSupport = []
+    // until the API provides this info, we can just hardcode it
+    // google is the only one that support it now
+    let hasSampleRateSupport = (engineId) => engineId == 'google'
+    for (const engine in ttsEnginesStates) {
+        if (
+            hasSampleRateSupport(engine) &&
+            ttsEnginesStates[engine].status == 'available'
+        ) {
+            enginesWithSampleRateSupport.push(engine)
         }
     }
 
@@ -147,22 +160,16 @@ export function MoreTTSOptions({
                 <p className="info">
                     {enginesWithSpeechRateSupport.length > 0 ? (
                         <>
-                            Setting the speech rate is currently supported on
-                            {' ' +
-                                (enginesWithSpeechRateSupport.length == 1
-                                    ? enginesWithSpeechRateSupport[0]
-                                    : enginesWithSpeechRateSupport
-                                          .slice(0, -1)
-                                          .join(', ') +
-                                      ' and ' +
-                                      enginesWithSpeechRateSupport.slice(-1)) +
-                                ' '}
+                            Setting the speech rate is currently supported on{' '}
+                            {enginesWithSpeechRateSupport
+                                .map((e) => ttsEnginesStates[e].name)
+                                .join(', ')}{' '}
                             voices.
                         </>
                     ) : (
                         <>
-                            Note that no speech engine supporting this setting
-                            is currently found on your system.
+                            No speech engine supporting speech rate is currently
+                            enabled.
                         </>
                     )}
                 </p>
@@ -216,7 +223,20 @@ export function MoreTTSOptions({
                     <option value="48000">48000 Hz</option>
                 </select>
                 <p className="info">
-                    Sample rate is currently supported on Google Cloud.
+                    {enginesWithSampleRateSupport.length > 0 ? (
+                        <>
+                            Setting the sample rate is currently supported on{' '}
+                            {enginesWithSampleRateSupport
+                                .map((e) => ttsEnginesStates[e].name)
+                                .join(', ')}{' '}
+                            voices.
+                        </>
+                    ) : (
+                        <>
+                            No speech engine supporting sample rate is currently
+                            enabled.
+                        </>
+                    )}
                 </p>
             </div>
             <div className="field">

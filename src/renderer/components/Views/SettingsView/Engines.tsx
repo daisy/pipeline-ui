@@ -8,10 +8,14 @@ const enginePropertyKeys = [
     'org.daisy.pipeline.tts.azure.key',
     'org.daisy.pipeline.tts.azure.region',
     'org.daisy.pipeline.tts.google.apikey',
+    'org.daisy.pipeline.tts.aws.accesskey',
+    'org.daisy.pipeline.tts.aws.secretkey',
+    'org.daisy.pipeline.tts.aws.region',
 ]
 const engineIds = [
     'org.daisy.pipeline.tts.azure',
     'org.daisy.pipeline.tts.google',
+    'org.daisy.pipeline.tts.aws',
 ]
 
 const { App } = window
@@ -211,7 +215,7 @@ export function Engines({
                                 })}
                             </div>
                         )}
-                        {['azure', 'google'].includes(
+                        {['azure', 'google', 'aws'].includes(
                             engineId.split('.').slice(-1)[0]
                         ) && (
                             <>

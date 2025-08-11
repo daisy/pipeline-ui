@@ -21,13 +21,6 @@ const SingleFileInput: React.FC<FileInputProps> = ({
     // debug("SingleFileInput initialValue", initialValue)
     return (
         <div className="single-file-input">
-            {file == '' || file == null && <span>No file selected</span>}
-            {file != '' && (
-                <>
-                <File fileUrlOrPath={file} showAsType={FileAsType.AS_PATH}/>
-                </>
-            )}
-
             <FileInput
                 elemId={elemId}
                 allowFile={allowFile}
@@ -41,7 +34,17 @@ const SingleFileInput: React.FC<FileInputProps> = ({
                     }
                 }}
                 enabled={enabled}
+                label="Select file"
             />
+            {file != '' && (
+                <>
+                    <File
+                        fileUrlOrPath={file}
+                        showAsType={FileAsType.AS_PATH}
+                    />
+                </>
+            )}
+
             {required && !isValid() && (
                 <p className="error">Value cannot be empty</p>
             )}

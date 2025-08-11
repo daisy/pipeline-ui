@@ -59,9 +59,8 @@ input:invalid {
 }
 .single-file-input {
     display: flex;
-    flex-direction: row;
-    align-items: center;
-    gap: 2rem;
+    flex-direction: column;
+    gap: 1rem;
 }
 .multi-file-input {
     input {

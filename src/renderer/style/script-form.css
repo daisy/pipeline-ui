@@ -69,4 +69,7 @@ form.script {
             white-space: nowrap;
         }
     }
+    p.error {
+        color: var(--error);
+    }
 }

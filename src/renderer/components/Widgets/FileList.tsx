@@ -2,7 +2,7 @@ import { Down, Up, X } from './SvgIcons'
 import { File } from './File'
 
 // a list of files with a browse button
-const FileList = ({ onChange, files, canSort, showAsType }) => {
+const FileList = ({ onChange, files, canSort, showAsType, required }) => {
     const moveFile = (fromIndex: number, toIndex: number) => {
         const updatedFiles = [...files]
         const [movedFile] = updatedFiles.splice(fromIndex, 1)
@@ -16,7 +16,14 @@ const FileList = ({ onChange, files, canSort, showAsType }) => {
     }
     return (
         <>
-            {!files.length && <p className='file-list no-files'>No files</p>}
+            {!files.length && !required && (
+                <p className="file-list no-files">No files</p>
+            )}
+            {!files.length && required && (
+                <p className="file-list-no-files error">
+                    At least one file is required
+                </p>
+            )}
             {files.length > 0 && (
                 <ul className="file-list">
                     {files.map((file, index) => (

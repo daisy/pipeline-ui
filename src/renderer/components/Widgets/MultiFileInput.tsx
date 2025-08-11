@@ -59,6 +59,7 @@ const MultiFileInput: React.FC<MultiFileInputProps> = ({
                 onChange={(files) => updateFiles(files)}
                 files={files}
                 canSort={canSort}
+                required={required}
             />
         </div>
     )

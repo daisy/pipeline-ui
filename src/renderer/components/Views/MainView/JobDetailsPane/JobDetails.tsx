@@ -59,7 +59,6 @@ export function JobDetails({ job }: { job: Job }) {
 
     let searchMessages = (msgs, level) => {
         let found = msgs.find((m) => {
-            console.log(m)
             let isThisOne = m.level == level
             let childrenHaveIt = searchMessages(m.messages, level)
             return isThisOne || childrenHaveIt

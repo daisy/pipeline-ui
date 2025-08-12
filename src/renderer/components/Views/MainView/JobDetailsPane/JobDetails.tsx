@@ -2,8 +2,11 @@
 Details of a submitted job
 */
 import { Job, JobState, JobStatus, MessageLevel } from '/shared/types'
+//@ts-ignore
 import { Messages } from './Messages'
+//@ts-ignore
 import { Settings } from './Settings'
+//@ts-ignore
 import { Results } from './Results'
 
 import { externalLinkClick, getStatus } from '../../../../utils/utils'
@@ -168,7 +171,9 @@ export function JobDetails({ job }: { job: Job }) {
                         <summary>Show messages</summary>
                         <Messages job={job} />
                     </details>
-                ) : <p>No messages</p>}
+                ) : (
+                    <p>No messages</p>
+                )}
 
                 {job?.jobData?.log && (
                     <a

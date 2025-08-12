@@ -174,7 +174,11 @@ export function CustomField({
                                                     setExpanded(e.target.open)
                                                 }
                                             >
-                                                <summary>{expanded ? 'Show less' : 'Show more'}</summary>
+                                                <summary>
+                                                    {expanded
+                                                        ? 'Show less'
+                                                        : 'Show more'}
+                                                </summary>
                                                 <p
                                                     key={
                                                         controlId +

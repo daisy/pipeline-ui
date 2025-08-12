@@ -37,7 +37,7 @@ export function FormField({
     )
     let typeChoices = []
     let datatype = pipeline.datatypes.find((dt) => dt.id == item.type) ?? null
-    
+
     let isCustomFieldWithSpecialDocumentation =
         findInputType(item) == 'custom' &&
         datatype != null &&
@@ -57,7 +57,7 @@ export function FormField({
                 <details>
                     <summary>
                         <label htmlFor={idprefix}>
-                        {item.nicename ?? item.name}
+                            {item.nicename ?? item.name}
                         </label>
                     </summary>
                     <div className="description">

@@ -134,7 +134,7 @@ export function JobDetails({ job }: { job: Job }) {
 
                 {job.jobData.results?.namedResults.length > 0 ? (
                     <details>
-                        <summary>All results</summary>
+                        <summary>Individual results</summary>
 
                         <Results job={job} />
                     </details>

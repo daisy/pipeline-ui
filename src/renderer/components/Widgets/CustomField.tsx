@@ -25,6 +25,7 @@ export function CustomField({
     const [datatype, setDatatype] = useState(
         pipeline.datatypes.find((dt) => dt.id == item.type) ?? null
     )
+    const [expanded, setExpanded] = useState(false)
 
     useMemo(() => {
         const fetchData = async () => {
@@ -156,6 +157,7 @@ export function CustomField({
                                     if (selectedOptionDescription.length > 0) {
                                         return (
                                             <details
+                                                open={expanded}
                                                 key={
                                                     controlId +
                                                     '-' +
@@ -167,8 +169,12 @@ export function CustomField({
                                                         ? ' is-hidden'
                                                         : ''
                                                 } option-description`}
+                                                onToggle={(e) =>
+                                                    //@ts-ignore
+                                                    setExpanded(e.target.open)
+                                                }
                                             >
-                                                <summary>More info</summary>
+                                                <summary>{expanded ? 'Show less' : 'Show more'}</summary>
                                                 <p
                                                     key={
                                                         controlId +

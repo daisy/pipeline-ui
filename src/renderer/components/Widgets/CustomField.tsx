@@ -21,11 +21,14 @@ export function CustomField({
     const { pipeline } = useWindowStore()
     const [value, setValue] = useState(initialValue)
     const [userInteracted, setUserInteracted] = useState(false) // false if the user started typing
-    const [datatype] = useState(
+    const [datatype, setDatatype] = useState(
         pipeline.datatypes.find((dt) => dt.id == item.type) ?? null
     )
     const [expanded, setExpanded] = useState(false)
 
+    useEffect(() => {
+        setDatatype(pipeline.datatypes.find((dt) => dt.id == item.type) ?? null)
+    }, [pipeline.datatypes])
    
     useEffect(() => {
         const elem = document.getElementById(controlId) as HTMLInputElement

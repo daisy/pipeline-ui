@@ -1,9 +1,10 @@
 import { PayloadAction } from '@reduxjs/toolkit'
 import { error } from 'electron-log'
 import { pipelineAPI } from 'main/data/apis/pipeline'
-import { selectWebservice, updateJob } from 'shared/data/slices/pipeline'
+import { selectWebservice, setDatatypes, updateJob } from 'shared/data/slices/pipeline'
 import { Job, JobRequestError, JobStatus, ScriptOption } from 'shared/types'
 import { GetStateFunction } from 'shared/types/store'
+import { findInputType } from 'shared/utils'
 
 export function requestStylesheetParameters(
     action: PayloadAction<any>,
@@ -35,6 +36,7 @@ export function requestStylesheetParameters(
                         // ],
                     })
                 )
+                return []
             } else {
                 // don't add stylesheet parameters if they have
                 // the same name as existing script options
@@ -68,7 +70,26 @@ export function requestStylesheetParameters(
                         stylesheetParameters: [...uniqueParameters],
                     })
                 )
+                return [...uniqueParameters]
             }
+        })
+        .then((parameters: ScriptOption[]) => {
+            console.log('Need to get datatypes for ', parameters)
+            let tempDatatypes = []
+            for (let param of parameters) {
+                if (findInputType(param.type) == 'custom') {
+                    console.log('custom', param.type)
+                    tempDatatypes.push(
+                        pipelineAPI.fetchTempDatatype(param.type)(webservice)
+                    )
+                }
+            }
+            return Promise.all(tempDatatypes)
+        })
+        .then((tempDatatypes) => {
+            let allDatatypes = getState().pipeline.datatypes
+            allDatatypes = allDatatypes.concat(tempDatatypes)
+            dispatch(setDatatypes(allDatatypes))
         })
         .catch((e) => {
             error('error fetching stylesheet parameters', e)

@@ -4,7 +4,6 @@ import { ScriptItemBase, TypeChoice, ValueChoice } from 'shared/types'
 import { useEffect, useState, useMemo } from 'react'
 import { ControlledInput } from './ControlledInput'
 import { MarkdownDescription } from './MarkdownDescription'
-import { fetchTemporaryDatatype } from 'renderer/utils/temp-datatype'
 
 export function CustomField({
     item,
@@ -22,20 +21,12 @@ export function CustomField({
     const { pipeline } = useWindowStore()
     const [value, setValue] = useState(initialValue)
     const [userInteracted, setUserInteracted] = useState(false) // false if the user started typing
-    const [datatype, setDatatype] = useState(
+    const [datatype] = useState(
         pipeline.datatypes.find((dt) => dt.id == item.type) ?? null
     )
     const [expanded, setExpanded] = useState(false)
 
-    useMemo(() => {
-        const fetchData = async () => {
-            let datatypeDetails = await fetchTemporaryDatatype(item.type)
-            // @ts-ignore
-            setDatatype({ ...datatypeDetails })
-        }
-        fetchData()
-    }, [])
-
+   
     useEffect(() => {
         const elem = document.getElementById(controlId) as HTMLInputElement
         if (elem) {

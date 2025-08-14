@@ -227,6 +227,21 @@ export class PipelineAPI {
             (text) => datatypesXmlToJson(text)
         )
     }
+    // temp datatypes are identified by a UID and should be cached
+    fetchTempDatatype(datatypeId) {
+        let href = ''
+        return this.createPipelineFetchFunction(
+            (ws) => {
+                href = `${baseurl(ws)}/datatypes/${datatypeId}`
+                return href
+            },
+            (text) => {
+                let json = datatypeXmlToJson(href, datatypeId, text)
+                // cache json
+                return json
+            }
+        )
+    }
     fetchAlive() {
         return this.createPipelineFetchFunction(
             (ws) => `${baseurl(ws)}/alive`,

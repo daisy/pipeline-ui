@@ -2,12 +2,13 @@
 // item.type can be:
 // anyFileURI, anyDirURI, xsd:string, xsd:dateTime, xsd:boolean, xsd:integer, xsd:float, xsd:double, xsd:decimal
 
-import { findInputType, getArr0 } from 'renderer/utils'
+import { getArr0 } from 'renderer/utils'
 import { ScriptInput, ScriptItemBase } from 'shared/types'
 import { CustomField } from './CustomField'
 import { SingleFileInput } from './SingleFileInput'
 import { MultiFileInput } from './MultiFileInput'
 import { MultiUriInput } from './MultiUriInput'
+import { findInputType } from 'shared/utils'
 
 const { App } = window
 

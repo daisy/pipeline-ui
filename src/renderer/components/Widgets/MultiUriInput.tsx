@@ -22,7 +22,7 @@ const MultiUriInput: React.FC<MultiFileInputProps> = ({
 }) => {
     const [files, setFiles] = useState<string[]>(initialValue)
     const [text, setText] = useState<string>('')
-    
+
     const addFiles = (newFiles: string[]) => {
         console.log(files, newFiles)
         // make list unique
@@ -33,39 +33,46 @@ const MultiUriInput: React.FC<MultiFileInputProps> = ({
         onChange?.(changedFiles)
     }
     return (
-        <div className="multi-file-input">
+        <div className="multi-file-input multi-uri-input">
             <label htmlFor={`${elemId}-input`}>
-                Enter a file url or browse for a local file:
+                Browse for a file or enter a URI:
             </label>
-            <div className="row">
-                <input
-                    id={`${elemId}-input`}
-                    type="text"
-                    value={text}
-                    onChange={(e) => setText(e.target.value)}
-                />
-                <FileInput
-                    elemId={elemId}
-                    allowFile={allowFile}
-                    allowFolder={allowFolder}
-                    mediaType={mediaType}
-                    onChange={(f) => {
-                        if (f && f.length > 0) setText(f[0])
-                    }}
-                />
-                <button
-                    disabled={text.trim() == ''}
-                    type="button"
-                    onClick={(e) => addFiles([text])}
-                >
-                    Add
-                </button>
+            <div className="row controls">
+                <div className="row">
+                    <FileInput
+                        elemId={elemId}
+                        allowFile={allowFile}
+                        allowFolder={allowFolder}
+                        mediaType={mediaType}
+                        onChange={(f) => {
+                            if (f && f.length > 0) addFiles(f)
+                        }}
+                        label="Add file"
+                    />
+                </div>
+                <p>or</p>
+                <div className="row uri-input">
+                    <input
+                        id={`${elemId}-input`}
+                        type="text"
+                        value={text}
+                        onChange={(e) => setText(e.target.value)}
+                    />
+                    <button
+                        disabled={text.trim() == ''}
+                        type="button"
+                        onClick={(e) => addFiles([text])}
+                    >
+                        Add URI
+                    </button>
+                </div>
             </div>
             <FileList
                 onChange={(files) => updateFiles(files)}
                 files={files}
                 canSort={false}
                 showAsType={FileAsType.AS_URL}
+                required={required}
             />
         </div>
     )

@@ -17,11 +17,11 @@ const FileList = ({ onChange, files, canSort, showAsType, required }) => {
     return (
         <>
             {!files.length && !required && (
-                <p className="file-list no-files">No files</p>
+                <p className="file-list no-files">No items</p>
             )}
             {!files.length && required && (
                 <p className="file-list-no-files error">
-                    At least one file is required
+                    At least one item is required
                 </p>
             )}
             {files.length > 0 && (

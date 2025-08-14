@@ -67,6 +67,30 @@ input:invalid {
         width: 100%;
     }
 }
+.multi-uri-input {
+    .controls {
+        justify-self: left;
+        align-items: center;
+        width: 100%;
+        .row {
+            align-items:stretch;
+        }
+        .uri-input {
+            flex-grow: 2;
+        }
+    }
+    
+}
 .description {
     font-size: var(--fontsize-smaller);
+}
+
+@media(max-width: 1000px) {
+    .multi-file-input {
+        .controls {
+            flex-direction: column;
+            gap: .5rem;
+            align-items: baseline;
+        }
+    }
 }

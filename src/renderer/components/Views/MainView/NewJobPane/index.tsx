@@ -21,6 +21,7 @@ import { is2StepsScript } from 'shared/utils'
 
 import { SelectScript } from '../../../Widgets/SelectScript'
 import { DragDropFilterFiles } from '../../../Widgets/DragDropFilterFiles'
+import { validateJobRequestSync } from 'renderer/utils/jobRequestValidator'
 
 // is dateInMs more than 2 weeks old
 function isExpired(dateInMs: number) {
@@ -101,7 +102,8 @@ export function NewJobPane({ job }: { job: Job }) {
         }
 
         jobRequest.inputs = [...inputsCopy]
-
+        let validationResults = validateJobRequestSync(jobRequest, script)
+        jobRequest.validation = [...validationResults]
         App.store.dispatch(
             updateJob({
                 ...job,

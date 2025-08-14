@@ -22,16 +22,25 @@ import {
     updateArrayValue,
 } from 'shared/utils'
 import { CustomName } from '../../../Widgets/CustomName'
+import { validateJobRequest } from 'renderer/utils/jobRequestValidator'
 const { App } = window
 
 export function ScriptForm({ job }: { job: Job }) {
+    const { settings } = useWindowStore()
+
     const [submitInProgress, setSubmitInProgress] = useState(false)
-    const [canRunJob, setCanRunJob] = useState(false)
+    const [hasDownloadFolder, setHasDownloadFolder] = useState(
+        settings.downloadFolder?.trim() != ''
+    )
+    const [isValidJobRequest, setIsValidJobRequest] = useState(
+        job.jobRequest.validation.find((v) => v.required && !v.validValue) ==
+            undefined
+    )
+
     const submitButtonRef = useRef(null)
 
     let required = getAllRequired(job.script)
     let optional = getAllOptional(job.script)
-    const { settings } = useWindowStore()
 
     useMemo(() => {
         // menu item triggers this event to submit the form
@@ -43,7 +52,8 @@ export function ScriptForm({ job }: { job: Job }) {
     }, [])
 
     useEffect(() => {
-        setCanRunJob(settings.downloadFolder?.trim() != '')
+        let validDownloadFolder = settings.downloadFolder?.trim() != ''
+        setHasDownloadFolder(hasDownloadFolder && validDownloadFolder)
     }, [settings.downloadFolder])
 
     useEffect(() => {
@@ -116,7 +126,7 @@ export function ScriptForm({ job }: { job: Job }) {
         if (!job.jobRequest) {
             return
         }
-
+        console.log("save value in job request", value, item)
         let inputs = [...job.jobRequest.inputs]
         let options = [...job.jobRequest.options]
         let stylesheetParameterOptions = [
@@ -154,15 +164,28 @@ export function ScriptForm({ job }: { job: Job }) {
                 options = updateArrayValue(value_, item, options)
             }
         }
+        let modifiedJobRequest = {
+            ...job.jobRequest,
+            inputs: [...inputs],
+            options: [...options],
+            stylesheetParameterOptions: [...stylesheetParameterOptions],
+        }
+        let requestValidationResult = await validateJobRequest(
+            modifiedJobRequest,
+            job.script,
+            App
+        )
+        console.log(requestValidationResult)
+        modifiedJobRequest.validation = [...requestValidationResult]
+        setIsValidJobRequest(
+            modifiedJobRequest.validation.find(
+                (v) => v.required && !v.validValue
+            ) == undefined
+        )
         App.store.dispatch(
             updateJob({
                 ...job,
-                jobRequest: {
-                    ...job.jobRequest,
-                    inputs: [...inputs],
-                    options: [...options],
-                    stylesheetParameterOptions: [...stylesheetParameterOptions],
-                },
+                jobRequest: modifiedJobRequest,
                 jobRequestError: undefined,
                 errors: job.errors?.filter((e) => e.fieldName !== item.name),
             })
@@ -270,7 +293,7 @@ export function ScriptForm({ job }: { job: Job }) {
             }
         }
     }
-    
+
     return (
         <form
             className="script"
@@ -373,7 +396,7 @@ export function ScriptForm({ job }: { job: Job }) {
                     )}
                 </fieldset>
             )}
-            {!canRunJob && (
+            {!hasDownloadFolder && settings.downloadFolder?.trim() == '' && (
                 <div className="warnings">
                     <p className="warning">
                         Go under settings and choose a results folder location
@@ -403,7 +426,11 @@ export function ScriptForm({ job }: { job: Job }) {
                     <button
                         className="important"
                         type="submit"
-                        disabled={!canRunJob || submitInProgress}
+                        disabled={
+                            !hasDownloadFolder ||
+                            !isValidJobRequest ||
+                            submitInProgress
+                        }
                         ref={submitButtonRef}
                     >
                         Run

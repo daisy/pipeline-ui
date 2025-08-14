@@ -1,5 +1,9 @@
 import { createSlice } from '@reduxjs/toolkit'
 import type { PayloadAction } from '@reduxjs/toolkit'
+import {
+    validateJobRequest,
+    validateJobRequestSync,
+} from 'renderer/utils/jobRequestValidator'
 
 import {
     Job,
@@ -34,13 +38,12 @@ const initialState = {
 } as PipelineState
 
 function isNonPrimaryInBatch(job) {
-    console.log("isNonPrimaryInBatch", job)
-    let retval = (
+    console.log('isNonPrimaryInBatch', job)
+    let retval =
         job &&
         job.jobRequest &&
         job.jobRequest.batchId &&
         !job.isPrimaryForBatch
-    )
     console.log(retval)
     return retval
 }
@@ -342,9 +345,9 @@ export const pipeline = createSlice({
                 ++i
             } while (
                 (!alsoSelectInvisible &&
-                state.jobs[selectedJobIndex].invisible) || 
-                isNonPrimaryInBatch(state.jobs[selectedJobIndex]) && 
-                i < state.jobs.length
+                    state.jobs[selectedJobIndex].invisible) ||
+                (isNonPrimaryInBatch(state.jobs[selectedJobIndex]) &&
+                    i < state.jobs.length)
             )
             state.selectedJobId = state.jobs[selectedJobIndex].internalId
         },
@@ -364,9 +367,9 @@ export const pipeline = createSlice({
                 ++i
             } while (
                 (!alsoSelectInvisible &&
-                state.jobs[selectedJobIndex].invisible) ||
-                isNonPrimaryInBatch(state.jobs[selectedJobIndex]) &&
-                i < state.jobs.length
+                    state.jobs[selectedJobIndex].invisible) ||
+                (isNonPrimaryInBatch(state.jobs[selectedJobIndex]) &&
+                    i < state.jobs.length)
             )
             state.selectedJobId = state.jobs[selectedJobIndex].internalId
         },
@@ -485,7 +488,8 @@ export const selectors = {
             job.jobRequest && job.jobRequest.scriptHref == script?.href
         const scriptInputs = script?.inputs ?? []
         const scriptOptions = script?.options ?? []
-        return {
+        // modifiedJobRequest.validation = [...requestValidationResult]
+        let jobRequest = {
             scriptHref: script?.href ?? '',
             inputs: scriptInputs.map((item, index) => {
                 return {
@@ -514,6 +518,9 @@ export const selectors = {
             }),
             stylesheetParameterOptions: [],
         } as JobRequest
+        let validationResults = validateJobRequestSync(jobRequest, script)
+        jobRequest.validation = [...validationResults]
+        return jobRequest
     },
 }
 

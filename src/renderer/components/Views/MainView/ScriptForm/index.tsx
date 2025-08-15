@@ -36,7 +36,6 @@ export function ScriptForm({ job }: { job: Job }) {
         job.jobRequest.validation.find((v) => v.required && !v.validValue) ==
             undefined
     )
-
     const submitButtonRef = useRef(null)
 
     let required = getAllRequired(job.script)
@@ -126,7 +125,6 @@ export function ScriptForm({ job }: { job: Job }) {
         if (!job.jobRequest) {
             return
         }
-        console.log("save value in job request", value, item)
         let inputs = [...job.jobRequest.inputs]
         let options = [...job.jobRequest.options]
         let stylesheetParameterOptions = [
@@ -175,7 +173,6 @@ export function ScriptForm({ job }: { job: Job }) {
             job.script,
             App
         )
-        console.log(requestValidationResult)
         modifiedJobRequest.validation = [...requestValidationResult]
         setIsValidJobRequest(
             modifiedJobRequest.validation.find(
@@ -419,6 +416,7 @@ export function ScriptForm({ job }: { job: Job }) {
                         className="important"
                         type="submit"
                         ref={submitButtonRef}
+                        disabled={!hasDownloadFolder || !isValidJobRequest}
                     >
                         Next
                     </button>

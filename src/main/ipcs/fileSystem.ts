@@ -125,17 +125,14 @@ async function traverseDirectory(dirPath): Promise<Array<FileTreeEntry>> {
 }
 function isFile(itemPath: string) {
     let filepath = itemPath
-    console.log("isFile", itemPath)
     if (!itemPath || itemPath == '' || itemPath == undefined) {
         return false
     }
     if (itemPath.startsWith('file:')) {
         filepath = fileURLToPath(itemPath)
-        console.log("to path", filepath)
     }
     if (fs.existsSync(filepath)) {
         let stats = fs.statSync(filepath)
-        console.log('stats', stats)
         return stats.isFile()
     }
     return false

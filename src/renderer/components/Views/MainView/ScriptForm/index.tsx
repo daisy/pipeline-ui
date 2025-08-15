@@ -23,6 +23,8 @@ import {
 } from 'shared/utils'
 import { CustomName } from '../../../Widgets/CustomName'
 import { validateJobRequest } from 'renderer/utils/jobRequestValidator'
+//@ts-ignore
+import { JobRequestError } from './jobRequestError'
 const { App } = window
 
 export function ScriptForm({ job }: { job: Job }) {
@@ -117,6 +119,7 @@ export function ScriptForm({ job }: { job: Job }) {
             updateJob({
                 ...job,
                 stylesheetParameters: null,
+                jobRequestError: null,
             })
         )
     }
@@ -289,6 +292,20 @@ export function ScriptForm({ job }: { job: Job }) {
                 )
             }
         }
+    }
+
+    if (job.jobRequestError) {
+        return (
+            <form
+                className="script"
+                aria-label={`Script form for ${job.script.nicename}`}
+            >
+                <JobRequestError jobRequestError={job.jobRequestError} />
+                <button className="important" onClick={previous} type="button">
+                    Back
+                </button>
+            </form>
+        )
     }
 
     return (

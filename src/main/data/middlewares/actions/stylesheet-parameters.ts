@@ -74,7 +74,6 @@ export function requestStylesheetParameters(
             }
         })
         .then((parameters: ScriptOption[]) => {
-            console.log('Need to get datatypes for ', parameters)
             let tempDatatypes = []
             for (let param of parameters) {
                 if (findInputType(param.type) == 'custom') {

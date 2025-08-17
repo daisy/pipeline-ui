@@ -320,6 +320,7 @@ export type JobRequest = {
     stylesheetParameterOptions?: Array<NameValue>
     outputs?: Array<NameValue>
     callbacks?: Array<Callback>
+    validation: Array<ValidationInfo>
 }
 export type Datatype = {
     href: string
@@ -342,4 +343,10 @@ export type Filetype = {
     name?: string
     extensions: string[]
     type: string
+}
+export type ValidationInfo = {
+    item: NameValue
+    validValue: boolean
+    message: string
+    required: boolean
 }

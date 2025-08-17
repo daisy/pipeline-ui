@@ -30,10 +30,10 @@ export function getRelevantScripts(filetype) {
             s.inputs.find((i) => i.mediaType.includes(filetype))
         )
     }
-    debug(
-        `Relevant scripts for ${filetype}: ${JSON.stringify(
-            retval.map((v) => v?.id ?? '')
-        )}`
-    )
+    // debug(
+    //     `Relevant scripts for ${filetype}: ${JSON.stringify(
+    //         retval.map((v) => v?.id ?? '')
+    //     )}`
+    // )
     return retval
 }

@@ -13,7 +13,7 @@ module.exports = {
     rules: {
         '@typescript-eslint/no-empty-interface': 0,
         'prettier/prettier': [
-            'error',
+            'warn',
             {
                 semi: false,
                 endOfLine: 'auto',

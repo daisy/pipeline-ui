@@ -145,7 +145,7 @@ export function Success({ width, height }) {
             <title>Completed</title>
             <path
                 d="M960 1807.059c-467.125 0-847.059-379.934-847.059-847.059 0-467.125 379.934-847.059 847.059-847.059 467.125 0 847.059 379.934 847.059 847.059 0 467.125-379.934 847.059-847.059 847.059M960 0C430.645 0 0 430.645 0 960s430.645 960 960 960 960-430.645 960-960S1489.355 0 960 0M854.344 1157.975 583.059 886.69l-79.85 79.85 351.135 351.133L1454.4 717.617l-79.85-79.85-520.206 520.208Z"
-                fill-rule="evenodd"
+                fillRule="evenodd"
             />
         </svg>
     )
@@ -162,5 +162,17 @@ export function JobStatusIcon(status: JobStatus, { width, height }) {
     }
     if (status == JobStatus.SUCCESS) {
         return Success({ width, height })
+    }
+}
+
+export function TTSEngineStatusIcon(status: string, {width, height}) {
+    if (status == 'available') {
+        return Success({width, height})
+    }
+    else if (status == 'disabled') {
+        return Failed({width, height})
+    }
+    else {
+        return <></>
     }
 }

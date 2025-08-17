@@ -1,5 +1,5 @@
-import { debug } from 'electron-log'
-import { JobRequest, Script } from 'shared/types'
+import { JobRequest } from 'shared/types'
+import { readableStatus } from 'shared/jobName'
 
 // make an HTML-friendly ID string
 export let ID = (id) => `z-${id}`
@@ -42,33 +42,6 @@ export function findValue(
     return value
 }
 
-export function findInputType(type) {
-    let inputType = ''
-    if (['anyFileURI', 'anyDirURI'].includes(type)) {
-        inputType = 'file'
-    } else if (['xsd:dateTime', 'xs:dateTime', 'datetime'].includes(type)) {
-        inputType = 'datetime-local'
-    } else if (['xsd:boolean', 'xs:boolean', 'boolean'].includes(type)) {
-        inputType = 'checkbox'
-    } else if (['xsd:string', 'xs:string', 'string'].includes(type)) {
-        inputType = 'text'
-    } else if (
-        ['xsd:integer', 'xs:integer', 'integer', 'number'].includes(type)
-    ) {
-        inputType = 'number'
-    } else if (type == 'nonNegativeInteger') {
-        inputType = 'nonNegativeInteger'
-    } else if (['xsd:float', 'xsd:double', 'xsd:decimal'].includes(type)) {
-        inputType = 'float'
-    } else if (type == 'anyURI') {
-        inputType = 'uri'
-    } else if (type == '') {
-        inputType = 'text'
-    } else {
-        inputType = 'custom'
-    }
-    return inputType
-}
 
 export function externalLinkClick(e, app) {
     e.preventDefault()
@@ -81,3 +54,13 @@ export function externalLinkClick(e, app) {
 // get the first item in an array. if empty array, return empty string. if not actually array, return it.
 export let getArr0 = (val) =>
     Array.isArray(val) ? (val.length > 0 ? val[0] : '') : val
+
+export function getStatus(job) {
+    if (job.jobRequestError) {
+        return readableStatus.ERROR.toLowerCase()
+    }
+    if (job.jobData?.status) {
+        return readableStatus[job.jobData.status].toLowerCase()
+    }
+    return readableStatus.LAUNCHING.toLowerCase()
+}

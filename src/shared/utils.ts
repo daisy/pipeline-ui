@@ -142,3 +142,31 @@ export function isScriptTTSEnhanced(script: Script) {
         return false
     }
 }
+
+export function findInputType(type) {
+    let inputType = ''
+    if (['anyFileURI', 'anyDirURI'].includes(type)) {
+        inputType = 'file'
+    } else if (['xsd:dateTime', 'xs:dateTime', 'datetime'].includes(type)) {
+        inputType = 'datetime-local'
+    } else if (['xsd:boolean', 'xs:boolean', 'boolean'].includes(type)) {
+        inputType = 'checkbox'
+    } else if (['xsd:string', 'xs:string', 'string'].includes(type)) {
+        inputType = 'text'
+    } else if (
+        ['xsd:integer', 'xs:integer', 'integer', 'number'].includes(type)
+    ) {
+        inputType = 'number'
+    } else if (type == 'nonNegativeInteger') {
+        inputType = 'nonNegativeInteger'
+    } else if (['xsd:float', 'xsd:double', 'xsd:decimal'].includes(type)) {
+        inputType = 'float'
+    } else if (type == 'anyURI') {
+        inputType = 'uri'
+    } else if (type == '') {
+        inputType = 'text'
+    } else {
+        inputType = 'custom'
+    }
+    return inputType
+}

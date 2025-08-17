@@ -125,6 +125,9 @@ async function traverseDirectory(dirPath): Promise<Array<FileTreeEntry>> {
 }
 function isFile(itemPath: string) {
     let filepath = itemPath
+    if (!itemPath || itemPath == '' || itemPath == undefined) {
+        return false
+    }
     if (itemPath.startsWith('file:')) {
         filepath = fileURLToPath(itemPath)
     }
@@ -136,6 +139,9 @@ function isFile(itemPath: string) {
 }
 function isDirectory(itemPath: string) {
     let filepath = itemPath
+    if (!itemPath || itemPath == '' || itemPath == undefined) {
+        return false
+    }
     if (itemPath.startsWith('file:')) {
         filepath = fileURLToPath(itemPath)
     }

@@ -1,0 +1,75 @@
+/* new script form */
+form.script {
+
+    div.script-description {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    
+    .file-list {
+        list-style-type: none;
+        padding: 0;
+        margin: 0;
+        max-width: 90vw;
+        border-radius: var(--br);
+        padding: 1.25rem;
+        overflow: hidden;
+        border: thin solid var(--fg);
+        display: flex;
+        flex-direction: column;
+        gap: .25rem;
+
+        li {
+            display: flex;
+            align-items: center;
+            background-color: var(--bg-off);
+            border-radius: var(--br);
+            &:hover {
+                background-color: var(--hover);
+                color: var(--hover-contrast);
+                button svg {
+                    stroke: var(--hover-contrast);
+                }
+            }
+
+            span {
+                flex-basis: 100%;
+                padding: .25rem;
+                width: min-content;
+            }
+        }
+        .option-description {
+            background-color: var(--bg-off);
+            font-size: var(--fontsize-smaller);
+        }
+    }
+    .no-files {
+        padding: 2rem;
+    }
+    .custom-documentation {
+        margin: 1rem;
+        font-size: var(--fontsize-smaller);
+        &>p {
+            font-weight: bold;
+        }
+    }
+    details.option-description {
+        margin-left: 1rem;
+        background-color: var(--bg-off);
+        border-radius: var(--br);
+        padding: 4px;
+        font-size: var(--fontsize-smaller);
+        summary {
+            list-style-type: none;
+            width: min-content;
+            color: var(--primary);
+            text-decoration: underline;
+            white-space: nowrap;
+        }
+    }
+    p.error {
+        color: var(--error);
+    }
+}

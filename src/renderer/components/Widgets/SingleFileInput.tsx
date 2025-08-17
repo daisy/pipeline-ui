@@ -1,7 +1,6 @@
 // a browse button with a non-editable text field showing the selected file
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { FileInput, FileInputProps } from './FileInput'
-import { debug } from 'electron-log'
 import { getArr0 } from 'renderer/utils'
 import { File, FileAsType } from './File'
 
@@ -20,15 +19,21 @@ const SingleFileInput: React.FC<FileInputProps> = ({
     const [file, setFile] = useState<string>(getArr0(initialValue))
     let isValid = () => required && file && file.trim() != ''
     // debug("SingleFileInput initialValue", initialValue)
-    return (
-        <div className="horizontal-input single-file-input">
-            {file == '' || file == null && <span>No file selected</span>}
-            {file != '' && (
-                <>
-                <File fileUrlOrPath={file} showAsType={FileAsType.AS_PATH}/>
-                </>
-            )}
+    let getLabel = () => {
+        let str = 'Select '
+        if (allowFile) {
+            str += 'file'
+            if (allowFolder) {
+                str += ' or folder'
+            }
+        } else if (allowFolder) {
+            str += 'folder'
+        }
 
+        return str
+    }
+    return (
+        <div className="single-file-input">
             <FileInput
                 elemId={elemId}
                 allowFile={allowFile}
@@ -42,10 +47,18 @@ const SingleFileInput: React.FC<FileInputProps> = ({
                     }
                 }}
                 enabled={enabled}
+                label={getLabel()}
             />
-            {required && !isValid() && (
-                <p className="error">Value cannot be empty</p>
+            {file != '' && (
+                <>
+                    <File
+                        fileUrlOrPath={file}
+                        showAsType={FileAsType.AS_PATH}
+                    />
+                </>
             )}
+
+            {required && !isValid() && <p className="error">File required</p>}
         </div>
     )
 }

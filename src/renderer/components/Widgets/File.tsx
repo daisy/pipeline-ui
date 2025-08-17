@@ -1,5 +1,5 @@
 const { App } = window
-import { useMemo, useState, useEffect } from 'react'
+import { useMemo, useState } from 'react'
 
 export enum FileAsType {
     AS_URL,
@@ -12,7 +12,7 @@ export function File({ fileUrlOrPath, showAsType }) {
     useMemo(() => {
         const doConversion = async () => {
             if (showAsType == FileAsType.AS_PATH) {
-                if (fileUrlOrPath.indexOf('file:') != -1) {
+                if (fileUrlOrPath.indexOf('file://') != -1) {
                     let aspath = await App.fileURLToPath(fileUrlOrPath)
                     setValue(aspath)
                 } else {
@@ -20,11 +20,13 @@ export function File({ fileUrlOrPath, showAsType }) {
                     setValue(fileUrlOrPath)
                 }
             } else if (showAsType == FileAsType.AS_URL) {
-                if (fileUrlOrPath.indexOf('file:') == -1) {
+                let isFile = await App.isFile(fileUrlOrPath)
+                // if it's a local file and does not have file://, then convert it
+                if (isFile && fileUrlOrPath.indexOf('file://') == -1) {
                     let asurl = await App.pathToFileURL(fileUrlOrPath)
                     setValue(asurl)
                 } else {
-                    // else it's already a URL
+                    // else it doesn't need conversion
                     setValue(fileUrlOrPath)
                 }
             }

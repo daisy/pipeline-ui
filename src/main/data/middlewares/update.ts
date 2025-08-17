@@ -18,7 +18,7 @@ import { CancellationToken, ProgressInfo, autoUpdater } from 'electron-updater'
 import { ENVIRONMENT } from 'shared/constants'
 import packageJson from '../../../../package.json'
 
-import fetch, { Response } from 'node-fetch'
+import fetch from 'node-fetch'
 import { setAutoCheckUpdate } from 'shared/data/slices/settings'
 
 /**

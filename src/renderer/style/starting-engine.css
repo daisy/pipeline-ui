@@ -1,0 +1,17 @@
+main:has(div.starting-engine) {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+}
+div.starting-engine {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-items: center;
+    gap: 4rem;
+    p {
+        font-size: larger;
+    }
+}
+

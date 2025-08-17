@@ -1,5 +1,4 @@
-import { ipcMain, dialog, BrowserWindow, shell, clipboard } from 'electron'
-import { PLATFORM, ENVIRONMENT } from 'shared/constants'
+import { ipcMain, clipboard } from 'electron'
 
 // helper functions
 const { IPC_EVENT_copyToClipboard } = require('../../shared/main-renderer-events')

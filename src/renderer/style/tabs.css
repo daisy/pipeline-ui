@@ -1,0 +1,77 @@
+[role="tablist"] {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+}
+
+[role="tab"],
+.add-tab {
+    z-index: 2;
+
+    margin: .5rem;
+    padding: 8px;
+
+    background-color: var(--bg);
+    color: var(--fg);
+
+    border-radius: var(--br);
+    border: none;
+    outline: none;
+    
+    font-size: var(--fontsize-larger);
+    
+    overflow: hidden;
+    text-align: left;
+    cursor: pointer;
+
+    h1, h2 {
+        font-weight: normal;
+        font-size: inherit;
+    }
+    &:active {
+        background-color: var(--bg);
+        color: var(--fg);
+    }
+}
+
+[role="tab"][aria-selected="true"] {
+    background: var(--primary);
+    color: var(--primary-contrast);
+    h1, h2 {
+        font-weight: bold;
+    }
+}
+
+[role="tabpanel"] {
+    display: grid;
+    grid-template-columns: auto min-content;
+    grid-template-rows: min-content auto;
+    border-radius: var(--br);
+    
+    .close-tab {
+        grid-column: 2;
+    }
+    .tabpanel-contents {
+        grid-row: 1/3;
+        padding-left: 1rem;
+        padding-top: 1rem;
+    }
+    &:focus {
+        box-shadow: none; /* trying this bc it looks weird with the app-wide yellow outlining */
+        border-radius: 0; /* in case we use the yellow outlining after all, this flattens out the border so it matches the underlying shape */
+    }
+}
+
+.tablist-container {
+    display: flex;
+    flex-direction: row;
+    border-bottom: var(--bw) solid var(--fg);
+    position: sticky;
+    top: 0;
+    z-index: 4;
+    background-color: var(--bg-off);
+}
+.add-tab {
+    font-size: var(--fontsize-larger);
+    width: 3rem;
+}

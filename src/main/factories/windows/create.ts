@@ -1,9 +1,6 @@
-import { app, BrowserWindow, Event, ipcMain, nativeTheme } from 'electron'
-import { store } from 'main/data/store'
+import { app, BrowserWindow } from 'electron'
 
 import { ENVIRONMENT, IPC, PLATFORM } from 'shared/constants'
-import { selectPipeline } from 'shared/data/slices/pipeline'
-import { selectSettings } from 'shared/data/slices/settings'
 import { WindowProps } from 'shared/types'
 import { APP_CONFIG } from '~/app.config'
 

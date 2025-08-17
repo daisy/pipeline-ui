@@ -4,7 +4,6 @@ import { ScriptItemBase, TypeChoice, ValueChoice } from 'shared/types'
 import { useEffect, useState, useMemo } from 'react'
 import { ControlledInput } from './ControlledInput'
 import { MarkdownDescription } from './MarkdownDescription'
-import { fetchTemporaryDatatype } from 'renderer/utils/temp-datatype'
 
 export function CustomField({
     item,
@@ -25,16 +24,12 @@ export function CustomField({
     const [datatype, setDatatype] = useState(
         pipeline.datatypes.find((dt) => dt.id == item.type) ?? null
     )
+    const [expanded, setExpanded] = useState(false)
 
-    useMemo(() => {
-        const fetchData = async () => {
-            let datatypeDetails = await fetchTemporaryDatatype(item.type)
-            // @ts-ignore
-            setDatatype({ ...datatypeDetails })
-        }
-        fetchData()
-    }, [])
-
+    useEffect(() => {
+        setDatatype(pipeline.datatypes.find((dt) => dt.id == item.type) ?? null)
+    }, [pipeline.datatypes])
+   
     useEffect(() => {
         const elem = document.getElementById(controlId) as HTMLInputElement
         if (elem) {
@@ -70,7 +65,7 @@ export function CustomField({
         if (typeChoices.length) {
             return (
                 <div className="custom-field">
-                    <CustomFieldDocumentation datatypes={typeChoices} />
+                    {/* <CustomFieldDocumentation datatypes={typeChoices} /> */}
                     <ControlledInput
                         type="text"
                         required={item.required}
@@ -120,9 +115,6 @@ export function CustomField({
                                     ? ''
                                     : value
                             }
-                            aria-details={
-                                controlId + '-' + selectedOption + '-details'
-                            }
                             multiple={false}
                         >
                             {valueChoices.map((option, idx) => {
@@ -136,9 +128,6 @@ export function CustomField({
                                     // @ts-ignore
                                     <option
                                         key={controlId + '-' + idx}
-                                        aria-details={
-                                            controlId + '-' + idx + '-details'
-                                        }
                                         value={option.value}
                                     >
                                         {option.documentation
@@ -151,7 +140,7 @@ export function CustomField({
                             })}
                         </select>
                         {hasLongDescriptions && (
-                            <section id={controlId + '-details'}>
+                            <>
                                 {valueChoices.map((option, idx) => {
                                     const displayed = idx == selectedOption
                                     const selectedOptionDescription =
@@ -159,34 +148,51 @@ export function CustomField({
                                             .split('\n')
                                             .slice(1)
                                             .join('\n')
-                                    return (
-                                        <p
-                                            id={
-                                                controlId +
-                                                '-' +
-                                                idx +
-                                                '-details'
-                                            }
-                                            key={
-                                                controlId +
-                                                '-' +
-                                                idx +
-                                                '-details'
-                                            }
-                                            className={
-                                                !displayed
-                                                    ? 'visuallyhidden'
-                                                    : ''
-                                            }
-                                            style={{ margin: 0 }}
-                                        >
-                                            <MarkdownDescription>
-                                                {selectedOptionDescription}
-                                            </MarkdownDescription>
-                                        </p>
-                                    )
+                                    if (selectedOptionDescription.length > 0) {
+                                        return (
+                                            <details
+                                                open={expanded}
+                                                key={
+                                                    controlId +
+                                                    '-' +
+                                                    idx +
+                                                    '-div'
+                                                }
+                                                className={`${
+                                                    !displayed
+                                                        ? ' is-hidden'
+                                                        : ''
+                                                } option-description`}
+                                                onToggle={(e) =>
+                                                    //@ts-ignore
+                                                    setExpanded(e.target.open)
+                                                }
+                                            >
+                                                <summary>
+                                                    {expanded
+                                                        ? 'Show less'
+                                                        : 'Show more'}
+                                                </summary>
+                                                <p
+                                                    key={
+                                                        controlId +
+                                                        '-' +
+                                                        idx +
+                                                        '-details'
+                                                    }
+                                                    style={{ margin: 0 }}
+                                                >
+                                                    <MarkdownDescription>
+                                                        {
+                                                            selectedOptionDescription
+                                                        }
+                                                    </MarkdownDescription>
+                                                </p>
+                                            </details>
+                                        )
+                                    }
                                 })}
-                            </section>
+                            </>
                         )}
                     </>
                 )

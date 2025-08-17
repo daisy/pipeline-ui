@@ -2,12 +2,13 @@
 // item.type can be:
 // anyFileURI, anyDirURI, xsd:string, xsd:dateTime, xsd:boolean, xsd:integer, xsd:float, xsd:double, xsd:decimal
 
-import { externalLinkClick, findInputType, getArr0 } from 'renderer/utils'
+import { getArr0 } from 'renderer/utils'
 import { ScriptInput, ScriptItemBase } from 'shared/types'
 import { CustomField } from './CustomField'
 import { SingleFileInput } from './SingleFileInput'
 import { MultiFileInput } from './MultiFileInput'
 import { MultiUriInput } from './MultiUriInput'
+import { findInputType } from 'shared/utils'
 
 const { App } = window
 
@@ -73,18 +74,20 @@ export function formFieldFactory(
                 checked={initialValue === 'true' || initialValue === true}
                 aria-invalid={error ? 'true' : 'false'}
                 aria-errormessage={controlId + '-error'}
+                aria-label={item.nicename ?? item.name}
             ></input>
         )
     } else if (['nonNegativeInteger', 'float', 'number'].includes(inputType)) {
         return (
             <input
                 type="number"
-                min={inputType == 'nonNegativeInteger' ? 1 : 'any'}
+                min={inputType == 'nonNegativeInteger' ? 0 : 'any'}
                 step={inputType == 'float' ? 0.01 : 1}
                 required={item.required}
                 onChange={(e) => onChange(e.target.value, item)}
                 id={controlId}
-                defaultValue={initialValue}
+                defaultValue={inputType}
+                aria-label={item.nicename ?? item.name}
             ></input>
         )
     } else if (inputType == 'custom') {
@@ -118,6 +121,7 @@ export function formFieldFactory(
                 onChange={(e) => onChange(e.target.value, item)}
                 aria-invalid={error ? 'true' : 'false'}
                 aria-errormessage={controlId + '-error'}
+                aria-label={item.nicename ?? item.name}
             />
         )
     }

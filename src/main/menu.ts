@@ -69,7 +69,10 @@ export function buildMenuTemplate({
         currentJob &&
         currentJob.state == JobState.NEW &&
         currentJob.jobRequest != null &&
-        selectDownloadPath(store.getState()) != ''
+        selectDownloadPath(store.getState()) != '' &&
+        currentJob.jobRequest.validation.find(
+            (v) => v.required && !v.validValue
+        ) == undefined
 
     let canCloseJob = true
     if (currentJob?.isPrimaryForBatch) {

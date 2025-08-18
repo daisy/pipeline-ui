@@ -5,6 +5,7 @@ import { Job, JobStatus } from '/shared/types'
 
 import { cancelBatchJob } from 'shared/data/slices/pipeline'
 import { useState, useEffect } from 'react'
+// @ts-ignore
 import { JobDetails } from './JobDetails'
 import { getIdleCountInBatch } from 'shared/utils'
 import { JobStatusIcon } from '../../../Widgets/SvgIcons'
@@ -127,7 +128,7 @@ export function BatchJobDetailsPane({ jobs }: { jobs: Array<Job> }) {
                 {getIdleCountInBatch(primaryJob, jobs) != 0 && (
                     <div className="controls">
                         <button type="button" onClick={(e) => onCancelBatch()}>
-                            Cancel remaining
+                            Cancel scheduled jobs
                         </button>
                     </div>
                 )}

@@ -191,7 +191,7 @@ export function MainView() {
                                     }
                                 }
                             }}
-                            title="Close tab"
+                            title="Close job"
                             className="close-tab invisible"
                         >
                             <X width={20} height={20} />

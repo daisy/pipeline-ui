@@ -44,7 +44,8 @@ import {
     selectPipeline,
     selectNextJob,
     selectPrevJob,
-    removeBatchJob
+    removeBatchJob,
+    cancelBatchJob
 } from 'shared/data/slices/pipeline'
 import { setupClipboardEvents } from './ipcs/clipboard'
 import { checkForUpdate } from 'shared/data/slices/update'
@@ -217,6 +218,9 @@ function buildMenu() {
         onShowAbout: async () => {
             // Open the settings window
             ipcMain.emit(IPC.WINDOWS.ABOUT.CREATE)
+        },
+        onCancelBatchJob: async (jobsInBatch) => {
+            store.dispatch(cancelBatchJob(jobsInBatch))
         },
     })
     // @ts-ignore

@@ -180,6 +180,7 @@ export const pipeline = createSlice({
                     job.state = JobState.NEW
                     if (job.jobData && job.jobData.results) {
                         job.jobData.results = undefined
+                        job.jobData.status = null
                     }
                     if (job.jobRequestError) {
                         job.jobRequestError = undefined

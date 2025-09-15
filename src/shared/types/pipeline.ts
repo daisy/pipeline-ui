@@ -244,6 +244,7 @@ export type JobData = {
     nicename?: string
     scriptHref?: string
     href: string
+    notificationsUrl?: string
 }
 
 // thrown by the pipeline when a job request could not be processed

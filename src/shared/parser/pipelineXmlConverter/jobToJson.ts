@@ -25,6 +25,7 @@ function jobElementToJson(jobElm: Element): JobData {
             jobElm.getAttribute('status') as keyof typeof JobStatus
         ],
         href: jobElm.getAttribute('href'),
+        notificationsUrl: jobElm.getAttribute('notifications'),
     }
 
     // TODO is nicename an element or attribute on <job>?

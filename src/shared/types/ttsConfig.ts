@@ -18,6 +18,13 @@ export type TtsConfig = {
     defaultVoices: Array<TtsVoice>
     ttsEngineProperties: Array<TtsEngineProperty>
     xmlFilepath?: string
+    ttsEngineStates: Array<TtsEngineState>
+}
+export type _TtsConfig_v150 = {
+    preferredVoices: Array<TtsVoice>
+    defaultVoices: Array<TtsVoice>
+    ttsEngineProperties: Array<TtsEngineProperty>
+    xmlFilepath?: string
 }
 
 export type TtsEngineState = {

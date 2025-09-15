@@ -1,5 +1,5 @@
 import { PipelineInstanceProperties, Webservice } from './pipeline'
-import { TtsConfig, TtsEngineProperty, TtsVoice } from './ttsConfig'
+import { _TtsConfig_v150, TtsConfig, TtsEngineProperty, TtsVoice } from './ttsConfig'
 
 export enum ColorScheme {
     system = 'System default mode',
@@ -17,14 +17,9 @@ export enum ClosingMainWindowAction {
 // allow connection to multiple pipelines at the same time with an array of pipeline properties
 // This could allow the calling of scripts from pipeline with different features enabled, like specific TTS systems (acapela or SAPI)
 
-/**
- * 1.0.0
- * - Adding settingsVersion for upgrading
- * - Updated the pipeline instance properties
- * - Merged app and job actions on closing main window
- */
+// added in settings version 1.6.0: TtsConfig has ttsEngineStates
 export type ApplicationSettings = {
-    settingsVersion: '1.5.0'
+    settingsVersion: '1.6.0'
     // Default folder to download the results on the user disk
     downloadFolder?: string
     // Pipeline instance properties for IPCs
@@ -34,15 +29,18 @@ export type ApplicationSettings = {
     // Actions to perform when closing the main window
     onClosingMainWindow?: keyof typeof ClosingMainWindowAction
     editJobOnNewTab?: boolean
-    // tts preferred voices
     ttsConfig?: TtsConfig
     autoCheckUpdate?: boolean
-    sponsorshipMessageLastShown?: number
+    textSize?: number
+    font?: string
+    zoomLevel?: number
 }
 
 export function migrateSettings(
     settings:
         | ApplicationSettings
+        | _ApplicationSettings_v150
+        | _ApplicationSettings_v140
         | _ApplicationSettings_v130
         | _ApplicationSettings_v0
 ): ApplicationSettings {
@@ -77,13 +75,28 @@ const migrators: Map<string, (prev: any) => any> = new Map<
     // Insert new migrators here as [ 'version', (prev) => ApplicationSettings ]
     // Don't forget to update the settings class of previous migrators
     [
-        '1.5.0',
-        (prev: _ApplicationSettings_v140): ApplicationSettings => {
+        '1.6.0',
+        (prev: _ApplicationSettings_v150): ApplicationSettings => {
             const { settingsVersion, ...toKeep } = prev
             return {
-                sponsorshipMessageLastShown: 0,
+                settingsVersion: '1.6.0',
+                ttsConfig: {
+                    ...prev.ttsConfig,
+                    ttsEngineStates: [],
+                },
                 ...toKeep,
             } as ApplicationSettings
+        },
+    ],
+    [
+        '1.5.0',
+        (prev: _ApplicationSettings_v140): _ApplicationSettings_v150 => {
+            const { settingsVersion, ...toKeep } = prev
+            return {
+                settingsVersion: '1.5.0',
+                sponsorshipMessageLastShown: 0,
+                ...toKeep,
+            } as _ApplicationSettings_v150
         },
     ],
     [
@@ -155,6 +168,22 @@ const migrators: Map<string, (prev: any) => any> = new Map<
         },
     ],
 ])
+export type _ApplicationSettings_v150 = {
+    settingsVersion: '1.5.0'
+    // Default folder to download the results on the user disk
+    downloadFolder?: string
+    // Pipeline instance properties for IPCs
+    pipelineInstanceProps?: PipelineInstanceProperties
+    // Dark mode selector
+    colorScheme: keyof typeof ColorScheme
+    // Actions to perform when closing the main window
+    onClosingMainWindow?: keyof typeof ClosingMainWindowAction
+    editJobOnNewTab?: boolean
+    // tts preferred voices
+    ttsConfig?: _TtsConfig_v150
+    autoCheckUpdate?: boolean
+    sponsorshipMessageLastShown?: number
+}
 
 export type _ApplicationSettings_v140 = {
     settingsVersion: '1.4.0'

@@ -203,6 +203,7 @@ export function PreferredVoices({
                                     (v) => getLang(v.lang) == lang
                                 ) && (
                                     <button
+                                        type="button"
                                         onClick={(e) => clearDefaultVoice(lang)}
                                     >
                                         Clear default

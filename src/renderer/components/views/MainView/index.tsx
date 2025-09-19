@@ -17,12 +17,16 @@ import {
     selectPrevJob,
     removeBatchJob,
 } from 'shared/data/slices/pipeline'
+// @ts-ignore
 import { NewJobPane } from './NewJobPane'
 import { calculateJobName } from 'shared/jobName'
 import { PLATFORM } from 'shared/constants'
 import { Plus, X } from '../../Widgets/SvgIcons'
+// @ts-ignore
 import { BatchJobDetailsPane } from 'renderer/components/Views/MainView/JobDetailsPane/BatchJobPane'
+// @ts-ignore
 import { SingleJobDetailsPane } from 'renderer/components/Views/MainView/JobDetailsPane/SingleJobPane'
+// @ts-ignore
 import { ScriptForm } from 'renderer/components/Views/MainView/ScriptForm'
 import { TabList } from 'renderer/components/Widgets/TabList'
 import { areAllJobsInBatchDone } from 'shared/utils'
@@ -94,8 +98,7 @@ export function MainView() {
             )
         } else if (job.jobRequestError) {
             return true
-        }
-        else if (job.state == JobState.NEW) {
+        } else if (job.state == JobState.NEW) {
             return true
         }
     }

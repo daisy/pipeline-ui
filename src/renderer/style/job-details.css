@@ -100,7 +100,7 @@
             font-size: var(--fontsize-smaller);
         }
         ul {
-            font-family: var(--fw-font-fam);
+            font-family: var(--fixed-width-font);
             padding-left: 1rem;
             list-style-type: none;
             

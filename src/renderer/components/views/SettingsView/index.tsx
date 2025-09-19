@@ -2,14 +2,19 @@ import { useEffect, useState } from 'react'
 import { useWindowStore } from 'renderer/store'
 import { ApplicationSettings } from 'shared/types'
 import { save, setTtsConfig } from 'shared/data/slices/settings'
-
+//@ts-ignore
 import { Engines } from './Engines'
+//@ts-ignore
 import { MoreTTSOptions } from './MoreTTSOptions'
+//@ts-ignore
 import { BrowseVoices } from './BrowseVoices'
+//@ts-ignore
 import { PreferredVoices } from './PreferredVoices'
 import { ID } from 'renderer/utils'
 import { TabList } from 'renderer/components/Widgets/TabList'
+//@ts-ignore
 import { General } from './General'
+//@ts-ignore
 import { Appearance } from './Appearance'
 import { Behavior } from './Behavior'
 import { Updates } from './Updates'
@@ -32,11 +37,13 @@ type VoiceFilter = { id: string; value: string }
 
 type SettingsViewProps = {
     selectedItem?: SettingsMenuItem
+    title?: string
 }
 
 export function SettingsView(
     props: SettingsViewProps = {
         selectedItem: SettingsMenuItem.General,
+        title: 'Settings',
     }
 ) {
     // Current registered settings
@@ -51,6 +58,8 @@ export function SettingsView(
             ...settings.ttsConfig,
         },
     })
+
+    document.title = props.title
 
     useEffect(() => {
         // Reload settings from store if it has changed
@@ -81,6 +90,7 @@ export function SettingsView(
             defaultVoices: [...settings.ttsConfig.defaultVoices],
             ttsEngineProperties: [...settings.ttsConfig.ttsEngineProperties],
             xmlFilepath: newSettings.ttsConfig.xmlFilepath,
+            ttsEngineStates: [...settings.ttsConfig.ttsEngineStates],
         }
         App.store.dispatch(setTtsConfig(newConfig))
         App.store.dispatch(save())
@@ -97,6 +107,7 @@ export function SettingsView(
             defaultVoices: [...tmpVoices],
             ttsEngineProperties: [...settings.ttsConfig.ttsEngineProperties],
             xmlFilepath: newSettings.ttsConfig.xmlFilepath,
+            ttsEngineStates: [...settings.ttsConfig.ttsEngineStates],
         }
         App.store.dispatch(setTtsConfig(newConfig))
         App.store.dispatch(save())
@@ -115,6 +126,7 @@ export function SettingsView(
             defaultVoices: [...tmpVoices],
             ttsEngineProperties: [...settings.ttsConfig.ttsEngineProperties],
             xmlFilepath: newSettings.ttsConfig.xmlFilepath,
+            ttsEngineStates: [...settings.ttsConfig.ttsEngineStates],
         }
         App.store.dispatch(setTtsConfig(newConfig))
         App.store.dispatch(save())
@@ -125,6 +137,7 @@ export function SettingsView(
             defaultVoices: [...settings.ttsConfig.defaultVoices],
             ttsEngineProperties: [...ttsEngineProperties],
             xmlFilepath: newSettings.ttsConfig.xmlFilepath,
+            ttsEngineStates: [...settings.ttsConfig.ttsEngineStates],
         }
         App.store.dispatch(setTtsConfig(newConfig))
         App.store.dispatch(save())
@@ -238,7 +251,6 @@ export function SettingsView(
     return (
         <>
             <div className="sidebar">
-                <h1>Settings</h1>
                 <TabList
                     items={tabItems}
                     onKeyDown={onKeyDown}
@@ -251,7 +263,7 @@ export function SettingsView(
                     }
                     getTabAriaControls={(item, idx) => `${ID(idx)}-tabpanel`}
                     getTabTitle={(item, idx) => item.label}
-                    getTabLabel={(item, idx) => <h2>{item.label}</h2>}
+                    getTabLabel={(item, idx) => <h1>{item.label}</h1>}
                     onTabClick={(item, idx) => {
                         setSelectedSection(item.section)
                         setFocus(`${ID(idx)}-tabpanel`)

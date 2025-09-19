@@ -1,10 +1,25 @@
 import { PipelineInstanceProperties, Webservice } from './pipeline'
-import { _TtsConfig_v150, TtsConfig, TtsEngineProperty, TtsVoice } from './ttsConfig'
+import {
+    _TtsConfig_v150,
+    TtsConfig,
+    TtsEngineProperty,
+    TtsVoice,
+} from './ttsConfig'
 
 export enum ColorScheme {
     system = 'System default mode',
     light = 'Light mode',
     dark = 'Dark mode',
+}
+export enum Font {
+    system = 'System (default)',
+    arial = 'Arial',
+    couriernew = 'Courier New',
+    georgia = 'Georgia',
+    luciole = 'Luciole',
+    monospace = 'Monospace',
+    timesnewroman = 'Times New Roman',
+    verdana = 'Verdana',
 }
 export enum ClosingMainWindowAction {
     keepall = 'Keep all jobs opened with the application running in tray',
@@ -32,8 +47,9 @@ export type ApplicationSettings = {
     ttsConfig?: TtsConfig
     autoCheckUpdate?: boolean
     textSize?: number
-    font?: string
+    fontName?: string
     zoomLevel?: number
+    sponsorshipMessageLastShown?: number
 }
 
 export function migrateSettings(
@@ -84,6 +100,9 @@ const migrators: Map<string, (prev: any) => any> = new Map<
                     ...prev.ttsConfig,
                     ttsEngineStates: [],
                 },
+                textSize: 1.0 /* 1.0 = 100% */,
+                fontName: '',
+                zoomLevel: 0,
                 ...toKeep,
             } as ApplicationSettings
         },

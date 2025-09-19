@@ -1,6 +1,15 @@
 @import "reset.css";
 @import "imports.css";
 
+@font-face {
+    font-family: "Luciole";
+    src:
+        local("Luciole"),
+        url("./fonts/Luciole-Regular/Luciole-Regular.woff2") format("woff2");
+        font-style: normal;
+        font-weight: normal;
+        text-rendering: optimizeLegibility;
+}
 :root {
     --br: 10px; /* border radius */
     --bw: 2px; /* border width */
@@ -23,13 +32,23 @@
     --fg-off: oklch(from var(--fg) calc(l + 0.7) c h);
     --bg-off: oklch(from var(--bg) calc(l - 0.02) c h);
     --inactive: rgb(70, 70, 70);
+
+    --font-system: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont;
+    --font-luciole: "Luciole";
+    --font-georgia: Georgia;
+    --font-timesnewroman: "Times New Roman";
+    --font-couriernew: "Courier New";
+    --font-arial: Arial;
+    --font-verdana: Verdana;
+    --font-monospace: monospace;
     
-    --font-fam: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont;
-    --fw-font-fam: monospace;
+    --font-family: var(--font-system);
+    --fixed-width-font: monospace;
     --fontsize: 1rem;
     --fontsize-larger: 110%;
     --fontsize-smaller: 90%;
     --box-shadow-params: 0 0 0 2px;
+    --text-size-preference: 1;
     
 }
 @media (prefers-color-scheme: dark) {
@@ -56,8 +75,8 @@ html {
 body {
     background-color: var(--bg-off);
     color: var(--fg);
-    font-family: var(--font-fam);
-    font-size: var(--fontsize);
+    font-family: var(--font-family);
+    font-size: calc(var(--fontsize) * var(--text-size-preference));
     height: 100%;
 }
 a, a:visited {
@@ -131,7 +150,7 @@ summary:hover {
     border-radius: var(--br);
 }
 .file {
-    font-family: var(--fw-font-fam);
+    font-family: var(--fixed-width-font);
 }
 .is-hidden {
     display: none !important;

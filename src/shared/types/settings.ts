@@ -21,6 +21,11 @@ export enum Font {
     timesnewroman = 'Times New Roman',
     verdana = 'Verdana',
 }
+
+export const TextSizeOptions = [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100]
+
+export const DefaultTextSize = 20
+
 export enum ClosingMainWindowAction {
     keepall = 'Keep all jobs opened with the application running in tray',
     keepengine = 'Close all jobs but keep the application running in tray',
@@ -48,7 +53,6 @@ export type ApplicationSettings = {
     autoCheckUpdate?: boolean
     textSize?: number
     fontName?: string
-    zoomLevel?: number
     sponsorshipMessageLastShown?: number
 }
 
@@ -100,9 +104,8 @@ const migrators: Map<string, (prev: any) => any> = new Map<
                     ...prev.ttsConfig,
                     ttsEngineStates: [],
                 },
-                textSize: 1.0 /* 1.0 = 100% */,
+                textSize: 20,
                 fontName: '',
-                zoomLevel: 0,
                 ...toKeep,
             } as ApplicationSettings
         },

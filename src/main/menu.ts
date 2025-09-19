@@ -28,6 +28,9 @@ export function buildMenuTemplate({
     onEditJob,
     onShowAbout,
     onCancelBatchJob,
+    onResetTextSize,
+    onLargerText,
+    onSmallerText,
 }) {
     let pipelineStatus = PipelineStatus.UNKNOWN
     const instance = getPipelineInstance(store.getState())
@@ -63,7 +66,8 @@ export function buildMenuTemplate({
         canDelete =
             pipelineStatus == PipelineStatus.RUNNING &&
             currentJob &&
-            (currentJob.state == JobState.SUBMITTED || currentJob.state == JobState.ENDED) &&
+            (currentJob.state == JobState.SUBMITTED ||
+                currentJob.state == JobState.ENDED) &&
             currentJob.jobData &&
             currentJob.jobData.status != JobStatus.RUNNING &&
             currentJob.jobData.status != JobStatus.IDLE
@@ -264,28 +268,60 @@ export function buildMenuTemplate({
                 { role: 'paste' },
             ],
         },
+        // {
+        //     label: '&View',
+        //     submenu: isMac
+        //         ? [
+        //               { role: 'resetZoom' },
+        //               { role: 'zoomIn' },
+        //               { role: 'zoomOut' },
+        //           ]
+        //         : [
+        //               {
+        //                   role: 'resetZoom',
+        //                   accelerator: 'Alt+Shift+CommandOrControl+=',
+        //               },
+        //               {
+        //                   role: 'zoomIn',
+        //                   accelerator: 'CommandOrControl+=',
+        //               },
+        //               {
+        //                   role: 'zoomOut',
+        //                   accelerator: 'Shift+CommandOrControl+=',
+        //               },
+        //           ],
+        // },
         {
             label: '&View',
-            submenu: isMac
-                ? [
-                      { role: 'resetZoom' },
-                      { role: 'zoomIn' },
-                      { role: 'zoomOut' },
-                  ]
-                : [
-                      {
-                          role: 'resetZoom',
-                          accelerator: 'Alt+Shift+CommandOrControl+=',
-                      },
-                      {
-                          role: 'zoomIn',
-                          accelerator: 'CommandOrControl+=',
-                      },
-                      {
-                          role: 'zoomOut',
-                          accelerator: 'Shift+CommandOrControl+=',
-                      },
-                  ],
+            submenu: [
+                {
+                    label: 'Reset Text Size',
+                    accelerator: isMac
+                        ? 'CommandOrControl+0'
+                        : 'Alt+Shift+CommandOrControl+=',
+                    click: () => {
+                        onResetTextSize()
+                    },
+                },
+                {
+                    label: 'Larger Text',
+                    accelerator: isMac
+                        ? 'CommandOrControl+Plus'
+                        : 'CommandOrControl+=',
+                    click: () => {
+                        onLargerText()
+                    },
+                },
+                {
+                    label: 'Smaller Text',
+                    accelerator: isMac
+                        ? 'CommandOrControl+-'
+                        : 'Shift+CommandOrControl+-',
+                    click: () => {
+                        onSmallerText()
+                    },
+                },
+            ],
         },
         {
             label: '&Goto',

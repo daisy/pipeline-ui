@@ -1,4 +1,9 @@
-import { ColorScheme, Font } from 'shared/types'
+import {
+    ColorScheme,
+    DefaultTextSize,
+    Font,
+    TextSizeOptions,
+} from 'shared/types'
 import {
     save,
     setColorScheme,
@@ -7,8 +12,7 @@ import {
 } from 'shared/data/slices/settings'
 
 const { App } = window
-const DEFAULT_TEXT_SIZE = 20
-const TEXT_SIZE_OPTIONS = [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100]
+
 export function Appearance({ newSettings }) {
     const colorModeChanged = (e) => {
         App.store.dispatch(
@@ -35,7 +39,9 @@ export function Appearance({ newSettings }) {
         App.store.dispatch(save())
     }
     let resetTextSize = () => {
-        App.store.dispatch(setTextSize(DEFAULT_TEXT_SIZE))
+        //@ts-ignore
+        document.querySelector('#textSize').value = DefaultTextSize
+        App.store.dispatch(setTextSize(DefaultTextSize))
         App.store.dispatch(save())
     }
     return (
@@ -87,8 +93,8 @@ export function Appearance({ newSettings }) {
                     defaultValue={newSettings.textSize}
                 />
                 <datalist id="textSizes">
-                    {TEXT_SIZE_OPTIONS.map((opt) => (
-                        <option value={opt}></option>
+                    {TextSizeOptions.map((opt, idx) => (
+                        <option value={opt} key={idx}></option>
                     ))}
                 </datalist>
                 <button type="button" onClick={(e) => resetTextSize()}>

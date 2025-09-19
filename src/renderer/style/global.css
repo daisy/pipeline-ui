@@ -66,7 +66,6 @@
         --hover: oklch(from var(--secondary) calc(l - 0.2) c h);
         --hover-contrast: var(--secondary-contrast);
         --hover-contrast-links: #0E1344;
-        
     }
 }
 html {
@@ -78,6 +77,7 @@ body {
     font-family: var(--font-family);
     font-size: calc(var(--fontsize) * var(--text-size-preference));
     height: 100%;
+    transition: font-size 0.3s ease-in-out;
 }
 a, a:visited {
     color: var(--primary);

@@ -32,7 +32,9 @@
     --fg-off: oklch(from var(--fg) calc(l + 0.7) c h);
     --bg-off: oklch(from var(--bg) calc(l - 0.02) c h);
     --inactive: rgb(70, 70, 70);
+    --box-shadow-params: 0 0 0 2px;
 
+    /* font selections */
     --font-system: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont;
     --font-luciole: "Luciole";
     --font-georgia: Georgia;
@@ -44,11 +46,17 @@
     
     --font-family: var(--font-system);
     --fixed-width-font: monospace;
-    --fontsize: 1rem;
-    --fontsize-larger: 110%;
-    --fontsize-smaller: 90%;
-    --box-shadow-params: 0 0 0 2px;
-    --text-size-preference: 1;
+    --text-size-preference: 1; /* amount by which to scale the font size */
+
+    /* all text should be one of these sizes */
+    --fontsize: calc(1rem * var(--text-size-preference));
+    /* the large size should not get too large */
+    --fontsize-larger: clamp(
+                    var(--fontsize),
+                    calc(1.3rem * var(--text-size-preference)),
+                    calc(1.3rem * 1.55)
+                );   
+    --fontsize-smaller: calc(.9rem * var(--text-size-preference));
     
 }
 @media (prefers-color-scheme: dark) {
@@ -75,7 +83,7 @@ body {
     background-color: var(--bg-off);
     color: var(--fg);
     font-family: var(--font-family);
-    font-size: calc(var(--fontsize) * var(--text-size-preference));
+    font-size: var(--fontsize);
     height: 100%;
     transition: font-size 0.3s ease-in-out;
 }
@@ -88,7 +96,6 @@ a:hover {
     text-decoration-style: solid;
     text-decoration-skip-ink: none;
 }
-
 *:focus {
     outline: none;
     box-shadow: var(--box-shadow-params) var(--highlight); 

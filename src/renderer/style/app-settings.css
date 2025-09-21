@@ -66,7 +66,6 @@
         
         label, input {
             font-weight: normal;
-            font-size: 1.1rem;
             border: thin solid;
             padding: 5px;
             text-decoration: none;
@@ -102,7 +101,6 @@
             }
         }
         p.info {
-            font-size: 100%; /* override the default smaller 'info' fontsize */
             background-color: var(--bg-off);
             padding: 4px;
             border-radius: var(--br);
@@ -115,9 +113,9 @@
             border-collapse: separate;
 
             caption {
-                font-size: x-large;
-                font-weight: bolder;
+                font-size: var(--fontsize-larger);
                 text-align: left;
+                padding-bottom: .5rem;
                 
             }
             th, td {

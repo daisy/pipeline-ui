@@ -11,7 +11,7 @@ div.starting-engine {
     justify-items: center;
     gap: 4rem;
     p {
-        font-size: larger;
+        font-size: var(--fontsize-larger);
     }
 }
 

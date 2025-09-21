@@ -3,6 +3,10 @@
     flex-direction: column;
     gap: 1rem;
 
+    h2 {
+        font-size: var(--fontsize-larger);
+    }
+
     summary h2 {
         display: inline;
         vertical-align: middle;
@@ -39,12 +43,6 @@
     }
     .job-configuration ul, .job-results ul {
         padding-left: 1rem;
-    }
-    .job-results {
-        /* the main results folder link */
-        &>a.filelink {
-            font-size: 120%;
-        }
     }
     
     .job-results, .job-messages {

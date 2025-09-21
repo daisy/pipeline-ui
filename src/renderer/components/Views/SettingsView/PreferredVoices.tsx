@@ -81,7 +81,7 @@ export function PreferredVoices({
 
     return (
         <div className="tts-preferred-voices">
-            <p className="info">
+            <p>
                 Add voices via the{' '}
                 <a
                     onClick={() =>

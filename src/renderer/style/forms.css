@@ -14,7 +14,7 @@ fieldset {
 
     legend {
         background-color: var(--bg);
-        font-size: larger;
+        font-size: var(--fontsize-larger);
         border-radius: var(--br);
     }
 }

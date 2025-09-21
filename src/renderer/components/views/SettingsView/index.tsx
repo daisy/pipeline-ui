@@ -277,7 +277,11 @@ export function SettingsView(
                     )
                 )}-tabpanel`}
                 role="tabpanel"
-                aria-labelledby={`${ID(selectedSection)}-tab`}
+                aria-labelledby={`${ID(
+                    tabItems.findIndex(
+                        (item) => item.section == selectedSection
+                    )
+                )}-tab`}
                 tabIndex={0}
             >
                 <form onSubmit={() => window.close()}>

@@ -22,6 +22,9 @@
         label, .info {
             align-self: center;
         }
+        fieldset .info {
+            align-self: start;
+        }
     }
     .drag-drop-filter-files 
     {

@@ -36,11 +36,15 @@
         gap: 0.5rem;
         
         div.field {
-            flex-direction: row;       
+            display: flex;
             flex-wrap: wrap;
+            flex-direction: row;
+            gap: 1rem;
+            --threshold: 15rem;
 
-            &>:first-child {
-                width: clamp(5rem, 10rem, 10rem);
+            &>* {
+                flex-grow: 1;
+                flex-basis: calc((var(--threshold) - 100%) * 999);
             }
             select {
                 flex-grow: 3;

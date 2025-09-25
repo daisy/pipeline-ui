@@ -38,13 +38,11 @@ const initialState = {
 } as PipelineState
 
 function isNonPrimaryInBatch(job) {
-    console.log('isNonPrimaryInBatch', job)
     let retval =
         job &&
         job.jobRequest &&
         job.jobRequest.batchId &&
         !job.isPrimaryForBatch
-    console.log(retval)
     return retval
 }
 export const pipeline = createSlice({

@@ -12,10 +12,13 @@ import { JobStatusIcon } from '../../../Widgets/SvgIcons'
 import { File, FileAsType } from '../../../Widgets/File'
 import { getStatus, ID } from 'renderer/utils'
 import { TabList } from '../../../Widgets/TabList'
+import { CanDo } from 'shared/canDo'
+import { useWindowStore } from 'renderer/store'
 
 const { App } = window
 
 export function BatchJobDetailsPane({ jobs }: { jobs: Array<Job> }) {
+    const { pipeline } = useWindowStore()
     const [primaryJob] = useState(jobs.find((j) => j.isPrimaryForBatch))
     const [selectedJob, setSelectedJob] = useState(primaryJob)
 
@@ -125,7 +128,14 @@ export function BatchJobDetailsPane({ jobs }: { jobs: Array<Job> }) {
                         }}
                     />
                 </details>
-                {getIdleCountInBatch(primaryJob, jobs) != 0 && (
+                {/* {getIdleCountInBatch(primaryJob, jobs) != 0 && (
+                    <div className="controls">
+                        <button type="button" onClick={(e) => onCancelBatch()}>
+                            Cancel scheduled jobs
+                        </button>
+                    </div>
+                )} */}
+                {CanDo.cancelJob(pipeline, primaryJob) && (
                     <div className="controls">
                         <button type="button" onClick={(e) => onCancelBatch()}>
                             Cancel scheduled jobs

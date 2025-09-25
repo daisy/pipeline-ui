@@ -1,5 +1,5 @@
 import { BrowserWindow, dialog, MenuItem } from 'electron'
-import { selectStatus } from 'shared/data/slices/pipeline'
+import { selectPipeline, selectStatus } from 'shared/data/slices/pipeline'
 import { calculateJobName, readableStatus } from 'shared/jobName'
 import { Job, JobState, JobStatus, PipelineStatus } from 'shared/types'
 import { getPipelineInstance } from './data/instance'
@@ -9,9 +9,12 @@ import { selectEditOnNewTab } from 'shared/data/slices/settings'
 import { selectDownloadPath } from 'shared/data/slices/settings'
 import {
     areAllJobsInBatchDone,
+    closeOrCancelLabel,
     getCompletedCountInBatch,
     getIdleCountInBatch,
+    getJobsInBatch,
 } from 'shared/utils'
+import { CanDo } from 'shared/canDo'
 
 export function buildMenuTemplate({
     appName,
@@ -43,57 +46,20 @@ export function buildMenuTemplate({
     let multipleJobs = jobs.length > 1
     let status = 'new job'
     let currentJob = jobs.find((j) => j.internalId == selectedJobId)
-    let jobsInBatch = currentJob?.isPrimaryForBatch
-        ? jobs.filter(
-              (j) => j.jobRequest?.batchId == currentJob.jobRequest?.batchId
-          )
-        : []
+    let jobsInBatch = getJobsInBatch(
+        selectPipeline(store.getState()),
+        currentJob
+    )
 
     if (currentJob?.isPrimaryForBatch) {
         let numJobsDone = getCompletedCountInBatch(currentJob, jobsInBatch)
-        status = `Batch status: (${numJobsDone}/${jobsInBatch.length})`
+        status = `Batch status: (${numJobsDone}/${jobsInBatch?.length ?? '?'})`
     } else if (currentJob?.jobData?.status) {
         status = readableStatus[currentJob.jobData.status]
     }
     if (pipelineStatus != PipelineStatus.RUNNING) {
         status = 'unavailable'
     }
-
-    let canDelete = true
-    if (currentJob?.isPrimaryForBatch) {
-        canDelete = areAllJobsInBatchDone(currentJob, jobsInBatch)
-    } else {
-        canDelete =
-            pipelineStatus == PipelineStatus.RUNNING &&
-            currentJob &&
-            (currentJob.state == JobState.SUBMITTED ||
-                currentJob.state == JobState.ENDED) &&
-            currentJob.jobData &&
-            currentJob.jobData.status != JobStatus.RUNNING &&
-            currentJob.jobData.status != JobStatus.IDLE
-    }
-
-    let canRun =
-        pipelineStatus == PipelineStatus.RUNNING &&
-        currentJob &&
-        currentJob.state == JobState.NEW &&
-        currentJob.jobRequest != null &&
-        selectDownloadPath(store.getState()) != '' &&
-        currentJob.jobRequest.validation.find(
-            (v) => v.required && !v.validValue
-        ) == undefined
-
-    let canCloseJob = true
-    if (currentJob?.isPrimaryForBatch) {
-        canCloseJob = areAllJobsInBatchDone(currentJob, jobsInBatch)
-    } else {
-        canCloseJob =
-            currentJob &&
-            (currentJob.state == JobState.SUBMITTED ||
-                currentJob.state == JobState.ENDED)
-    }
-
-    let canCreateJob = pipelineStatus == PipelineStatus.RUNNING
 
     // take off the suffix '- App' -- we only want that to appear on the window title
     let adjustedAppName = appName
@@ -106,6 +72,8 @@ export function buildMenuTemplate({
         currentJob.stylesheetParameters == null
             ? 'Next'
             : 'Run job'
+
+    console.log('Building menu')
 
     // @ts-ignore
     const template: MenuItemConstructorOptions = [
@@ -153,7 +121,7 @@ export function buildMenuTemplate({
                     label: 'New job',
                     click: onCreateJob,
                     accelerator: 'CommandOrControl+N',
-                    enabled: canCreateJob,
+                    enabled: CanDo.createJob(pipelineStatus),
                 },
                 ...(!isMac
                     ? [
@@ -170,7 +138,11 @@ export function buildMenuTemplate({
                         onRunJob(currentJob)
                     },
                     accelerator: 'CommandOrControl+R',
-                    enabled: canRun,
+                    enabled: CanDo.runJob(
+                        pipelineStatus,
+                        currentJob,
+                        selectDownloadPath(store.getState())
+                    ),
                 },
                 ...(currentJob
                     ? [
@@ -186,22 +158,26 @@ export function buildMenuTemplate({
                           },
                       ]
                     : []),
-                ...(canCloseJob
+                ...(CanDo.closeJob(selectPipeline(store.getState()), currentJob)
                     ? [
                           {
-                              label: 'Close job',
+                              label: closeOrCancelLabel(
+                                  selectPipeline(store.getState()),
+                                  currentJob
+                              ),
                               click: () => {
                                   onRemoveJob(currentJob)
                               },
                               accelerator: 'CommandOrControl+D',
-                              enabled: canDelete,
+                              enabled: true,
                           },
                       ]
                     : [
                           {
-                              label: currentJob?.jobRequest?.batchId
-                                  ? 'Cancel scheduled jobs'
-                                  : 'Cancel job',
+                              label: closeOrCancelLabel(
+                                  selectPipeline(store.getState()),
+                                  currentJob
+                              ),
                               click: () => {
                                   if (currentJob?.jobRequest?.batchId) {
                                       if (
@@ -217,10 +193,10 @@ export function buildMenuTemplate({
                                   }
                               },
                               accelerator: 'CommandOrControl+D',
-                              enabled:
-                                  !currentJob?.jobRequest?.batchId ||
-                                  getIdleCountInBatch(currentJob, jobsInBatch) >
-                                      0,
+                              enabled: CanDo.cancelJob(
+                                  selectPipeline(store.getState()),
+                                  currentJob
+                              ),
                           },
                       ]),
                 { type: 'separator' },
@@ -261,36 +237,17 @@ export function buildMenuTemplate({
                         onEditJob(currentJob)
                     },
                     accelerator: 'CommandOrControl+E',
-                    enabled: canDelete && !currentJob?.jobRequest?.batchId,
+                    enabled: CanDo.editJob(
+                        selectPipeline(store.getState()),
+                        pipelineStatus,
+                        currentJob
+                    ),
                 },
                 { type: 'separator' },
                 { role: 'copy' },
                 { role: 'paste' },
             ],
         },
-        // {
-        //     label: '&View',
-        //     submenu: isMac
-        //         ? [
-        //               { role: 'resetZoom' },
-        //               { role: 'zoomIn' },
-        //               { role: 'zoomOut' },
-        //           ]
-        //         : [
-        //               {
-        //                   role: 'resetZoom',
-        //                   accelerator: 'Alt+Shift+CommandOrControl+=',
-        //               },
-        //               {
-        //                   role: 'zoomIn',
-        //                   accelerator: 'CommandOrControl+=',
-        //               },
-        //               {
-        //                   role: 'zoomOut',
-        //                   accelerator: 'Shift+CommandOrControl+=',
-        //               },
-        //           ],
-        // },
         {
             label: '&View',
             submenu: [

@@ -16,13 +16,14 @@ import { FileLink } from '../../../Widgets/FileLink'
 import { useWindowStore } from 'renderer/store'
 import { useState, useEffect } from 'react'
 import { JobStatusIcon } from '../../../Widgets/SvgIcons'
+import { CanDo } from 'shared/canDo'
 
 const { App } = window
 
 export function JobDetails({ job }: { job: Job }) {
     const [canRunJob, setCanRunJob] = useState(false)
     const [isRerunning, setIsRerunning] = useState(false)
-    const { settings } = useWindowStore()
+    const { pipeline, settings } = useWindowStore()
 
     useEffect(() => {
         setCanRunJob(settings?.downloadFolder?.trim() != '')
@@ -43,7 +44,7 @@ export function JobDetails({ job }: { job: Job }) {
                 <h2>Error</h2>
                 <div className="details">
                     <p>{job.jobRequestError.description}</p>
-                    {!jobIsBatch && (
+                    {!CanDo.editJob(pipeline, pipeline.status, job) && (
                         <div className="form-buttons">
                             <button
                                 type="button"

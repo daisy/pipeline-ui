@@ -13,9 +13,6 @@ import { ApplicationSettings } from "shared/types";
     --font-monospace: monospace;
 */
 export function loadStyleProperties(settings: ApplicationSettings) {
-    console.log("Font size", settings.textSize);
-    console.log("Font name", settings.fontName);
-
     document.documentElement.style.setProperty(
         '--text-size-preference',
         translateTextSize(settings.textSize)

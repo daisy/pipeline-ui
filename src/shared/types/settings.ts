@@ -37,7 +37,7 @@ export enum ClosingMainWindowAction {
 // allow connection to multiple pipelines at the same time with an array of pipeline properties
 // This could allow the calling of scripts from pipeline with different features enabled, like specific TTS systems (acapela or SAPI)
 
-// added in settings version 1.6.0: TtsConfig has ttsEngineStates
+// added in settings version 1.6.0: TtsConfig has ttsEnginesConnected
 export type ApplicationSettings = {
     settingsVersion: '1.6.0'
     // Default folder to download the results on the user disk
@@ -102,7 +102,7 @@ const migrators: Map<string, (prev: any) => any> = new Map<
                 settingsVersion: '1.6.0',
                 ttsConfig: {
                     ...prev.ttsConfig,
-                    ttsEngineStates: [],
+                    ttsEnginesConnected: [],
                 },
                 textSize: 20,
                 fontName: '',

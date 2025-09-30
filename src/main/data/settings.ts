@@ -42,7 +42,7 @@ export function readSettings() {
                 resolve(app.getPath('userData'), 'ttsConfig.xml')
             ).href,
             ttsEngineProperties: [],
-            ttsEngineStates: [],
+            ttsEnginesConnected: [],
         },
         autoCheckUpdate: true,
 

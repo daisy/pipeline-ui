@@ -90,7 +90,7 @@ export function SettingsView(
             defaultVoices: [...settings.ttsConfig.defaultVoices],
             ttsEngineProperties: [...settings.ttsConfig.ttsEngineProperties],
             xmlFilepath: newSettings.ttsConfig.xmlFilepath,
-            ttsEngineStates: [...settings.ttsConfig.ttsEngineStates],
+            ttsEnginesConnected: [...settings.ttsConfig.ttsEnginesConnected],
         }
         App.store.dispatch(setTtsConfig(newConfig))
         App.store.dispatch(save())
@@ -107,7 +107,7 @@ export function SettingsView(
             defaultVoices: [...tmpVoices],
             ttsEngineProperties: [...settings.ttsConfig.ttsEngineProperties],
             xmlFilepath: newSettings.ttsConfig.xmlFilepath,
-            ttsEngineStates: [...settings.ttsConfig.ttsEngineStates],
+            ttsEnginesConnected: [...settings.ttsConfig.ttsEnginesConnected],
         }
         App.store.dispatch(setTtsConfig(newConfig))
         App.store.dispatch(save())
@@ -126,7 +126,7 @@ export function SettingsView(
             defaultVoices: [...tmpVoices],
             ttsEngineProperties: [...settings.ttsConfig.ttsEngineProperties],
             xmlFilepath: newSettings.ttsConfig.xmlFilepath,
-            ttsEngineStates: [...settings.ttsConfig.ttsEngineStates],
+            ttsEnginesConnected: [...settings.ttsConfig.ttsEnginesConnected],
         }
         App.store.dispatch(setTtsConfig(newConfig))
         App.store.dispatch(save())
@@ -137,7 +137,29 @@ export function SettingsView(
             defaultVoices: [...settings.ttsConfig.defaultVoices],
             ttsEngineProperties: [...ttsEngineProperties],
             xmlFilepath: newSettings.ttsConfig.xmlFilepath,
-            ttsEngineStates: [...settings.ttsConfig.ttsEngineStates],
+            ttsEnginesConnected: [...settings.ttsConfig.ttsEnginesConnected],
+        }
+        App.store.dispatch(setTtsConfig(newConfig))
+        App.store.dispatch(save())
+    }
+    const onTtsEngineConnectedChange = (ttsEngineConnected) => {
+        let ttsEnginesConnected = [...settings.ttsConfig.ttsEnginesConnected]
+        if (
+            ttsEnginesConnected.find(
+                (engine) => engine.key == ttsEngineConnected.key
+            )
+        ) {
+            ttsEnginesConnected[ttsEngineConnected.key] =
+                ttsEngineConnected.connected
+        } else {
+            ttsEnginesConnected.push({ ...ttsEngineConnected })
+        }
+        const newConfig = {
+            preferredVoices: [...settings.ttsConfig.preferredVoices],
+            defaultVoices: [...settings.ttsConfig.defaultVoices],
+            ttsEngineProperties: [...settings.ttsConfig.ttsEngineProperties],
+            xmlFilepath: newSettings.ttsConfig.xmlFilepath,
+            ttsEnginesConnected: [...ttsEnginesConnected],
         }
         App.store.dispatch(setTtsConfig(newConfig))
         App.store.dispatch(save())
@@ -201,7 +223,11 @@ export function SettingsView(
                     ttsEngineProperties={
                         newSettings.ttsConfig.ttsEngineProperties
                     }
+                    ttsEnginesConnected={
+                        newSettings.ttsConfig.ttsEnginesConnected
+                    }
                     onChangeTtsEngineProperties={onTtsEnginePropertiesChange}
+                    onChangeTtsEngineConnected={onTtsEngineConnectedChange}
                 />
             ),
         },

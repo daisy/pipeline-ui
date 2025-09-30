@@ -73,8 +73,7 @@ export function buildMenuTemplate({
             ? 'Next'
             : 'Run job'
 
-    console.log('Building menu')
-
+    
     // @ts-ignore
     const template: MenuItemConstructorOptions = [
         // { role: 'appMenu' }

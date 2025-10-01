@@ -1,7 +1,7 @@
 import { PayloadAction } from '@reduxjs/toolkit'
 import { nativeTheme } from 'electron'
 import { info } from 'electron-log'
-import { writeFile } from 'fs'
+import { writeFile, writeFileSync } from 'fs'
 import {
     save,
     selectTtsConfig,
@@ -60,10 +60,9 @@ export function settingsMiddleware({ getState, dispatch }) {
                 case save.type:
                     // Parse new settings and dispatch updates if needed here
                     nativeTheme.themeSource = settings.colorScheme
-                    writeFile(
+                    writeFileSync(
                         settingsFile,
-                        JSON.stringify(settings, null, 4),
-                        () => {}
+                        JSON.stringify(settings, null, 4)
                     )
                     writeFile(
                         new URL(settings.ttsConfig.xmlFilepath),

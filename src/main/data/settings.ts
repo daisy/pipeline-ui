@@ -45,7 +45,8 @@ export function readSettings() {
             ttsEnginesConnected: [],
         },
         autoCheckUpdate: true,
-
+        fontName: 'system',
+        textSize: 20,
     }
     try {
         if (existsSync(settingsFile)) {

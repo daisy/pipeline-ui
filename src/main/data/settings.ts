@@ -5,7 +5,7 @@ import { resolveUnpacked } from 'main/utils'
 import { resolve } from 'path'
 import { ENVIRONMENT } from 'shared/constants'
 import { ttsConfigToXml } from 'shared/parser/pipelineXmlConverter/ttsConfigToXml'
-import { ApplicationSettings, migrateSettings } from 'shared/types'
+import { ApplicationSettings, DefaultTextSize, migrateSettings } from 'shared/types'
 import { fileURLToPath, pathToFileURL } from 'url'
 
 export const settingsFile = resolve(app.getPath('userData'), 'settings.json')
@@ -46,7 +46,7 @@ export function readSettings() {
         },
         autoCheckUpdate: true,
         fontName: 'system',
-        textSize: 20,
+        textSize: DefaultTextSize,
     }
     try {
         if (existsSync(settingsFile)) {

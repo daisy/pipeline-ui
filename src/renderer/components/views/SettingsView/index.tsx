@@ -139,17 +139,19 @@ export function SettingsView(
             xmlFilepath: newSettings.ttsConfig.xmlFilepath,
             ttsEnginesConnected: [...settings.ttsConfig.ttsEnginesConnected],
         }
+
         App.store.dispatch(setTtsConfig(newConfig))
         App.store.dispatch(save())
     }
     const onTtsEngineConnectedChange = (ttsEngineConnected) => {
         let ttsEnginesConnected = [...settings.ttsConfig.ttsEnginesConnected]
-        if (
-            ttsEnginesConnected.find(
+        let currentEntryIdx = ttsEnginesConnected.findIndex(
                 (engine) => engine.key == ttsEngineConnected.key
             )
+        if (currentEntryIdx != -1
+            
         ) {
-            ttsEnginesConnected[ttsEngineConnected.key] =
+            ttsEnginesConnected[currentEntryIdx].connected =
                 ttsEngineConnected.connected
         } else {
             ttsEnginesConnected.push({ ...ttsEngineConnected })

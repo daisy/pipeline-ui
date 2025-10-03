@@ -102,7 +102,7 @@ const migrators: Map<string, (prev: any) => any> = new Map<
                 settingsVersion: '1.6.0',
                 ttsConfig: {
                     ...prev.ttsConfig,
-                    ttsEnginesConnected: [],
+                    ttsEnginesConnected: {},
                 },
                 textSize: 20,
                 fontName: '',

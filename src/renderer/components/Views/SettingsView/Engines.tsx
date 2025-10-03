@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { TTSEngineStatusIcon } from 'renderer/components/Widgets/SvgIcons'
 import { useWindowStore } from 'renderer/store'
 import { selectTtsVoices, setProperties } from 'shared/data/slices/pipeline'
-import { TtsEngineConnected, TtsEngineProperty } from 'shared/types/ttsConfig'
+import { TtsEngineProperty } from 'shared/types/ttsConfig'
 
 const enginePropertyKeys = [
     'org.daisy.pipeline.tts.azure.key',
@@ -33,9 +33,9 @@ export function Engines({
     onChangeTtsEngineConnected,
 }: {
     ttsEngineProperties: Array<TtsEngineProperty>
-    ttsEnginesConnected: Array<TtsEngineConnected>
+    ttsEnginesConnected: Object
     onChangeTtsEngineProperties: (props: Array<TtsEngineProperty>) => void
-    onChangeTtsEngineConnected: (engineConnected: TtsEngineConnected, props: Array<TtsEngineProperty>) => void
+    onChangeTtsEngineConnected: (engineId, isConnected, props: Array<TtsEngineProperty>) => void
 }) {
     // console.log('Engine.tsx TTS Engine Properties', ttsEngineProperties)
     const { pipeline } = useWindowStore()
@@ -134,7 +134,8 @@ export function Engines({
 
         // onChangeTtsEngineProperties(updatedSettings)
         onChangeTtsEngineConnected(
-            { key: engineKey, connected: true },
+            engineKey, 
+            true,
             updatedSettings
         )
     }
@@ -151,7 +152,8 @@ export function Engines({
 
         // onChangeTtsEngineProperties(ttsProps)
         onChangeTtsEngineConnected(
-            { key: engineKey, connected: false },
+            engineKey, 
+            false,
             ttsProps
         )
     }

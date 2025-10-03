@@ -78,15 +78,18 @@ export function setProperties(
     //console.log('tts states starting', ttsEnginesStatesStart)
     dispatch(setTtsEngineState(ttsEnginesStatesStart))
     // remove properties for TTS engines that are disconnected
-    let connectedEngines = getState()
-        .settings.ttsConfig.ttsEnginesConnected.filter((ec) => ec.connected)
-        .map((ec) => ec.key)
+    let engineIds = Object.keys(
+        getState().settings.ttsConfig.ttsEnginesConnected
+    )
+    let disconnectedEngines = engineIds.filter(
+        (id) => !getState().settings.ttsConfig.ttsEnginesConnected[id]
+    )
     let newProperties_ = newProperties.filter(
         (p) =>
-            connectedEngines.filter((c) => p.name.indexOf(c) != -1).length > 0
+            disconnectedEngines.filter((eId) => p.name.indexOf(eId) != -1)
+                .length == 0
     )
 
-    console.log('Properties for connected engines', newProperties_)
     Promise.all(
         newProperties_.map((prop) => pipelineAPI.setProperty(prop)(webservice))
     )
@@ -156,7 +159,20 @@ export function setProperties(
                         return pipelineAPI.fetchTtsEnginesState()(webservice)
                     })
                     .then((states) => {
-                        //console.log('tts states', states)
+                        // update the connectedness field based on whether the connection was successful
+                        let ttsConfig_ = { ...getState().settings.ttsConfig }
+                        let ttsEnginesConnected_ = {}
+                        Object.keys(states).map(
+                            (k) =>
+                                (ttsEnginesConnected_[
+                                    'org.daisy.pipeline.tts.' + k
+                                ] = states[k].status == 'available')
+                        )
+                        ttsConfig_.ttsEnginesConnected = {
+                            ...ttsEnginesConnected_,
+                        }
+
+                        console.log('tts states', states)
                         dispatch(setTtsEngineState(states))
                     })
             }

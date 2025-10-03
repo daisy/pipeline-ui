@@ -12,16 +12,12 @@ export type TtsEngineProperty = {
     key: string
     value: string
 }
-export type TtsEngineConnected = {
-    key: string
-    connected: boolean
-}
 export type TtsConfig = {
     preferredVoices: Array<TtsVoice>
     defaultVoices: Array<TtsVoice>
     ttsEngineProperties: Array<TtsEngineProperty>
     xmlFilepath?: string
-    ttsEnginesConnected: Array<TtsEngineConnected>
+    ttsEnginesConnected: Object
 }
 export type _TtsConfig_v150 = {
     preferredVoices: Array<TtsVoice>

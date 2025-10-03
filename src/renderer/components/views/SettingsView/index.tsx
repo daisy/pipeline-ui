@@ -62,15 +62,23 @@ export function SettingsView(
     document.title = props.title
 
     useEffect(() => {
+        let newTtsConfig = {
+            preferredVoices: [...settings.ttsConfig.preferredVoices],
+            defaultVoices: [...settings.ttsConfig.defaultVoices],
+            ttsEngineProperties: [...settings.ttsConfig.ttsEngineProperties],
+            xmlFilepath: newSettings.ttsConfig.xmlFilepath,
+            ttsEnginesConnected: [...settings.ttsConfig.ttsEnginesConnected],
+        }
+        
         // Reload settings from store if it has changed
         setNewSettings({
             ...settings,
             onClosingMainWindow: settings.onClosingMainWindow ?? 'ask', // defaults to ask in form
             ttsConfig: {
-                ...settings.ttsConfig,
+                ...newTtsConfig,
             },
         })
-    }, [settings])
+    }, [settings, settings.ttsConfig])
 
     // NP 2025 06 10 : replaced by hash router
     // const [selectedSection, setSelectedSection] = useState(
@@ -139,18 +147,15 @@ export function SettingsView(
             xmlFilepath: newSettings.ttsConfig.xmlFilepath,
             ttsEnginesConnected: [...settings.ttsConfig.ttsEnginesConnected],
         }
-
         App.store.dispatch(setTtsConfig(newConfig))
         App.store.dispatch(save())
     }
-    const onTtsEngineConnectedChange = (ttsEngineConnected) => {
+    const onTtsEngineConnectedChange = (ttsEngineConnected, ttsProperties) => {
         let ttsEnginesConnected = [...settings.ttsConfig.ttsEnginesConnected]
         let currentEntryIdx = ttsEnginesConnected.findIndex(
-                (engine) => engine.key == ttsEngineConnected.key
-            )
-        if (currentEntryIdx != -1
-            
-        ) {
+            (engine) => engine.key == ttsEngineConnected.key
+        )
+        if (currentEntryIdx != -1) {
             ttsEnginesConnected[currentEntryIdx].connected =
                 ttsEngineConnected.connected
         } else {
@@ -159,7 +164,7 @@ export function SettingsView(
         const newConfig = {
             preferredVoices: [...settings.ttsConfig.preferredVoices],
             defaultVoices: [...settings.ttsConfig.defaultVoices],
-            ttsEngineProperties: [...settings.ttsConfig.ttsEngineProperties],
+            ttsEngineProperties: [...ttsProperties],
             xmlFilepath: newSettings.ttsConfig.xmlFilepath,
             ttsEnginesConnected: [...ttsEnginesConnected],
         }

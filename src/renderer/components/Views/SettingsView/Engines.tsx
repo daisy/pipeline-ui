@@ -35,8 +35,9 @@ export function Engines({
     ttsEngineProperties: Array<TtsEngineProperty>
     ttsEnginesConnected: Array<TtsEngineConnected>
     onChangeTtsEngineProperties: (props: Array<TtsEngineProperty>) => void
-    onChangeTtsEngineConnected: (engineConnected: TtsEngineConnected) => void
+    onChangeTtsEngineConnected: (engineConnected: TtsEngineConnected, props: Array<TtsEngineProperty>) => void
 }) {
+    // console.log('Engine.tsx TTS Engine Properties', ttsEngineProperties)
     const { pipeline } = useWindowStore()
     // Clone array and objects in it to avoid updating the oriiginal props
     const [engineProperties, setEngineProperties] = useState<
@@ -71,6 +72,7 @@ export function Engines({
     }, [pipeline.ttsEnginesStates])
 
     let onPropertyChange = (e, propName) => {
+        // console.log('onPropertyChange', e, propName)
         e.preventDefault()
         let engineProperties_ = clone(engineProperties)
         let prop = engineProperties_.find((prop) => prop.key == propName)
@@ -87,8 +89,6 @@ export function Engines({
         let realProp = (ttsEngineProperties || []).find(
             (prop) => prop.key == propName
         )
-        console.log("ttsEngineProperties", propName)
-        console.log("realProp", realProp)
         const engineKey = propName.split('.').slice(0, 5).join('.')
         setEngineMessage({
             ...engineMessage,
@@ -105,9 +105,11 @@ export function Engines({
 
     const isConnectedToTTSEngine = (engineKey: string) => {
         let shortEngineKey = engineKey.split('.').slice(-1)[0]
-        let isConnected = selectTtsVoices(App.store.getState()).filter(
+        let isConnected =
+            selectTtsVoices(App.store.getState()).filter(
                 (v) => v.engine == shortEngineKey
             ).length > 0
+        // console.log('isConnectedToTTSEngine', engineKey, isConnected)
         return isConnected
     }
 
@@ -125,8 +127,16 @@ export function Engines({
             ...ttsEngineProperties.filter((k) => !k.key.startsWith(engineKey)),
             ...ttsProps,
         ]
-        onChangeTtsEngineProperties(updatedSettings)
-        onChangeTtsEngineConnected({ key: engineKey, connected: true })
+        // clear the changed flag
+        let enginePropsChanged_ = { ...enginePropsChanged }
+        enginePropsChanged_[engineKey] = false
+        setEnginePropsChanged(enginePropsChanged_)
+
+        // onChangeTtsEngineProperties(updatedSettings)
+        onChangeTtsEngineConnected(
+            { key: engineKey, connected: true },
+            updatedSettings
+        )
     }
 
     const disconnectFromTTSEngine = (engineKey: string) => {
@@ -139,8 +149,11 @@ export function Engines({
             setProperties(ttsProps.map((p) => ({ name: p.key, value: '' })))
         )
 
-        onChangeTtsEngineProperties(ttsProps)
-        onChangeTtsEngineConnected({ key: engineKey, connected: false })
+        // onChangeTtsEngineProperties(ttsProps)
+        onChangeTtsEngineConnected(
+            { key: engineKey, connected: false },
+            ttsProps
+        )
     }
     let getPropkeyLabel = (propkey, engineId) => {
         // the propkey looks like org.daisy.pipeline.tts.enginename.propkeyname
@@ -164,6 +177,11 @@ export function Engines({
 
         return propsForEngine.length > 0 && incompleteEngineValues.length == 0
     }
+    let hasChangedProps = (engineId) => {
+        // console.log('hasChangedProps', engineId, enginePropsChanged)
+        return enginePropsChanged[engineId]
+    }
+
     return (
         <div className="tts-engines">
             <p>
@@ -228,7 +246,7 @@ export function Engines({
                         ) && (
                             <>
                                 {!isConnectedToTTSEngine(engineId) ||
-                                enginePropsChanged[engineId] ? (
+                                hasChangedProps(engineId) ? (
                                     <>
                                         <button
                                             type="button"

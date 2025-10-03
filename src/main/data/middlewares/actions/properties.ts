@@ -77,8 +77,18 @@ export function setProperties(
     }
     //console.log('tts states starting', ttsEnginesStatesStart)
     dispatch(setTtsEngineState(ttsEnginesStatesStart))
+    // remove properties for TTS engines that are disconnected
+    let connectedEngines = getState()
+        .settings.ttsConfig.ttsEnginesConnected.filter((ec) => ec.connected)
+        .map((ec) => ec.key)
+    let newProperties_ = newProperties.filter(
+        (p) =>
+            connectedEngines.filter((c) => p.name.indexOf(c) != -1).length > 0
+    )
+
+    console.log('Properties for connected engines', newProperties_)
     Promise.all(
-        newProperties.map((prop) => pipelineAPI.setProperty(prop)(webservice))
+        newProperties_.map((prop) => pipelineAPI.setProperty(prop)(webservice))
     )
         //.then(() => pipelineAPI.fetchProperties()(webservice))
         .then(() => {

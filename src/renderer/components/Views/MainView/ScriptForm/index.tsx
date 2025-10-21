@@ -1,18 +1,30 @@
 /*
 Fill out fields for a new job and submit it
 */
+import { info } from 'electron-log'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useWindowStore } from 'renderer/store'
-import { externalLinkClick, findValue, ID } from 'renderer/utils/utils'
+import { findValue, ID } from 'renderer/utils/utils'
 import {
+    removeJob,
     requestStylesheetParameters,
+    restoreJob,
     runBatchJobs,
     runJob,
     updateJob,
 } from 'shared/data/slices/pipeline'
-import { Job, JobState, ScriptItemBase, ScriptOption } from 'shared/types'
+import {
+    Job,
+    JobState,
+    Script,
+    ScriptInput,
+    ScriptItemBase,
+    ScriptOption,
+} from 'shared/types'
 
-import { FormField } from '../../../Widgets/FormField'
+import { FormField } from '../Widgets/FormField'
+import { JobRequestError } from './jobRequestError'
+import { ScriptName } from './scriptName'
 import {
     getAllOptional,
     getAllRequired,
@@ -21,27 +33,16 @@ import {
     hasBatchInput,
     updateArrayValue,
 } from 'shared/utils'
-import { CustomName } from '../../../Widgets/CustomName'
-import { validateJobRequest } from 'renderer/utils/jobRequestValidator'
-//@ts-ignore
-import { JobRequestError } from './jobRequestError'
 const { App } = window
 
-export function ScriptForm({ job }: { job: Job }) {
-    const { settings } = useWindowStore()
-
+export function ScriptForm({ job, script }: { job: Job; script: Script }) {
     const [submitInProgress, setSubmitInProgress] = useState(false)
-    const [hasDownloadFolder, setHasDownloadFolder] = useState(
-        settings.downloadFolder?.trim() != ''
-    )
-    const [isValidJobRequest, setIsValidJobRequest] = useState(
-        job.jobRequest.validation.find((v) => v.required && !v.validValue) ==
-            undefined
-    )
+    const [canRunJob, setCanRunJob] = useState(false)
     const submitButtonRef = useRef(null)
 
-    let required = getAllRequired(job.script)
-    let optional = getAllOptional(job.script)
+    let required = getAllRequired(script)
+    let optional = getAllOptional(script)
+    const { settings } = useWindowStore()
 
     useMemo(() => {
         // menu item triggers this event to submit the form
@@ -53,8 +54,7 @@ export function ScriptForm({ job }: { job: Job }) {
     }, [])
 
     useEffect(() => {
-        let validDownloadFolder = settings.downloadFolder?.trim() != ''
-        setHasDownloadFolder(hasDownloadFolder && validDownloadFolder)
+        setCanRunJob(settings.downloadFolder?.trim() != '')
     }, [settings.downloadFolder])
 
     useEffect(() => {
@@ -77,8 +77,13 @@ export function ScriptForm({ job }: { job: Job }) {
         'audio',
         'braille',
         'tts',
+        'braille-translator-stylesheet',
     ]
-    const hiddenOptions = ['transform', 'stylesheet-parameters']
+    const hiddenOptions = [
+        'transform',
+        'stylesheet-parameters',
+        'braille-translator-stylesheet-parameters',
+    ]
     if (job.is2StepsJob) {
         optional = optional.filter((item) =>
             filteredOptions.includes(item.name)
@@ -94,7 +99,7 @@ export function ScriptForm({ job }: { job: Job }) {
     if (job.is2StepsJob && job.stylesheetParameters != null) {
         required = []
         optional = [
-            ...getAllOptional(job.script)
+            ...getAllOptional(script)
                 .filter((item) => !filteredOptions.includes(item.name))
                 .filter((item) => !hiddenOptions.includes(item.name)),
         ]
@@ -119,7 +124,6 @@ export function ScriptForm({ job }: { job: Job }) {
             updateJob({
                 ...job,
                 stylesheetParameters: null,
-                jobRequestError: null,
             })
         )
     }
@@ -128,6 +132,7 @@ export function ScriptForm({ job }: { job: Job }) {
         if (!job.jobRequest) {
             return
         }
+
         let inputs = [...job.jobRequest.inputs]
         let options = [...job.jobRequest.options]
         let stylesheetParameterOptions = [
@@ -165,27 +170,15 @@ export function ScriptForm({ job }: { job: Job }) {
                 options = updateArrayValue(value_, item, options)
             }
         }
-        let modifiedJobRequest = {
-            ...job.jobRequest,
-            inputs: [...inputs],
-            options: [...options],
-            stylesheetParameterOptions: [...stylesheetParameterOptions],
-        }
-        let requestValidationResult = await validateJobRequest(
-            modifiedJobRequest,
-            job.script,
-            App
-        )
-        modifiedJobRequest.validation = [...requestValidationResult]
-        setIsValidJobRequest(
-            modifiedJobRequest.validation.find(
-                (v) => v.required && !v.validValue
-            ) == undefined
-        )
         App.store.dispatch(
             updateJob({
                 ...job,
-                jobRequest: modifiedJobRequest,
+                jobRequest: {
+                    ...job.jobRequest,
+                    inputs: [...inputs],
+                    options: [...options],
+                    stylesheetParameterOptions: [...stylesheetParameterOptions],
+                },
                 jobRequestError: undefined,
                 errors: job.errors?.filter((e) => e.fieldName !== item.name),
             })
@@ -212,8 +205,9 @@ export function ScriptForm({ job }: { job: Job }) {
                 (hasAudio &&
                     (hasAudio.value === true || hasAudio.value !== 'false')) ||
                 (hasBraille && hasBraille.value === true) ||
-                job.script.id.endsWith('to-pef')
+                (job.script.id.endsWith('to-pef') || job.script.id.endsWith('ebraille'))
             ) {
+                console.log("Requesting stylesheet parameters")
                 App.store.dispatch(requestStylesheetParameters(job))
             } else {
                 App.store.dispatch(
@@ -234,7 +228,7 @@ export function ScriptForm({ job }: { job: Job }) {
                         .join('')
                 options = updateArrayValue(
                     stylesheetParametersOption,
-                    job.script.options.find(
+                    script.options.find(
                         (o) =>
                             o.name == 'stylesheet-parameters' &&
                             !o.isStylesheetParameter
@@ -294,179 +288,178 @@ export function ScriptForm({ job }: { job: Job }) {
         }
     }
 
-    if (job.jobRequestError) {
-        return (
-            <form
-                className="script"
-                aria-label={`Script form for ${job.script.nicename}`}
-            >
-                <JobRequestError jobRequestError={job.jobRequestError} />
-                <button className="important" onClick={previous} type="button">
-                    Back
-                </button>
-            </form>
-        )
-    }
-
     return (
-        <form
-            className="script"
-            aria-label={`Script form for ${job.script.nicename}`}
-            onSubmit={onSubmit}
-        >
-            <div className="script-description info">
-                <p>
-                    {job.script.description}
-                    {job.script.inputs.find((i) =>
-                        i.mediaType.includes(
-                            'application/vnd.pipeline.tts-config+xml'
-                        )
-                    ) && '. Text can be recorded in TTS voices.'}{' '}
-                    {job.script.homepage && (
-                        <a
-                            href={job.script.homepage}
-                            onClick={(e) => externalLinkClick(e, App)}
-                        >
-                            Learn more.
-                        </a>
-                    )}
-                </p>
-                {job.script.batchable && (
-                    <p className="tip">
-                        Add multiple files to run a batch job.
-                    </p>
-                )}
-            </div>
-
-            {required.length > 0 && (
-                <fieldset
-                    aria-labelledby={`${ID(job.internalId)}-required`}
-                    className="required"
-                >
-                    <legend>Input</legend>
-                    {required.map((item, idx) => {
-                        return (
-                            <FormField
-                                item={item}
-                                key={idx}
-                                idprefix={`${ID(job.internalId)}-${item.name}`}
-                                onChange={saveValueInJobRequest}
-                                initialValue={
-                                    findValue(
-                                        item.name,
-                                        item.kind,
-                                        job.jobRequest,
-                                        item.isStylesheetParameter
-                                    ) ?? []
-                                }
-                                error={
-                                    job.errors?.find(
-                                        (e) => e.fieldName === item.name
-                                    )?.error
-                                }
-                            />
-                        )
-                    })}
-                </fieldset>
-            )}
-            {optional.length > 0 && (
-                <fieldset className="optional">
-                    <legend>Options</legend>
-                    {(!job.is2StepsJob ||
-                        (job.is2StepsJob &&
-                            job.stylesheetParameters == null)) && (
-                        <CustomName job={job} />
-                    )}
-                    {optional.map((item) =>
-                        item.mediaType?.includes(
-                            'application/vnd.pipeline.tts-config+xml'
-                        ) ? (
-                            '' // skip it, we don't need to provide a visual field for this option, it's set globally
-                        ) : (
-                            <FormField
-                                item={item}
-                                key={`${ID(job.internalId)}-${item.name}-${
-                                    item.isStylesheetParameter
-                                }-FormField`}
-                                idprefix={`${ID(job.internalId)}-${item.name}-${
-                                    item.isStylesheetParameter
-                                }`}
-                                onChange={saveValueInJobRequest}
-                                initialValue={
-                                    findValue(
-                                        item.name,
-                                        item.kind,
-                                        job.jobRequest,
-                                        item.isStylesheetParameter
-                                    ) ?? []
-                                }
-                                error={
-                                    job.errors?.find(
-                                        (e) => e.fieldName === item.name
-                                    )?.error
-                                }
-                            />
-                        )
-                    )}
-                </fieldset>
-            )}
-            {!hasDownloadFolder && settings.downloadFolder?.trim() == '' && (
-                <div className="warnings">
-                    <p className="warning">
-                        Go under settings and choose a results folder location
-                        before running the job.
-                    </p>
-                </div>
-            )}
-            <div className="controls">
-                {job.is2StepsJob && job.stylesheetParameters != null && (
-                    <button
-                        className="important"
-                        onClick={previous}
-                        type="button"
-                    >
-                        Back
-                    </button>
-                )}
-                {job.is2StepsJob && job.stylesheetParameters == null ? (
-                    <button
-                        className="important"
-                        type="submit"
-                        ref={submitButtonRef}
-                        disabled={!hasDownloadFolder || !isValidJobRequest}
-                    >
-                        Next
-                    </button>
-                ) : (
-                    <button
-                        className="important"
-                        type="submit"
-                        disabled={
-                            !hasDownloadFolder ||
-                            !isValidJobRequest ||
-                            submitInProgress
-                        }
-                        ref={submitButtonRef}
-                    >
-                        Run
-                    </button>
-                )}
-            </div>
-        </form>
-    )
-}
-/*
-
-{/* <section
+        <>
+            <section
                 className="header"
                 aria-labelledby={`${ID(job.internalId)}-script-hd`}
             >
-                
                 <ScriptName
-                    script={job.script}
+                    script={script}
                     headerId={`${ID(job.internalId)}-script-hd`}
                 />
-                
                 {job.jobRequestError && (
                     <JobRequestError jobRequestError={job.jobRequestError} />
-                )}*/
+                )}
+            </section>
+            <form onSubmit={onSubmit} id={`${ID(job.internalId)}-form`}>
+                <div className="form-sections">
+                    {required.length > 0 && (
+                        <section
+                            className="required-fields"
+                            aria-labelledby={`${ID(job.internalId)}-required`}
+                        >
+                            <h2 id={`${ID(job.internalId)}-required`}>
+                                Required information
+                            </h2>
+                            {script.batchable && (
+                                <p className="tip">
+                                    Add multiple files to run a batch job.
+                                </p>
+                            )}
+                            <ul className="fields">
+                                {required.map((item, idx) => {
+                                    return (
+                                        <li key={idx}>
+                                            <FormField
+                                                item={item}
+                                                key={idx}
+                                                idprefix={`${ID(
+                                                    job.internalId
+                                                )}-${item.name}`}
+                                                onChange={saveValueInJobRequest}
+                                                initialValue={
+                                                    findValue(
+                                                        item.name,
+                                                        item.kind,
+                                                        job.jobRequest,
+                                                        item.isStylesheetParameter
+                                                    ) ?? []
+                                                }
+                                                error={
+                                                    job.errors?.find(
+                                                        (e) =>
+                                                            e.fieldName ===
+                                                            item.name
+                                                    )?.error
+                                                }
+                                            />
+                                        </li>
+                                    )
+                                })}
+                            </ul>
+                        </section>
+                    )}
+                    {optional.length > 0 ? (
+                        <section
+                            className="optional-fields"
+                            aria-labelledby={`${ID(job.internalId)}-optional`}
+                        >
+                            <h2 id={`${ID(job.internalId)}-optional`}>
+                                Options
+                            </h2>
+                            <ul className="fields">
+                                {optional.map((item) =>
+                                    item.mediaType?.includes(
+                                        'application/vnd.pipeline.tts-config+xml'
+                                    ) ? (
+                                        '' // skip it, we don't need to provide a visual field for this option, it's set globally
+                                    ) : (
+                                        <li
+                                            key={`${ID(job.internalId)}-${
+                                                item.name
+                                            }-${item.isStylesheetParameter}-li`}
+                                        >
+                                            <FormField
+                                                item={item}
+                                                key={`${ID(job.internalId)}-${
+                                                    item.name
+                                                }-${
+                                                    item.isStylesheetParameter
+                                                }-FormField`}
+                                                idprefix={`${ID(
+                                                    job.internalId
+                                                )}-${item.name}-${
+                                                    item.isStylesheetParameter
+                                                }`}
+                                                onChange={saveValueInJobRequest}
+                                                initialValue={
+                                                    findValue(
+                                                        item.name,
+                                                        item.kind,
+                                                        job.jobRequest,
+                                                        item.isStylesheetParameter
+                                                    ) ?? []
+                                                }
+                                                error={
+                                                    job.errors?.find(
+                                                        (e) =>
+                                                            e.fieldName ===
+                                                            item.name
+                                                    )?.error
+                                                }
+                                            />
+                                        </li>
+                                    )
+                                )}
+                            </ul>
+                        </section>
+                    ) : (
+                        ''
+                    )}
+                </div>
+                {!canRunJob && (
+                    <div className="warnings">
+                        <p className="warning">
+                            Go under settings and choose a results folder
+                            location before running the job.
+                        </p>
+                    </div>
+                )}
+                <div className="form-buttons">
+                    {job.is2StepsJob && job.stylesheetParameters != null && (
+                        <button className="run" onClick={previous}>
+                            Back
+                        </button>
+                    )}
+                    {job.is2StepsJob && job.stylesheetParameters == null ? (
+                        <button
+                            className="run"
+                            type="submit"
+                            ref={submitButtonRef}
+                        >
+                            Next
+                        </button>
+                    ) : (
+                        <button
+                            className="run"
+                            type="submit"
+                            disabled={!canRunJob || submitInProgress}
+                            ref={submitButtonRef}
+                        >
+                            {submitInProgress ? 'Starting...' : 'Run'}
+                        </button>
+                    )}
+                    <button
+                        className="cancel"
+                        type="reset"
+                        onClick={async (e) => {
+                            let result = await App.showMessageBoxYesNo(
+                                'Are you sure you want to close this job?'
+                            )
+                            if (result) {
+                                App.store.dispatch(
+                                    job.linkedTo
+                                        ? restoreJob(job)
+                                        : removeJob(job)
+                                )
+                            }
+                        }}
+                    >
+                        Cancel
+                    </button>
+                </div>
+            </form>
+        </>
+    )
+}

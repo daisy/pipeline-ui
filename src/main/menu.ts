@@ -125,8 +125,10 @@ export function buildMenuTemplate({
                 ...(!isMac
                     ? [
                           {
-                              label: 'Settings',
-                              click: onShowSettings,
+                            label: 'Settings',
+                            click: onShowSettings,
+                            accelerator: 'CommandOrControl+,',
+
                           },
                       ]
                     : []),

@@ -87,6 +87,7 @@ const ScriptMediaTag = {
     },
     'epub-to-daisy': () => `<media value="speech"/>`,
     'zedai-to-epub3': () => `<media value="speech"/>`,
+    'dtbook-to-ebraille': () => `<media value="braille"/>`,
 }
 
 /**

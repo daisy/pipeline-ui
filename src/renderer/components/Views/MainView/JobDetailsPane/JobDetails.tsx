@@ -44,7 +44,7 @@ export function JobDetails({ job }: { job: Job }) {
                 <h2>Error</h2>
                 <div className="details">
                     <p>{job.jobRequestError.description}</p>
-                    {!CanDo.editJob(pipeline, pipeline.status, job) && (
+                    {CanDo.editJob(pipeline, pipeline.status, job) && (
                         <div className="form-buttons">
                             <button
                                 type="button"

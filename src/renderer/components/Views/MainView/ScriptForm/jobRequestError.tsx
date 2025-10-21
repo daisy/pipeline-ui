@@ -1,8 +1,8 @@
 export function JobRequestError({ jobRequestError }) {
     return (
-        <p>
-            An error occured:
+        <div>
+            <h2>Error</h2>
             <span className="field-errors">{jobRequestError.description}</span>
-        </p>
+        </div>
     )
 }

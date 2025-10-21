@@ -89,7 +89,7 @@
 
     .job-messages {
         background-color: var(--bg);
-        details>ul {
+        details>ul:has(li) {
             border: var(--bw) var(--fg-off) solid;
             border-radius: var(--br);
             background-color: var(--bg-off);

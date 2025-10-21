@@ -230,7 +230,9 @@ export function ScriptForm({ job, script }: { job: Job; script: Script }) {
                     stylesheetParametersOption,
                     script.options.find(
                         (o) =>
-                            o.name == 'stylesheet-parameters' &&
+                            (o.name == 'stylesheet-parameters' ||
+                                o.name ==
+                                    'braille-translator-stylesheet-parameters') &&
                             !o.isStylesheetParameter
                     ),
                     job.jobRequest.options

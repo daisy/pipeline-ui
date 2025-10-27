@@ -35,7 +35,11 @@ export function Engines({
     ttsEngineProperties: Array<TtsEngineProperty>
     ttsEnginesConnected: Object
     onChangeTtsEngineProperties: (props: Array<TtsEngineProperty>) => void
-    onChangeTtsEngineConnected: (engineId, isConnected, props: Array<TtsEngineProperty>) => void
+    onChangeTtsEngineConnected: (
+        engineId,
+        isConnected,
+        props: Array<TtsEngineProperty>
+    ) => void
 }) {
     // console.log('Engine.tsx TTS Engine Properties', ttsEngineProperties)
     const { pipeline } = useWindowStore()
@@ -55,6 +59,8 @@ export function Engines({
     const [enginePropsChanged, setEnginePropsChanged] = useState<{
         [engineKey: string]: boolean
     }>({})
+
+    const [attemptedConnection, setAttemptedConnection] = useState({})
 
     useEffect(() => {
         let messages = { ...engineMessage }
@@ -132,12 +138,12 @@ export function Engines({
         enginePropsChanged_[engineKey] = false
         setEnginePropsChanged(enginePropsChanged_)
 
+        let attemptedConnection_ = { ...attemptedConnection }
+        attemptedConnection_[engineKey] = true
+        setAttemptedConnection({ ...attemptedConnection_ })
+
         // onChangeTtsEngineProperties(updatedSettings)
-        onChangeTtsEngineConnected(
-            engineKey, 
-            true,
-            updatedSettings
-        )
+        onChangeTtsEngineConnected(engineKey, true, updatedSettings)
     }
 
     const disconnectFromTTSEngine = (engineKey: string) => {
@@ -150,12 +156,12 @@ export function Engines({
             setProperties(ttsProps.map((p) => ({ name: p.key, value: '' })))
         )
 
+        let attemptedConnection_ = { ...attemptedConnection }
+        attemptedConnection_[engineKey] = false
+        setAttemptedConnection({ ...attemptedConnection_ })
+
         // onChangeTtsEngineProperties(ttsProps)
-        onChangeTtsEngineConnected(
-            engineKey, 
-            false,
-            ttsProps
-        )
+        onChangeTtsEngineConnected(engineKey, false, ttsProps)
     }
     let getPropkeyLabel = (propkey, engineId) => {
         // the propkey looks like org.daisy.pipeline.tts.enginename.propkeyname
@@ -184,6 +190,7 @@ export function Engines({
         return enginePropsChanged[engineId]
     }
 
+    console.log("ATTEMPTS", attemptedConnection)
     return (
         <div className="tts-engines">
             <p>
@@ -215,34 +222,39 @@ export function Engines({
                                     />
                                 </div>
                             ))}
-                        {engineMessage[engineId] && (
-                            <div
-                                className={`engine-status ${engineStatus[engineId]}`}
-                            >
-                                {engineMessage[engineId].split('\n').length ===
-                                1 ? (
-                                    <span>{engineMessage[engineId]}</span>
-                                ) : (
-                                    <details>
-                                        <summary>
-                                            {
-                                                engineMessage[engineId].split(
-                                                    '\n'
-                                                )[0]
-                                            }
-                                        </summary>
-                                        {engineMessage[engineId]
-                                            .split('\n')
-                                            .slice(1)
-                                            .join('\n')}
-                                    </details>
-                                )}
-                                {TTSEngineStatusIcon(engineStatus[engineId], {
-                                    width: 20,
-                                    height: 20,
-                                })}
-                            </div>
-                        )}
+                        {engineMessage[engineId] &&
+                            attemptedConnection.hasOwnProperty(engineId) &&
+                            attemptedConnection[engineId] && (
+                                <div
+                                    className={`engine-status ${engineStatus[engineId]}`}
+                                >
+                                    {engineMessage[engineId].split('\n')
+                                        .length === 1 ? (
+                                        <span>{engineMessage[engineId]}</span>
+                                    ) : (
+                                        <details>
+                                            <summary>
+                                                {
+                                                    engineMessage[
+                                                        engineId
+                                                    ].split('\n')[0]
+                                                }
+                                            </summary>
+                                            {engineMessage[engineId]
+                                                .split('\n')
+                                                .slice(1)
+                                                .join('\n')}
+                                        </details>
+                                    )}
+                                    {TTSEngineStatusIcon(
+                                        engineStatus[engineId],
+                                        {
+                                            width: 20,
+                                            height: 20,
+                                        }
+                                    )}
+                                </div>
+                            )}
                         {['azure', 'google', 'aws'].includes(
                             engineId.split('.').slice(-1)[0]
                         ) && (

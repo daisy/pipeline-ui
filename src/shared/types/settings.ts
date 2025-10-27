@@ -105,7 +105,7 @@ const migrators: Map<string, (prev: any) => any> = new Map<
                     ttsEnginesConnected: {},
                 },
                 textSize: 20,
-                fontName: '',
+                fontName: 'system',
                 ...toKeep,
             } as ApplicationSettings
         },

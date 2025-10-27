@@ -117,7 +117,7 @@ export function buildMenuTemplate({
             label: '&File',
             submenu: [
                 {
-                    label: 'New job',
+                    label: 'New Job',
                     click: onCreateJob,
                     accelerator: 'CommandOrControl+N',
                     enabled: CanDo.createJob(pipelineStatus),
@@ -202,7 +202,7 @@ export function buildMenuTemplate({
                       ]),
                 { type: 'separator' },
                 {
-                    label: 'Close window',
+                    label: 'Close Window',
                     accelerator: 'CommandOrControl+W',
                     click: (
                         origin: MenuItem,
@@ -233,7 +233,7 @@ export function buildMenuTemplate({
             label: '&Edit',
             submenu: [
                 {
-                    label: 'Edit job',
+                    label: 'Edit Job',
                     click: () => {
                         onEditJob(currentJob)
                     },
@@ -285,7 +285,7 @@ export function buildMenuTemplate({
             label: '&Goto',
             submenu: [
                 {
-                    label: 'Next job',
+                    label: 'Next Job',
                     click: () => {
                         onNextTab()
                     },
@@ -293,7 +293,7 @@ export function buildMenuTemplate({
                     enabled: multipleJobs,
                 },
                 {
-                    label: 'Previous job',
+                    label: 'Previous Job',
                     click: () => {
                         onPrevTab()
                     },
@@ -339,7 +339,7 @@ export function buildMenuTemplate({
             label: '&Help',
             submenu: [
                 {
-                    label: 'Quick start guide',
+                    label: 'Quick Start Guide',
                     click: () => {
                         onGotoLink(
                             'https://daisy.org/guidance/info-help/guidance-training/daisy-tools/daisy-pipeline-app-quick-start-guide/'
@@ -347,7 +347,7 @@ export function buildMenuTemplate({
                     },
                 },
                 {
-                    label: 'Issue tracker',
+                    label: 'Issue Tracker',
                     click: () => {
                         onGotoLink('https://github.com/daisy/pipeline/issues')
                     },

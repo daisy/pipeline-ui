@@ -28,10 +28,10 @@ const lerp = (a, b, t) => a + t * (b - a)
 // CSS text size preference value must be between .7 and 2.5
 // the settings value (from the widget and also in the settings file) is 0-100
 function translateTextSize(val) {
-    // make this exactly 1 (with the formula below, it ends up being 1.0999...)
-    if (val == 20) {
-        return 1
-    }
+    // // make this exactly 1 (with the formula below, it ends up being 1.0999...)
+    // if (val == 16) {
+    //     return 1
+    // }
     return lerp(0.7, 2.5, val / 100)
 }
 

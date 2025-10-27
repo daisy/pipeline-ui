@@ -91,6 +91,7 @@ export function Appearance({ newSettings }) {
                     list="textSizes"
                     onChange={(e) => textSizeChanged(e)}
                     defaultValue={newSettings.textSize}
+                    step={1.0}
                 />
                 <datalist id="textSizes">
                     {TextSizeOptions.map((opt, idx) => (

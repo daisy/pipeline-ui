@@ -205,9 +205,9 @@ export function ScriptForm({ job, script }: { job: Job; script: Script }) {
                 (hasAudio &&
                     (hasAudio.value === true || hasAudio.value !== 'false')) ||
                 (hasBraille && hasBraille.value === true) ||
-                (job.script.id.endsWith('to-pef') || job.script.id.endsWith('ebraille'))
+                job.script.id.endsWith('to-pef') ||
+                job.script.id.endsWith('ebraille')
             ) {
-                console.log("Requesting stylesheet parameters")
                 App.store.dispatch(requestStylesheetParameters(job))
             } else {
                 App.store.dispatch(

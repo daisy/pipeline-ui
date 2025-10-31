@@ -24,7 +24,6 @@ const MultiUriInput: React.FC<MultiFileInputProps> = ({
     const [text, setText] = useState<string>('')
 
     const addFiles = (newFiles: string[]) => {
-        console.log(files, newFiles)
         // make list unique
         updateFiles(Array.from(new Set([...files, ...newFiles])))
     }

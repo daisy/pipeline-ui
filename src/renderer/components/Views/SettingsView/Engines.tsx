@@ -41,7 +41,6 @@ export function Engines({
         props: Array<TtsEngineProperty>
     ) => void
 }) {
-    // console.log('Engine.tsx TTS Engine Properties', ttsEngineProperties)
     const { pipeline } = useWindowStore()
     // Clone array and objects in it to avoid updating the oriiginal props
     const [engineProperties, setEngineProperties] = useState<
@@ -78,7 +77,6 @@ export function Engines({
     }, [pipeline.ttsEnginesStates])
 
     let onPropertyChange = (e, propName) => {
-        // console.log('onPropertyChange', e, propName)
         e.preventDefault()
         let engineProperties_ = clone(engineProperties)
         let prop = engineProperties_.find((prop) => prop.key == propName)
@@ -115,7 +113,6 @@ export function Engines({
             selectTtsVoices(App.store.getState()).filter(
                 (v) => v.engine == shortEngineKey
             ).length > 0
-        // console.log('isConnectedToTTSEngine', engineKey, isConnected)
         return isConnected
     }
 
@@ -141,14 +138,10 @@ export function Engines({
         let attemptedConnection_ = { ...attemptedConnection }
         attemptedConnection_[engineKey] = true
         setAttemptedConnection({ ...attemptedConnection_ })
-
-        // onChangeTtsEngineProperties(updatedSettings)
-        console.log("Updated settings", updatedSettings)
         onChangeTtsEngineConnected(engineKey, true, updatedSettings)
     }
 
     const disconnectFromTTSEngine = (engineKey: string) => {
-        console.log("TTS engines, disconect")
         const ttsProps = [
             ...engineProperties.filter((k) => k.key.startsWith(engineKey)),
         ]
@@ -162,7 +155,6 @@ export function Engines({
         attemptedConnection_[engineKey] = false
         setAttemptedConnection({ ...attemptedConnection_ })
 
-        // onChangeTtsEngineProperties(ttsProps)
         onChangeTtsEngineConnected(engineKey, false, engineProperties)
     }
     let getPropkeyLabel = (propkey, engineId) => {
@@ -188,7 +180,6 @@ export function Engines({
         return propsForEngine.length > 0 && incompleteEngineValues.length == 0
     }
     let hasChangedProps = (engineId) => {
-        // console.log('hasChangedProps', engineId, enginePropsChanged)
         return enginePropsChanged[engineId]
     }
 

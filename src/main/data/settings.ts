@@ -42,7 +42,7 @@ export function readSettings() {
                 resolve(app.getPath('userData'), 'ttsConfig.xml')
             ).href,
             ttsEngineProperties: [],
-            ttsEnginesConnected: [],
+            ttsEnginesConnected: {},
         },
         autoCheckUpdate: true,
         fontName: 'system',

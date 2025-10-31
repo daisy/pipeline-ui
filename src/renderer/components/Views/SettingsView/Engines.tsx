@@ -36,8 +36,8 @@ export function Engines({
     ttsEnginesConnected: Object
     onChangeTtsEngineProperties: (props: Array<TtsEngineProperty>) => void
     onChangeTtsEngineConnected: (
-        engineId,
-        isConnected,
+        engineId: string,
+        isConnected: boolean,
         props: Array<TtsEngineProperty>
     ) => void
 }) {
@@ -143,10 +143,12 @@ export function Engines({
         setAttemptedConnection({ ...attemptedConnection_ })
 
         // onChangeTtsEngineProperties(updatedSettings)
+        console.log("Updated settings", updatedSettings)
         onChangeTtsEngineConnected(engineKey, true, updatedSettings)
     }
 
     const disconnectFromTTSEngine = (engineKey: string) => {
+        console.log("TTS engines, disconect")
         const ttsProps = [
             ...engineProperties.filter((k) => k.key.startsWith(engineKey)),
         ]
@@ -161,7 +163,7 @@ export function Engines({
         setAttemptedConnection({ ...attemptedConnection_ })
 
         // onChangeTtsEngineProperties(ttsProps)
-        onChangeTtsEngineConnected(engineKey, false, ttsProps)
+        onChangeTtsEngineConnected(engineKey, false, engineProperties)
     }
     let getPropkeyLabel = (propkey, engineId) => {
         // the propkey looks like org.daisy.pipeline.tts.enginename.propkeyname
@@ -190,7 +192,6 @@ export function Engines({
         return enginePropsChanged[engineId]
     }
 
-    console.log("ATTEMPTS", attemptedConnection)
     return (
         <div className="tts-engines">
             <p>

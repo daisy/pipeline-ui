@@ -150,14 +150,14 @@ export function SettingsView(
         App.store.dispatch(setTtsConfig(newConfig))
         App.store.dispatch(save())
     }
-    const onTtsEngineConnectedChange = (engineId, isConnected, ttsProperties) => {
+    const onTtsEngineConnectedChange = (engineId, isConnected, engineProps) => {
         let ttsEnginesConnected = {...settings.ttsConfig.ttsEnginesConnected}
         ttsEnginesConnected[engineId] = isConnected
         
         const newConfig = {
             preferredVoices: [...settings.ttsConfig.preferredVoices],
             defaultVoices: [...settings.ttsConfig.defaultVoices],
-            ttsEngineProperties: [...ttsProperties],
+            ttsEngineProperties: [...engineProps],
             xmlFilepath: newSettings.ttsConfig.xmlFilepath,
             ttsEnginesConnected: {...ttsEnginesConnected},
         }

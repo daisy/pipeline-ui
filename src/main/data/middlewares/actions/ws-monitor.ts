@@ -157,7 +157,7 @@ export const timestamp = () => {
             .toString()
             .padStart(2, '0')
     }-${
-        (currentTime.getDay() + 1)
+        (currentTime.getDate())
             .toString()
             .padStart(2, '0')
     }-${

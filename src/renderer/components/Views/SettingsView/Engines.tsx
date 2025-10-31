@@ -261,7 +261,13 @@ export function Engines({
                                                 connectToTTSEngine(engineId)
                                             }}
                                             disabled={
-                                                !hasRequiredValues(engineId)
+                                                !hasRequiredValues(engineId) ||
+                                                ![
+                                                    'disconnected',
+                                                    'disabled',
+                                                ].includes(
+                                                    engineStatus[engineId]
+                                                )
                                             }
                                         >
                                             Connect
@@ -280,6 +286,10 @@ export function Engines({
                                             e.preventDefault()
                                             disconnectFromTTSEngine(engineId)
                                         }}
+                                        disabled={
+                                            engineStatus[engineId] !=
+                                            'available'
+                                        }
                                     >
                                         Disconnect
                                     </button>

@@ -81,7 +81,7 @@ export function PreferredVoices({
 
     return (
         <div className="tts-preferred-voices">
-            <p className="info">
+            <p>
                 Add voices via the{' '}
                 <a
                     onClick={() =>
@@ -203,6 +203,7 @@ export function PreferredVoices({
                                     (v) => getLang(v.lang) == lang
                                 ) && (
                                     <button
+                                        type="button"
                                         onClick={(e) => clearDefaultVoice(lang)}
                                     >
                                         Clear default

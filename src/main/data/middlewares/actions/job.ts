@@ -18,7 +18,8 @@ import {
 import { MainWindowInstance } from 'main/windows'
 import { removeJob as removeJobSlice } from 'shared/data/slices/pipeline'
 import { error, info } from 'electron-log'
-import { startMonitor } from './monitor'
+import { startMonitor as origStartMonitor } from './monitor' // polling job monitor
+import { startMonitor } from './ws-monitor' // web socket job monitor
 import { ParserException } from 'shared/parser/pipelineXmlConverter/parser'
 import { GetStateFunction } from 'shared/types/store'
 import { PayloadAction } from '@reduxjs/toolkit'
@@ -143,6 +144,7 @@ export function runJob(jobToRun: Job, dispatch, getState: GetStateFunction) {
                     updatedJob.jobData = jobResponse as JobData
                     // start a job monitor
                     startMonitor(updatedJob, webservice, getState, dispatch)
+                    // origStartMonitor(updatedJob, webservice, getState, dispatch)
                 }
                 dispatch(updateJob(updatedJob))
             })

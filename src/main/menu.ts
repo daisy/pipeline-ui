@@ -1,5 +1,5 @@
 import { BrowserWindow, dialog, MenuItem } from 'electron'
-import { selectStatus } from 'shared/data/slices/pipeline'
+import { selectPipeline, selectStatus } from 'shared/data/slices/pipeline'
 import { calculateJobName, readableStatus } from 'shared/jobName'
 import { Job, JobState, JobStatus, PipelineStatus } from 'shared/types'
 import { getPipelineInstance } from './data/instance'
@@ -9,9 +9,12 @@ import { selectEditOnNewTab } from 'shared/data/slices/settings'
 import { selectDownloadPath } from 'shared/data/slices/settings'
 import {
     areAllJobsInBatchDone,
+    closeOrCancelLabel,
     getCompletedCountInBatch,
     getIdleCountInBatch,
+    getJobsInBatch,
 } from 'shared/utils'
+import { CanDo } from 'shared/canDo'
 
 export function buildMenuTemplate({
     appName,
@@ -28,6 +31,9 @@ export function buildMenuTemplate({
     onEditJob,
     onShowAbout,
     onCancelBatchJob,
+    onResetTextSize,
+    onLargerText,
+    onSmallerText,
 }) {
     let pipelineStatus = PipelineStatus.UNKNOWN
     const instance = getPipelineInstance(store.getState())
@@ -40,56 +46,20 @@ export function buildMenuTemplate({
     let multipleJobs = jobs.length > 1
     let status = 'new job'
     let currentJob = jobs.find((j) => j.internalId == selectedJobId)
-    let jobsInBatch = currentJob?.isPrimaryForBatch
-        ? jobs.filter(
-              (j) => j.jobRequest?.batchId == currentJob.jobRequest?.batchId
-          )
-        : []
+    let jobsInBatch = getJobsInBatch(
+        selectPipeline(store.getState()),
+        currentJob
+    )
 
     if (currentJob?.isPrimaryForBatch) {
         let numJobsDone = getCompletedCountInBatch(currentJob, jobsInBatch)
-        status = `Batch status: (${numJobsDone}/${jobsInBatch.length})`
+        status = `Batch status: (${numJobsDone}/${jobsInBatch?.length ?? '?'})`
     } else if (currentJob?.jobData?.status) {
         status = readableStatus[currentJob.jobData.status]
     }
     if (pipelineStatus != PipelineStatus.RUNNING) {
         status = 'unavailable'
     }
-
-    let canDelete = true
-    if (currentJob?.isPrimaryForBatch) {
-        canDelete = areAllJobsInBatchDone(currentJob, jobsInBatch)
-    } else {
-        canDelete =
-            pipelineStatus == PipelineStatus.RUNNING &&
-            currentJob &&
-            (currentJob.state == JobState.SUBMITTED || currentJob.state == JobState.ENDED) &&
-            currentJob.jobData &&
-            currentJob.jobData.status != JobStatus.RUNNING &&
-            currentJob.jobData.status != JobStatus.IDLE
-    }
-
-    let canRun =
-        pipelineStatus == PipelineStatus.RUNNING &&
-        currentJob &&
-        currentJob.state == JobState.NEW &&
-        currentJob.jobRequest != null &&
-        selectDownloadPath(store.getState()) != '' &&
-        currentJob.jobRequest.validation.find(
-            (v) => v.required && !v.validValue
-        ) == undefined
-
-    let canCloseJob = true
-    if (currentJob?.isPrimaryForBatch) {
-        canCloseJob = areAllJobsInBatchDone(currentJob, jobsInBatch)
-    } else {
-        canCloseJob =
-            currentJob &&
-            (currentJob.state == JobState.SUBMITTED ||
-                currentJob.state == JobState.ENDED)
-    }
-
-    let canCreateJob = pipelineStatus == PipelineStatus.RUNNING
 
     // take off the suffix '- App' -- we only want that to appear on the window title
     let adjustedAppName = appName
@@ -103,6 +73,7 @@ export function buildMenuTemplate({
             ? 'Next'
             : 'Run job'
 
+    
     // @ts-ignore
     const template: MenuItemConstructorOptions = [
         // { role: 'appMenu' }
@@ -146,16 +117,18 @@ export function buildMenuTemplate({
             label: '&File',
             submenu: [
                 {
-                    label: 'New job',
+                    label: 'New Job',
                     click: onCreateJob,
                     accelerator: 'CommandOrControl+N',
-                    enabled: canCreateJob,
+                    enabled: CanDo.createJob(pipelineStatus),
                 },
                 ...(!isMac
                     ? [
                           {
-                              label: 'Settings',
-                              click: onShowSettings,
+                            label: 'Settings',
+                            click: onShowSettings,
+                            accelerator: 'CommandOrControl+,',
+
                           },
                       ]
                     : []),
@@ -166,7 +139,11 @@ export function buildMenuTemplate({
                         onRunJob(currentJob)
                     },
                     accelerator: 'CommandOrControl+R',
-                    enabled: canRun,
+                    enabled: CanDo.runJob(
+                        pipelineStatus,
+                        currentJob,
+                        selectDownloadPath(store.getState())
+                    ),
                 },
                 ...(currentJob
                     ? [
@@ -182,22 +159,26 @@ export function buildMenuTemplate({
                           },
                       ]
                     : []),
-                ...(canCloseJob
+                ...(CanDo.closeJob(selectPipeline(store.getState()), currentJob)
                     ? [
                           {
-                              label: 'Close job',
+                              label: closeOrCancelLabel(
+                                  selectPipeline(store.getState()),
+                                  currentJob
+                              ),
                               click: () => {
                                   onRemoveJob(currentJob)
                               },
                               accelerator: 'CommandOrControl+D',
-                              enabled: canDelete,
+                              enabled: true,
                           },
                       ]
                     : [
                           {
-                              label: currentJob?.jobRequest?.batchId
-                                  ? 'Cancel scheduled jobs'
-                                  : 'Cancel job',
+                              label: closeOrCancelLabel(
+                                  selectPipeline(store.getState()),
+                                  currentJob
+                              ),
                               click: () => {
                                   if (currentJob?.jobRequest?.batchId) {
                                       if (
@@ -213,15 +194,15 @@ export function buildMenuTemplate({
                                   }
                               },
                               accelerator: 'CommandOrControl+D',
-                              enabled:
-                                  !currentJob?.jobRequest?.batchId ||
-                                  getIdleCountInBatch(currentJob, jobsInBatch) >
-                                      0,
+                              enabled: CanDo.cancelJob(
+                                  selectPipeline(store.getState()),
+                                  currentJob
+                              ),
                           },
                       ]),
                 { type: 'separator' },
                 {
-                    label: 'Close window',
+                    label: 'Close Window',
                     accelerator: 'CommandOrControl+W',
                     click: (
                         origin: MenuItem,
@@ -252,12 +233,16 @@ export function buildMenuTemplate({
             label: '&Edit',
             submenu: [
                 {
-                    label: 'Edit job',
+                    label: 'Edit Job',
                     click: () => {
                         onEditJob(currentJob)
                     },
                     accelerator: 'CommandOrControl+E',
-                    enabled: canDelete && !currentJob?.jobRequest?.batchId,
+                    enabled: CanDo.editJob(
+                        selectPipeline(store.getState()),
+                        pipelineStatus,
+                        currentJob
+                    ),
                 },
                 { type: 'separator' },
                 { role: 'copy' },
@@ -266,32 +251,41 @@ export function buildMenuTemplate({
         },
         {
             label: '&View',
-            submenu: isMac
-                ? [
-                      { role: 'resetZoom' },
-                      { role: 'zoomIn' },
-                      { role: 'zoomOut' },
-                  ]
-                : [
-                      {
-                          role: 'resetZoom',
-                          accelerator: 'Alt+Shift+CommandOrControl+=',
-                      },
-                      {
-                          role: 'zoomIn',
-                          accelerator: 'CommandOrControl+=',
-                      },
-                      {
-                          role: 'zoomOut',
-                          accelerator: 'Shift+CommandOrControl+=',
-                      },
-                  ],
+            submenu: [
+                {
+                    label: 'Reset Text Size',
+                    accelerator: isMac
+                        ? 'CommandOrControl+0'
+                        : 'Alt+Shift+CommandOrControl+=',
+                    click: () => {
+                        onResetTextSize()
+                    },
+                },
+                {
+                    label: 'Larger Text',
+                    accelerator: isMac
+                        ? 'CommandOrControl+Plus'
+                        : 'CommandOrControl+=',
+                    click: () => {
+                        onLargerText()
+                    },
+                },
+                {
+                    label: 'Smaller Text',
+                    accelerator: isMac
+                        ? 'CommandOrControl+-'
+                        : 'Shift+CommandOrControl+-',
+                    click: () => {
+                        onSmallerText()
+                    },
+                },
+            ],
         },
         {
             label: '&Goto',
             submenu: [
                 {
-                    label: 'Next job',
+                    label: 'Next Job',
                     click: () => {
                         onNextTab()
                     },
@@ -299,7 +293,7 @@ export function buildMenuTemplate({
                     enabled: multipleJobs,
                 },
                 {
-                    label: 'Previous job',
+                    label: 'Previous Job',
                     click: () => {
                         onPrevTab()
                     },
@@ -345,7 +339,7 @@ export function buildMenuTemplate({
             label: '&Help',
             submenu: [
                 {
-                    label: 'Quick start guide',
+                    label: 'Quick Start Guide',
                     click: () => {
                         onGotoLink(
                             'https://daisy.org/guidance/info-help/guidance-training/daisy-tools/daisy-pipeline-app-quick-start-guide/'
@@ -353,7 +347,7 @@ export function buildMenuTemplate({
                     },
                 },
                 {
-                    label: 'Issue tracker',
+                    label: 'Issue Tracker',
                     click: () => {
                         onGotoLink('https://github.com/daisy/pipeline/issues')
                     },

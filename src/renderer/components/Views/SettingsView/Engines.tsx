@@ -28,10 +28,18 @@ const clone = (propsArray: Array<{ key: string; value: string }>) => [
 
 export function Engines({
     ttsEngineProperties,
+    ttsEnginesConnected,
     onChangeTtsEngineProperties,
+    onChangeTtsEngineConnected,
 }: {
     ttsEngineProperties: Array<TtsEngineProperty>
+    ttsEnginesConnected: Object
     onChangeTtsEngineProperties: (props: Array<TtsEngineProperty>) => void
+    onChangeTtsEngineConnected: (
+        engineId: string,
+        isConnected: boolean,
+        props: Array<TtsEngineProperty>
+    ) => void
 }) {
     const { pipeline } = useWindowStore()
     // Clone array and objects in it to avoid updating the oriiginal props
@@ -50,6 +58,8 @@ export function Engines({
     const [enginePropsChanged, setEnginePropsChanged] = useState<{
         [engineKey: string]: boolean
     }>({})
+
+    const [attemptedConnection, setAttemptedConnection] = useState({})
 
     useEffect(() => {
         let messages = { ...engineMessage }
@@ -98,11 +108,12 @@ export function Engines({
     }
 
     const isConnectedToTTSEngine = (engineKey: string) => {
-        return (
+        let shortEngineKey = engineKey.split('.').slice(-1)[0]
+        let isConnected =
             selectTtsVoices(App.store.getState()).filter(
-                (v) => v.engine == engineKey.split('.').slice(-1)[0]
+                (v) => v.engine == shortEngineKey
             ).length > 0
-        )
+        return isConnected
     }
 
     const connectToTTSEngine = (engineKey: string) => {
@@ -119,7 +130,15 @@ export function Engines({
             ...ttsEngineProperties.filter((k) => !k.key.startsWith(engineKey)),
             ...ttsProps,
         ]
-        onChangeTtsEngineProperties(updatedSettings)
+        // clear the changed flag
+        let enginePropsChanged_ = { ...enginePropsChanged }
+        enginePropsChanged_[engineKey] = false
+        setEnginePropsChanged(enginePropsChanged_)
+
+        let attemptedConnection_ = { ...attemptedConnection }
+        attemptedConnection_[engineKey] = true
+        setAttemptedConnection({ ...attemptedConnection_ })
+        onChangeTtsEngineConnected(engineKey, true, updatedSettings)
     }
 
     const disconnectFromTTSEngine = (engineKey: string) => {
@@ -131,8 +150,12 @@ export function Engines({
         App.store.dispatch(
             setProperties(ttsProps.map((p) => ({ name: p.key, value: '' })))
         )
-        // TODO : add a setting to let users disable autoconnect on startup
-        onChangeTtsEngineProperties(ttsProps)
+
+        let attemptedConnection_ = { ...attemptedConnection }
+        attemptedConnection_[engineKey] = false
+        setAttemptedConnection({ ...attemptedConnection_ })
+
+        onChangeTtsEngineConnected(engineKey, false, engineProperties)
     }
     let getPropkeyLabel = (propkey, engineId) => {
         // the propkey looks like org.daisy.pipeline.tts.enginename.propkeyname
@@ -156,6 +179,10 @@ export function Engines({
 
         return propsForEngine.length > 0 && incompleteEngineValues.length == 0
     }
+    let hasChangedProps = (engineId) => {
+        return enginePropsChanged[engineId]
+    }
+
     return (
         <div className="tts-engines">
             <p>
@@ -187,51 +214,70 @@ export function Engines({
                                     />
                                 </div>
                             ))}
-                        {engineMessage[engineId] && (
-                            <div
-                                className={`engine-status ${engineStatus[engineId]}`}
-                            >
-                                {engineMessage[engineId].split('\n').length ===
-                                1 ? (
-                                    <span>{engineMessage[engineId]}</span>
-                                ) : (
-                                    <details>
-                                        <summary>
-                                            {
-                                                engineMessage[engineId].split(
-                                                    '\n'
-                                                )[0]
-                                            }
-                                        </summary>
-                                        {engineMessage[engineId]
-                                            .split('\n')
-                                            .slice(1)
-                                            .join('\n')}
-                                    </details>
-                                )}
-                                {TTSEngineStatusIcon(engineStatus[engineId], {
-                                    width: 20,
-                                    height: 20,
-                                })}
-                            </div>
-                        )}
+                        {engineMessage[engineId] &&
+                            attemptedConnection.hasOwnProperty(engineId) &&
+                            attemptedConnection[engineId] && (
+                                <div
+                                    className={`engine-status ${engineStatus[engineId]}`}
+                                >
+                                    {engineMessage[engineId].split('\n')
+                                        .length === 1 ? (
+                                        <span>{engineMessage[engineId]}</span>
+                                    ) : (
+                                        <details>
+                                            <summary>
+                                                {
+                                                    engineMessage[
+                                                        engineId
+                                                    ].split('\n')[0]
+                                                }
+                                            </summary>
+                                            {engineMessage[engineId]
+                                                .split('\n')
+                                                .slice(1)
+                                                .join('\n')}
+                                        </details>
+                                    )}
+                                    {TTSEngineStatusIcon(
+                                        engineStatus[engineId],
+                                        {
+                                            width: 20,
+                                            height: 20,
+                                        }
+                                    )}
+                                </div>
+                            )}
                         {['azure', 'google', 'aws'].includes(
                             engineId.split('.').slice(-1)[0]
                         ) && (
                             <>
                                 {!isConnectedToTTSEngine(engineId) ||
-                                enginePropsChanged[engineId] ? (
-                                    <><button
-                                        type="button"
-                                        onClick={(e) => {
-                                            e.preventDefault()
-                                            connectToTTSEngine(engineId)
-                                        }}
-                                        disabled={!hasRequiredValues(engineId)}
-                                    >
-                                        Connect
-                                    </button>
-                                    {!hasRequiredValues(engineId) && <p className="warning info">Please fill out all values for this engine</p>}
+                                hasChangedProps(engineId) ? (
+                                    <>
+                                        <button
+                                            type="button"
+                                            onClick={(e) => {
+                                                e.preventDefault()
+                                                connectToTTSEngine(engineId)
+                                            }}
+                                            disabled={
+                                                !hasRequiredValues(engineId) ||
+                                                ![
+                                                    'disconnected',
+                                                    'disabled',
+                                                ].includes(
+                                                    engineStatus[engineId]
+                                                )
+                                            }
+                                        >
+                                            Connect
+                                        </button>
+                                        {!hasRequiredValues(engineId) && (
+                                            <p className="warning info">
+                                                Please fill out all values for
+                                                this engine
+                                            </p>
+                                        )}
                                     </>
                                 ) : isConnectedToTTSEngine(engineId) ? (
                                     <button
@@ -240,6 +286,10 @@ export function Engines({
                                             e.preventDefault()
                                             disconnectFromTTSEngine(engineId)
                                         }}
+                                        disabled={
+                                            engineStatus[engineId] !=
+                                            'available'
+                                        }
                                     >
                                         Disconnect
                                     </button>

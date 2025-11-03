@@ -2,14 +2,19 @@ import { useEffect, useState } from 'react'
 import { useWindowStore } from 'renderer/store'
 import { ApplicationSettings } from 'shared/types'
 import { save, setTtsConfig } from 'shared/data/slices/settings'
-
+//@ts-ignore
 import { Engines } from './Engines'
+//@ts-ignore
 import { MoreTTSOptions } from './MoreTTSOptions'
+//@ts-ignore
 import { BrowseVoices } from './BrowseVoices'
+//@ts-ignore
 import { PreferredVoices } from './PreferredVoices'
 import { ID } from 'renderer/utils'
 import { TabList } from 'renderer/components/Widgets/TabList'
+//@ts-ignore
 import { General } from './General'
+//@ts-ignore
 import { Appearance } from './Appearance'
 import { Behavior } from './Behavior'
 import { Updates } from './Updates'
@@ -32,11 +37,13 @@ type VoiceFilter = { id: string; value: string }
 
 type SettingsViewProps = {
     selectedItem?: SettingsMenuItem
+    title?: string
 }
 
 export function SettingsView(
     props: SettingsViewProps = {
         selectedItem: SettingsMenuItem.General,
+        title: 'Settings',
     }
 ) {
     // Current registered settings
@@ -52,16 +59,26 @@ export function SettingsView(
         },
     })
 
+    document.title = props.title
+
     useEffect(() => {
+        let newTtsConfig = {
+            preferredVoices: [...settings.ttsConfig.preferredVoices],
+            defaultVoices: [...settings.ttsConfig.defaultVoices],
+            ttsEngineProperties: [...settings.ttsConfig.ttsEngineProperties],
+            xmlFilepath: newSettings.ttsConfig.xmlFilepath,
+            ttsEnginesConnected: { ...settings.ttsConfig.ttsEnginesConnected },
+        }
+
         // Reload settings from store if it has changed
         setNewSettings({
             ...settings,
             onClosingMainWindow: settings.onClosingMainWindow ?? 'ask', // defaults to ask in form
             ttsConfig: {
-                ...settings.ttsConfig,
+                ...newTtsConfig,
             },
         })
-    }, [settings])
+    }, [settings, settings.ttsConfig])
 
     // NP 2025 06 10 : replaced by hash router
     // const [selectedSection, setSelectedSection] = useState(
@@ -81,6 +98,7 @@ export function SettingsView(
             defaultVoices: [...settings.ttsConfig.defaultVoices],
             ttsEngineProperties: [...settings.ttsConfig.ttsEngineProperties],
             xmlFilepath: newSettings.ttsConfig.xmlFilepath,
+            ttsEnginesConnected: { ...settings.ttsConfig.ttsEnginesConnected },
         }
         App.store.dispatch(setTtsConfig(newConfig))
         App.store.dispatch(save())
@@ -97,6 +115,7 @@ export function SettingsView(
             defaultVoices: [...tmpVoices],
             ttsEngineProperties: [...settings.ttsConfig.ttsEngineProperties],
             xmlFilepath: newSettings.ttsConfig.xmlFilepath,
+            ttsEnginesConnected: { ...settings.ttsConfig.ttsEnginesConnected },
         }
         App.store.dispatch(setTtsConfig(newConfig))
         App.store.dispatch(save())
@@ -115,6 +134,7 @@ export function SettingsView(
             defaultVoices: [...tmpVoices],
             ttsEngineProperties: [...settings.ttsConfig.ttsEngineProperties],
             xmlFilepath: newSettings.ttsConfig.xmlFilepath,
+            ttsEnginesConnected: { ...settings.ttsConfig.ttsEnginesConnected },
         }
         App.store.dispatch(setTtsConfig(newConfig))
         App.store.dispatch(save())
@@ -125,6 +145,21 @@ export function SettingsView(
             defaultVoices: [...settings.ttsConfig.defaultVoices],
             ttsEngineProperties: [...ttsEngineProperties],
             xmlFilepath: newSettings.ttsConfig.xmlFilepath,
+            ttsEnginesConnected: { ...settings.ttsConfig.ttsEnginesConnected },
+        }
+        App.store.dispatch(setTtsConfig(newConfig))
+        App.store.dispatch(save())
+    }
+    const onTtsEngineConnectedChange = (engineId, isConnected, engineProps) => {
+        let ttsEnginesConnected = { ...settings.ttsConfig.ttsEnginesConnected }
+        ttsEnginesConnected[engineId] = isConnected
+
+        const newConfig = {
+            preferredVoices: [...settings.ttsConfig.preferredVoices],
+            defaultVoices: [...settings.ttsConfig.defaultVoices],
+            ttsEngineProperties: [...engineProps],
+            xmlFilepath: newSettings.ttsConfig.xmlFilepath,
+            ttsEnginesConnected: { ...ttsEnginesConnected },
         }
         App.store.dispatch(setTtsConfig(newConfig))
         App.store.dispatch(save())
@@ -188,7 +223,11 @@ export function SettingsView(
                     ttsEngineProperties={
                         newSettings.ttsConfig.ttsEngineProperties
                     }
+                    ttsEnginesConnected={
+                        newSettings.ttsConfig.ttsEnginesConnected
+                    }
                     onChangeTtsEngineProperties={onTtsEnginePropertiesChange}
+                    onChangeTtsEngineConnected={onTtsEngineConnectedChange}
                 />
             ),
         },
@@ -238,7 +277,6 @@ export function SettingsView(
     return (
         <>
             <div className="sidebar">
-                <h1>Settings</h1>
                 <TabList
                     items={tabItems}
                     onKeyDown={onKeyDown}
@@ -251,7 +289,7 @@ export function SettingsView(
                     }
                     getTabAriaControls={(item, idx) => `${ID(idx)}-tabpanel`}
                     getTabTitle={(item, idx) => item.label}
-                    getTabLabel={(item, idx) => <h2>{item.label}</h2>}
+                    getTabLabel={(item, idx) => <h1>{item.label}</h1>}
                     onTabClick={(item, idx) => {
                         setSelectedSection(item.section)
                         setFocus(`${ID(idx)}-tabpanel`)
@@ -265,7 +303,11 @@ export function SettingsView(
                     )
                 )}-tabpanel`}
                 role="tabpanel"
-                aria-labelledby={`${ID(selectedSection)}-tab`}
+                aria-labelledby={`${ID(
+                    tabItems.findIndex(
+                        (item) => item.section == selectedSection
+                    )
+                )}-tab`}
                 tabIndex={0}
             >
                 <form onSubmit={() => window.close()}>

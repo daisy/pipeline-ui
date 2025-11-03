@@ -3,6 +3,10 @@
     flex-direction: column;
     gap: 1rem;
 
+    h2 {
+        font-size: var(--fontsize-larger);
+    }
+
     summary h2 {
         display: inline;
         vertical-align: middle;
@@ -39,12 +43,6 @@
     }
     .job-configuration ul, .job-results ul {
         padding-left: 1rem;
-    }
-    .job-results {
-        /* the main results folder link */
-        &>a.filelink {
-            font-size: 120%;
-        }
     }
     
     .job-results, .job-messages {
@@ -91,7 +89,7 @@
 
     .job-messages {
         background-color: var(--bg);
-        details>ul {
+        details>ul:has(li) {
             border: var(--bw) var(--fg-off) solid;
             border-radius: var(--br);
             background-color: var(--bg-off);
@@ -100,7 +98,7 @@
             font-size: var(--fontsize-smaller);
         }
         ul {
-            font-family: var(--fw-font-fam);
+            font-family: var(--fixed-width-font);
             padding-left: 1rem;
             list-style-type: none;
             

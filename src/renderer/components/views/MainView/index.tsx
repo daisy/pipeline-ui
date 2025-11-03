@@ -17,16 +17,21 @@ import {
     selectPrevJob,
     removeBatchJob,
 } from 'shared/data/slices/pipeline'
+// @ts-ignore
 import { NewJobPane } from './NewJobPane'
 import { calculateJobName } from 'shared/jobName'
 import { PLATFORM } from 'shared/constants'
 import { Plus, X } from '../../Widgets/SvgIcons'
+// @ts-ignore
 import { BatchJobDetailsPane } from 'renderer/components/Views/MainView/JobDetailsPane/BatchJobPane'
+// @ts-ignore
 import { SingleJobDetailsPane } from 'renderer/components/Views/MainView/JobDetailsPane/SingleJobPane'
+// @ts-ignore
 import { ScriptForm } from 'renderer/components/Views/MainView/ScriptForm'
 import { TabList } from 'renderer/components/Widgets/TabList'
 import { areAllJobsInBatchDone } from 'shared/utils'
-
+import { CanDo } from 'shared/canDo'
+import * as Utils from 'shared/utils'
 const { App } = window
 
 export function MainView() {
@@ -77,28 +82,30 @@ export function MainView() {
                 break
         }
     }
-    let canClose = (job) => {
-        if (job.jobRequest && job.jobRequest.batchId) {
-            let jobsInBatch = pipeline.jobs.filter(
-                (j) =>
-                    j.jobRequest &&
-                    j.jobRequest.batchId &&
-                    j.jobRequest.batchId == job.jobRequest.batchId
-            )
-            return areAllJobsInBatchDone(job, jobsInBatch)
-        } else if (job.jobData?.status) {
-            return (
-                [JobStatus.ERROR, JobStatus.FAIL, JobStatus.SUCCESS].includes(
-                    job.jobData?.status
-                ) || job.state == JobState.NEW
-            )
-        } else if (job.jobRequestError) {
-            return true
-        }
-        else if (job.state == JobState.NEW) {
-            return true
-        }
-    }
+    // let canClose = (job) => {
+    //     if (job.jobRequest && job.jobRequest.batchId) {
+    //         let jobsInBatch = pipeline.jobs.filter(
+    //             (j) =>
+    //                 j.jobRequest &&
+    //                 j.jobRequest.batchId &&
+    //                 j.jobRequest.batchId == job.jobRequest.batchId
+    //         )
+    //         return areAllJobsInBatchDone(job, jobsInBatch)
+    //     } else if (job.jobData?.status) {
+    //         return (
+    //             [JobStatus.ERROR, JobStatus.FAIL, JobStatus.SUCCESS].includes(
+    //                 job.jobData?.status
+    //             ) || job.state == JobState.NEW
+    //         )
+    //     } else if (job.jobRequestError) {
+    //         return true
+    //     } else if (job.state == JobState.NEW) {
+    //         return true
+    //     }
+    // }
+
+    
+
     return (
         <main>
             <div className="tablist-container">
@@ -130,20 +137,22 @@ export function MainView() {
                             ?.focus()
                     }}
                 ></TabList>
-                <button
-                    type="button"
-                    className="add-tab invisible"
-                    title={`Create a job (${
-                        PLATFORM.IS_MAC ? 'Cmd' : 'Ctrl'
-                    }+N)`}
-                    onClick={(e) => {
-                        const newJob_ = newJob(pipeline)
-                        App.store.dispatch(addJob(newJob_))
-                        App.store.dispatch(selectJob(newJob_))
-                    }}
-                >
-                    <Plus width={20} height={20} />
-                </button>
+                {CanDo.createJob(pipeline.status) && (
+                    <button
+                        type="button"
+                        className="add-tab invisible"
+                        title={`Create a job (${
+                            PLATFORM.IS_MAC ? 'Cmd' : 'Ctrl'
+                        }+N)`}
+                        onClick={(e) => {
+                            const newJob_ = newJob(pipeline)
+                            App.store.dispatch(addJob(newJob_))
+                            App.store.dispatch(selectJob(newJob_))
+                        }}
+                    >
+                        <Plus width={20} height={20} />
+                    </button>
+                )}
             </div>
             {visibleJobs.map((job, idx) => {
                 return (
@@ -160,7 +169,10 @@ export function MainView() {
                         key={idx}
                     >
                         <button
-                            disabled={!canClose(job)}
+                            disabled={
+                                !CanDo.closeJob(pipeline, job) &&
+                                !CanDo.cancelJob(pipeline, job)
+                            }
                             type="button"
                             id={`cancel-job-${job.internalId}`}
                             onClick={async (e) => {
@@ -191,7 +203,7 @@ export function MainView() {
                                     }
                                 }
                             }}
-                            title="Close job"
+                            title={Utils.closeOrCancelLabel(pipeline, job)}
                             className="close-tab invisible"
                         >
                             <X width={20} height={20} />

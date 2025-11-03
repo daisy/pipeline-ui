@@ -77,8 +77,21 @@ export function setProperties(
     }
     //console.log('tts states starting', ttsEnginesStatesStart)
     dispatch(setTtsEngineState(ttsEnginesStatesStart))
+    // remove properties for TTS engines that are disconnected
+    let engineIds = Object.keys(
+        getState().settings.ttsConfig.ttsEnginesConnected
+    )
+    let disconnectedEngines = engineIds.filter(
+        (id) => !getState().settings.ttsConfig.ttsEnginesConnected[id]
+    )
+    let newProperties_ = newProperties.filter(
+        (p) =>
+            disconnectedEngines.filter((eId) => p.name.indexOf(eId) != -1)
+                .length == 0
+    )
+
     Promise.all(
-        newProperties.map((prop) => pipelineAPI.setProperty(prop)(webservice))
+        newProperties_.map((prop) => pipelineAPI.setProperty(prop)(webservice))
     )
         //.then(() => pipelineAPI.fetchProperties()(webservice))
         .then(() => {
@@ -146,7 +159,20 @@ export function setProperties(
                         return pipelineAPI.fetchTtsEnginesState()(webservice)
                     })
                     .then((states) => {
-                        //console.log('tts states', states)
+                        // update the connectedness field based on whether the connection was successful
+                        let ttsConfig_ = { ...getState().settings.ttsConfig }
+                        let ttsEnginesConnected_ = {}
+                        Object.keys(states).map(
+                            (k) =>
+                                (ttsEnginesConnected_[
+                                    'org.daisy.pipeline.tts.' + k
+                                ] = states[k].status == 'available')
+                        )
+                        ttsConfig_.ttsEnginesConnected = {
+                            ...ttsEnginesConnected_,
+                        }
+
+                        // console.log('tts states', states)
                         dispatch(setTtsEngineState(states))
                     })
             }

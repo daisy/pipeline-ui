@@ -1,7 +1,10 @@
+import { CanDo } from './canDo'
+import { selectPipeline } from './data/slices/pipeline'
 import {
     Job,
     JobStatus,
     NameValue,
+    PipelineState,
     Script,
     ScriptInput,
     ScriptItemBase,
@@ -80,7 +83,9 @@ export function is2StepsScript(script: Script) {
     }
     return (
         script.options.findIndex(
-            (item) => item.name == 'stylesheet-parameters'
+            (item) =>
+                item.name == 'stylesheet-parameters' ||
+                item.name == 'braille-translator-stylesheet-parameters'
         ) > -1
     )
 }
@@ -108,27 +113,30 @@ export function areAllJobsInBatchDone(
     jobsInBatch: Array<Job>
 ) {
     let numJobsDone = getCompletedCountInBatch(primaryJob, jobsInBatch)
-    return numJobsDone == jobsInBatch.length
+    return numJobsDone == jobsInBatch?.length
 }
 
 export function getCompletedCountInBatch(
     primaryJob: Job,
     jobsInBatch: Array<Job>
 ) {
-    let numJobsDone =
-        jobsInBatch.filter((j) =>
-            [JobStatus.ERROR, JobStatus.FAIL, JobStatus.SUCCESS].includes(
-                j.jobData?.status
-            )
-        ).length + jobsInBatch.filter((j) => j.jobRequestError).length
+    if (jobsInBatch) {
+        return (
+            jobsInBatch.filter((j) =>
+                [JobStatus.ERROR, JobStatus.FAIL, JobStatus.SUCCESS].includes(
+                    j.jobData?.status
+                )
+            ).length + jobsInBatch.filter((j) => j.jobRequestError).length
+        )
+    }
 
-    return numJobsDone
+    return 0
 }
 
 export function getIdleCountInBatch(primaryJob: Job, jobsInBatch: Array<Job>) {
-    let numJobsIdle = jobsInBatch.filter(
-        (j) => j.jobData.status == JobStatus.IDLE
-    ).length
+    let numJobsIdle =
+        jobsInBatch?.filter((j) => j.jobData.status == JobStatus.IDLE).length ??
+        0
     return numJobsIdle
 }
 
@@ -169,4 +177,41 @@ export function findInputType(type) {
         inputType = 'custom'
     }
     return inputType
+}
+
+export function getJobsInBatch(state: PipelineState, job: Job) {
+    if (!state.jobs || state.jobs.length == 0) {
+        return []
+    }
+    if (!job) {
+        return []
+    }
+    if (!job.jobRequest) {
+        return []
+    }
+    if (job.jobRequest.batchId == null || job.jobRequest.batchId == '') {
+        return []
+    }
+
+    let jobsInBatch = state.jobs.filter(
+        (j) => j.jobRequest?.batchId == job.jobRequest.batchId
+    )
+    return jobsInBatch
+}
+
+export function closeOrCancelLabel(state: PipelineState, job: Job) {
+    if (CanDo.closeJob(state, job)) {
+        if (job?.jobRequest?.batchId) {
+            return 'Close all jobs'
+        } else {
+            return 'Close job'
+        }
+    } else if (CanDo.cancelJob(state, job)) {
+        if (job?.jobRequest?.batchId) {
+            return 'Cancel scheduled jobs'
+        } else {
+            return 'Cancel job'
+        }
+    }
+    return 'Cancel job'
 }

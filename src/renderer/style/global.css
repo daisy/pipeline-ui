@@ -1,6 +1,15 @@
 @import "reset.css";
 @import "imports.css";
 
+@font-face {
+    font-family: "Luciole";
+    src:
+        local("Luciole"),
+        url("./fonts/Luciole-Regular/Luciole-Regular.woff2") format("woff2");
+        font-style: normal;
+        font-weight: normal;
+        text-rendering: optimizeLegibility;
+}
 :root {
     --br: 10px; /* border radius */
     --bw: 2px; /* border width */
@@ -23,13 +32,31 @@
     --fg-off: oklch(from var(--fg) calc(l + 0.7) c h);
     --bg-off: oklch(from var(--bg) calc(l - 0.02) c h);
     --inactive: rgb(70, 70, 70);
-    
-    --font-fam: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont;
-    --fw-font-fam: monospace;
-    --fontsize: 1rem;
-    --fontsize-larger: 110%;
-    --fontsize-smaller: 90%;
     --box-shadow-params: 0 0 0 2px;
+
+    /* font selections */
+    --font-system: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont;
+    --font-luciole: "Luciole";
+    --font-georgia: Georgia;
+    --font-timesnewroman: "Times New Roman";
+    --font-couriernew: "Courier New";
+    --font-arial: Arial;
+    --font-verdana: Verdana;
+    --font-monospace: monospace;
+    
+    --font-family: var(--font-system);
+    --fixed-width-font: monospace;
+    --text-size-preference: 1; /* amount by which to scale the font size */
+
+    /* all text should be one of these sizes */
+    --fontsize: calc(1rem * var(--text-size-preference));
+    /* the large size should not get too large */
+    --fontsize-larger: clamp(
+                    var(--fontsize),
+                    calc(1.3rem * var(--text-size-preference)),
+                    calc(1.3rem * 1.55)
+                );   
+    --fontsize-smaller: calc(.9rem * var(--text-size-preference));
     
 }
 @media (prefers-color-scheme: dark) {
@@ -47,7 +74,6 @@
         --hover: oklch(from var(--secondary) calc(l - 0.2) c h);
         --hover-contrast: var(--secondary-contrast);
         --hover-contrast-links: #0E1344;
-        
     }
 }
 html {
@@ -56,9 +82,10 @@ html {
 body {
     background-color: var(--bg-off);
     color: var(--fg);
-    font-family: var(--font-fam);
+    font-family: var(--font-family);
     font-size: var(--fontsize);
     height: 100%;
+    transition: font-size 0.3s ease-in-out;
 }
 a, a:visited {
     color: var(--primary);
@@ -69,7 +96,6 @@ a:hover {
     text-decoration-style: solid;
     text-decoration-skip-ink: none;
 }
-
 *:focus {
     outline: none;
     box-shadow: var(--box-shadow-params) var(--highlight); 
@@ -131,7 +157,7 @@ summary:hover {
     border-radius: var(--br);
 }
 .file {
-    font-family: var(--fw-font-fam);
+    font-family: var(--fixed-width-font);
 }
 .is-hidden {
     display: none !important;

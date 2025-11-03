@@ -36,11 +36,15 @@
         gap: 0.5rem;
         
         div.field {
-            flex-direction: row;       
+            display: flex;
             flex-wrap: wrap;
+            flex-direction: row;
+            gap: 1rem;
+            --threshold: 15rem;
 
-            &>:first-child {
-                width: clamp(5rem, 10rem, 10rem);
+            &>* {
+                flex-grow: 1;
+                flex-basis: calc((var(--threshold) - 100%) * 999);
             }
             select {
                 flex-grow: 3;
@@ -66,7 +70,6 @@
         
         label, input {
             font-weight: normal;
-            font-size: 1.1rem;
             border: thin solid;
             padding: 5px;
             text-decoration: none;
@@ -102,7 +105,6 @@
             }
         }
         p.info {
-            font-size: 100%; /* override the default smaller 'info' fontsize */
             background-color: var(--bg-off);
             padding: 4px;
             border-radius: var(--br);
@@ -115,9 +117,9 @@
             border-collapse: separate;
 
             caption {
-                font-size: x-large;
-                font-weight: bolder;
+                font-size: var(--fontsize-larger);
                 text-align: left;
+                padding-bottom: .5rem;
                 
             }
             th, td {

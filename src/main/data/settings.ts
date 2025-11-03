@@ -5,14 +5,14 @@ import { resolveUnpacked } from 'main/utils'
 import { resolve } from 'path'
 import { ENVIRONMENT } from 'shared/constants'
 import { ttsConfigToXml } from 'shared/parser/pipelineXmlConverter/ttsConfigToXml'
-import { ApplicationSettings, migrateSettings } from 'shared/types'
+import { ApplicationSettings, DefaultTextSize, migrateSettings } from 'shared/types'
 import { fileURLToPath, pathToFileURL } from 'url'
 
 export const settingsFile = resolve(app.getPath('userData'), 'settings.json')
 
 export function readSettings() {
     let settings: ApplicationSettings = {
-        settingsVersion: '1.5.0',
+        settingsVersion: '1.6.0',
         downloadFolder: pathToFileURL(
             resolve(app.getPath('home'), 'Documents', 'DAISY Pipeline results')
         ).href,
@@ -42,8 +42,11 @@ export function readSettings() {
                 resolve(app.getPath('userData'), 'ttsConfig.xml')
             ).href,
             ttsEngineProperties: [],
+            ttsEnginesConnected: {},
         },
         autoCheckUpdate: true,
+        fontName: 'system',
+        textSize: DefaultTextSize,
     }
     try {
         if (existsSync(settingsFile)) {

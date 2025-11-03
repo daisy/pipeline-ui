@@ -4,6 +4,7 @@ import {
     ApplicationSettings,
     ClosingMainWindowAction,
     ColorScheme,
+    Font,
     PipelineInstanceProperties,
     TtsConfig,
 } from 'shared/types'
@@ -106,6 +107,18 @@ export const settings = createSlice({
         ) => {
             state.sponsorshipMessageLastShown = action.payload
         },
+        setFont: (
+            state: ApplicationSettings,
+            action: PayloadAction<keyof typeof Font>
+        ) => {
+            state.fontName = action.payload
+        },
+        setTextSize: (
+            state: ApplicationSettings,
+            action: PayloadAction<number>
+        ) => {
+            state.textSize = action.payload
+        },
     },
 })
 
@@ -120,6 +133,8 @@ export const {
     setAutoCheckUpdate,
     setEditJobOnNewTab,
     setSponsorshipMessageLastShown,
+    setFont,
+    setTextSize,
 } = settings.actions
 
 export const selectors = {

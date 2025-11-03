@@ -1,15 +1,11 @@
-import {
-    app, ipcMain,
-    Menu, shell,
-    nativeTheme
-} from 'electron'
+import { app, ipcMain, Menu, shell, nativeTheme } from 'electron'
 
 import { error } from 'electron-log'
 
 import {
     makeAppSetup,
     makeAppWithSingleInstanceLock,
-    settingsCommands
+    settingsCommands,
 } from './factories'
 
 import {
@@ -33,23 +29,27 @@ import { setupMessageBoxEvent, showMessageBoxYesNo } from './ipcs/messageBox'
 import { APP_CONFIG } from '~/app.config'
 import { getPipelineInstance } from './data/instance'
 import {
+    save,
     selectColorScheme,
     selectEditOnNewTab,
+    setTextSize,
 } from 'shared/data/slices/settings'
 import {
     addJob,
     editJob,
-    newJob, removeJob,
+    newJob,
+    removeJob,
     selectJob,
     selectPipeline,
     selectNextJob,
     selectPrevJob,
     removeBatchJob,
-    cancelBatchJob
+    cancelBatchJob,
 } from 'shared/data/slices/pipeline'
 import { setupClipboardEvents } from './ipcs/clipboard'
 import { checkForUpdate } from 'shared/data/slices/update'
 import { setupOneTimeFetchEvent } from './ipcs/one-time-fetch'
+import { DefaultTextSize, TextSizeOptions } from 'shared/types'
 
 makeAppWithSingleInstanceLock(async () => {
     app.setName(APP_CONFIG.TITLE)
@@ -221,6 +221,30 @@ function buildMenu() {
         },
         onCancelBatchJob: async (jobsInBatch) => {
             store.dispatch(cancelBatchJob(jobsInBatch))
+        },
+        onResetTextSize: () => {
+            store.dispatch(setTextSize(DefaultTextSize))
+            store.dispatch(save())
+        },
+        onLargerText: () => {
+            let textSize = store.getState().settings.textSize
+            let textSizeIndex = TextSizeOptions.findIndex(
+                (opt) => opt == textSize
+            )
+            if (textSizeIndex < TextSizeOptions.length - 1) {
+                store.dispatch(setTextSize(TextSizeOptions[textSizeIndex + 1]))
+                store.dispatch(save())
+            }
+        },
+        onSmallerText: () => {
+            let textSize = store.getState().settings.textSize
+            let textSizeIndex = TextSizeOptions.findIndex(
+                (opt) => opt == textSize
+            )
+            if (textSizeIndex > 0) {
+                store.dispatch(setTextSize(TextSizeOptions[textSizeIndex - 1]))
+                store.dispatch(save())
+            }
         },
     })
     // @ts-ignore

@@ -58,7 +58,6 @@ export function MoreTTSOptions({
         onPropertyChange(propName, propValue)
     }
 
-    // TODO this isn't working yet
     let onPropertyChange = (propName, propValue) => {
         let engineProperties_ = clone(engineProperties)
         let prop = engineProperties_.find((prop) => prop.key == propName)

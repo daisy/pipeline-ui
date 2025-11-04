@@ -211,7 +211,7 @@ export function CustomField({
                 id={controlId}
                 onChange={(e) => onChangeValue(e)}
                 className={userInteracted ? 'interacted' : null}
-                pattern={item.pattern ?? null}
+                pattern={item.pattern.replaceAll('+', '\+') ?? null}
                 {...errorProps}
             ></ControlledInput>
             {error ? (

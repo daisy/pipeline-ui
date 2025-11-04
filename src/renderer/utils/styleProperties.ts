@@ -15,26 +15,11 @@ import { ApplicationSettings } from "shared/types";
 export function loadStyleProperties(settings: ApplicationSettings) {
     document.documentElement.style.setProperty(
         '--text-size-preference',
-        translateTextSize(settings.textSize)
+        `${settings.textSize / 100}`
     )
     document.documentElement.style.setProperty(
         '--font-family',
-        translateFontProperty(settings.fontName)
+        `var(--font-${settings.fontName})`
     )
 }
 
-const lerp = (a, b, t) => a + t * (b - a)
-
-// CSS text size preference value must be between .7 and 2.5
-// the settings value (from the widget and also in the settings file) is 0-100
-function translateTextSize(val) {
-    // // make this exactly 1 (with the formula below, it ends up being 1.0999...)
-    // if (val == 16) {
-    //     return 1
-    // }
-    return lerp(0.7, 2.5, val / 100)
-}
-
-function translateFontProperty(val) {
-    return `var(--font-${val})`
-}

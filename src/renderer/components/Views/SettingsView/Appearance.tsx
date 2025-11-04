@@ -88,10 +88,11 @@ export function Appearance({ newSettings }) {
                 <input
                     type="range"
                     id="textSize"
-                    list="textSizes"
+                    min="70"
+                    max="250"
                     onChange={(e) => textSizeChanged(e)}
-                    defaultValue={newSettings.textSize}
-                    step={0.1}
+                    step={10}
+                    value={newSettings.textSize}
                 />
                 <datalist id="textSizes">
                     {TextSizeOptions.map((opt, idx) => (

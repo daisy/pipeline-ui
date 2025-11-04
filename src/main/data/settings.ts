@@ -84,6 +84,9 @@ export function readSettings() {
                         : settings.ttsConfig.xmlFilepath,
                 },
             }
+            if (settings.textSize < 70 || settings.textSize > 250) {
+                settings.textSize = DefaultTextSize
+            }
             if (ENVIRONMENT.IS_DEV) {
                 debug(`Settings loaded from ${settingsFile}`)
                 debug(JSON.stringify(settings))

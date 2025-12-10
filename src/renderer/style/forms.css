@@ -84,7 +84,9 @@ input:invalid {
 .description {
     font-size: var(--fontsize-smaller);
 }
-
+.field-errors {
+    color: var(--error);
+}
 @media(max-width: 1000px) {
     .multi-file-input {
         .controls {

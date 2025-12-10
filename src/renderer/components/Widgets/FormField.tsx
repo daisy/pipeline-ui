@@ -6,7 +6,7 @@ import { ScriptItemBase, TypeChoice } from 'shared/types'
 import { formFieldFactory } from './formFieldFactory'
 import Markdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
-import { externalLinkClick } from 'renderer/utils'
+import { externalLinkClick, valueIsNotEmpty } from 'renderer/utils'
 import { useWindowStore } from 'renderer/store'
 import { CustomFieldDocumentation } from './CustomFieldDocumentation'
 import { findInputType } from 'shared/utils'
@@ -18,7 +18,7 @@ export function FormField({
     idprefix,
     onChange,
     initialValue,
-    error = undefined,
+    error,
 }: {
     item: ScriptItemBase
     idprefix: string
@@ -27,7 +27,6 @@ export function FormField({
     error?: string // error message to display
 }) {
     const { pipeline } = useWindowStore()
-
     // create the widget for this item (checkbox, file picker, etc)
     let control = formFieldFactory(
         item,
@@ -50,6 +49,9 @@ export function FormField({
         typeChoices = datatype.choices.filter(
             (item) => !item.hasOwnProperty('value')
         )
+    }
+    if (error) {
+        console.log("Form field", error)
     }
 
     return (
@@ -95,7 +97,7 @@ export function FormField({
                 </label>
             )}
             {control}
-            {error && (
+            {valueIsNotEmpty(error) && (
                 <span
                     id={idprefix + '-error'}
                     className="field-errors"

@@ -5,6 +5,12 @@ import { useEffect, useState, useMemo } from 'react'
 import { ControlledInput } from './ControlledInput'
 import { MarkdownDescription } from './MarkdownDescription'
 
+function adaptRegExPattern(pattern) {
+    if (!pattern) return ''
+    // escape to make it work with JS
+    return pattern.replace('^+?', '^\\+?')
+}
+
 export function CustomField({
     item,
     onChange,
@@ -74,12 +80,14 @@ export function CustomField({
                         id={controlId}
                         onChange={(e) => onChangeValue(e)}
                         className={userInteracted ? 'interacted' : null}
-                        pattern={
-                            datatype.choices.length == 1
-                                ? (datatype.choices[0] as TypeChoice)
-                                      ?.pattern ?? ''
-                                : ''
-                        }
+                        // pattern={
+                        //     datatype.choices.length == 1
+                        //         ? adaptRegExPattern(
+                        //               (datatype.choices[0] as TypeChoice)
+                        //                   ?.pattern
+                        //           )
+                        //         : ''
+                        // }
                         {...errorProps}
                     ></ControlledInput>
                     {error ? (
@@ -211,7 +219,7 @@ export function CustomField({
                 id={controlId}
                 onChange={(e) => onChangeValue(e)}
                 className={userInteracted ? 'interacted' : null}
-                pattern={item.pattern.replaceAll('+', '\+') ?? null}
+                // pattern={adaptRegExPattern(item.pattern)}
                 {...errorProps}
             ></ControlledInput>
             {error ? (

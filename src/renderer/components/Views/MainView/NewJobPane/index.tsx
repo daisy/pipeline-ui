@@ -67,6 +67,7 @@ export function NewJobPane({ job }: { job: Job }) {
     // top level script selection
     let onSelectChange = (scriptId) => {
         let selection = pipeline.scripts.find((script) => script.id == scriptId)
+        let jobRequest = prepareJobRequest(job, selection, pipeline.datatypes)
         App.store.dispatch(
             updateJob({
                 ...job,
@@ -76,7 +77,7 @@ export function NewJobPane({ job }: { job: Job }) {
                     ...job.jobData,
                     nicename: selection?.nicename ?? '',
                 },
-                jobRequest: prepareJobRequest(job, selection),
+                jobRequest,
             })
         )
     }
@@ -87,7 +88,7 @@ export function NewJobPane({ job }: { job: Job }) {
     }
 
     let createJob = async (script: Script, inputFiles: string[]) => {
-        let jobRequest = prepareJobRequest(job, script)
+        let jobRequest = prepareJobRequest(job, script, pipeline.datatypes)
 
         let inputsCopy = [...jobRequest.inputs]
         let sourceInputIdx = inputsCopy.findIndex(
@@ -102,7 +103,8 @@ export function NewJobPane({ job }: { job: Job }) {
         }
 
         jobRequest.inputs = [...inputsCopy]
-        let validationResults = validateJobRequestSync(jobRequest, script)
+        let validationResults = validateJobRequestSync(jobRequest, script, pipeline.datatypes)
+        console.log("New Job Pane validation results", validationResults)
         jobRequest.validation = [...validationResults]
         App.store.dispatch(
             updateJob({

@@ -482,7 +482,7 @@ export const selectors = {
             state: JobState.NEW,
             jobRequest: null,
         } as Job),
-    prepareJobRequest: (job: Job, script: Script) => {
+    prepareJobRequest: (job: Job, script: Script, datatypes) => {
         const hasJobRequestOnScript: Boolean =
             job.jobRequest && job.jobRequest.scriptHref == script?.href
         const scriptInputs = script?.inputs ?? []
@@ -517,7 +517,7 @@ export const selectors = {
             }),
             stylesheetParameterOptions: [],
         } as JobRequest
-        let validationResults = validateJobRequestSync(jobRequest, script)
+        let validationResults = validateJobRequestSync(jobRequest, script, datatypes)
         jobRequest.validation = [...validationResults]
         return jobRequest
     },

@@ -64,3 +64,13 @@ export function getStatus(job) {
     }
     return readableStatus.LAUNCHING.toLowerCase()
 }
+
+export function valueIsNotEmpty(value) {
+    if (!value) {
+        return false
+    }
+    if (Array.isArray(value)) {
+        return value.find((v) => v.trim() == '') == undefined
+    }
+    return value.trim() != ''
+}

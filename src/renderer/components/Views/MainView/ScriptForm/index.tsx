@@ -3,7 +3,12 @@ Fill out fields for a new job and submit it
 */
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useWindowStore } from 'renderer/store'
-import { externalLinkClick, findValue, ID } from 'renderer/utils/utils'
+import {
+    externalLinkClick,
+    findValue,
+    ID,
+    valueIsNotEmpty,
+} from 'renderer/utils/utils'
 import {
     requestStylesheetParameters,
     runBatchJobs,
@@ -22,14 +27,13 @@ import {
     updateArrayValue,
 } from 'shared/utils'
 import { CustomName } from '../../../Widgets/CustomName'
-import { validateJobRequest } from 'renderer/utils/jobRequestValidator'
+import { validateJobRequestAsync } from 'renderer/utils/jobRequestValidator'
 //@ts-ignore
 import { JobRequestError } from './jobRequestError'
 const { App } = window
 
 export function ScriptForm({ job }: { job: Job }) {
-    const { settings } = useWindowStore()
-
+    const { pipeline, settings } = useWindowStore()
     const [submitInProgress, setSubmitInProgress] = useState(false)
     const [hasDownloadFolder, setHasDownloadFolder] = useState(
         settings.downloadFolder?.trim() != ''
@@ -175,17 +179,17 @@ export function ScriptForm({ job }: { job: Job }) {
             options: [...options],
             stylesheetParameterOptions: [...stylesheetParameterOptions],
         }
-        let requestValidationResult = await validateJobRequest(
+        let requestValidationResult = await validateJobRequestAsync(
             modifiedJobRequest,
             job.script,
-            App
+            App,
+            pipeline.datatypes
+        )
+        let invalidItems = requestValidationResult.filter(
+            (v) => valueIsNotEmpty(v.item.value) && !v.validValue
         )
         modifiedJobRequest.validation = [...requestValidationResult]
-        setIsValidJobRequest(
-            modifiedJobRequest.validation.find(
-                (v) => v.required && !v.validValue
-            ) == undefined
-        )
+        setIsValidJobRequest(invalidItems.length == 0)
         App.store.dispatch(
             updateJob({
                 ...job,
@@ -301,6 +305,23 @@ export function ScriptForm({ job }: { job: Job }) {
         }
     }
 
+    let relevantError = (name) => {
+        console.log("Relevant error", name)
+        let errorMessage = job.errors?.find((e) => e.fieldName === name)?.error
+        let validationError = job.jobRequest.validation.find(
+            (v) => v.item.name == name
+        )
+        console.log("error message", errorMessage)
+        console.log("validation error", validationError)
+        if (errorMessage) {
+            return errorMessage
+        } else if (validationError) {
+            return validationError.message
+        } else {
+            return ''
+        }
+    }
+
     if (job.jobRequestError) {
         return (
             <form
@@ -366,11 +387,7 @@ export function ScriptForm({ job }: { job: Job }) {
                                         item.isStylesheetParameter
                                     ) ?? []
                                 }
-                                error={
-                                    job.errors?.find(
-                                        (e) => e.fieldName === item.name
-                                    )?.error
-                                }
+                                error={relevantError(item.name)}
                             />
                         )
                     })}
@@ -407,11 +424,7 @@ export function ScriptForm({ job }: { job: Job }) {
                                         item.isStylesheetParameter
                                     ) ?? []
                                 }
-                                error={
-                                    job.errors?.find(
-                                        (e) => e.fieldName === item.name
-                                    )?.error
-                                }
+                                error={relevantError(item.name)}
                             />
                         )
                     )}

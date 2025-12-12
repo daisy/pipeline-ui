@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useWindowStore } from 'renderer/store'
-import { ApplicationSettings } from 'shared/types'
+import { ApplicationSettings, PipelineStatus } from 'shared/types'
 import { save, setTtsConfig } from 'shared/data/slices/settings'
 //@ts-ignore
 import { Engines } from './Engines'
@@ -18,6 +18,8 @@ import { General } from './General'
 import { Appearance } from './Appearance'
 import { Behavior } from './Behavior'
 import { Updates } from './Updates'
+import packageJson from '../../../../../package.json'
+import { EngineStatusIcon } from 'renderer/components/Widgets/SvgIcons'
 
 const { App } = window
 
@@ -168,6 +170,13 @@ export function SettingsView(
         setVoiceFilters(vf)
     }
 
+    let address = pipeline.webservice
+        ? `${pipeline.webservice.host}:${pipeline.webservice.port}${pipeline.webservice.path}`
+        : ``
+    let version = packageJson.version
+    let engineVersion = pipeline.alive?.version
+    let engineStatus = { status: pipeline.status, address }
+
     let tabItems = [
         {
             label: 'General',
@@ -295,6 +304,16 @@ export function SettingsView(
                         setFocus(`${ID(idx)}-tabpanel`)
                     }}
                 ></TabList>
+                <div className="status" role="status">
+                    <EngineStatusIcon
+                        status={engineStatus.status}
+                        width="20"
+                        height="20"
+                    />
+                    <span>
+                        Engine is{'  '} <b>{engineStatus.status}</b>
+                    </span>
+                </div>
             </div>
             <div
                 id={`${ID(

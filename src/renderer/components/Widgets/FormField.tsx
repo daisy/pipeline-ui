@@ -50,9 +50,6 @@ export function FormField({
             (item) => !item.hasOwnProperty('value')
         )
     }
-    if (error) {
-        console.log("Form field", error)
-    }
 
     return (
         <div className="field">

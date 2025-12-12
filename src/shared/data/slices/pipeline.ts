@@ -1,7 +1,7 @@
 import { createSlice } from '@reduxjs/toolkit'
 import type { PayloadAction } from '@reduxjs/toolkit'
 import {
-    validateJobRequest,
+    validateJobRequestAsync,
     validateJobRequestSync,
 } from 'renderer/utils/jobRequestValidator'
 

@@ -1,4 +1,4 @@
-import { JobStatus } from 'shared/types'
+import { JobStatus, PipelineStatus } from 'shared/types'
 
 /*
 A few simple icons
@@ -165,14 +165,26 @@ export function JobStatusIcon(status: JobStatus, { width, height }) {
     }
 }
 
-export function TTSEngineStatusIcon(status: string, {width, height}) {
+export function TTSEngineStatusIcon(status: string, { width, height }) {
     if (status == 'available') {
-        return Success({width, height})
-    }
-    else if (status == 'disabled') {
-        return Failed({width, height})
-    }
-    else {
+        return Success({ width, height })
+    } else if (status == 'disabled') {
+        return Failed({ width, height })
+    } else {
         return <></>
     }
+}
+
+export function EngineStatusIcon({status, width, height}) {
+    return (
+        <svg
+            width={width}
+            height={height}
+            viewBox="0 0 100 100"
+            role="presentation"
+            className={status.toLowerCase()}
+        >
+            <circle cx="50" cy="50" r="50" />
+        </svg>
+    )
 }

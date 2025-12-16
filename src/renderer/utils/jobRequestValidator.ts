@@ -178,7 +178,7 @@ function validate(value, type, datatypes) {
             let datatype = datatypes.find((dt) => dt.id == type)
             isValid = validateCustom(value, datatype)
             if (!isValid) {
-                message = `Invalid value`
+                message = `Invalid value. Please refer to the above description for allowed values.`
             }
         } else {
             isValid = true

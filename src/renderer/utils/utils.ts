@@ -70,7 +70,13 @@ export function valueIsNotEmpty(value) {
         return false
     }
     if (Array.isArray(value)) {
-        return value.find((v) => v.trim() == '') == undefined
+        return (
+            value.find((v) => typeof v == 'string' && v.trim() == '') ==
+            undefined
+        )
+    }
+    if (typeof value != 'string') {
+        return true
     }
     return value.trim() != ''
 }

@@ -107,9 +107,12 @@ export function DragDropFilterFiles({
             />
 
             {files.length > 0 && (
-                <p className="info">
+                <><p className="info">
                     The following files can be used in Pipeline jobs:
                 </p>
+                <label htmlFor={`filterFilesInput-${job.internalId}`}></label>
+                <input id={`filterFilesInput-${job.internalId}`}></input>
+                </>
             )}
             {files.length > 0 && (
                 <>

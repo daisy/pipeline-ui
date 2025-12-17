@@ -71,7 +71,6 @@ export function CustomField({
         if (typeChoices.length) {
             return (
                 <div className="custom-field">
-                    {/* <CustomFieldDocumentation datatypes={typeChoices} /> */}
                     <ControlledInput
                         type="text"
                         required={item.required}
@@ -80,14 +79,6 @@ export function CustomField({
                         id={controlId}
                         onChange={(e) => onChangeValue(e)}
                         className={userInteracted ? 'interacted' : null}
-                        // pattern={
-                        //     datatype.choices.length == 1
-                        //         ? adaptRegExPattern(
-                        //               (datatype.choices[0] as TypeChoice)
-                        //                   ?.pattern
-                        //           )
-                        //         : ''
-                        // }
                         {...errorProps}
                     ></ControlledInput>
                     {error ? (
@@ -124,6 +115,8 @@ export function CustomField({
                                     : value
                             }
                             multiple={false}
+                            // this reference lives in formFieldFactory
+                            aria-labelledby={`${controlId}-label`}
                         >
                             {valueChoices.map((option, idx) => {
                                 let displayString =
@@ -219,7 +212,8 @@ export function CustomField({
                 id={controlId}
                 onChange={(e) => onChangeValue(e)}
                 className={userInteracted ? 'interacted' : null}
-                // pattern={adaptRegExPattern(item.pattern)}
+                // this reference lives in formFieldFactory
+                aria-labelledby={`${controlId}-label`}
                 {...errorProps}
             ></ControlledInput>
             {error ? (

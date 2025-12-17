@@ -55,10 +55,8 @@ export function FormField({
         <div className="field">
             {item.desc ? (
                 <details>
-                    <summary>
-                        <label htmlFor={idprefix}>
-                            {item.nicename ?? item.name}
-                        </label>
+                    <summary id={`${idprefix}-label`}>
+                        {item.nicename ?? item.name}
                     </summary>
                     <div className="description">
                         <Markdown
@@ -86,12 +84,12 @@ export function FormField({
                     )}
                 </details>
             ) : (
-                <label htmlFor={idprefix}>
+                <span id={`${idprefix}-label`}>
                     {item.nicename != ''
                         ? item.nicename
                         : item.name.charAt(0).toUpperCase() +
                           item.name.slice(1)}
-                </label>
+                </span>
             )}
             {control}
             {valueIsNotEmpty(error) && (

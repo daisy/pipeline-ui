@@ -41,6 +41,14 @@
         .drop-target-container {
             height: 13rem;
         }
+        .file-filter {
+            display: flex;
+            flex-direction: row;
+
+            input {
+                width: 100%;
+            }
+        }
     }
     .sponsorship {
         grid-column: 1/3;

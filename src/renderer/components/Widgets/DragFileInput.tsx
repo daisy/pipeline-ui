@@ -71,7 +71,6 @@ const DragFileInput: React.FC<FileInputProps> = ({
         debug('DragFileInput onBrowse', newItems)
     }
 
-    // todo just for testing
     let isMac = PLATFORM.IS_MAC
 
     return (

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { TtsVoice } from 'shared/types/ttsConfig'
 import { voicesTransliterations } from './BrowseVoices/voiceTransliterations'
-import { X } from 'renderer/components/Widgets/SvgIcons'
+import { PauseIcon, PlayIcon, X } from 'renderer/components/Widgets/SvgIcons'
 import { SettingsMenuItem } from '.'
 
 // return the first part of the language code (e.g. 'en' for 'en-US')
@@ -78,6 +78,7 @@ export function PreferredVoices({
         }
         return tmpVoices
     }
+    let playVoicePreview = (v) => {}
 
     return (
         <div className="tts-preferred-voices">
@@ -129,10 +130,39 @@ export function PreferredVoices({
                                         )
                                         .map((v, idx) => (
                                             <tr key={v.id}>
-                                                <th className="voiceName">
-                                                    {voicesTransliterations[
-                                                        v.name
-                                                    ] ?? v.name}
+                                                <th className="voice-name">
+                                                    <span>
+                                                        {voicesTransliterations[
+                                                            v.name
+                                                        ] ?? v.name}
+                                                    </span>
+                                                    <audio
+                                                        id={`preview-${v.lang}-${idx}`}
+                                                        src={v.preview}
+                                                    ></audio>
+                                                    <button
+                                                        type="button"
+                                                        className="invisible"
+                                                        onClick={() => {
+                                                            let audioelm =
+                                                                document.getElementById(
+                                                                    `preview-${v.lang}-${idx}`
+                                                                ) as HTMLAudioElement
+                                                            if (
+                                                                audioelm.paused
+                                                            ) {
+                                                                audioelm.play()
+                                                            }
+                                                            else {
+                                                                audioelm.pause()
+                                                            }
+                                                        }}
+                                                    >
+                                                        <PlayIcon
+                                                            width="20"
+                                                            height="20"
+                                                        />
+                                                    </button>
                                                 </th>
 
                                                 <td>
@@ -154,7 +184,9 @@ export function PreferredVoices({
                                                             selectDefault(e, v)
                                                         }
                                                         aria-label={`Set ${
-                                                            v.name
+                                                            voicesTransliterations[
+                                                                v.name
+                                                            ] ?? v.name
                                                         } as the default voice for ${languageNames.of(
                                                             getLang(v.lang)
                                                         )}`}
@@ -176,7 +208,11 @@ export function PreferredVoices({
                                                                 v
                                                             )
                                                         }}
-                                                        aria-label={`Remove ${v.name} from preferred voices`}
+                                                        aria-label={`Remove ${
+                                                            voicesTransliterations[
+                                                                v.name
+                                                            ] ?? v.name
+                                                        } from preferred voices`}
                                                     >
                                                         <X
                                                             width={20}

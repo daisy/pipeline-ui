@@ -104,7 +104,6 @@ export function NewJobPane({ job }: { job: Job }) {
 
         jobRequest.inputs = [...inputsCopy]
         let validationResults = validateJobRequestSync(jobRequest, script, pipeline.datatypes)
-        console.log("New Job Pane validation results", validationResults)
         jobRequest.validation = [...validationResults]
         App.store.dispatch(
             updateJob({

@@ -35,7 +35,7 @@ else ifeq ($(OS), MACOSX)
 zip_classifier := mac
 endif
 
-src/resources/daisy-pipeline : engine/assembly/target/assembly-$(ENGINE_VERSION)-$(zip_classifier).zip
+src/resources/daisy-pipeline : engine/pipeline2-$(ENGINE_VERSION)_windows.zip
 	rm("$@");
 	unzip(new File("$<"), new File("$(dir $@)"));
 	rm("$@/cli/config.yml");
@@ -50,7 +50,7 @@ ifeq ($(OS), MACOSX)
 	exec("chmod", "+x", "$@/jre/lib/jspawnhelper");
 endif
 
-engine/assembly/target/assembly-$(ENGINE_VERSION)-$(zip_classifier).zip :
+engine/pipeline2-$(ENGINE_VERSION)_windows.zip :
 	exec("$(MAKE)", "-C", "engine", "dist-zip-$(zip_classifier)");
 
 clean :
@@ -61,4 +61,4 @@ else
 endif
 	rm("src/resources/daisy-pipeline");
 	rm("node_modules/.dev-temp-build");
-	exec("$(MAKE)", "-C", "assembly/engine", "clean");
+	exec("$(MAKE)", "-C", "engine/assembly", "clean");

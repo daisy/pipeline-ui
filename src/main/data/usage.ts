@@ -1,11 +1,12 @@
-// track usage data
+// usage data
+// this is just a sketch right now, not being used
+
 import { CpuInfo } from 'os'
 
-export type UsageData = {
-    version: '1.0.0'
-    appProfile: AppProfile
-    systemProfile: SystemProfile
-    scriptRuns: Array<ScriptRun>
+export type UsageEntry = {
+    submitted: boolean
+    event: PipelineEventData
+    timestamp: number
 }
 
 export type AppProfile = {
@@ -20,11 +21,23 @@ export type SystemProfile = {
     totalmem: number
 }
 
-export type ScriptRun = {
+export type PipelineEventData = {
+    eventName: string
+}
+
+// log this when the user runs a script
+export type ScriptUsageEventData = PipelineEventData & {
+    eventName: 'script-run'
     scriptId: string
-    runs: number
-    optionOverrides: Array<OptionOverride>
-    tts?: TtsVoice
+    // optionOverrides: Array<OptionOverride>
+    // tts?: TtsVoice
+}
+
+// log this when something has changed from the last SystemInfo entry (check on startup)
+export type SystemInfoEventData = PipelineEventData & {
+    eventName: 'system-info'
+    systemProfile: SystemProfile
+    appProfile: AppProfile
 }
 
 // TODO how do we define "override"?
@@ -33,12 +46,13 @@ export type ScriptRun = {
  - not a user default value
  - not the presented default value (e.g. calculated based on what's available for that option)
 */
-export type OptionOverride = {
-    optionName: string
-    timesOverridden: number
-}
+// export type OptionOverride = {
+//     optionName: string
+//     timesOverridden: number
+// }
 
-export type TtsVoice = {
-    engine: string
-    voice: string
-}
+// export type TtsVoice = {
+//     engine: string
+//     voice: string
+// }
+

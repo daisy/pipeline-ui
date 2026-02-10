@@ -25,6 +25,8 @@ import { GetStateFunction } from 'shared/types/store'
 import { PayloadAction } from '@reduxjs/toolkit'
 import { v4 as uuidv4 } from 'uuid'
 import { getBatchInputValues, getBatchInput } from 'shared/utils'
+import { ScriptUsageEventData, UsageEntry } from 'main/data/usage'
+import { logJob } from 'main/usage'
 
 export function removeJobs(action: PayloadAction<any>) {
     let removedJobs = action.payload as Job[]
@@ -64,7 +66,8 @@ export function removeJob(
     let removedJob = action.payload as Job
     const currentJobs = selectJobs(getState())
     const visibleJobs = selectVisibleJobs(getState())
-    const canRemove = removedJob.jobRequest &&
+    const canRemove =
+        removedJob.jobRequest &&
         (getState().settings.editJobOnNewTab || !removedJob.invisible)
     // #41 : Handle removing the last visible job
     if (
@@ -147,6 +150,11 @@ export function runJob(jobToRun: Job, dispatch, getState: GetStateFunction) {
                     // origStartMonitor(updatedJob, webservice, getState, dispatch)
                 }
                 dispatch(updateJob(updatedJob))
+                return updatedJob
+            })
+            .then((updatedJob) => {
+                // log script usage event after job is successfully submitted
+                logJob(updatedJob, getState)
             })
             .catch((e) => {
                 error('error launching job', jobToRun.internalId, e)

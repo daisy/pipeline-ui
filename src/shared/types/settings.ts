@@ -1,10 +1,5 @@
-import { PipelineInstanceProperties, Webservice } from './pipeline'
-import {
-    _TtsConfig_v150,
-    TtsConfig,
-    TtsEngineProperty,
-    TtsVoice,
-} from './ttsConfig'
+import { NameValue, PipelineInstanceProperties, Webservice } from './pipeline'
+import { _TtsConfig_v150, TtsConfig, TtsVoice } from './ttsConfig'
 
 export enum ColorScheme {
     system = 'System default mode',
@@ -35,14 +30,29 @@ export enum ClosingMainWindowAction {
     close = 'Quit the application',
     ask = 'Ask the preferred action on closing the window',
 }
+export type KeyValue = {
+    key: string
+    value: string
+}
+
+export type ScriptFrequency = {
+    scriptId: string
+    count: number
+}
+
+export type ScriptOptionOverrides = {
+    scriptId: string
+    optionOverrides: Array<NameValue>
+}
 
 // Idea of evolutions :
 // allow connection to multiple pipelines at the same time with an array of pipeline properties
 // This could allow the calling of scripts from pipeline with different features enabled, like specific TTS systems (acapela or SAPI)
 
-// added in settings version 1.6.0: TtsConfig has ttsEnginesConnected
+// added in settings version 1.7.0:
+// scriptFrequency, aiEngineProperties, sortScriptsByFrequency, suggestOptionValues
 export type ApplicationSettings = {
-    settingsVersion: '1.6.0'
+    settingsVersion: '1.7.0'
     // Default folder to download the results on the user disk
     downloadFolder?: string
     // Pipeline instance properties for IPCs
@@ -57,11 +67,17 @@ export type ApplicationSettings = {
     textSize?: number
     fontName?: string
     sponsorshipMessageLastShown?: number
+    aiEngineProperties?: Array<KeyValue>
+    scriptFrequency?: Array<ScriptFrequency>
+    sortScriptsByFrequency: boolean
+    suggestOptionValues: boolean
+    lastUsedScriptOptionOverrides: Array<ScriptOptionOverrides>
 }
 
 export function migrateSettings(
     settings:
         | ApplicationSettings
+        | _ApplicationSettings_v160
         | _ApplicationSettings_v150
         | _ApplicationSettings_v140
         | _ApplicationSettings_v130
@@ -98,8 +114,29 @@ const migrators: Map<string, (prev: any) => any> = new Map<
     // Insert new migrators here as [ 'version', (prev) => ApplicationSettings ]
     // Don't forget to update the settings class of previous migrators
     [
+        '1.7.0',
+        (prev: _ApplicationSettings_v160): ApplicationSettings => {
+            const { settingsVersion, ...toKeep } = prev
+            return {
+                settingsVersion: '1.7.0',
+                ttsConfig: {
+                    ...prev.ttsConfig,
+                    ttsEnginesConnected: {},
+                },
+                textSize: DefaultTextSize,
+                fontName: 'system',
+                sortScriptsByFrequency: true,
+                scriptFrequency: [],
+                suggestOptionValues: true,
+                aiEngineProperties: [],
+                lastUsedScriptOptionOverrides: [],
+                ...toKeep,
+            } as ApplicationSettings
+        },
+    ],
+    [
         '1.6.0',
-        (prev: _ApplicationSettings_v150): ApplicationSettings => {
+        (prev: _ApplicationSettings_v150): _ApplicationSettings_v160 => {
             const { settingsVersion, ...toKeep } = prev
             return {
                 settingsVersion: '1.6.0',
@@ -110,7 +147,7 @@ const migrators: Map<string, (prev: any) => any> = new Map<
                 textSize: DefaultTextSize,
                 fontName: 'system',
                 ...toKeep,
-            } as ApplicationSettings
+            } as _ApplicationSettings_v160
         },
     ],
     [
@@ -193,6 +230,25 @@ const migrators: Map<string, (prev: any) => any> = new Map<
         },
     ],
 ])
+// added in settings version 1.6.0: TtsConfig has ttsEnginesConnected
+export type _ApplicationSettings_v160 = {
+    settingsVersion: '1.6.0'
+    // Default folder to download the results on the user disk
+    downloadFolder?: string
+    // Pipeline instance properties for IPCs
+    pipelineInstanceProps?: PipelineInstanceProperties
+    // Dark mode selector
+    colorScheme: keyof typeof ColorScheme
+    // Actions to perform when closing the main window
+    onClosingMainWindow?: keyof typeof ClosingMainWindowAction
+    editJobOnNewTab?: boolean
+    ttsConfig?: TtsConfig
+    autoCheckUpdate?: boolean
+    textSize?: number
+    fontName?: string
+    sponsorshipMessageLastShown?: number
+}
+
 export type _ApplicationSettings_v150 = {
     settingsVersion: '1.5.0'
     // Default folder to download the results on the user disk
@@ -224,7 +280,7 @@ export type _ApplicationSettings_v140 = {
     // tts preferred voices
     ttsConfig?: {
         preferredVoices: Array<TtsVoice>
-        ttsEngineProperties: Array<TtsEngineProperty>
+        ttsEngineProperties: Array<KeyValue>
         xmlFilepath?: string
         defaultVoices: Array<TtsVoice>
     }
@@ -244,7 +300,7 @@ export type _ApplicationSettings_v130 = {
     // tts preferred voices
     ttsConfig?: {
         preferredVoices: Array<TtsVoice>
-        ttsEngineProperties: Array<TtsEngineProperty>
+        ttsEngineProperties: Array<KeyValue>
         xmlFilepath?: string
     }
     autoCheckUpdate?: boolean
@@ -309,7 +365,7 @@ type _ApplicationSettings_v0 = {
     // tts preferred voices
     ttsConfig?: {
         preferredVoices: Array<TtsVoice>
-        ttsEngineProperties: Array<TtsEngineProperty>
+        ttsEngineProperties: Array<KeyValue>
         xmlFilepath?: string
     }
     autoCheckUpdate?: boolean

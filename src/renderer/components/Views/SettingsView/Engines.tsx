@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { TTSEngineStatusIcon } from 'renderer/components/Widgets/SvgIcons'
 import { useWindowStore } from 'renderer/store'
 import { selectTtsVoices, setProperties } from 'shared/data/slices/pipeline'
-import { TtsEngineProperty } from 'shared/types/ttsConfig'
+import { KeyValue } from 'shared/types'
 
 const enginePropertyKeys = [
     'org.daisy.pipeline.tts.azure.key',
@@ -32,13 +32,13 @@ export function Engines({
     onChangeTtsEngineProperties,
     onChangeTtsEngineConnected,
 }: {
-    ttsEngineProperties: Array<TtsEngineProperty>
+    ttsEngineProperties: Array<KeyValue>
     ttsEnginesConnected: Object
-    onChangeTtsEngineProperties: (props: Array<TtsEngineProperty>) => void
+    onChangeTtsEngineProperties: (props: Array<KeyValue>) => void
     onChangeTtsEngineConnected: (
         engineId: string,
         isConnected: boolean,
-        props: Array<TtsEngineProperty>
+        props: Array<KeyValue>
     ) => void
 }) {
     const { pipeline } = useWindowStore()

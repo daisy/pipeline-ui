@@ -5,7 +5,10 @@ import {
     ClosingMainWindowAction,
     ColorScheme,
     Font,
+    KeyValue,
     PipelineInstanceProperties,
+    ScriptFrequency,
+    ScriptOptionOverrides,
     TtsConfig,
 } from 'shared/types'
 import { RootState } from 'shared/types/store'
@@ -119,6 +122,36 @@ export const settings = createSlice({
         ) => {
             state.textSize = action.payload
         },
+        setScriptFrequency: (
+            state: ApplicationSettings,
+            action: PayloadAction<Array<ScriptFrequency>>
+        ) => {
+            state.scriptFrequency = action.payload
+        },
+        setAiEngineProperties: (
+            state: ApplicationSettings,
+            action: PayloadAction<Array<KeyValue>>
+        ) => {
+            state.aiEngineProperties = action.payload
+        },
+        setSortScriptsByFrequency: (
+            state: ApplicationSettings,
+            action: PayloadAction<boolean>
+        ) => {
+            state.sortScriptsByFrequency = action.payload
+        },
+        setSuggestOptionValues: (
+            state: ApplicationSettings,
+            action: PayloadAction<boolean>
+        ) => {
+            state.suggestOptionValues = action.payload
+        },
+        setLastUsedScriptOptionOverrides: (
+            state: ApplicationSettings,
+            action: PayloadAction<Array<ScriptOptionOverrides>>
+        ) => {
+            state.lastUsedScriptOptionOverrides = action.payload
+        },
     },
 })
 
@@ -135,6 +168,11 @@ export const {
     setSponsorshipMessageLastShown,
     setFont,
     setTextSize,
+    setScriptFrequency,
+    setAiEngineProperties,
+    setSortScriptsByFrequency,
+    setSuggestOptionValues,
+    setLastUsedScriptOptionOverrides,
 } = settings.actions
 
 export const selectors = {
@@ -147,6 +185,14 @@ export const selectors = {
     selectEditOnNewTab: (s: RootState) => s.settings.editJobOnNewTab,
     selectTtsConfig: (s: RootState) => s.settings.ttsConfig,
     selectAutoCheckUpdate: (s: RootState) => s.settings.autoCheckUpdate,
+
+    selectScriptFrequency: (s: RootState) => s.settings.scriptFrequency,
+    selectAiEngineProperties: (s: RootState) => s.settings.aiEngineProperties,
+    selectSortScriptsByFrequency: (s: RootState) =>
+        s.settings.sortScriptsByFrequency,
+    selectSuggestOptionValues: (s: RootState) => s.settings.suggestOptionValues,
+    selectLastUsedScriptOptionOverrides: (s: RootState) =>
+        s.settings.lastUsedScriptOptionOverrides,
 }
 // prettier-ignore
 export const {
@@ -158,4 +204,9 @@ export const {
     selectTtsConfig,
     selectAutoCheckUpdate,
     selectEditOnNewTab,
+    selectScriptFrequency,
+    selectAiEngineProperties,
+    selectSortScriptsByFrequency,
+    selectSuggestOptionValues,
+    selectLastUsedScriptOptionOverrides,
 } = selectors

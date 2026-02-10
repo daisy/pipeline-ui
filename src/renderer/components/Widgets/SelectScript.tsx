@@ -2,11 +2,19 @@ import { isScriptTTSEnhanced } from 'shared/utils'
 import { ID } from 'renderer/utils/utils'
 
 export function SelectScript({
-    scripts,
+    priorityScripts,
+    scripts, // scripts should be sorted already
     jobInternalId,
     onSelectChange,
     message,
 }) {
+    let ScriptOptionElm = ({ script, key }) => (
+        <option key={key} value={script.id}>
+            {script.nicename}
+            {isScriptTTSEnhanced(script) ? ' (TTS Enhanced)' : ''}
+        </option>
+    )
+
     return (
         <div className="select-script">
             <label
@@ -23,16 +31,19 @@ export function SelectScript({
                 }}
             >
                 <option value={null}>None</option>
-                {scripts
-                    .sort((a, b) => (a.nicename > b.nicename ? 1 : -1))
-                    .map((script, idx) => (
-                        <option key={idx} value={script.id}>
-                            {script.nicename}
-                            {isScriptTTSEnhanced(script)
-                                ? ' (TTS Enhanced)'
-                                : ''}
-                        </option>
-                    ))}
+                {priorityScripts.length > 0 && (
+                    <optgroup label="Frequently-used scripts">
+                        {priorityScripts.map((script, idx) => (
+                            <ScriptOptionElm
+                                script={script}
+                                key={`${idx}-prio`}
+                            />
+                        ))}
+                    </optgroup>
+                )}
+                {scripts.map((script, idx) => (
+                    <ScriptOptionElm script={script} key={`${idx}-reg`} />
+                ))}
             </select>
         </div>
     )

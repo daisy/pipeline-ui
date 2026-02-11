@@ -3,7 +3,7 @@ import { useWindowStore } from 'renderer/store'
 import { ApplicationSettings, PipelineStatus } from 'shared/types'
 import { save, setTtsConfig } from 'shared/data/slices/settings'
 //@ts-ignore
-import { Engines } from './Engines'
+import { TTSEngines } from './TTSEngines'
 //@ts-ignore
 import { MoreTTSOptions } from './MoreTTSOptions'
 //@ts-ignore
@@ -16,8 +16,10 @@ import { TabList } from 'renderer/components/Widgets/TabList'
 import { General } from './General'
 //@ts-ignore
 import { Appearance } from './Appearance'
-import { Behavior } from './Behavior'
-import { Updates } from './Updates'
+//@ts-ignore
+
+// @ts-ignore
+import { History } from './History'
 import packageJson from '../../../../../package.json'
 import { EngineStatusIcon } from 'renderer/components/Widgets/SvgIcons'
 
@@ -30,6 +32,7 @@ export enum SettingsMenuItem {
     TTSPreferredVoices = '/preferred-voices',
     TTSEngines = '/engines',
     TTSMoreOptions = '/more-options',
+    AppHistory = '/history',
 }
 
 export const SettingsMenuItems = Object.values(SettingsMenuItem).filter(
@@ -189,6 +192,11 @@ export function SettingsView(
             markup: <Appearance newSettings={newSettings} />,
         },
         {
+            label: 'History',
+            section: SettingsMenuItem.AppHistory,
+            markup: <History newSettings={newSettings} />,
+        },
+        {
             label: 'Browse Voices',
             section: SettingsMenuItem.TTSBrowseVoices,
             markup: pipeline.ttsVoices ? (
@@ -228,7 +236,7 @@ export function SettingsView(
             label: 'TTS Engines',
             section: SettingsMenuItem.TTSEngines,
             markup: (
-                <Engines
+                <TTSEngines
                     ttsEngineProperties={
                         newSettings.ttsConfig.ttsEngineProperties
                     }

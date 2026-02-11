@@ -1,6 +1,8 @@
 import { save, setDownloadPath } from 'shared/data/slices/settings'
 import { SingleFileInput } from 'renderer/components/Widgets/SingleFileInput'
+// @ts-ignore
 import { Behavior } from './Behavior'
+// @ts-ignore
 import { Updates } from './Updates'
 const { App } = window
 

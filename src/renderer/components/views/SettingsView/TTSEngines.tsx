@@ -26,7 +26,7 @@ const clone = (propsArray: Array<{ key: string; value: string }>) => [
     ...propsArray.map((kv) => ({ key: kv.key, value: kv.value })),
 ]
 
-export function Engines({
+export function TTSEngines({
     ttsEngineProperties,
     ttsEnginesConnected,
     onChangeTtsEngineProperties,
@@ -81,7 +81,7 @@ export function Engines({
         let engineProperties_ = clone(engineProperties)
         let prop = engineProperties_.find((prop) => prop.key == propName)
         if (prop) {
-            prop.value = e.target.value
+            prop.value = e.target.value.trim()
         } else {
             let newProp = {
                 key: propName,

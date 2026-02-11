@@ -17,6 +17,7 @@ import { General } from './General'
 //@ts-ignore
 import { Appearance } from './Appearance'
 //@ts-ignore
+import { AiEngines } from './AiEngines'
 
 // @ts-ignore
 import { History } from './History'
@@ -33,6 +34,7 @@ export enum SettingsMenuItem {
     TTSEngines = '/engines',
     TTSMoreOptions = '/more-options',
     AppHistory = '/history',
+    AiEngines = '/ai-engines',
 }
 
 export const SettingsMenuItems = Object.values(SettingsMenuItem).filter(
@@ -260,6 +262,11 @@ export function SettingsView(
                     onChangeTtsEngineProperties={onTtsEnginePropertiesChange}
                 />
             ),
+        },
+        {
+            label: 'AI',
+            section: SettingsMenuItem.AiEngines,
+            markup: <AiEngines />,
         },
     ]
     let setFocus = (id) => document.getElementById(id)?.focus()

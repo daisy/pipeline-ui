@@ -1,5 +1,6 @@
 import {
     EngineProperty,
+    KeyValue,
     PipelineStatus,
     Script,
     Webservice,
@@ -81,22 +82,27 @@ export function useWebservice(
                 .then((properties: EngineProperty[]) => {
                     // Note : here we merge the instance properties
                     // with the one extracted from settings
-                    let settingsTtsProperties: EngineProperty[] =
-                        getState().settings.ttsConfig.ttsEngineProperties.map(
-                            (p) => ({ name: p.key, value: p.value })
-                        )
+                    let ttsSettingsProperties: Array<KeyValue> =
+                        getState().settings.ttsConfig.ttsEngineProperties
+                    let aiSettingsProperties: Array<KeyValue> =
+                        getState().settings.aiEngineProperties
+                    let settingsProperties: EngineProperty[] =
+                        ttsSettingsProperties
+                            .concat(aiSettingsProperties)
+                            .map((p) => ({ name: p.key, value: p.value }))
+
                     for (const p of properties) {
                         if (
-                            settingsTtsProperties.find(
+                            settingsProperties.find(
                                 (p2) => p.name === p2.name
                             ) === undefined
                         ) {
-                            settingsTtsProperties.push(p)
+                            settingsProperties.push(p)
                         }
                     }
                     // dispatch to sync the properties
                     // in the engine
-                    dispatch(setProperties(settingsTtsProperties))
+                    dispatch(setProperties(settingsProperties))
                     // return pipelineAPI.fetchTtsVoices(
                     //     selectTtsConfig(getState())
                     // )(newWebservice)

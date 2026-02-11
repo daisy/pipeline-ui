@@ -121,6 +121,8 @@ export function TTSEngines({
             ...engineProperties.filter((k) => k.key.startsWith(engineKey)),
         ]
         // send the properties to the engine for voices reloading
+        // add the enabled property to the list - it's not used by the UI but it helps the engine do the right thing
+        ttsProps.push({ key: engineKey + '.enabled', value: 'true' })
         App.store.dispatch(
             setProperties(
                 ttsProps.map((p) => ({ name: p.key, value: p.value }))
@@ -145,6 +147,9 @@ export function TTSEngines({
         const ttsProps = [
             ...engineProperties.filter((k) => k.key.startsWith(engineKey)),
         ]
+        // add the enabled property to the list - it's not used by the UI but it helps the engine do the right thing
+        ttsProps.push({ key: engineKey + '.enabled', value: 'false' })
+
         // remove properties value on the engine side to disconnect
         // but keep the settings in the app
         App.store.dispatch(

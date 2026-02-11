@@ -204,7 +204,7 @@
             }
         }
     }
-    .tts-engines {
+    .tts-engines, .ai-engines {
 
         ul {
             list-style-type: none;

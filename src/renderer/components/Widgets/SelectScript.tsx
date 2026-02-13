@@ -1,6 +1,12 @@
 import { isScriptTTSEnhanced } from 'shared/utils'
 import { ID } from 'renderer/utils/utils'
-
+let ScriptOptionElm = ({ script, key }) => (
+        <option key={key} value={script.id}>
+            {script.nicename}
+            {isScriptTTSEnhanced(script) ? ' (TTS Enhanced)' : ''}
+        </option>
+    )
+    
 export function SelectScript({
     priorityScripts,
     scripts, // scripts should be sorted already
@@ -8,13 +14,8 @@ export function SelectScript({
     onSelectChange,
     message,
 }) {
-    let ScriptOptionElm = ({ script, key }) => (
-        <option key={key} value={script.id}>
-            {script.nicename}
-            {isScriptTTSEnhanced(script) ? ' (TTS Enhanced)' : ''}
-        </option>
-    )
-
+    
+    console.log("RENDER SELECTSCRIPT")
     return (
         <div className="select-script">
             <label

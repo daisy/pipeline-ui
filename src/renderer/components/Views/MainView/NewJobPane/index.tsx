@@ -95,7 +95,12 @@ export function NewJobPane({ job }: { job: Job }) {
     // top level script selection
     let onSelectChange = (scriptId) => {
         let selection = pipeline.scripts.find((script) => script.id == scriptId)
-        let jobRequest = prepareJobRequest(job, selection, pipeline.datatypes)
+        let jobRequest = prepareJobRequest(
+            job,
+            selection,
+            pipeline.datatypes,
+            App.store.getState()
+        )
         App.store.dispatch(
             updateJob({
                 ...job,
@@ -116,7 +121,7 @@ export function NewJobPane({ job }: { job: Job }) {
     }
 
     let createJob = async (script: Script, inputFiles: string[]) => {
-        let jobRequest = prepareJobRequest(job, script, pipeline.datatypes)
+        let jobRequest = prepareJobRequest(job, script, pipeline.datatypes, App.store.getState())
 
         let inputsCopy = [...jobRequest.inputs]
         let sourceInputIdx = inputsCopy.findIndex(

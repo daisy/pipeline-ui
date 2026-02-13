@@ -86,7 +86,7 @@ export function formFieldFactory(
                 required={item.required}
                 onChange={(e) => onChange(e.target.value, item)}
                 id={controlId}
-                defaultValue={inputType}
+                value={initialValue}
                 aria-labelledby={`${controlId}-label`}
             ></input>
         )

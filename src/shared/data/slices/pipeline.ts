@@ -20,6 +20,7 @@ import {
     TtsVoice,
     EngineProperty,
     TtsEngineState,
+    ScriptOption,
 } from 'shared/types'
 import { RootState } from 'shared/types/store'
 
@@ -194,7 +195,6 @@ export const pipeline = createSlice({
             const jobToRestore = state.jobs.find(
                 (j) => j.internalId == param.payload.linkedTo
             )
-            console.log(currentJobIndex, jobToRestore)
             if (currentJobIndex > -1 && jobToRestore) {
                 state.jobs[currentJobIndex] = {
                     ...jobToRestore,
@@ -482,7 +482,12 @@ export const selectors = {
             state: JobState.NEW,
             jobRequest: null,
         } as Job),
-    prepareJobRequest: (job: Job, script: Script, datatypes) => {
+    prepareJobRequest: (
+        job: Job,
+        script: Script,
+        datatypes,
+        state: RootState
+    ) => {
         const hasJobRequestOnScript: Boolean =
             job.jobRequest && job.jobRequest.scriptHref == script?.href
         const scriptInputs = script?.inputs ?? []
@@ -509,6 +514,7 @@ export const selectors = {
                     value:
                         (hasJobRequestOnScript &&
                             job.jobRequest.options[index].value) ||
+                        getStoredOptionValue(job, script, item, state) || 
                         item.default ||
                         null,
                     type: item.type,
@@ -517,10 +523,42 @@ export const selectors = {
             }),
             stylesheetParameterOptions: [],
         } as JobRequest
-        let validationResults = validateJobRequestSync(jobRequest, script, datatypes)
+        let validationResults = validateJobRequestSync(
+            jobRequest,
+            script,
+            datatypes
+        )
         jobRequest.validation = [...validationResults]
         return jobRequest
     },
+}
+
+function getStoredOptionValue(
+    job: Job,
+    script: Script,
+    option: ScriptOption,
+    state: RootState
+) {
+    // see if there's a last-used value for this option in settings
+    if (
+        state.settings &&
+        state.settings.suggestOptionValues &&
+        state.settings.lastUsedScriptOptionOverrides
+    ) {
+        let lastUsedValues = state.settings.lastUsedScriptOptionOverrides.find(
+            (soo) => soo.scriptId == script.id
+        )
+        if (lastUsedValues) {
+            // if current value is the default value for this script, see if there's an override
+            let optionOverride = lastUsedValues.optionOverrides.find(
+                (oo) => oo.name == option.name
+            )
+            if (optionOverride) {
+                return optionOverride.value
+            }
+        }
+    }
+    return null
 }
 
 export const {

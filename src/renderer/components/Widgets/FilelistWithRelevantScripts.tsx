@@ -9,7 +9,7 @@ export function FilelistWithRelevantScripts({
     jobInternalId,
     createJob,
 }) {
-    const [selectedFiles, setSelectedFiles] = useState([])
+    const [selectedFiles, setSelectedFiles] = useState(files.length == 1 ? [files[0]] : [])
     const [selectedScriptId, setSelectedScriptId] = useState(
         relevantScripts[0]?.id ?? null
     )

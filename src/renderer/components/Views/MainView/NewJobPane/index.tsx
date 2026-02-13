@@ -121,7 +121,12 @@ export function NewJobPane({ job }: { job: Job }) {
     }
 
     let createJob = async (script: Script, inputFiles: string[]) => {
-        let jobRequest = prepareJobRequest(job, script, pipeline.datatypes, App.store.getState())
+        let jobRequest = prepareJobRequest(
+            job,
+            script,
+            pipeline.datatypes,
+            App.store.getState()
+        )
 
         let inputsCopy = [...jobRequest.inputs]
         let sourceInputIdx = inputsCopy.findIndex(

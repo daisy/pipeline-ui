@@ -52,7 +52,6 @@ export function DragDropFilterFiles({
                     .toLowerCase()
                     .indexOf(filterText.toLowerCase()) != -1
         )
-        console.log("Filtered files", filteredFiles_)
         return filteredFiles_
     }
 

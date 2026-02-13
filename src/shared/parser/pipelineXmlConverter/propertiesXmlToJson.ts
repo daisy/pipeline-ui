@@ -10,7 +10,6 @@ function propertyElementToJson(prop: Element): EngineProperty | null {
             value: prop.getAttribute('value'),
         }
     } catch (err) {
-        console.debug('propertyXmlToJson', err)
         return null
     }
 }
@@ -22,7 +21,6 @@ function propertiesXmlToJson(xmlString: string): Array<EngineProperty> {
             propertiesElement.getElementsByTagName('property')
         ).map((propElem: Element) => propertyElementToJson(propElem))
     } catch (err) {
-        console.debug('propertiesXmlToJson', err)
         return []
     }
 }

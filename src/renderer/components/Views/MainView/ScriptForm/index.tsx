@@ -306,13 +306,10 @@ export function ScriptForm({ job }: { job: Job }) {
     }
 
     let relevantError = (name) => {
-        console.log("Relevant error", name)
         let errorMessage = job.errors?.find((e) => e.fieldName === name)?.error
         let validationError = job.jobRequest.validation.find(
             (v) => v.item.name == name
         )
-        console.log("error message", errorMessage)
-        console.log("validation error", validationError)
         if (errorMessage) {
             return errorMessage
         } else if (validationError) {

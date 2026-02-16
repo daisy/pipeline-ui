@@ -514,7 +514,7 @@ export const selectors = {
                     value:
                         (hasJobRequestOnScript &&
                             job.jobRequest.options[index].value) ||
-                        getStoredOptionValue(job, script, item, state) || 
+                        getStoredOptionValue(job, script, item, state) ||
                         item.default ||
                         null,
                     type: item.type,

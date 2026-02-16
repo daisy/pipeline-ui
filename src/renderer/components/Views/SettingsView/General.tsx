@@ -17,28 +17,29 @@ export function General({ newSettings }) {
 
     return (
         <>
-        <div className="field">
-            <label htmlFor="resultsFolder">Results folder</label>
-            <span className="description">
-                A folder where all job results will be automatically downloaded
-            </span>
-            <SingleFileInput
-                allowFile={false}
-                allowFolder={true}
-                onChange={resultsFolderChanged}
-                initialValue={[newSettings.downloadFolder]}
-                required={true}
-                elemId="results-folder"
-            />
-            {newSettings.downloadFolder == '' ? (
-                <span className="warning">This field cannot be empty.</span>
-            ) : (
-                ''
-            )}
-        </div>
-        <Behavior newSettings={newSettings} />
-        <Updates newSettings={newSettings} />
-        <History newSettings={newSettings} />
+            <div className="field">
+                <label htmlFor="resultsFolder">Results folder</label>
+                <span className="description">
+                    A folder where all job results will be automatically
+                    downloaded
+                </span>
+                <SingleFileInput
+                    allowFile={false}
+                    allowFolder={true}
+                    onChange={resultsFolderChanged}
+                    initialValue={[newSettings.downloadFolder]}
+                    required={true}
+                    elemId="results-folder"
+                />
+                {newSettings.downloadFolder == '' ? (
+                    <span className="warning">This field cannot be empty.</span>
+                ) : (
+                    ''
+                )}
+            </div>
+            <Behavior newSettings={newSettings} />
+            <Updates newSettings={newSettings} />
+            <History newSettings={newSettings} />
         </>
     )
 }

@@ -19,22 +19,21 @@ import { Appearance } from './Appearance'
 //@ts-ignore
 import { AiEngines } from './AiEngines'
 
-// @ts-ignore
-import { History } from './History'
 import packageJson from '../../../../../package.json'
 import { EngineStatusIcon } from 'renderer/components/Widgets/SvgIcons'
+// @ts-ignore
+import { ExternalServices } from './ExternalServices'
 
 const { App } = window
 
 export enum SettingsMenuItem {
     General = '/general',
     Appearance = '/appearance',
+    ExternalServices = '/external-services',
     TTSBrowseVoices = '/browse-voices',
     TTSPreferredVoices = '/preferred-voices',
     TTSEngines = '/engines',
     TTSMoreOptions = '/more-options',
-    AppHistory = '/history',
-    AiEngines = '/ai-engines',
 }
 
 export const SettingsMenuItems = Object.values(SettingsMenuItem).filter(
@@ -194,9 +193,15 @@ export function SettingsView(
             markup: <Appearance newSettings={newSettings} />,
         },
         {
-            label: 'History',
-            section: SettingsMenuItem.AppHistory,
-            markup: <History newSettings={newSettings} />,
+            label: 'External Services',
+            section: SettingsMenuItem.ExternalServices,
+            markup: (
+                <ExternalServices
+                    newSettings={newSettings}
+                    onChangeTtsEngineProperties={onTtsEnginePropertiesChange}
+                    onChangeTtsEngineConnected={onTtsEngineConnectedChange}
+                />
+            ),
         },
         {
             label: 'Browse Voices',
@@ -235,22 +240,6 @@ export function SettingsView(
             ),
         },
         {
-            label: 'TTS Engines',
-            section: SettingsMenuItem.TTSEngines,
-            markup: (
-                <TTSEngines
-                    ttsEngineProperties={
-                        newSettings.ttsConfig.ttsEngineProperties
-                    }
-                    ttsEnginesConnected={
-                        newSettings.ttsConfig.ttsEnginesConnected
-                    }
-                    onChangeTtsEngineProperties={onTtsEnginePropertiesChange}
-                    onChangeTtsEngineConnected={onTtsEngineConnectedChange}
-                />
-            ),
-        },
-        {
             label: 'More TTS Options',
             section: SettingsMenuItem.TTSMoreOptions,
             markup: (
@@ -262,11 +251,6 @@ export function SettingsView(
                     onChangeTtsEngineProperties={onTtsEnginePropertiesChange}
                 />
             ),
-        },
-        {
-            label: 'AI',
-            section: SettingsMenuItem.AiEngines,
-            markup: <AiEngines />,
         },
     ]
     let setFocus = (id) => document.getElementById(id)?.focus()

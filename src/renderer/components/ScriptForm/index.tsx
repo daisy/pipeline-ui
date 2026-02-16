@@ -206,7 +206,8 @@ export function ScriptForm({ job, script }: { job: Job; script: Script }) {
                     (hasAudio.value === true || hasAudio.value !== 'false')) ||
                 (hasBraille && hasBraille.value === true) ||
                 job.script.id.endsWith('to-pef') ||
-                job.script.id.endsWith('ebraille')
+                job.script.id.endsWith('ebraille') && 
+                job.jobRequest.inputs.length == 1 // currently the stylesheet parameters endpoint supports one input document
             ) {
                 App.store.dispatch(requestStylesheetParameters(job))
             } else {

@@ -4,6 +4,9 @@ import { SingleFileInput } from 'renderer/components/Widgets/SingleFileInput'
 import { Behavior } from './Behavior'
 // @ts-ignore
 import { Updates } from './Updates'
+// @ts-ignore
+import { History } from './History'
+
 const { App } = window
 
 export function General({ newSettings }) {
@@ -35,6 +38,7 @@ export function General({ newSettings }) {
         </div>
         <Behavior newSettings={newSettings} />
         <Updates newSettings={newSettings} />
+        <History newSettings={newSettings} />
         </>
     )
 }

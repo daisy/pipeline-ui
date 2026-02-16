@@ -9,6 +9,7 @@ import {
 } from '../../shared/types'
 import { findInputType } from 'shared/utils'
 import { valueIsNotEmpty } from './utils'
+import { info } from 'electron-log'
 
 // same as validateJobRequest except skips async operations e.g. check if file exists
 export function validateJobRequestSync(
@@ -204,7 +205,14 @@ function validateCustom(value, datatype: Datatype) {
         } else if (dtChoice.hasOwnProperty('pattern')) {
             // @ts-ignore
             let pattern = dtChoice.pattern
-            if (value.match(pattern)) {
+            try {
+                if (value.match(pattern)) {
+                    isValid = true
+                }
+            } catch (err) {
+                // info("Error attempting pattern validation", pattern, value)
+                // info(err)
+                // TODO should we pass through values that cause an exception in pattern matching? Or say that they failed?
                 isValid = true
             }
         } else if (dtChoice.hasOwnProperty('type')) {

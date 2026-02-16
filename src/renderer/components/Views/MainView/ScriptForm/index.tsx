@@ -216,12 +216,16 @@ export function ScriptForm({ job }: { job: Job }) {
             const hasBraille = job.jobRequest.options.find(
                 (o) => o.name === 'braille'
             )
+            const sourceInput = job.jobRequest.inputs.find(
+                (i) => i.name == 'source'
+            )
             if (
-                (hasAudio &&
+                ((hasAudio &&
                     (hasAudio.value === true || hasAudio.value !== 'false')) ||
-                (hasBraille && hasBraille.value === true) ||
-                job.script.id.endsWith('to-pef') ||
-                job.script.id.endsWith('ebraille')
+                    (hasBraille && hasBraille.value === true) ||
+                    job.script.id.endsWith('to-pef') ||
+                    job.script.id.endsWith('ebraille')) &&
+                sourceInput.value.length == 1
             ) {
                 App.store.dispatch(requestStylesheetParameters(job))
             } else {

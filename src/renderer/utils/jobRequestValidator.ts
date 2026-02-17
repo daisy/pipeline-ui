@@ -62,6 +62,8 @@ export async function validateJobRequestAsync(
         })
     }
     for (let input of jobRequest.inputs) {
+        console.log(jobRequest.inputs)
+        console.log(input)
         let scriptInput = script.inputs?.find((i) => i.name == input.name)
         await validateField(input, scriptInput)
     }
@@ -203,15 +205,15 @@ function validateCustom(value, datatype: Datatype) {
                 isValid = true
             }
         } else if (dtChoice.hasOwnProperty('pattern')) {
-            // @ts-ignore
-            let pattern = dtChoice.pattern
             try {
-                if (value.match(pattern)) {
+                // @ts-ignore
+                let pattern = String.raw`${dtChoice.pattern}`
+                let regex = new RegExp(pattern, 'g')
+                let result = regex.exec(value)
+                if (result) {
                     isValid = true
                 }
             } catch (err) {
-                // info("Error attempting pattern validation", pattern, value)
-                // info(err)
                 // TODO should we pass through values that cause an exception in pattern matching? Or say that they failed?
                 isValid = true
             }

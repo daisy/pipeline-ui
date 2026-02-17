@@ -62,8 +62,6 @@ export async function validateJobRequestAsync(
         })
     }
     for (let input of jobRequest.inputs) {
-        console.log(jobRequest.inputs)
-        console.log(input)
         let scriptInput = script.inputs?.find((i) => i.name == input.name)
         await validateField(input, scriptInput)
     }

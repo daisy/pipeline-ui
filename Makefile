@@ -29,11 +29,17 @@ else
 	exec("yarn", "release");
 endif
 
+# ifeq ($(OS), WINDOWS)
+# zip_classifier := win
+# else ifeq ($(OS), MACOSX)
+# zip_classifier := mac
+# endif
 ifeq ($(OS), WINDOWS)
-zip_classifier := win
+src/resources/daisy-pipeline : engine/pipeline2-$(ENGINE_VERSION)_windows.zip
 else ifeq ($(OS), MACOSX)
-zip_classifier := mac
+src/resources/daisy-pipeline : engine/pipeline2-$(ENGINE_VERSION)_mac.zip
 endif
+	rm("$@");
 
 src/resources/daisy-pipeline : engine/pipeline2-$(ENGINE_VERSION)_windows.zip
 	rm("$@");
@@ -50,8 +56,12 @@ ifeq ($(OS), MACOSX)
 	exec("chmod", "+x", "$@/jre/lib/jspawnhelper");
 endif
 
+# engine/pipeline2-$(ENGINE_VERSION)_windows.zip :
+# 	exec("$(MAKE)", "-C", "engine", "dist-zip-$(zip_classifier)");
 engine/pipeline2-$(ENGINE_VERSION)_windows.zip :
-	exec("$(MAKE)", "-C", "engine", "dist-zip-$(zip_classifier)");
+	exec("$(MAKE)", "-C", "engine", "dist-zip-win");
+engine/pipeline2-$(ENGINE_VERSION)_mac.zip :
+	exec("$(MAKE)", "-C", "engine", "dist-zip-mac");
 
 clean :
 ifeq ($(OS), WINDOWS)
@@ -61,4 +71,4 @@ else
 endif
 	rm("src/resources/daisy-pipeline");
 	rm("node_modules/.dev-temp-build");
-	exec("$(MAKE)", "-C", "engine/assembly", "clean");
+#	exec("$(MAKE)", "-C", "engine/assembly", "clean");

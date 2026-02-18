@@ -40,9 +40,6 @@ else ifeq ($(OS), MACOSX)
 src/resources/daisy-pipeline : engine/pipeline2-$(ENGINE_VERSION)_mac.zip
 endif
 	rm("$@");
-
-src/resources/daisy-pipeline : engine/pipeline2-$(ENGINE_VERSION)_windows.zip
-	rm("$@");
 	unzip(new File("$<"), new File("$(dir $@)"));
 	rm("$@/cli/config.yml");
 ifeq ($(OS), WINDOWS)

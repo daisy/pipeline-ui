@@ -1,7 +1,7 @@
 import { isScriptTTSEnhanced } from 'shared/utils'
 import { ID } from 'renderer/utils/utils'
-let ScriptOptionElm = ({ script, key }) => (
-    <option key={key} value={script.id}>
+let ScriptOptionElm = ({ script, key }) => script != null && script != undefined && (
+    <option key={key} value={script?.id}>
         {script.nicename}
         {isScriptTTSEnhanced(script) ? ' (TTS Enhanced)' : ''}
     </option>

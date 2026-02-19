@@ -2,11 +2,13 @@ import { PayloadAction } from '@reduxjs/toolkit'
 import { pipelineAPI } from 'main/data/apis/pipeline'
 import {
     selectWebservice,
+    setDatatypes,
+    setScripts,
     setTtsEngineState,
     setTtsVoices,
 } from 'shared/data/slices/pipeline'
 import { selectTtsConfig } from 'shared/data/slices/settings'
-import { EngineProperty, TtsEngineState, TtsVoice } from 'shared/types'
+import { Datatype, EngineProperty, Script, TtsEngineState, TtsVoice } from 'shared/types'
 import { GetStateFunction } from 'shared/types/store'
 
 export function setProperties(
@@ -176,5 +178,28 @@ export function setProperties(
                         dispatch(setTtsEngineState(states))
                     })
             }
+        })
+        .then(() => {
+            // if the mistral ai property was set, refetch the scripts list
+            if (newProperties.find(np => np.name.indexOf('mistral') != -1)) {
+                const fetchScripts = pipelineAPI.fetchScripts()
+                return fetchScripts(webservice)
+            }
+            return []
+        })
+        .then((scripts: Array<Script>) => {
+            if (scripts.length > 0) {
+                dispatch(setScripts(scripts))
+            }
+        })
+        .then(() => {
+            if (newProperties.find(np => np.name.indexOf('mistral') != -1)) {
+                const fetchDatatypes = pipelineAPI.fetchDatatypes()
+                return fetchDatatypes(webservice)
+            }
+            return []
+        })
+        .then((datatypes: Array<Datatype>) => {
+            dispatch(setDatatypes(datatypes))
         })
 }

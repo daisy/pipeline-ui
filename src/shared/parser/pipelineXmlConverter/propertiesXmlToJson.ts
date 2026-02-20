@@ -3,12 +3,13 @@ import { parseXml } from './parser'
 
 function propertyElementToJson(prop: Element): EngineProperty | null {
     try {
-        return {
+        let newProp = {
             name: prop.getAttribute('name'),
             desc: prop.getAttribute('desc'),
             href: prop.getAttribute('href'),
             value: prop.getAttribute('value'),
         }
+        return newProp
     } catch (err) {
         return null
     }

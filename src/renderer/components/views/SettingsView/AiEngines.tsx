@@ -25,7 +25,10 @@ export function AiEngines() {
         App.store.dispatch(save())
         App.store.dispatch(
             setProperties(
-                aiEngineProperties_.map((p) => ({ name: p.key, value: p.value }))
+                aiEngineProperties_.map((p) => ({
+                    name: p.key,
+                    value: p.value,
+                }))
             )
         )
     }
@@ -50,6 +53,7 @@ export function AiEngines() {
                         {enginePropertyKeys
                             .filter((propkey) => propkey.includes(engineId))
                             .map((propkey, idx) => (
+                                <div>
                                 <div className="field" key={idx}>
                                     <label htmlFor={propkey}>
                                         {getPropkeyLabel(propkey, engineId)}
@@ -66,6 +70,12 @@ export function AiEngines() {
                                             )?.value ?? ''
                                         }
                                     />
+                                    </div>
+                                    <p className="description">
+                                        {pipeline.properties
+                                            ? pipeline.properties[propkey]?.desc
+                                            : ''}
+                                    </p>
                                 </div>
                             ))}
                     </li>

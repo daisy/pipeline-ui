@@ -102,7 +102,18 @@ export function useWebservice(
                     }
                     // dispatch to sync the properties
                     // in the engine
-                    dispatch(setProperties(settingsProperties))
+                    // preserve the desc and href values too (they aren't part of settingsProperties)
+                    let properties_ = settingsProperties.map((p) => {
+                        let correspondingEngineProp = properties.find(
+                            (pr) => pr.name == p.name
+                        )
+                        return {
+                            ...p,
+                            desc: correspondingEngineProp.desc,
+                            href: correspondingEngineProp.href,
+                        }
+                    })
+                    dispatch(setProperties(properties_))
                     // return pipelineAPI.fetchTtsVoices(
                     //     selectTtsConfig(getState())
                     // )(newWebservice)

@@ -2,6 +2,7 @@ import { PayloadAction } from '@reduxjs/toolkit'
 import { pipelineAPI } from 'main/data/apis/pipeline'
 import {
     selectWebservice,
+    selectProperties,
     setDatatypes,
     setScripts,
     setTtsEngineState,
@@ -17,6 +18,7 @@ export function setProperties(
     getState: GetStateFunction
 ) {
     const webservice = selectWebservice(getState())
+    const currentProperties = selectProperties(getState())
     const newProperties = action.payload as EngineProperty[]
     let ttsEnginesStatesStart = {
         ...(getState().pipeline.ttsEnginesStates as {
@@ -93,7 +95,15 @@ export function setProperties(
     )
 
     Promise.all(
-        newProperties_.map((prop) => pipelineAPI.setProperty(prop)(webservice))
+        newProperties_.map((prop) => {
+            let currProp = currentProperties[prop.name]
+            if (currProp)  {
+                // preserve the desc and href data
+                prop.desc = currProp.desc
+                prop.href = currProp.href
+            }
+            pipelineAPI.setProperty(prop)(webservice)
+        })
     )
         //.then(() => pipelineAPI.fetchProperties()(webservice))
         .then(() => {
@@ -200,6 +210,8 @@ export function setProperties(
             return []
         })
         .then((datatypes: Array<Datatype>) => {
-            dispatch(setDatatypes(datatypes))
+            if (datatypes.length > 0) {
+                dispatch(setDatatypes(datatypes))
+            }
         })
 }

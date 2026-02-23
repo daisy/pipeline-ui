@@ -1,11 +1,14 @@
 import { isScriptTTSEnhanced } from 'shared/utils'
 import { ID } from 'renderer/utils/utils'
-let ScriptOptionElm = ({ script, key }) => script != null && script != undefined && (
-    <option key={key} value={script?.id}>
-        {script.nicename}
-        {isScriptTTSEnhanced(script) ? ' (TTS Enhanced)' : ''}
-    </option>
-)
+import { useEffect, useRef } from 'react'
+let ScriptOptionElm = ({ script, key }) =>
+    script != null &&
+    script != undefined && (
+        <option key={key} value={script?.id}>
+            {script.nicename}
+            {isScriptTTSEnhanced(script) ? ' (TTS Enhanced)' : ''}
+        </option>
+    )
 
 export function SelectScript({
     priorityScripts,
@@ -13,7 +16,18 @@ export function SelectScript({
     jobInternalId,
     onSelectChange,
     message,
+    autoFocus,
 }) {
+    let selectRef = useRef(null)
+
+    // this should work to give focus to the select element but it's not having an effect
+    // maybe something is shifting the focus elsewhere after this renders?
+    useEffect(() => {
+        if (selectRef.current && autoFocus) {
+            selectRef.current.focus()
+        }
+    }, [])
+
     return (
         <div className="select-script">
             <label
@@ -28,6 +42,7 @@ export function SelectScript({
                 onChange={(e) => {
                     onSelectChange(e.target.value)
                 }}
+                ref={selectRef}
             >
                 <option value={null}>None</option>
                 {priorityScripts.length > 0 && (

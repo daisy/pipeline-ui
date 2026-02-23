@@ -9,7 +9,7 @@ import {
     save,
     setSponsorshipMessageLastShown,
 } from 'shared/data/slices/settings'
-import { externalLinkClick } from 'renderer/utils'
+import { externalLinkClick, ID } from 'renderer/utils'
 
 const { App } = window
 
@@ -76,6 +76,7 @@ export function NewJobPane({ job }: { job: Job }) {
             return freqA > freqB ? -1 : 1
         })
     }
+
     // see if it's time to show the sponsorship message again
     // useMemo runs once per render (unlike useEffect)
     useMemo(() => {
@@ -177,6 +178,7 @@ export function NewJobPane({ job }: { job: Job }) {
                         scripts={scriptsInOrder}
                         onSelectChange={onSelectChange}
                         message={'Or, select a script'}
+                        autoFocus={true}
                     />
                 )}
                 {showSponsorshipMessage && (

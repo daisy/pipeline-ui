@@ -40,7 +40,7 @@ export function JobDetails({ job }: { job: Job }) {
 
     if (job.jobRequestError) {
         return (
-            <>
+            <div>
                 <h2>Error</h2>
                 <div className="details">
                     <p>{job.jobRequestError.description}</p>
@@ -57,7 +57,7 @@ export function JobDetails({ job }: { job: Job }) {
                         </div>
                     )}
                 </div>
-            </>
+            </div>
         )
     }
 

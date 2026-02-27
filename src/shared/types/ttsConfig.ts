@@ -1,3 +1,5 @@
+import { KeyValue } from './settings'
+
 export type TtsVoice = {
     engine: string
     name: string
@@ -8,21 +10,18 @@ export type TtsVoice = {
     href: string
     preview: string
 }
-export type TtsEngineProperty = {
-    key: string
-    value: string
-}
+
 export type TtsConfig = {
     preferredVoices: Array<TtsVoice>
     defaultVoices: Array<TtsVoice>
-    ttsEngineProperties: Array<TtsEngineProperty>
+    ttsEngineProperties: Array<KeyValue>
     xmlFilepath?: string
     ttsEnginesConnected: Object
 }
 export type _TtsConfig_v150 = {
     preferredVoices: Array<TtsVoice>
     defaultVoices: Array<TtsVoice>
-    ttsEngineProperties: Array<TtsEngineProperty>
+    ttsEngineProperties: Array<KeyValue>
     xmlFilepath?: string
 }
 

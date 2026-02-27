@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { TTSEngineStatusIcon } from 'renderer/components/Widgets/SvgIcons'
 import { useWindowStore } from 'renderer/store'
 import { selectTtsVoices, setProperties } from 'shared/data/slices/pipeline'
-import { TtsEngineProperty } from 'shared/types/ttsConfig'
+import { KeyValue } from 'shared/types'
 
 const enginePropertyKeys = [
     'org.daisy.pipeline.tts.azure.key',
@@ -26,19 +26,19 @@ const clone = (propsArray: Array<{ key: string; value: string }>) => [
     ...propsArray.map((kv) => ({ key: kv.key, value: kv.value })),
 ]
 
-export function Engines({
+export function TTSEngines({
     ttsEngineProperties,
     ttsEnginesConnected,
     onChangeTtsEngineProperties,
     onChangeTtsEngineConnected,
 }: {
-    ttsEngineProperties: Array<TtsEngineProperty>
+    ttsEngineProperties: Array<KeyValue>
     ttsEnginesConnected: Object
-    onChangeTtsEngineProperties: (props: Array<TtsEngineProperty>) => void
+    onChangeTtsEngineProperties: (props: Array<KeyValue>) => void
     onChangeTtsEngineConnected: (
         engineId: string,
         isConnected: boolean,
-        props: Array<TtsEngineProperty>
+        props: Array<KeyValue>
     ) => void
 }) {
     const { pipeline } = useWindowStore()
@@ -81,7 +81,7 @@ export function Engines({
         let engineProperties_ = clone(engineProperties)
         let prop = engineProperties_.find((prop) => prop.key == propName)
         if (prop) {
-            prop.value = e.target.value
+            prop.value = e.target.value.trim()
         } else {
             let newProp = {
                 key: propName,
@@ -121,6 +121,8 @@ export function Engines({
             ...engineProperties.filter((k) => k.key.startsWith(engineKey)),
         ]
         // send the properties to the engine for voices reloading
+        // add the enabled property to the list - it's not used by the UI but it helps the engine do the right thing
+        ttsProps.push({ key: engineKey + '.enabled', value: 'true' })
         App.store.dispatch(
             setProperties(
                 ttsProps.map((p) => ({ name: p.key, value: p.value }))
@@ -145,6 +147,9 @@ export function Engines({
         const ttsProps = [
             ...engineProperties.filter((k) => k.key.startsWith(engineKey)),
         ]
+        // add the enabled property to the list - it's not used by the UI but it helps the engine do the right thing
+        ttsProps.push({ key: engineKey + '.enabled', value: 'false' })
+
         // remove properties value on the engine side to disconnect
         // but keep the settings in the app
         App.store.dispatch(

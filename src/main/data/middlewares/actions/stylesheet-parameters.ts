@@ -77,7 +77,6 @@ export function requestStylesheetParameters(
             let tempDatatypes = []
             for (let param of parameters) {
                 if (findInputType(param.type) == 'custom') {
-                    console.log('custom', param.type)
                     tempDatatypes.push(
                         pipelineAPI.fetchTempDatatype(param.type)(webservice)
                     )

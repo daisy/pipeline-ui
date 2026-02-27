@@ -37,21 +37,34 @@ export function startMonitor(
         error('Could not connect socket for job monitoring', j)
         return
     }
-    const socket = new WebSocket(j.jobData.notificationsUrl)
+
+    // remove the default search params from notificationsUrl
+    let notificationsUrl = new URL(j.jobData.notificationsUrl)
+    let baseNotificationsUrl = `${notificationsUrl.protocol}//${notificationsUrl.hostname}:${notificationsUrl.port}${notificationsUrl.pathname}`
+
+    const messagesSocket = new WebSocket(
+        baseNotificationsUrl + '?type=messages'
+    )
+    const statusSocket = new WebSocket(baseNotificationsUrl + '?type=status')
+    const progressSocket = new WebSocket(
+        baseNotificationsUrl + '?type=progress'
+    )
+
     let fetchJobDataFn = pipelineAPI.fetchJobData(j)
-    socket.addEventListener('message', async (event) => {
-        // compare it against the fetch data
+
+    let socketOnMessage = async (event) => {
         const fetchData = await fetchJobDataFn(ws)
-        let alertstr = (s) => `\n${s}******\n`
-        // console.log(alertstr('FETCH'), fetchData, alertstr('FETCH'))
-        // console.log(alertstr('WS'), event.data, alertstr('WS'))
-
         await processJobUpdate(j, getState, dispatch, fetchData)
-    })
+    }
+    let socketOnError = (err) => error('Job monitoring failed')
 
-    socket.addEventListener('error', (err) => {
-        error('Job monitoring failed', j)
-    })
+    messagesSocket.addEventListener('message', socketOnMessage)
+    statusSocket.addEventListener('message', socketOnMessage)
+    progressSocket.addEventListener('message', socketOnMessage)
+
+    messagesSocket.addEventListener('error', socketOnError)
+    statusSocket.addEventListener('error', socketOnError)
+    progressSocket.addEventListener('error', socketOnError)
 }
 
 function processJobUpdate(
@@ -62,7 +75,7 @@ function processJobUpdate(
 ) {
     try {
         let parsedData = jobUpdateData //jobXmlToJson(jobUpdateData)
-        
+
         let updatedJob = {
             ...j,
             jobData: parsedData,

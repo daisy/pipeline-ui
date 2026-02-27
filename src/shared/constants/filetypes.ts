@@ -85,6 +85,11 @@ export const mediaTypesFileFilters: Array<Filetype> = [
         name: 'Lexicon',
         extensions: ['pls'],
     },
+    {
+        type: 'application/x-obfl+xml',
+        name: 'Open Braille Formatting Language',
+        extensions: ['obfl'],
+    }
 ]
 
 // this is a set of filetypes that are accepted as primary script inputs
@@ -114,6 +119,11 @@ let scriptInputFiletypes: Array<Filetype> = [
         name: 'Word',
         extensions: ['docx'],
     },
+    {
+        type: 'obfl',
+        name: 'Open Braille Formatting Language',
+        extensions: ['obfl'],
+    }
 ]
 // filter out the things that are never found as script sources
 scriptInputFiletypes = scriptInputFiletypes.concat(

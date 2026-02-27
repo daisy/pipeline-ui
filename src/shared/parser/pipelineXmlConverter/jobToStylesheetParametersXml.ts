@@ -66,7 +66,6 @@ const ScriptMediaTag = {
         }${height[0] !== undefined && ` AND (height:${height[0].value})`}"/>`
     },
     'epub3-to-epub3': (j: Job) => {
-        console.log(j.jobRequest.options)
         const values = j.jobRequest.options
             .filter(
                 (option) =>

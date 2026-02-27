@@ -1,4 +1,4 @@
-import { JobStatus } from 'shared/types'
+import { JobStatus, PipelineStatus } from 'shared/types'
 
 /*
 A few simple icons
@@ -165,14 +165,62 @@ export function JobStatusIcon(status: JobStatus, { width, height }) {
     }
 }
 
-export function TTSEngineStatusIcon(status: string, {width, height}) {
+export function TTSEngineStatusIcon(status: string, { width, height }) {
     if (status == 'available') {
-        return Success({width, height})
-    }
-    else if (status == 'disabled') {
-        return Failed({width, height})
-    }
-    else {
+        return Success({ width, height })
+    } else if (status == 'disabled') {
+        return Failed({ width, height })
+    } else {
         return <></>
     }
+}
+
+export function EngineStatusIcon({ status, width, height }) {
+    return (
+        <svg
+            width={width}
+            height={height}
+            viewBox="0 0 100 100"
+            role="presentation"
+            className={status.toLowerCase()}
+        >
+            <circle cx="50" cy="50" r="50" />
+        </svg>
+    )
+}
+
+export function PlayIcon({ width, height }) {
+    return (
+        <svg
+            width={width}
+            height={height}
+            viewBox="0 0 25 25"
+            role="presentation"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+        >
+            <polygon points="5 3 19 12 5 21 5 3"></polygon>
+        </svg>
+    )
+}
+
+export function PauseIcon({ width, height }) {
+    return (
+        <svg
+            width={width}
+            height={height}
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+        >
+            <rect x="6" y="4" width="4" height="16"></rect>
+            <rect x="14" y="4" width="4" height="16"></rect>
+        </svg>
+    )
 }

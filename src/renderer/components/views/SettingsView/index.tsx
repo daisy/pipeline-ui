@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react'
 import { useWindowStore } from 'renderer/store'
-import { ApplicationSettings } from 'shared/types'
+import { ApplicationSettings, PipelineStatus } from 'shared/types'
 import { save, setTtsConfig } from 'shared/data/slices/settings'
 //@ts-ignore
-import { Engines } from './Engines'
+import { TTSEngines } from './TTSEngines'
 //@ts-ignore
 import { MoreTTSOptions } from './MoreTTSOptions'
 //@ts-ignore
@@ -16,14 +16,20 @@ import { TabList } from 'renderer/components/Widgets/TabList'
 import { General } from './General'
 //@ts-ignore
 import { Appearance } from './Appearance'
-import { Behavior } from './Behavior'
-import { Updates } from './Updates'
+//@ts-ignore
+import { AiEngines } from './AiEngines'
+
+import packageJson from '../../../../../package.json'
+import { EngineStatusIcon } from 'renderer/components/Widgets/SvgIcons'
+// @ts-ignore
+import { ExternalServices } from './ExternalServices'
 
 const { App } = window
 
 export enum SettingsMenuItem {
     General = '/general',
     Appearance = '/appearance',
+    ExternalServices = '/external-services',
     TTSBrowseVoices = '/browse-voices',
     TTSPreferredVoices = '/preferred-voices',
     TTSEngines = '/engines',
@@ -168,6 +174,13 @@ export function SettingsView(
         setVoiceFilters(vf)
     }
 
+    let address = pipeline.webservice
+        ? `${pipeline.webservice.host}:${pipeline.webservice.port}${pipeline.webservice.path}`
+        : ``
+    let version = packageJson.version
+    let engineVersion = pipeline.alive?.version
+    let engineStatus = { status: pipeline.status, address }
+
     let tabItems = [
         {
             label: 'General',
@@ -178,6 +191,17 @@ export function SettingsView(
             label: 'Appearance',
             section: SettingsMenuItem.Appearance,
             markup: <Appearance newSettings={newSettings} />,
+        },
+        {
+            label: 'External Services',
+            section: SettingsMenuItem.ExternalServices,
+            markup: (
+                <ExternalServices
+                    newSettings={newSettings}
+                    onChangeTtsEngineProperties={onTtsEnginePropertiesChange}
+                    onChangeTtsEngineConnected={onTtsEngineConnectedChange}
+                />
+            ),
         },
         {
             label: 'Browse Voices',
@@ -213,22 +237,6 @@ export function SettingsView(
                 />
             ) : (
                 <p>Loading voices...</p>
-            ),
-        },
-        {
-            label: 'TTS Engines',
-            section: SettingsMenuItem.TTSEngines,
-            markup: (
-                <Engines
-                    ttsEngineProperties={
-                        newSettings.ttsConfig.ttsEngineProperties
-                    }
-                    ttsEnginesConnected={
-                        newSettings.ttsConfig.ttsEnginesConnected
-                    }
-                    onChangeTtsEngineProperties={onTtsEnginePropertiesChange}
-                    onChangeTtsEngineConnected={onTtsEngineConnectedChange}
-                />
             ),
         },
         {
@@ -295,6 +303,16 @@ export function SettingsView(
                         setFocus(`${ID(idx)}-tabpanel`)
                     }}
                 ></TabList>
+                <div className="status" role="status">
+                    <EngineStatusIcon
+                        status={engineStatus.status}
+                        width="20"
+                        height="20"
+                    />
+                    <span>
+                        Engine is{'  '} <b>{engineStatus.status}</b>
+                    </span>
+                </div>
             </div>
             <div
                 id={`${ID(

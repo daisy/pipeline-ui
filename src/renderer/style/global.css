@@ -140,6 +140,9 @@ button[disabled], button[disabled]:hover, button[disabled]:active, button[disabl
     cursor: not-allowed;
     box-shadow: var(--box-shadow-params) var(--fg-off);
 
+    &.invisible {
+        box-shadow: none;
+    }
 }
 button[disabled]:hover {
     /* box-shadow: none; */

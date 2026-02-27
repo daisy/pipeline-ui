@@ -5,6 +5,10 @@
     height: 100%;
     padding: 1rem;
     
+    div.sidebar {
+        display: flex;
+        flex-direction: column;
+    }
     div[role="tablist"] {
         flex-direction: column;
         background-color: var(--bg-off);
@@ -27,6 +31,22 @@
 
         label {
             font-weight: bold;
+        }
+    }
+    div.status {
+        display: flex;
+        flex-direction: row;
+        gap: 0.5rem;
+        align-items: center;
+        margin-top: 1rem;
+        svg.unknown, svg.stopped, svg.error {
+            fill: var(--error);
+        }
+        svg.running {
+            fill: var(--ok);
+        }
+        svg.starting {
+            fill: var(--warning);
         }
     }
     
@@ -152,21 +172,39 @@
                 text-align:left;
             }
             
-            th.voiceName {
+            th.voice-name {
+                display: grid;
                 max-width: 8rem;
-                white-space: wrap;
+                grid-template-columns: 60% auto;
+                align-items: center;
+                
+                span {
+                    white-space: wrap;
+                }
+                button {
+                    height: 1.75rem;
+                }
+
+            }
+            th.voice-preview {
+                button {
+                    background-color: none;
+                }
+                svg {
+                    color: var(--fg);
+                }
             }
             td.gender, td.set-default {
                 text-align: center;
             }
-            tr:hover td.remove {
+            tr:hover td.remove, tr:hover th.voice-name { 
                 button svg {
                     stroke: var(--hover-contrast);
                 }
             }
         }
     }
-    .tts-engines {
+    .tts-engines, .ai-engines {
 
         ul {
             list-style-type: none;

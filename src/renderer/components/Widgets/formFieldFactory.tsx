@@ -74,7 +74,7 @@ export function formFieldFactory(
                 checked={initialValue === 'true' || initialValue === true}
                 aria-invalid={error ? 'true' : 'false'}
                 aria-errormessage={controlId + '-error'}
-                aria-label={item.nicename ?? item.name}
+                aria-labelledby={`${controlId}-label`}
             ></input>
         )
     } else if (['nonNegativeInteger', 'float', 'number'].includes(inputType)) {
@@ -86,8 +86,8 @@ export function formFieldFactory(
                 required={item.required}
                 onChange={(e) => onChange(e.target.value, item)}
                 id={controlId}
-                defaultValue={inputType}
-                aria-label={item.nicename ?? item.name}
+                value={initialValue}
+                aria-labelledby={`${controlId}-label`}
             ></input>
         )
     } else if (inputType == 'custom') {
@@ -121,7 +121,7 @@ export function formFieldFactory(
                 onChange={(e) => onChange(e.target.value, item)}
                 aria-invalid={error ? 'true' : 'false'}
                 aria-errormessage={controlId + '-error'}
-                aria-label={item.nicename ?? item.name}
+                aria-labelledby={`${controlId}-label`}
             />
         )
     }

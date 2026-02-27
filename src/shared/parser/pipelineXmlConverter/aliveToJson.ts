@@ -11,7 +11,6 @@ function aliveXmlToJson(xmlString: string): Alive {
             version: aliveElm.getAttribute('version'),
         }
     } catch (err) {
-        console.debug('aliveXmlToJson', err)
         return {
             alive: false,
         }

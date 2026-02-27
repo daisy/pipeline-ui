@@ -9,7 +9,7 @@ import {
     save,
     setSponsorshipMessageLastShown,
 } from 'shared/data/slices/settings'
-import { externalLinkClick } from 'renderer/utils'
+import { externalLinkClick, ID } from 'renderer/utils'
 
 const { App } = window
 
@@ -48,6 +48,35 @@ export function NewJobPane({ job }: { job: Job }) {
 
     const [files, setFiles] = useState([])
 
+    let frequentScripts: Array<Script> = []
+    let scriptsInOrder = pipeline.scripts.toSorted((a, b) =>
+        a.nicename > b.nicename ? 1 : -1
+    )
+
+    if (
+        settings.sortScriptsByFrequency &&
+        settings.scriptFrequency.length > 0
+    ) {
+        settings.scriptFrequency.map((sf) => {
+            let idx = scriptsInOrder.findIndex((s) => s.id == sf.scriptId)
+            frequentScripts.push(scriptsInOrder[idx])
+            scriptsInOrder.splice(idx, 1)
+        })
+        frequentScripts.sort((a, b) => {
+            let freqA = settings.scriptFrequency.find(
+                (sf) => sf.scriptId == a.id
+            ).count
+            let freqB = settings.scriptFrequency.find(
+                (sf) => sf.scriptId == b.id
+            ).count
+
+            if (freqA == freqB) {
+                return a.nicename > b.nicename ? 1 : -1
+            }
+            return freqA > freqB ? -1 : 1
+        })
+    }
+
     // see if it's time to show the sponsorship message again
     // useMemo runs once per render (unlike useEffect)
     useMemo(() => {
@@ -67,6 +96,12 @@ export function NewJobPane({ job }: { job: Job }) {
     // top level script selection
     let onSelectChange = (scriptId) => {
         let selection = pipeline.scripts.find((script) => script.id == scriptId)
+        let jobRequest = prepareJobRequest(
+            job,
+            selection,
+            pipeline.datatypes,
+            App.store.getState()
+        )
         App.store.dispatch(
             updateJob({
                 ...job,
@@ -76,7 +111,7 @@ export function NewJobPane({ job }: { job: Job }) {
                     ...job.jobData,
                     nicename: selection?.nicename ?? '',
                 },
-                jobRequest: prepareJobRequest(job, selection),
+                jobRequest,
             })
         )
     }
@@ -87,7 +122,12 @@ export function NewJobPane({ job }: { job: Job }) {
     }
 
     let createJob = async (script: Script, inputFiles: string[]) => {
-        let jobRequest = prepareJobRequest(job, script)
+        let jobRequest = prepareJobRequest(
+            job,
+            script,
+            pipeline.datatypes,
+            App.store.getState()
+        )
 
         let inputsCopy = [...jobRequest.inputs]
         let sourceInputIdx = inputsCopy.findIndex(
@@ -102,7 +142,11 @@ export function NewJobPane({ job }: { job: Job }) {
         }
 
         jobRequest.inputs = [...inputsCopy]
-        let validationResults = validateJobRequestSync(jobRequest, script)
+        let validationResults = validateJobRequestSync(
+            jobRequest,
+            script,
+            pipeline.datatypes
+        )
         jobRequest.validation = [...validationResults]
         App.store.dispatch(
             updateJob({
@@ -130,9 +174,11 @@ export function NewJobPane({ job }: { job: Job }) {
                 {files.length == 0 && (
                     <SelectScript
                         jobInternalId={job?.internalId}
-                        scripts={pipeline.scripts}
+                        priorityScripts={frequentScripts}
+                        scripts={scriptsInOrder}
                         onSelectChange={onSelectChange}
                         message={'Or, select a script'}
+                        autoFocus={true}
                     />
                 )}
                 {showSponsorshipMessage && (

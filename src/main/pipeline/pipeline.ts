@@ -370,16 +370,16 @@ Then close the program using the port and restart this application.`,
                 //     ).replaceAll('\\', '/') +
                 //     '"',
                 // Updater configuration
-                '-Dorg.daisy.pipeline.updater.bin="' +
-                    resolve(
-                        this.props.pipelineHome,
-                        'updater',
-                        'pipeline-updater'
-                    ).replaceAll('\\', '/') +
-                    '"',
-                '-Dorg.daisy.pipeline.updater.deployPath="' +
-                    this.props.pipelineHome.replaceAll('\\', '/') +
-                    '/"',
+                // '-Dorg.daisy.pipeline.updater.bin="' +
+                //     resolve(
+                //         this.props.pipelineHome,
+                //         'updater',
+                //         'pipeline-updater'
+                //     ).replaceAll('\\', '/') +
+                //     '"',
+                // '-Dorg.daisy.pipeline.updater.deployPath="' +
+                //     this.props.pipelineHome.replaceAll('\\', '/') +
+                //     '/"',
                 '-Dorg.daisy.pipeline.updater.releaseDescriptor="' +
                     resolve(
                         this.props.pipelineHome,

@@ -6,7 +6,7 @@ import { ScriptItemBase, TypeChoice } from 'shared/types'
 import { formFieldFactory } from './formFieldFactory'
 import Markdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
-import { externalLinkClick } from 'renderer/utils'
+import { externalLinkClick, valueIsNotEmpty } from 'renderer/utils'
 import { useWindowStore } from 'renderer/store'
 import { CustomFieldDocumentation } from './CustomFieldDocumentation'
 import { findInputType } from 'shared/utils'
@@ -18,7 +18,7 @@ export function FormField({
     idprefix,
     onChange,
     initialValue,
-    error = undefined,
+    error,
 }: {
     item: ScriptItemBase
     idprefix: string
@@ -27,7 +27,6 @@ export function FormField({
     error?: string // error message to display
 }) {
     const { pipeline } = useWindowStore()
-
     // create the widget for this item (checkbox, file picker, etc)
     let control = formFieldFactory(
         item,
@@ -56,10 +55,8 @@ export function FormField({
         <div className="field">
             {item.desc ? (
                 <details>
-                    <summary>
-                        <label htmlFor={idprefix}>
-                            {item.nicename ?? item.name}
-                        </label>
+                    <summary id={`${idprefix}-label`}>
+                        {item.nicename ?? item.name}
                     </summary>
                     <div className="description">
                         <Markdown
@@ -87,15 +84,15 @@ export function FormField({
                     )}
                 </details>
             ) : (
-                <label htmlFor={idprefix}>
+                <span id={`${idprefix}-label`}>
                     {item.nicename != ''
                         ? item.nicename
                         : item.name.charAt(0).toUpperCase() +
                           item.name.slice(1)}
-                </label>
+                </span>
             )}
             {control}
-            {error && (
+            {valueIsNotEmpty(error) && (
                 <span
                     id={idprefix + '-error'}
                     className="field-errors"

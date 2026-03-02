@@ -89,7 +89,9 @@ function updateScriptOptionOverrides(
 // return list of name/value for overridden options
 function getOptionOverrides(job: Job): Array<NameValue> {
     let optionOverrides = job.jobRequest.options.filter(
-        (opt) => opt.value != getDefaultOptionValue(opt.name, job.script)
+        (opt) =>
+            isOptionReusable(opt.name, job.script) &&
+            opt.value != getDefaultOptionValue(opt.name, job.script)
     )
     return optionOverrides.map(
         (oo) =>
@@ -102,6 +104,9 @@ function getOptionOverrides(job: Job): Array<NameValue> {
 
 function getDefaultOptionValue(optionName, script) {
     return script.options.find((opt) => opt.name == optionName)?.default
+}
+function isOptionReusable(optionName, script) {
+    return script.options.find((opt) => opt.name == optionName)?.reusable
 }
 
 export function clearUsageData() {}

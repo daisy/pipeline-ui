@@ -66,6 +66,9 @@ function scriptElementToJson(scriptElm: Element): Script {
                 default: optionElm.getAttribute('default'),
                 kind: 'option',
                 isStylesheetParameter: false,
+                reusable:
+                    optionElm.hasAttribute('reusable') &&
+                    optionElm.getAttribute('reusable') == 'true',
             }
         }
     )

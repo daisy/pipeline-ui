@@ -388,6 +388,7 @@ export function ScriptForm({ job }: { job: Job }) {
                                         item.isStylesheetParameter
                                     ) ?? []
                                 }
+                                script={job.script}
                                 error={relevantError(item.name)}
                             />
                         )
@@ -425,6 +426,7 @@ export function ScriptForm({ job }: { job: Job }) {
                                         item.isStylesheetParameter
                                     ) ?? []
                                 }
+                                script={job.script}
                                 error={relevantError(item.name)}
                             />
                         )

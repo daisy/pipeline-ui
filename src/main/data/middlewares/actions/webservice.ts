@@ -109,8 +109,8 @@ export function useWebservice(
                         )
                         return {
                             ...p,
-                            desc: correspondingEngineProp.desc,
-                            href: correspondingEngineProp.href,
+                            desc: correspondingEngineProp?.desc ?? '',
+                            href: correspondingEngineProp?.href ?? '',
                         }
                     })
                     dispatch(setProperties(properties_))

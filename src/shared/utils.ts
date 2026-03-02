@@ -1,6 +1,7 @@
 import { CanDo } from './canDo'
 import { selectPipeline } from './data/slices/pipeline'
 import {
+    ApplicationSettings,
     Job,
     JobStatus,
     NameValue,
@@ -8,6 +9,7 @@ import {
     Script,
     ScriptInput,
     ScriptItemBase,
+    ScriptOption,
 } from './types'
 
 // returns true if the script does not support sequences for input
@@ -214,4 +216,32 @@ export function closeOrCancelLabel(state: PipelineState, job: Job) {
         }
     }
     return 'Cancel job'
+}
+
+export function getStoredOptionValue(
+    script: Script,
+    option: ScriptOption,
+    settings: ApplicationSettings
+) {
+    // see if there's a last-used value for this option in settings
+    if (
+        option.reusable &&
+        settings &&
+        settings.suggestOptionValues &&
+        settings.lastUsedScriptOptionOverrides
+    ) {
+        let lastUsedValues = settings.lastUsedScriptOptionOverrides.find(
+            (soo) => soo.scriptId == script.id
+        )
+        if (lastUsedValues) {
+            // if current value is the default value for this script, see if there's an override
+            let optionOverride = lastUsedValues.optionOverrides.find(
+                (oo) => oo.name == option.name
+            )
+            if (optionOverride) {
+                return optionOverride.value
+            }
+        }
+    }
+    return null
 }

@@ -87,6 +87,18 @@ input:invalid {
 .field-errors {
     color: var(--error);
 }
+.form-value-options {
+    font-size: smaller;
+    
+    button {
+        background: none;
+        border: none;
+        color: var(--fg);
+        padding: 0;
+        margin: 0;
+        text-decoration: underline;
+    }
+}
 @media(max-width: 1000px) {
     .multi-file-input {
         .controls {

@@ -69,7 +69,7 @@ export function useWebservice(
                     dispatch(save())
                     dispatch(setAlive(alive))
                 })
-                .then(() => pipelineAPI.fetchScripts()(newWebservice))
+                // .then(() => pipelineAPI.fetchScripts()(newWebservice))
                 .then(() => pipelineAPI.fetchProperties()(newWebservice))
                 .then((properties: EngineProperty[]) => {
                     console.log("Fetched engine properties", properties)

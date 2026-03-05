@@ -20,8 +20,7 @@ export function SelectScript({
 }) {
     let selectRef = useRef(null)
 
-    // this should work to give focus to the select element but it's not having an effect
-    // maybe something is shifting the focus elsewhere after this renders?
+    // give focus to the select element
     useEffect(() => {
         if (selectRef.current && autoFocus) {
             selectRef.current.focus()
@@ -47,16 +46,21 @@ export function SelectScript({
                 <option value={null}>None</option>
                 {priorityScripts.length > 0 && (
                     <optgroup label="Frequently-used scripts">
-                        {priorityScripts.map((script, idx) => (
-                            <ScriptOptionElm
-                                script={script}
-                                key={`${idx}-prio`}
-                            />
+                        {priorityScripts.filter(s => s != null && s != undefined).map((script, idx) => (
+                            <option key={`${idx}-prio`} value={script?.id}>
+                                {script?.nicename}
+                                {script && isScriptTTSEnhanced(script)
+                                    ? ' (TTS Enhanced)'
+                                    : ''}
+                            </option>
                         ))}
                     </optgroup>
                 )}
-                {scripts.map((script, idx) => (
-                    <ScriptOptionElm script={script} key={`${idx}-reg`} />
+                {scripts.filter(s => s != null && s != undefined).map((script, idx) => (
+                    <option key={`${idx}-reg`} value={script?.id}>
+                        {script?.nicename ?? script?.id}
+                        {script && isScriptTTSEnhanced(script) ? ' (TTS Enhanced)' : ''}
+                    </option>
                 ))}
             </select>
         </div>

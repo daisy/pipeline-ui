@@ -69,17 +69,10 @@ export function useWebservice(
                     dispatch(save())
                     dispatch(setAlive(alive))
                 })
-                .then(() => fetchScripts(newWebservice))
-                .then((scripts: Array<Script>) => {
-                    dispatch(setScripts(scripts))
-                    dispatch(setStatus(PipelineStatus.RUNNING))
-                    return pipelineAPI.fetchDatatypes()(newWebservice)
-                })
-                .then((datatypes) => {
-                    dispatch(setDatatypes(datatypes))
-                    return pipelineAPI.fetchProperties()(newWebservice)
-                })
+                .then(() => pipelineAPI.fetchScripts()(newWebservice))
+                .then(() => pipelineAPI.fetchProperties()(newWebservice))
                 .then((properties: EngineProperty[]) => {
+                    console.log("Fetched engine properties", properties)
                     // Note : here we merge the instance properties
                     // with the one extracted from settings
                     let ttsSettingsProperties: Array<KeyValue> =
@@ -113,10 +106,20 @@ export function useWebservice(
                             href: correspondingEngineProp?.href ?? '',
                         }
                     })
+                    console.log("Setting properties", properties_)
                     dispatch(setProperties(properties_))
                     // return pipelineAPI.fetchTtsVoices(
                     //     selectTtsConfig(getState())
                     // )(newWebservice)
+                })
+                .then(() => fetchScripts(newWebservice))
+                .then((scripts: Array<Script>) => {
+                    console.log("Fetched scripts", scripts)
+                    dispatch(setScripts(scripts))
+                    return pipelineAPI.fetchDatatypes()(newWebservice)
+                })
+                .then((datatypes) => {
+                    dispatch(setDatatypes(datatypes))
                 })
                 // .then((voices: Array<TtsVoice>) => {
                 //     // console.log('TTS Voices', voices)
@@ -129,6 +132,7 @@ export function useWebservice(
                 //     //console.log('tts states', states)
                 //     dispatch(setTtsEngineState(states))
                 // })
+                .then(() => dispatch(setStatus(PipelineStatus.RUNNING)))
                 .catch((e) => {
                     error('useWebservice', e, e.parsedText)
                     if (e instanceof AbortError) {

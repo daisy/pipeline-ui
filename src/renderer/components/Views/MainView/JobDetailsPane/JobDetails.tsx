@@ -85,7 +85,7 @@ export function JobDetails({ job }: { job: Job }) {
     return (
         <div className="job-details">
             <div className="job-status info">
-                <p aria-live="polite" className="row">
+                <p className="row">
                     Status:&nbsp;
                     <span
                         className={`status ${
@@ -113,7 +113,7 @@ export function JobDetails({ job }: { job: Job }) {
                 </p>
                 {job.jobData.progress &&
                 job.jobData?.status == JobStatus.RUNNING ? (
-                    <p aria-live="polite">
+                    <p>
                         Progress:&nbsp;
                         <span>{Math.ceil(job.jobData.progress * 100)}%</span>
                     </p>

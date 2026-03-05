@@ -35,7 +35,7 @@ export function CustomField({
     useEffect(() => {
         setDatatype(pipeline.datatypes.find((dt) => dt.id == item.type) ?? null)
     }, [pipeline.datatypes])
-   
+
     useEffect(() => {
         const elem = document.getElementById(controlId) as HTMLInputElement
         if (elem) {
@@ -82,13 +82,14 @@ export function CustomField({
                         {...errorProps}
                     ></ControlledInput>
                     {error ? (
-                        <span
-                            id={controlId + '-error'}
-                            className="field-errors"
-                            aria-live="polite"
-                        >
-                            {error}
-                        </span>
+                        <>
+                            <span
+                                id={controlId + '-error'}
+                                className="field-errors"
+                            >
+                                {error}
+                            </span>
+                        </>
                     ) : (
                         ''
                     )}
@@ -217,13 +218,11 @@ export function CustomField({
                 {...errorProps}
             ></ControlledInput>
             {error ? (
-                <span
-                    id={controlId + '-error'}
-                    className="field-errors"
-                    aria-live="polite"
-                >
-                    {error}
-                </span>
+                <>
+                    <span id={controlId + '-error'} className="field-errors">
+                        {error}
+                    </span>
+                </>
             ) : (
                 ''
             )}

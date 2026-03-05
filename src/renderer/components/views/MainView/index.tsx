@@ -16,6 +16,7 @@ import {
     selectNextJob,
     selectPrevJob,
     removeBatchJob,
+    setAnnouncement,
 } from 'shared/data/slices/pipeline'
 // @ts-ignore
 import { NewJobPane } from './NewJobPane'
@@ -32,6 +33,7 @@ import { TabList } from 'renderer/components/Widgets/TabList'
 import { areAllJobsInBatchDone } from 'shared/utils'
 import { CanDo } from 'shared/canDo'
 import * as Utils from 'shared/utils'
+import { createAnnouncement } from 'shared/at-announce'
 const { App } = window
 
 export function MainView() {

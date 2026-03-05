@@ -57,6 +57,7 @@ export type PipelineState = {
     alive: Alive
     properties?: { [key: string]: EngineProperty }
     ttsEnginesStates?: { [key: string]: TtsEngineState }
+    announcement: string
     // messages: Array<string>
     // errors: Array<string>
 }
@@ -284,6 +285,7 @@ export type ScriptInput = ScriptItemBase & {
 export type ScriptOption = ScriptItemBase & {
     type: string
     default?: string
+    reusable: boolean
     kind: 'option'
 }
 

@@ -1,22 +1,19 @@
-import {
-    Job,
-    JobState,
-    JobStatus,
-    PipelineStatus,
-    Webservice,
-} from 'shared/types'
+import { Job, JobState, JobStatus, Webservice } from 'shared/types'
 import { info, error } from 'electron-log'
 import { pipelineAPI } from '../../apis/pipeline'
 import { downloadJobLog, downloadJobResults } from './download'
 
 import { selectDownloadPath } from 'shared/data/slices/settings'
-import { updateJob, selectStatus } from 'shared/data/slices/pipeline'
+import {
+    updateJob,
+    setAnnouncement,
+    selectPipeline,
+} from 'shared/data/slices/pipeline'
 import { ParserException } from 'shared/parser/pipelineXmlConverter/parser'
 import { GetStateFunction } from 'shared/types/store'
 
 import { WebSocket } from 'ws'
-import { jobResponseXmlToJson } from 'shared/parser/pipelineXmlConverter/jobResponseToJson'
-import { jobXmlToJson } from 'shared/parser/pipelineXmlConverter'
+import { readableStatus } from 'shared/jobName'
 
 /**
  * Start a job monitor that will continue until the job is done.
@@ -56,11 +53,19 @@ export function startMonitor(
         const fetchData = await fetchJobDataFn(ws)
         await processJobUpdate(j, getState, dispatch, fetchData)
     }
+    let socketOnProgress = async (event) => {
+        const fetchData = await fetchJobDataFn(ws)
+        await processJobUpdate(j, getState, dispatch, fetchData)
+    }
+    let socketOnStatus = async (event) => {
+        const fetchData = await fetchJobDataFn(ws)
+        await processJobUpdate(j, getState, dispatch, fetchData)
+    }
     let socketOnError = (err) => error('Job monitoring failed')
 
     messagesSocket.addEventListener('message', socketOnMessage)
-    statusSocket.addEventListener('message', socketOnMessage)
-    progressSocket.addEventListener('message', socketOnMessage)
+    statusSocket.addEventListener('message', socketOnStatus)
+    progressSocket.addEventListener('message', socketOnProgress)
 
     messagesSocket.addEventListener('error', socketOnError)
     statusSocket.addEventListener('error', socketOnError)
@@ -74,7 +79,7 @@ function processJobUpdate(
     jobUpdateData: any
 ) {
     try {
-        let parsedData = jobUpdateData //jobXmlToJson(jobUpdateData)
+        let parsedData = jobUpdateData
 
         let updatedJob = {
             ...j,

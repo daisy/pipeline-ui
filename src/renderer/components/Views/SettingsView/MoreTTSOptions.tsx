@@ -82,7 +82,7 @@ export function MoreTTSOptions({
         })
         setEngineProperties([...engineProperties_])
         App.store.dispatch(
-            setProperties([{ name: propName, value: propValue }])
+            setProperties({values: [{ name: propName, value: propValue }], sendToAPI: true})
         )
 
         onChangeTtsEngineProperties([...engineProperties_])

@@ -72,7 +72,6 @@ export function useWebservice(
                 // .then(() => pipelineAPI.fetchScripts()(newWebservice))
                 .then(() => pipelineAPI.fetchProperties()(newWebservice))
                 .then((properties: EngineProperty[]) => {
-                    console.log("Fetched engine properties", properties)
                     // Note : here we merge the instance properties
                     // with the one extracted from settings
                     let ttsSettingsProperties: Array<KeyValue> =
@@ -106,15 +105,13 @@ export function useWebservice(
                             href: correspondingEngineProp?.href ?? '',
                         }
                     })
-                    console.log("Setting properties", properties_)
-                    dispatch(setProperties(properties_))
+                    dispatch(setProperties({values: properties_, sendToAPI: false}))
                     // return pipelineAPI.fetchTtsVoices(
                     //     selectTtsConfig(getState())
                     // )(newWebservice)
                 })
                 .then(() => fetchScripts(newWebservice))
                 .then((scripts: Array<Script>) => {
-                    console.log("Fetched scripts", scripts)
                     dispatch(setScripts(scripts))
                     return pipelineAPI.fetchDatatypes()(newWebservice)
                 })

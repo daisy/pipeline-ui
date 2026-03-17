@@ -19,7 +19,7 @@ export function setProperties(
 ) {
     const webservice = selectWebservice(getState())
     const currentProperties = selectProperties(getState())
-    const newProperties = action.payload as EngineProperty[]
+    const newProperties = action.payload.values as EngineProperty[]
     let ttsEnginesStatesStart = {
         ...(getState().pipeline.ttsEnginesStates as {
             [key: string]: TtsEngineState
@@ -97,12 +97,14 @@ export function setProperties(
     Promise.all(
         newProperties_.map((prop) => {
             let currProp = currentProperties[prop.name]
-            if (currProp)  {
+            if (currProp) {
                 // preserve the desc and href data
                 prop.desc = currProp.desc
                 prop.href = currProp.href
             }
-            pipelineAPI.setProperty(prop)(webservice)
+            if (action.payload.sendToAPI) {
+                pipelineAPI.setProperty(prop)(webservice)
+            }
         })
     )
         //.then(() => pipelineAPI.fetchProperties()(webservice))
@@ -192,6 +194,7 @@ export function setProperties(
         .then(() => {
             // if the mistral ai property was set, refetch the scripts list
             if (newProperties.find(np => np.name.indexOf('mistral') != -1)) {
+                console.log("Refreshing scripts list (mistral key was set)")
                 const fetchScripts = pipelineAPI.fetchScripts()
                 return fetchScripts(webservice)
             }
@@ -199,7 +202,11 @@ export function setProperties(
         })
         .then((scripts: Array<Script>) => {
             if (scripts.length > 0) {
+                console.log("Updated scripts")
                 dispatch(setScripts(scripts))
+            }
+            else {
+                console.log("No scripts given")
             }
         })
         .then(() => {

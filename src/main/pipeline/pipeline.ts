@@ -23,7 +23,7 @@ import { createServer } from 'node:net'
 import { setTimeout } from 'timers/promises'
 import { resolveUnpacked, walk } from '../utils'
 import fs from 'fs-extra'
-import { selectTtsConfig } from 'shared/data/slices/settings'
+import { selectAiEngineProperties, selectTtsConfig } from 'shared/data/slices/settings'
 
 /**
  * Local DAISY Pipeline 2 management class
@@ -402,8 +402,16 @@ Then close the program using the port and restart this application.`,
                 '-Dorg.daisy.pipeline.home=' + this.props.pipelineHome,
                 '-Dorg.daisy.pipeline.tts.host.protection=false', // so we can send TTS engine properties
             ]
+            const aiEngineProperties = selectAiEngineProperties(store.getState())
             // #238 : include the current tts config settings file at engine launch
             const ttsConfig = selectTtsConfig(store.getState())
+
+            if (ttsConfig && aiEngineProperties) {
+                let propertiesFromUserSettings = ttsConfig.ttsEngineProperties
+                    .concat(aiEngineProperties)
+                    .map((p) => `-D${p.key}=${p.value}`)
+                SystemProps = SystemProps.concat(propertiesFromUserSettings)
+            }
             if (
                 ttsConfig &&
                 ttsConfig.xmlFilepath &&

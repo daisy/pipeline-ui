@@ -140,10 +140,10 @@ export const pipeline = createSlice({
         },
         setProperties: (
             state: PipelineState,
-            param: PayloadAction<Array<EngineProperty>>
+            param: PayloadAction<{values: Array<EngineProperty>, sendToAPI: boolean}>
         ) => {
             // Merge EngineProperty array (retrieved from engine api) into properties map
-            state.properties = param.payload.reduce(
+            state.properties = param.payload.values.reduce(
                 (acc, prop) => {
                     acc[prop.name] = prop
                     return acc

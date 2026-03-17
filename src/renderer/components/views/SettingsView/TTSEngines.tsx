@@ -124,8 +124,7 @@ export function TTSEngines({
         // add the enabled property to the list - it's not used by the UI but it helps the engine do the right thing
         ttsProps.push({ key: engineKey + '.enabled', value: 'true' })
         App.store.dispatch(
-            setProperties(
-                ttsProps.map((p) => ({ name: p.key, value: p.value }))
+            setProperties({values:ttsProps.map((p) => ({ name: p.key, value: p.value })), sendToAPI: true}
             )
         )
         const updatedSettings = [
@@ -153,7 +152,7 @@ export function TTSEngines({
         // remove properties value on the engine side to disconnect
         // but keep the settings in the app
         App.store.dispatch(
-            setProperties(ttsProps.map((p) => ({ name: p.key, value: '' })))
+            setProperties({values: ttsProps.map((p) => ({ name: p.key, value: '' })), sendToAPI: true})
         )
 
         let attemptedConnection_ = { ...attemptedConnection }

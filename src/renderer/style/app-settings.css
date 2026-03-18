@@ -174,10 +174,9 @@
             
             th.voice-name {
                 display: grid;
-                max-width: 8rem;
-                grid-template-columns: 60% auto;
+                max-width: 9rem;
+                grid-template-columns: 70% auto;
                 align-items: center;
-                
                 span {
                     white-space: wrap;
                 }

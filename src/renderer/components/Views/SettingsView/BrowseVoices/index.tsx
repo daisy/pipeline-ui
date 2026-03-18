@@ -1,6 +1,8 @@
 import { useState } from 'react'
 import { TtsVoice } from 'shared/types/ttsConfig'
+// @ts-ignore
 import { voicesTransliterations } from './voiceTransliterations'
+// @ts-ignore
 import { VoicePreview } from './VoicePreview'
 import { SettingsMenuItem } from '..'
 

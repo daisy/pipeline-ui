@@ -9,7 +9,13 @@ import {
     setTtsVoices,
 } from 'shared/data/slices/pipeline'
 import { selectTtsConfig } from 'shared/data/slices/settings'
-import { Datatype, EngineProperty, Script, TtsEngineState, TtsVoice } from 'shared/types'
+import {
+    Datatype,
+    EngineProperty,
+    Script,
+    TtsEngineState,
+    TtsVoice,
+} from 'shared/types'
 import { GetStateFunction } from 'shared/types/store'
 
 export function setProperties(
@@ -193,24 +199,36 @@ export function setProperties(
         })
         .then(() => {
             // if the mistral ai property was set, refetch the scripts list
-            if (newProperties.find(np => np.name.indexOf('mistral') != -1)) {
-                console.log("Refreshing scripts list (mistral key was set)")
-                const fetchScripts = pipelineAPI.fetchScripts()
-                return fetchScripts(webservice)
+            if (
+                action.payload.sendToAPI &&
+                newProperties.find((np) => np.name.indexOf('mistral') != -1)
+            ) {
+                // pause for 100ms
+                // TODO remove this, it's just for testing the mistral script
+                // console.log('Pausing...')
+                return new Promise((resolve) =>
+                    setTimeout(() => {
+                        // console.log(
+                        //     'Refreshing scripts list (mistral key was set)'
+                        // )
+                        const fetchScripts = pipelineAPI.fetchScripts()
+                        resolve(fetchScripts(webservice))
+                    }, 300)
+                )
             }
+
             return []
         })
         .then((scripts: Array<Script>) => {
             if (scripts.length > 0) {
-                console.log("Updated scripts")
                 dispatch(setScripts(scripts))
-            }
-            else {
-                console.log("No scripts given")
             }
         })
         .then(() => {
-            if (newProperties.find(np => np.name.indexOf('mistral') != -1)) {
+            if (
+                action.payload.sendToAPI &&
+                newProperties.find((np) => np.name.indexOf('mistral') != -1)
+            ) {
                 const fetchDatatypes = pipelineAPI.fetchDatatypes()
                 return fetchDatatypes(webservice)
             }

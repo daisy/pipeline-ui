@@ -22,6 +22,7 @@ function scriptElementToJson(scriptElm: Element): Script {
         homepage: (homepageElm[0] as Element)?.textContent.trim() ?? '',
         batchable: false,
         multidoc: false,
+        loaded: false,
     }
 
     script.inputs = Array.from(scriptElm.getElementsByTagName('input')).map(
@@ -83,7 +84,9 @@ function scriptElementToJson(scriptElm: Element): Script {
     if (firstRequiredInput?.sequence) {
         script.multidoc = true
     }
-
+    // a script is parsed twice: first the short version, and then the longer version
+    // the short version lists no inputs. only consider a script loaded after we've parsed the long version.
+    script.loaded = script.inputs.length > 0
     return script
 }
 

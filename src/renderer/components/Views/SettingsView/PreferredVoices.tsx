@@ -143,6 +143,11 @@ export function PreferredVoices({
                                                     <button
                                                         type="button"
                                                         className="invisible"
+                                                        aria-label={`Preview for ${
+                                                            voicesTransliterations[
+                                                                v.name
+                                                            ] ?? v.name
+                                                        }`}
                                                         onClick={() => {
                                                             let audioelm =
                                                                 document.getElementById(
@@ -152,8 +157,7 @@ export function PreferredVoices({
                                                                 audioelm.paused
                                                             ) {
                                                                 audioelm.play()
-                                                            }
-                                                            else {
+                                                            } else {
                                                                 audioelm.pause()
                                                             }
                                                         }}

@@ -84,9 +84,9 @@ export function JobDetails({ job }: { job: Job }) {
     }
     return (
         <div className="job-details">
-            <div className="job-status info">
-                <p className="row">
-                    Status:&nbsp;
+            <section className="job-status info">
+                <div className="row">
+                    <h2>Status:</h2>
                     <span
                         className={`status ${
                             job.jobData?.status
@@ -110,7 +110,7 @@ export function JobDetails({ job }: { job: Job }) {
                             }
                         )}
                     </span>
-                </p>
+                </div>
                 {job.jobData.progress &&
                 job.jobData?.status == JobStatus.RUNNING ? (
                     <p>
@@ -120,7 +120,7 @@ export function JobDetails({ job }: { job: Job }) {
                 ) : (
                     ''
                 )}
-            </div>
+            </section>
             <details className="job-configuration">
                 <summary>
                     <h2>Job Configuration</h2>

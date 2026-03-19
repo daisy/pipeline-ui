@@ -146,7 +146,7 @@ export function buildMenuTemplate({
                 ...(currentJob
                     ? [
                           {
-                              label: status,
+                              label: `Status: ${status}`,
                               accelerator: 'CommandOrControl+Shift+I',
                               click: async () => {
                                   await dialog.showMessageBox({

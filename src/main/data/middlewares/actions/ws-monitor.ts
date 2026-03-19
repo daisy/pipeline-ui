@@ -14,6 +14,7 @@ import { GetStateFunction } from 'shared/types/store'
 
 import { WebSocket } from 'ws'
 import { readableStatus } from 'shared/jobName'
+import { jobXmlToJson } from 'shared/parser/pipelineXmlConverter'
 
 /**
  * Start a job monitor that will continue until the job is done.
@@ -49,17 +50,35 @@ export function startMonitor(
 
     let fetchJobDataFn = pipelineAPI.fetchJobData(j)
 
+    // refetch the job and update the job data
+    // in the future, this will be streamlined to just update the messages
     let socketOnMessage = async (event) => {
         const fetchData = await fetchJobDataFn(ws)
-        await processJobUpdate(j, getState, dispatch, fetchData)
+        let updatedJob = {
+            ...j,
+            jobData: fetchData,
+        }
+        dispatch(updateJob(updatedJob))
     }
+
+    // just update the job progress field if exists
     let socketOnProgress = async (event) => {
-        const fetchData = await fetchJobDataFn(ws)
-        await processJobUpdate(j, getState, dispatch, fetchData)
+        let jobUpdateData = jobXmlToJson(event.data)
+        if (jobUpdateData.progress) {
+            let updatedJob = {
+                ...j,
+                jobData: {
+                    ...j.jobData,
+                    progress: jobUpdateData.progress,
+                },
+            }
+            dispatch(updateJob(updatedJob))
+        }
     }
+    // update the status field and handle completed jobs
     let socketOnStatus = async (event) => {
         const fetchData = await fetchJobDataFn(ws)
-        await processJobUpdate(j, getState, dispatch, fetchData)
+        await processJobStatusUpdate(j, getState, dispatch, fetchData)
     }
     let socketOnError = (err) => error('Job monitoring failed')
 
@@ -72,24 +91,22 @@ export function startMonitor(
     progressSocket.addEventListener('error', socketOnError)
 }
 
-function processJobUpdate(
+function processJobStatusUpdate(
     j: Job,
     getState: GetStateFunction,
     dispatch,
     jobUpdateData: any
 ) {
     try {
-        let parsedData = jobUpdateData
-
         let updatedJob = {
             ...j,
-            jobData: parsedData,
+            jobData: jobUpdateData,
         }
         const finished = [
             JobStatus.ERROR,
             JobStatus.FAIL,
             JobStatus.SUCCESS,
-        ].includes(parsedData.status)
+        ].includes(jobUpdateData.status)
         if (finished) {
             updatedJob.state = JobState.ENDED
         }

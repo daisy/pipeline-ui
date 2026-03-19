@@ -224,6 +224,11 @@ export type Job = {
      * eg the job for which the tab was made in the first place
     */
     isPrimaryForBatch?: boolean
+    // keep track of what we downloaded
+    // this prevents multiple output folders from being created, in the case where
+    // web socket callbacks happen more than once
+    resultsDownloaded?: boolean
+    logDownloaded?: boolean
 }
 // JobData is the JSON representation of Pipeline WS data for a single job
 export type JobData = {

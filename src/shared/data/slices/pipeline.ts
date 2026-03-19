@@ -498,6 +498,8 @@ export const selectors = {
             internalId: `job-${pipeline.internalJobCounter}`,
             state: JobState.NEW,
             jobRequest: null,
+            resultsDownloaded: false,
+            logDownloaded: false,
         } as Job),
     prepareJobRequest: (
         job: Job,

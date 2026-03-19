@@ -98,10 +98,14 @@ function processJobUpdate(
         }_${timestamp()}`
         const downloadFolder = selectDownloadPath(getState())
 
-        if (updatedJob.jobData?.results?.namedResults) {
+        if (
+            updatedJob.jobData?.results?.namedResults &&
+            !updatedJob.resultsDownloaded
+        ) {
             // If job has results, download them
             downloadJobResults(updatedJob, `${downloadFolder}/${newJobName}`)
                 .then((downloadedJob) => {
+                    downloadedJob.resultsDownloaded = true
                     dispatch(updateJob(downloadedJob))
                     // Only delete job if it has been downloaded
                     if (downloadedJob.jobData.downloadedFolder) {
@@ -119,11 +123,12 @@ function processJobUpdate(
                 .catch((e) => {
                     error('Error downloading job results', e)
                 })
-        } else if (finished) {
+        } else if (finished && !updatedJob.logDownloaded) {
             info('job is finished without results')
             // job is finished wihout results : keep the log
             downloadJobLog(updatedJob, `${downloadFolder}/${newJobName}`).then(
                 (jobWithLog) => {
+                    jobWithLog.logDownloaded = true
                     dispatch(updateJob(jobWithLog))
                     const deleteJob = pipelineAPI.deleteJob(jobWithLog)
                     deleteJob().then((response) => {

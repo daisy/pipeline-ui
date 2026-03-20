@@ -1,7 +1,7 @@
 /*
 Data manager and owner of tab view
 */
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 import { JobStatus } from 'shared/types'
 import { useWindowStore } from 'renderer/store'
 
@@ -38,7 +38,11 @@ const { App } = window
 
 export function MainView() {
     const { pipeline, settings } = useWindowStore()
-    const [visibleJobs, setVisibleJobs] = useState([])
+    const visibleJobs = pipeline.jobs.filter(
+        (job) =>
+            (settings.editJobOnNewTab || !job.invisible) &&
+            (!job.jobRequest?.batchId || job.isPrimaryForBatch)
+    )
 
     useEffect(() => {
         if (!(pipeline.jobs && pipeline.jobs.length > 0)) {
@@ -64,15 +68,6 @@ export function MainView() {
                 ?.focus()
         }
     }, [pipeline.selectedJobId])
-
-    useEffect(() => {
-        let visibleJobs_ = pipeline.jobs.filter(
-            (job) =>
-                (settings.editJobOnNewTab || !job.invisible) &&
-                (!job.jobRequest?.batchId || job.isPrimaryForBatch) // job is not part of a batch or it's the primary
-        )
-        setVisibleJobs([...visibleJobs_])
-    }, [pipeline.jobs])
 
     let onKeyDown = (e) => {
         switch (e.key) {
@@ -156,7 +151,7 @@ export function MainView() {
                     </button>
                 )}
             </div>
-            {visibleJobs.map((job, idx) => {
+            {visibleJobs.map((job) => {
                 return (
                     <div
                         className={`${
@@ -168,7 +163,7 @@ export function MainView() {
                         role="tabpanel"
                         aria-labelledby={`${ID(job.internalId)}-tab`}
                         tabIndex={0}
-                        key={idx}
+                        key={job.internalId}
                     >
                         <button
                             disabled={

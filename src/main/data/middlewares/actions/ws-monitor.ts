@@ -50,13 +50,19 @@ export function startMonitor(
 
     let fetchJobDataFn = pipelineAPI.fetchJobData(j)
 
-    // refetch the job and update the job data
-    // in the future, this will be streamlined to just update the messages
+    // refetch the job and update only the messages field
     let socketOnMessage = async (event) => {
         const fetchData = await fetchJobDataFn(ws)
+        const currentJob =
+            selectPipeline(getState()).jobs.find(
+                (job) => job.internalId === j.internalId
+            ) ?? j
         let updatedJob = {
-            ...j,
-            jobData: fetchData,
+            ...currentJob,
+            jobData: {
+                ...currentJob.jobData,
+                messages: fetchData.messages,
+            },
         }
         dispatch(updateJob(updatedJob))
     }
@@ -65,10 +71,14 @@ export function startMonitor(
     let socketOnProgress = async (event) => {
         let jobUpdateData = jobXmlToJson(event.data)
         if (jobUpdateData.progress) {
+            const currentJob =
+                selectPipeline(getState()).jobs.find(
+                    (job) => job.internalId === j.internalId
+                ) ?? j
             let updatedJob = {
-                ...j,
+                ...currentJob,
                 jobData: {
-                    ...j.jobData,
+                    ...currentJob.jobData,
                     progress: jobUpdateData.progress,
                 },
             }

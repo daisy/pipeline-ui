@@ -14,7 +14,7 @@ import { editJob, runJob } from 'shared/data/slices/pipeline'
 import { readableStatus } from 'shared/jobName'
 import { FileLink } from '../../../Widgets/FileLink'
 import { useWindowStore } from 'renderer/store'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { JobStatusIcon } from '../../../Widgets/SvgIcons'
 import { CanDo } from 'shared/canDo'
 
@@ -34,6 +34,11 @@ export function JobDetails({ job }: { job: Job }) {
             [JobState.SUBMITTING, JobState.SUBMITTED].includes(job.state)
         )
     }, [job.state])
+
+    const messagesSeen = useRef(false)
+    if (job.jobData.messages?.length > 0) {
+        messagesSeen.current = true
+    }
 
     let jobIsBatch =
         job.jobRequest.batchId != null && job.jobRequest.batchId != ''
@@ -167,7 +172,7 @@ export function JobDetails({ job }: { job: Job }) {
                         below for more information.
                     </p>
                 )}
-                {job.jobData.messages && job.jobData.messages.length > 0 ? (
+                {messagesSeen.current ? (
                     <details>
                         <summary>Show messages</summary>
                         <Messages job={job} />

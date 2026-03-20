@@ -143,7 +143,7 @@ export function ScriptForm({ job }: { job: Job }) {
         ]
         // convert to URL format if it's a filepath
         let value_ = value
-        if (['anyURI', 'anyFileURI'].includes(item.type)) {
+        if (['anyURI', 'anyFileURI', 'anyDirURI'].includes(item.type)) {
             if (Array.isArray(value_)) {
                 let tmp = []
                 for (let v of value_) {

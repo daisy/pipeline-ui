@@ -201,15 +201,16 @@ export function setProperties(
                 action.payload.sendToAPI &&
                 newProperties.find((np) => np.name.indexOf('mistral') != -1)
             ) {
+                const currentScripts = selectScripts(getState())
                 const currentScriptIds = new Set(
-                    selectScripts(getState()).map((s) => s.id)
+                    currentScripts.map((s) => s.id)
                 )
                 const fetchScripts = pipelineAPI.fetchScripts()
                 for (let i = 0; i < 10; i++) {
                     await new Promise((r) => setTimeout(r, 300))
                     const scripts = await fetchScripts(webservice)
                     if (
-                        scripts.length !== currentScriptIds.size ||
+                        scripts.length !== currentScripts.length ||
                         scripts.some((s) => !currentScriptIds.has(s.id))
                     ) {
                         const newScripts = scripts.filter(

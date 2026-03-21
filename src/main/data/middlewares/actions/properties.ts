@@ -3,6 +3,7 @@ import { pipelineAPI } from 'main/data/apis/pipeline'
 import {
     selectWebservice,
     selectProperties,
+    selectScripts,
     setDatatypes,
     setScripts,
     setTtsEngineState,
@@ -10,9 +11,7 @@ import {
 } from 'shared/data/slices/pipeline'
 import { selectTtsConfig } from 'shared/data/slices/settings'
 import {
-    Datatype,
     EngineProperty,
-    Script,
     TtsEngineState,
     TtsVoice,
 } from 'shared/types'
@@ -109,7 +108,7 @@ export function setProperties(
                 prop.href = currProp.href
             }
             if (action.payload.sendToAPI) {
-                pipelineAPI.setProperty(prop)(webservice)
+                return pipelineAPI.setProperty(prop)(webservice)
             }
         })
     )
@@ -197,46 +196,60 @@ export function setProperties(
                     })
             }
         })
-        .then(() => {
-            // if the mistral ai property was set, refetch the scripts list
+        .then(async () => {
             if (
                 action.payload.sendToAPI &&
                 newProperties.find((np) => np.name.indexOf('mistral') != -1)
             ) {
-                // pause for 100ms
-                // TODO remove this, it's just for testing the mistral script
-                // console.log('Pausing...')
-                return new Promise((resolve) =>
-                    setTimeout(() => {
-                        // console.log(
-                        //     'Refreshing scripts list (mistral key was set)'
-                        // )
-                        const fetchScripts = pipelineAPI.fetchScripts()
-                        resolve(fetchScripts(webservice))
-                    }, 300)
+                const currentScriptIds = new Set(
+                    selectScripts(getState()).map((s) => s.id)
                 )
-            }
-
-            return []
-        })
-        .then((scripts: Array<Script>) => {
-            if (scripts.length > 0) {
-                dispatch(setScripts(scripts))
-            }
-        })
-        .then(() => {
-            if (
-                action.payload.sendToAPI &&
-                newProperties.find((np) => np.name.indexOf('mistral') != -1)
-            ) {
-                const fetchDatatypes = pipelineAPI.fetchDatatypes()
-                return fetchDatatypes(webservice)
-            }
-            return []
-        })
-        .then((datatypes: Array<Datatype>) => {
-            if (datatypes.length > 0) {
-                dispatch(setDatatypes(datatypes))
+                const fetchScripts = pipelineAPI.fetchScripts()
+                for (let i = 0; i < 10; i++) {
+                    await new Promise((r) => setTimeout(r, 300))
+                    const scripts = await fetchScripts(webservice)
+                    if (
+                        scripts.length !== currentScriptIds.size ||
+                        scripts.some((s) => !currentScriptIds.has(s.id))
+                    ) {
+                        const newScripts = scripts.filter(
+                            (s) => !currentScriptIds.has(s.id)
+                        )
+                        const newDetailed = await Promise.all(
+                            newScripts.map((s) =>
+                                pipelineAPI.fetchScriptDetails(s)()
+                            )
+                        )
+                        dispatch(
+                            setScripts([
+                                ...selectScripts(getState()),
+                                ...newDetailed,
+                            ])
+                        )
+                        const currentDatatypeIds = new Set(
+                            getState().pipeline.datatypes.map((d) => d.id)
+                        )
+                        const datatypes =
+                            await pipelineAPI.fetchDatatypes()(webservice)
+                        const newDatatypes = datatypes.filter(
+                            (d) => !currentDatatypeIds.has(d.id)
+                        )
+                        const newDetailedDatatypes = await Promise.all(
+                            newDatatypes.map((d) =>
+                                pipelineAPI.fetchDatatypeDetails(d)()
+                            )
+                        )
+                        if (newDetailedDatatypes.length > 0) {
+                            dispatch(
+                                setDatatypes([
+                                    ...getState().pipeline.datatypes,
+                                    ...newDetailedDatatypes,
+                                ])
+                            )
+                        }
+                        return
+                    }
+                }
             }
         })
 }

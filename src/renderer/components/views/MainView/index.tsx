@@ -65,11 +65,14 @@ export function MainView() {
             const selectedJob = pipeline.jobs.find(
                 (j) => j.internalId === pipeline.selectedJobId
             )
-            // don't steal focus from child components on new jobs
             if (!selectedJob || selectedJob.state !== JobState.NEW) {
-                // for the narrators to announce it
                 document
                     .getElementById(`${ID(pipeline.selectedJobId)}-tab`)
+                    ?.focus()
+            } else {
+                document
+                    .getElementById(`${ID(pipeline.selectedJobId)}-tabpanel`)
+                    ?.querySelector('select')
                     ?.focus()
             }
         }

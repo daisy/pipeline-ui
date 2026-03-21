@@ -157,6 +157,7 @@ export function AboutView({ title }) {
                     type="button"
                     className="copy invisible"
                     title="Copy information to clipboard"
+                    aria-label="Copy information to clipboard"
                     onClick={(e) => copyToClipboard(e)}
                 >
                     <Copy width="30" height="30" />

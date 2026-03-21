@@ -159,6 +159,7 @@ export function DragDropFilterFiles({
                             className="remove-button invisible"
                             onClick={() => setFilterText('')}
                             title="Clear filter text"
+                            aria-label="Clear filter text"
                         >
                             <X width="20" height="20" />
                         </button>

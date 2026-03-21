@@ -141,6 +141,9 @@ export function MainView() {
                         title={`Create a job (${
                             PLATFORM.IS_MAC ? 'Cmd' : 'Ctrl'
                         }+N)`}
+                        aria-label={`Create a job (${
+                            PLATFORM.IS_MAC ? 'Cmd' : 'Ctrl'
+                        }+N)`}
                         onClick={(e) => {
                             const newJob_ = newJob(pipeline)
                             App.store.dispatch(addJob(newJob_))
@@ -201,6 +204,7 @@ export function MainView() {
                                 }
                             }}
                             title={Utils.closeOrCancelLabel(pipeline, job)}
+                            aria-label={Utils.closeOrCancelLabel(pipeline, job)}
                             className="close-tab invisible"
                         >
                             <X width={20} height={20} />

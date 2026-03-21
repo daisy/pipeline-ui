@@ -42,7 +42,7 @@ supported inputs:
 
 function datatypeXmlToJson(href, id, xmlString): Datatype {
     let root = sniffRoot(xmlString)
-    let datatype = { id, href, loaded: true }
+    let datatype = { id, href }
     if (root == 'choice') {
         let choiceElm = parseXml(xmlString, 'choice')
         return { ...datatype, choices: choiceElementToJson(choiceElm) }

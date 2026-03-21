@@ -305,7 +305,6 @@ export type Script = {
     homepage?: string
     batchable: boolean // not 2 step and not multidoc
     multidoc: boolean // the primary input supports an array of documents
-    loaded: boolean
 }
 
 export type NameValue = {
@@ -335,7 +334,6 @@ export type Datatype = {
     href: string
     id: string
     choices?: DatatypeChoice[]
-    loaded: boolean
 }
 
 export type DatatypeChoice = {

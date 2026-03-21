@@ -8,8 +8,6 @@ import {
 import { info, error } from 'electron-log'
 import { pipelineAPI } from '../../apis/pipeline'
 import {
-    selectDatatypes,
-    selectScripts,
     selectStatus,
     setAlive,
     setDatatypes,
@@ -112,53 +110,24 @@ export function useWebservice(
                     )
                 })
                 .then(() => fetchScripts(newWebservice))
-                .then((scripts: Array<Script>) => {
+                .then((scripts: Array<Script>) =>
+                    Promise.all(
+                        scripts.map((s) => pipelineAPI.fetchScriptDetails(s)())
+                    )
+                )
+                .then((scripts) => {
                     dispatch(setScripts(scripts))
                     return pipelineAPI.fetchDatatypes()(newWebservice)
                 })
+                .then((datatypes) =>
+                    Promise.all(
+                        datatypes.map((d) =>
+                            pipelineAPI.fetchDatatypeDetails(d)()
+                        )
+                    )
+                )
                 .then((datatypes) => {
                     dispatch(setDatatypes(datatypes))
-                })
-
-                // when we call setScripts and setDatatypes, a lot of other fetches happen to get individual script and individual datatype data
-                // wait a few seconds to give the scripts and datatypes a chance to load (try twice)
-                // the better solution here is to wait for all the fetches to return; this code is not meant to be permanent
-                // but this will do for now to try and troubleshoot some issues that have come up on slower computers
-                .then(() => {
-                    return new Promise((resolve) => {
-                        let notLoaded =
-                            selectDatatypes(getState()).some(
-                                (d) => !d.loaded
-                            ) ||
-                            selectScripts(getState()).some((s) => !s.loaded)
-                        if (!notLoaded) {
-                            info('Scripts and Datatypes are loaded')
-                            resolve(true)
-                        } else {
-                            info(
-                                'Waiting a few seconds to finish loading scripts and datatypes'
-                            )
-                            setTimeout(() => resolve(true), 2000)
-                        }
-                    })
-                })
-                .then(() => {
-                    return new Promise((resolve) => {
-                        let notLoaded =
-                            selectDatatypes(getState()).some(
-                                (d) => !d.loaded
-                            ) ||
-                            selectScripts(getState()).some((s) => !s.loaded)
-                        if (!notLoaded) {
-                            info('Scripts and Datatypes are loaded')
-                            resolve(true)
-                        } else {
-                            info(
-                                'Waiting a few more seconds to finish loading scripts and datatypes'
-                            )
-                            setTimeout(() => resolve(true), 2000)
-                        }
-                    })
                 })
                 .then(() => {
                     info(`Pipeline is running`)

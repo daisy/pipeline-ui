@@ -23,7 +23,6 @@ function datatypeElementToJson(datatypeElm): Datatype {
     let datatypeData = {
         href: datatypeElm.getAttribute('href'),
         id: datatypeElm.getAttribute('id'),
-        loaded: false,
     }
     return datatypeData
 }

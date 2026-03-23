@@ -367,7 +367,7 @@ export function BrowseVoices({
                             .sort((a, b) => (a.name < b.name ? -1 : 1))
                             .map((v: TtsVoice, idx) => (
                                 //@ts-ignore
-                                <option value={v.id} key={`voice-${v.id}`}>
+                                <option value={`${v.engine}-${v.name}`} key={`voice-${v.engine}-${v.name}`}>
                                     {voicesTransliterations[v.name] ?? v.name}
                                 </option>
                             ))}
@@ -380,32 +380,33 @@ export function BrowseVoices({
                         <p className="selected-voice">
                             <b>Selected</b>: "
                             {voicesTransliterations[
-                                availableVoices.find((v) => v.id == voiceId)
+                                availableVoices.find((v) => `${v.engine}-${v.name}` == voiceId)
                                     .name
                             ] ??
-                                availableVoices.find((v) => v.id == voiceId)
+                                availableVoices.find((v) => `${v.engine}-${v.name}` == voiceId)
                                     .name}
                             ",{' '}
                             {languageNames.of(
-                                availableVoices.find((v) => v.id == voiceId)
+                                availableVoices.find((v) => `${v.engine}-${v.name}` == voiceId)
                                     .lang
                             )}
                             ,{' '}
                             {
-                                availableVoices.find((v) => v.id == voiceId)
+                                availableVoices.find((v) => `${v.engine}-${v.name}` == voiceId)
                                     .engine
                             }
                             ,{' '}
                             {
-                                availableVoices.find((v) => v.id == voiceId)
+                                availableVoices.find((v) => `${v.engine}-${v.name}` == voiceId)
                                     .gender
                             }
                             .
                         </p>
                         <VoicePreview
-                            voice={availableVoices.find((v) => v.id == voiceId)}
+                            voice={availableVoices.find((v) => `${v.engine}-${v.name}` == voiceId)}
+                            availableVoices={availableVoices}
                         ></VoicePreview>
-                        {preferredVoices.find((v) => v.id == voiceId) ? (
+                        {preferredVoices.find((v) => `${v.engine}-${v.name}` == voiceId) ? (
                             <p className="voice-already-exists">
                                 This voice has been added to{' '}
                                 <a
@@ -425,7 +426,7 @@ export function BrowseVoices({
                                 onClick={(e) =>
                                     addToPreferredVoices(
                                         availableVoices.find(
-                                            (v) => v.id == voiceId
+                                            (v) => `${v.engine}-${v.name}` == voiceId
                                         )
                                     )
                                 }

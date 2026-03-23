@@ -49,10 +49,10 @@ export type ScriptOptionOverrides = {
 // allow connection to multiple pipelines at the same time with an array of pipeline properties
 // This could allow the calling of scripts from pipeline with different features enabled, like specific TTS systems (acapela or SAPI)
 
-// added in settings version 1.7.0:
-// scriptFrequency, aiEngineProperties, sortScriptsByFrequency, suggestOptionValues
+// added in settings version 1.8.0:
+// removed id, href from stored TtsVoice; preview stripped on save and looked up live
 export type ApplicationSettings = {
-    settingsVersion: '1.7.0'
+    settingsVersion: '1.8.0'
     // Default folder to download the results on the user disk
     downloadFolder?: string
     // Pipeline instance properties for IPCs
@@ -77,6 +77,7 @@ export type ApplicationSettings = {
 export function migrateSettings(
     settings:
         | ApplicationSettings
+        | _ApplicationSettings_v170
         | _ApplicationSettings_v160
         | _ApplicationSettings_v150
         | _ApplicationSettings_v140
@@ -114,8 +115,39 @@ const migrators: Map<string, (prev: any) => any> = new Map<
     // Insert new migrators here as [ 'version', (prev) => ApplicationSettings ]
     // Don't forget to update the settings class of previous migrators
     [
+        '1.8.0',
+        (prev: _ApplicationSettings_v170): ApplicationSettings => {
+            const { settingsVersion, ...toKeep } = prev
+            return {
+                settingsVersion: '1.8.0',
+                ...toKeep,
+                ttsConfig: prev.ttsConfig
+                    ? {
+                          ...prev.ttsConfig,
+                          preferredVoices: prev.ttsConfig.preferredVoices.map(
+                              ({ engine, name, lang, gender }) => ({
+                                  engine,
+                                  name,
+                                  lang,
+                                  gender,
+                              })
+                          ),
+                          defaultVoices: prev.ttsConfig.defaultVoices.map(
+                              ({ engine, name, lang, gender }) => ({
+                                  engine,
+                                  name,
+                                  lang,
+                                  gender,
+                              })
+                          ),
+                      }
+                    : prev.ttsConfig,
+            } as ApplicationSettings
+        },
+    ],
+    [
         '1.7.0',
-        (prev: _ApplicationSettings_v160): ApplicationSettings => {
+        (prev: _ApplicationSettings_v160): _ApplicationSettings_v170 => {
             const { settingsVersion, ...toKeep } = prev
             return {
                 settingsVersion: '1.7.0',
@@ -131,7 +163,7 @@ const migrators: Map<string, (prev: any) => any> = new Map<
                 aiEngineProperties: [],
                 lastUsedScriptOptionOverrides: [],
                 ...toKeep,
-            } as ApplicationSettings
+            } as _ApplicationSettings_v170
         },
     ],
     [
@@ -230,6 +262,27 @@ const migrators: Map<string, (prev: any) => any> = new Map<
         },
     ],
 ])
+// added in settings version 1.7.0:
+// scriptFrequency, aiEngineProperties, sortScriptsByFrequency, suggestOptionValues
+export type _ApplicationSettings_v170 = {
+    settingsVersion: '1.7.0'
+    downloadFolder?: string
+    pipelineInstanceProps?: PipelineInstanceProperties
+    colorScheme: keyof typeof ColorScheme
+    onClosingMainWindow?: keyof typeof ClosingMainWindowAction
+    editJobOnNewTab?: boolean
+    ttsConfig?: TtsConfig
+    autoCheckUpdate?: boolean
+    textSize?: number
+    fontName?: string
+    sponsorshipMessageLastShown?: number
+    aiEngineProperties?: Array<KeyValue>
+    scriptFrequency?: Array<ScriptFrequency>
+    sortScriptsByFrequency: boolean
+    suggestOptionValues: boolean
+    lastUsedScriptOptionOverrides: Array<ScriptOptionOverrides>
+}
+
 // added in settings version 1.6.0: TtsConfig has ttsEnginesConnected
 export type _ApplicationSettings_v160 = {
     settingsVersion: '1.6.0'

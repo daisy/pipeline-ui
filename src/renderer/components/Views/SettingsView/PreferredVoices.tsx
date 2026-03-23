@@ -15,6 +15,7 @@ function getLang(str) {
 export function PreferredVoices({
     userPreferredVoices,
     ttsEnginesStates,
+    ttsVoices,
     userDefaultVoices,
     onChangePreferredVoices,
     onChangeDefaultVoices,
@@ -38,10 +39,16 @@ export function PreferredVoices({
 
     let removeFromPreferredVoices = (voice: TtsVoice) => {
         let tmpVoices = [...preferredVoices]
-        let idx = tmpVoices.findIndex((v) => v.id == voice.id)
+        let idx = tmpVoices.findIndex(
+            (v) => v.engine === voice.engine && v.name === voice.name
+        )
         tmpVoices.splice(idx, 1)
         setPreferredVoices(tmpVoices)
-        if (defaultVoices.find((vx) => vx.id == voice.id)) {
+        if (
+            defaultVoices.find(
+                (vx) => vx.engine === voice.engine && vx.name === voice.name
+            )
+        ) {
             let newDefaultVoices = clearDefaultVoice(getLang(voice.lang), false)
             onChangePreferredAndDefaultVoices(tmpVoices, newDefaultVoices)
         } else {
@@ -129,7 +136,7 @@ export function PreferredVoices({
                                             a.name > b.name ? 1 : -1
                                         )
                                         .map((v, idx) => (
-                                            <tr key={v.id}>
+                                            <tr key={`${v.engine}-${v.name}`}>
                                                 <th className="voice-name">
                                                     <span>
                                                         {voicesTransliterations[
@@ -138,7 +145,13 @@ export function PreferredVoices({
                                                     </span>
                                                     <audio
                                                         id={`preview-${v.lang}-${idx}`}
-                                                        src={v.preview}
+                                                        src={ttsVoices?.find(
+                                                            (lv) =>
+                                                                lv.engine ===
+                                                                    v.engine &&
+                                                                lv.name ===
+                                                                    v.name
+                                                        )?.preview}
                                                     ></audio>
                                                     <button
                                                         type="button"
@@ -183,7 +196,7 @@ export function PreferredVoices({
                                                     <input
                                                         type="radio"
                                                         name={getLang(v.lang)}
-                                                        id={`cb-${v.id}`}
+                                                        id={`cb-${v.engine}-${v.name}`}
                                                         onChange={(e) =>
                                                             selectDefault(e, v)
                                                         }
@@ -197,8 +210,10 @@ export function PreferredVoices({
                                                         checked={
                                                             defaultVoices?.find(
                                                                 (vx) =>
-                                                                    vx.id ==
-                                                                    v.id
+                                                                    vx.engine ===
+                                                                        v.engine &&
+                                                                    vx.name ===
+                                                                        v.name
                                                             ) != undefined
                                                         }
                                                     ></input>

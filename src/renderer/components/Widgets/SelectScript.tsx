@@ -33,7 +33,7 @@ export function SelectScript({
             >
                 <option value={null}>None</option>
                 {priorityScripts.length > 0 && (
-                    <optgroup label="Frequently-used scripts">
+                    <>
                         {priorityScripts.filter(s => s != null && s != undefined).map((script, idx) => (
                             <option key={`${idx}-prio`} value={script?.id}>
                                 {script?.nicename}
@@ -42,7 +42,8 @@ export function SelectScript({
                                     : ''}
                             </option>
                         ))}
-                    </optgroup>
+                        <option disabled>--------------------------</option>
+                    </>
                 )}
                 {scripts.filter(s => s != null && s != undefined).map((script, idx) => (
                     <option key={`${idx}-reg`} value={script?.id}>

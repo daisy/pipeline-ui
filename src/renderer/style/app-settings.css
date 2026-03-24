@@ -196,9 +196,17 @@
             td.gender, td.set-default {
                 text-align: center;
             }
-            tr:hover td.remove, tr:hover th.voice-name { 
+            tr:hover td.remove, tr:hover th.voice-name {
                 button svg {
                     stroke: var(--hover-contrast);
+                }
+            }
+            tr.voice-unavailable {
+                opacity: 0.6;
+                font-style: italic;
+                .unavailable-label {
+                    font-size: var(--fontsize-smaller);
+                    color: var(--warning);
                 }
             }
         }

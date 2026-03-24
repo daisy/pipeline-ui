@@ -135,13 +135,25 @@ export function PreferredVoices({
                                         .sort((a, b) =>
                                             a.name > b.name ? 1 : -1
                                         )
-                                        .map((v, idx) => (
-                                            <tr key={`${v.engine}-${v.name}`}>
+                                        .map((v, idx) => {
+                                            const available =
+                                                ttsVoices === null ||
+                                                ttsVoices.some(
+                                                    (lv) =>
+                                                        lv.engine ===
+                                                            v.engine &&
+                                                        lv.name === v.name
+                                                )
+                                            return (
+                                            <tr key={`${v.engine}-${v.name}`} className={available ? '' : 'voice-unavailable'}>
                                                 <th className="voice-name">
                                                     <span>
                                                         {voicesTransliterations[
                                                             v.name
                                                         ] ?? v.name}
+                                                        {!available && (
+                                                            <span className="unavailable-label"> (unavailable)</span>
+                                                        )}
                                                     </span>
                                                     <audio
                                                         id={`preview-${v.lang}-${idx}`}
@@ -240,7 +252,8 @@ export function PreferredVoices({
                                                     </button>
                                                 </td>
                                             </tr>
-                                        ))}
+                                        )
+                                        })}
                                 </tbody>
                             </table>
                             <div className="row">

@@ -171,10 +171,13 @@ export function SettingsView(
         let ttsEnginesConnected = { ...settings.ttsConfig.ttsEnginesConnected }
         ttsEnginesConnected[engineId] = isConnected
 
+        const dedupedProps = Object.values(
+            Object.fromEntries(engineProps.map((p) => [p.key, p]))
+        )
         const newConfig = {
             preferredVoices: [...settings.ttsConfig.preferredVoices],
             defaultVoices: [...settings.ttsConfig.defaultVoices],
-            ttsEngineProperties: [...engineProps],
+            ttsEngineProperties: dedupedProps,
             xmlFilepath: newSettings.ttsConfig.xmlFilepath,
             ttsEnginesConnected: { ...ttsEnginesConnected },
         }

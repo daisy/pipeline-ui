@@ -193,6 +193,11 @@ export function BrowseVoices({
         ]
         onChangeVoiceFilters(filters)
     }
+    const selectedVoice =
+        voiceId !== 'None'
+            ? availableVoices.find((v) => `${v.engine}-${v.name}` == voiceId)
+            : null
+
     return (
         <>
             <div className="voice-filters">
@@ -375,38 +380,26 @@ export function BrowseVoices({
                 </div>
             </div>
             <div className="voice-details">
-                {voiceId != 'None' ? (
+                {selectedVoice ? (
                     <>
                         <p className="selected-voice">
                             <b>Selected</b>: "
-                            {voicesTransliterations[
-                                availableVoices.find((v) => `${v.engine}-${v.name}` == voiceId)
-                                    .name
-                            ] ??
-                                availableVoices.find((v) => `${v.engine}-${v.name}` == voiceId)
-                                    .name}
+                            {voicesTransliterations[selectedVoice.name] ??
+                                selectedVoice.name}
                             ",{' '}
-                            {languageNames.of(
-                                availableVoices.find((v) => `${v.engine}-${v.name}` == voiceId)
-                                    .lang
-                            )}
-                            ,{' '}
-                            {
-                                availableVoices.find((v) => `${v.engine}-${v.name}` == voiceId)
-                                    .engine
-                            }
-                            ,{' '}
-                            {
-                                availableVoices.find((v) => `${v.engine}-${v.name}` == voiceId)
-                                    .gender
-                            }
-                            .
+                            {languageNames.of(selectedVoice.lang)},{' '}
+                            {selectedVoice.engine},{' '}
+                            {selectedVoice.gender}.
                         </p>
                         <VoicePreview
-                            voice={availableVoices.find((v) => `${v.engine}-${v.name}` == voiceId)}
+                            voice={selectedVoice}
                             availableVoices={availableVoices}
                         ></VoicePreview>
-                        {preferredVoices.find((v) => `${v.engine}-${v.name}` == voiceId) ? (
+                        {preferredVoices.find(
+                            (v) =>
+                                v.engine === selectedVoice.engine &&
+                                v.name === selectedVoice.name
+                        ) ? (
                             <p className="voice-already-exists">
                                 This voice has been added to{' '}
                                 <a
@@ -423,12 +416,8 @@ export function BrowseVoices({
                         ) : (
                             <button
                                 type="button"
-                                onClick={(e) =>
-                                    addToPreferredVoices(
-                                        availableVoices.find(
-                                            (v) => `${v.engine}-${v.name}` == voiceId
-                                        )
-                                    )
+                                onClick={() =>
+                                    addToPreferredVoices(selectedVoice)
                                 }
                             >
                                 Add to preferred voices

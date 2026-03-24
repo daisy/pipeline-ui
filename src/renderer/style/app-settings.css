@@ -254,6 +254,15 @@
                 fill: var(--error);
             }
         }
+        .startup-status {
+            font-weight: bold;
+            font-style: italic;
+        }
+
+        &.starting-up ul {
+            opacity: 0.4;
+        }
+
         .required-field-message {
             display: block;
         }

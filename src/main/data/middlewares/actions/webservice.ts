@@ -108,6 +108,40 @@ export function useWebservice(
                     dispatch(
                         setProperties({ values: properties_, sendToAPI: false })
                     )
+                    // For engines the user has explicitly disconnected, send
+                    // empty credentials + enabled=false to prevent the engine
+                    // from auto-reconnecting using its persisted state
+                    const ttsEnginesConnected =
+                        getState().settings.ttsConfig.ttsEnginesConnected
+                    const ttsEngineProperties =
+                        getState().settings.ttsConfig.ttsEngineProperties
+                    const disconnectProps: EngineProperty[] = []
+                    for (const [engineId, isConnected] of Object.entries(
+                        ttsEnginesConnected
+                    )) {
+                        if (!isConnected) {
+                            ttsEngineProperties
+                                .filter((p) => p.key.startsWith(engineId))
+                                .forEach((p) =>
+                                    disconnectProps.push({
+                                        name: p.key,
+                                        value: '',
+                                    })
+                                )
+                            disconnectProps.push({
+                                name: engineId + '.enabled',
+                                value: 'false',
+                            })
+                        }
+                    }
+                    if (disconnectProps.length > 0) {
+                        dispatch(
+                            setProperties({
+                                values: disconnectProps,
+                                sendToAPI: true,
+                            })
+                        )
+                    }
                 })
                 .then(() => fetchScripts(newWebservice))
                 .then((scripts: Array<Script>) =>

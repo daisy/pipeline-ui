@@ -93,15 +93,17 @@ export function setProperties(
     let disconnectedEngines = engineIds.filter(
         (id) => !getState().settings.ttsConfig.ttsEnginesConnected[id]
     )
-    let newProperties_ = newProperties.filter(
-        (p) =>
-            disconnectedEngines.filter((eId) => p.name.indexOf(eId) != -1)
-                .length == 0
-    )
+    let newProperties_ = action.payload.sendToAPI
+        ? newProperties
+        : newProperties.filter(
+              (p) =>
+                  disconnectedEngines.filter((eId) => p.name.indexOf(eId) != -1)
+                      .length == 0
+          )
 
     Promise.all(
         newProperties_.map((prop) => {
-            let currProp = currentProperties[prop.name]
+            const currProp = currentProperties[prop.name]
             if (currProp) {
                 // preserve the desc and href data
                 prop.desc = currProp.desc
@@ -148,8 +150,22 @@ export function setProperties(
                             if (ttsEnginesStates[engineKey].status) {
                                 switch (ttsEnginesStates[engineKey].status) {
                                     case 'available':
+                                        // If engine was available but has no voices
+                                        // in this fetch, it's no longer connected
+                                        if (
+                                            !voices.find(
+                                                (v) => v.engine === engineKey
+                                            )
+                                        ) {
+                                            ttsEnginesStates[engineKey] = {
+                                                ...ttsEnginesStates[engineKey],
+                                                status: 'disabled',
+                                                message: '',
+                                            }
+                                        }
+                                        break
                                     case 'disabled':
-                                        // success or no change
+                                        // no change
                                         break
                                     case 'disconnecting':
                                         // confirm disconnection
@@ -191,8 +207,34 @@ export function setProperties(
                             ...ttsEnginesConnected_,
                         }
 
-                        // console.log('tts states', states)
-                        dispatch(setTtsEngineState(states))
+                        // Normalize and filter states from the engine:
+                        // - 'available' with no voices → downgrade to 'disabled'
+                        // - Only dispatch terminal states to avoid intermediate
+                        //   engine error messages flashing in the UI
+                        Object.keys(states).forEach((k) => {
+                            if (states[k].status === 'available') {
+                                if (
+                                    !getState().pipeline.ttsVoices?.some(
+                                        (v) => v.engine === k
+                                    )
+                                ) {
+                                    states[k].status = 'disabled'
+                                    states[k].message = ''
+                                } else if (!states[k].message) {
+                                    states[k].message = 'Connected'
+                                }
+                            }
+                        })
+                        const terminalStates = Object.fromEntries(
+                            Object.entries(states).filter(([, v]) =>
+                                [
+                                    'available',
+                                    'disabled',
+                                    'disconnected',
+                                ].includes((v as TtsEngineState).status)
+                            )
+                        )
+                        dispatch(setTtsEngineState(terminalStates))
                     })
             }
         })

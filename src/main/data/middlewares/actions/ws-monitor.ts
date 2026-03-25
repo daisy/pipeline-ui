@@ -52,19 +52,22 @@ export function startMonitor(
 
     // refetch the job and update only the messages field
     let socketOnMessage = async (event) => {
-        const fetchData = await fetchJobDataFn(ws)
-        const currentJob =
-            selectPipeline(getState()).jobs.find(
-                (job) => job.internalId === j.internalId
-            ) ?? j
-        let updatedJob = {
-            ...currentJob,
-            jobData: {
-                ...currentJob.jobData,
-                messages: fetchData.messages,
-            },
+        let jobUpdateData = jobXmlToJson(event.data)
+        if (jobUpdateData.messages.length > 0) {
+            const fetchData = await fetchJobDataFn(ws)
+            const currentJob =
+                selectPipeline(getState()).jobs.find(
+                    (job) => job.internalId === j.internalId
+                ) ?? j
+            let updatedJob = {
+                ...currentJob,
+                jobData: {
+                    ...currentJob.jobData,
+                    messages: fetchData.messages,
+                },
+            }
+            dispatch(updateJob(updatedJob))
         }
-        dispatch(updateJob(updatedJob))
     }
 
     // just update the job progress field if exists

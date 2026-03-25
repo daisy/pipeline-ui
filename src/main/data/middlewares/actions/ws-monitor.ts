@@ -53,7 +53,7 @@ export function startMonitor(
     // refetch the job and update only the messages field
     let socketOnMessage = async (event) => {
         let jobUpdateData = jobXmlToJson(event.data)
-        if (jobUpdateData.messages.length > 0) {
+        if (jobUpdateData.messages && jobUpdateData.messages.length > 0) {
             const fetchData = await fetchJobDataFn(ws)
             const currentJob =
                 selectPipeline(getState()).jobs.find(

@@ -45,7 +45,7 @@ export function buildMenuTemplate({
     const isMac = process.platform === 'darwin'
 
     let multipleJobs = jobs.length > 1
-    let status = 'new job'
+    let status = 'Status: new job'
     let currentJob = jobs.find((j) => j.internalId == selectedJobId)
     let jobsInBatch = getJobsInBatch(
         selectPipeline(store.getState()),
@@ -146,12 +146,12 @@ export function buildMenuTemplate({
                 ...(currentJob
                     ? [
                           {
-                              label: `Status: ${status}`,
+                              label: status,
                               accelerator: 'CommandOrControl+Shift+I',
                               click: async () => {
                                   await dialog.showMessageBox({
                                       type: 'info',
-                                      message: `Status: ${status}`,
+                                      message: status,
                                   })
                               },
                           },

@@ -37,6 +37,10 @@ export function CustomField({
     }, [pipeline.datatypes])
 
     useEffect(() => {
+        setValue(initialValue)
+    }, [initialValue])
+
+    useEffect(() => {
         const elem = document.getElementById(controlId) as HTMLInputElement
         if (elem) {
             elem.setCustomValidity(error ?? '')

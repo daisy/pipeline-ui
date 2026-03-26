@@ -19,8 +19,8 @@ export function FileLink({ fileHref, children }: FileLinkProps) {
     }
 
     return (
-        <button type="button" className="filelink" onClick={onClick}>
+        <a href={fileHref} onClick={onClick}>
             {children ?? filename}
-        </button>
+        </a>
     )
 }

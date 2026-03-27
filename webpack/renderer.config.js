@@ -37,6 +37,11 @@ module.exports = {
         },
     },
 
+    watchOptions: {
+        poll: 1000,
+        ignored: /node_modules/,
+    },
+
     output: {
         path: resolve(FOLDERS.DEV_TEMP_BUILD),
         filename: 'renderer.js',

@@ -50,15 +50,26 @@ export function startMonitor(
 
     let fetchJobDataFn = pipelineAPI.fetchJobData(j)
 
-    // Track whether a terminal status has been received so other sockets
-    // don't trigger processJobStatusUpdate after it's already been handled
-    let terminalStatusReceived = false
-
     const terminalStatuses = [
         JobStatus.ERROR,
         JobStatus.FAIL,
         JobStatus.SUCCESS,
     ]
+
+    // Single synchronous gate for all terminal-status processing.
+    // Because JS is single-threaded, the check+set here is atomic: whichever
+    // concurrent async handler resumes first and calls handleJobUpdate wins;
+    // any subsequent caller sees the flag already set and returns immediately.
+    let terminalStatusReceived = false
+    const handleJobUpdate = (
+        jobUpdateData: ReturnType<typeof jobXmlToJson>
+    ) => {
+        if (terminalStatuses.includes(jobUpdateData.status)) {
+            if (terminalStatusReceived) return
+            terminalStatusReceived = true
+        }
+        processJobStatusUpdate(j, getState, dispatch, jobUpdateData)
+    }
 
     // refetch the job and update only the messages field
     let socketOnMessage = async (event) => {
@@ -66,22 +77,22 @@ export function startMonitor(
         if (jobUpdateData.messages && jobUpdateData.messages.length > 0) {
             const fetchData = await fetchJobDataFn(ws)
             if (terminalStatuses.includes(fetchData.status)) {
-                terminalStatusReceived = true
-                processJobStatusUpdate(j, getState, dispatch, fetchData)
+                handleJobUpdate(fetchData)
                 return
             }
             const currentJob =
                 selectPipeline(getState()).jobs.find(
                     (job) => job.internalId === j.internalId
                 ) ?? j
-            let updatedJob = {
-                ...currentJob,
-                jobData: {
-                    ...currentJob.jobData,
-                    messages: fetchData.messages,
-                },
-            }
-            dispatch(updateJob(updatedJob))
+            dispatch(
+                updateJob({
+                    ...currentJob,
+                    jobData: {
+                        ...currentJob.jobData,
+                        messages: fetchData.messages,
+                    },
+                })
+            )
         }
     }
 
@@ -92,8 +103,7 @@ export function startMonitor(
             if (!terminalStatusReceived) {
                 const fetchData = await fetchJobDataFn(ws)
                 if (terminalStatuses.includes(fetchData.status)) {
-                    terminalStatusReceived = true
-                    processJobStatusUpdate(j, getState, dispatch, fetchData)
+                    handleJobUpdate(fetchData)
                     return
                 }
             }
@@ -101,14 +111,15 @@ export function startMonitor(
                 selectPipeline(getState()).jobs.find(
                     (job) => job.internalId === j.internalId
                 ) ?? j
-            let updatedJob = {
-                ...currentJob,
-                jobData: {
-                    ...currentJob.jobData,
-                    progress: jobUpdateData.progress,
-                },
-            }
-            dispatch(updateJob(updatedJob))
+            dispatch(
+                updateJob({
+                    ...currentJob,
+                    jobData: {
+                        ...currentJob.jobData,
+                        progress: jobUpdateData.progress,
+                    },
+                })
+            )
         }
     }
 
@@ -124,23 +135,18 @@ export function startMonitor(
         if (wsJobData.status) {
             fetchData.status = wsJobData.status
         }
-        if (terminalStatuses.includes(fetchData.status)) {
-            terminalStatusReceived = true
-        }
-        processJobStatusUpdate(j, getState, dispatch, fetchData)
+        handleJobUpdate(fetchData)
     }
 
-    let socketOnError = (err) => error('Job monitoring failed')
+    let socketOnError = () => error('Job monitoring failed')
 
     const socketOnClose = async (event: CloseEvent) => {
         debug('socket closed, code:', event.code, 'reason:', event.target.url)
-        if (!terminalStatusReceived) {
-            const fetchData = await fetchJobDataFn(ws)
-            debug('socketOnClose fetchData.status', fetchData.status)
-            if (terminalStatuses.includes(fetchData.status)) {
-                terminalStatusReceived = true
-                processJobStatusUpdate(j, getState, dispatch, fetchData)
-            }
+        if (terminalStatusReceived) return
+        const fetchData = await fetchJobDataFn(ws)
+        debug('socketOnClose fetchData.status', fetchData.status)
+        if (terminalStatuses.includes(fetchData.status)) {
+            handleJobUpdate(fetchData)
         }
     }
 

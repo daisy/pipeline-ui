@@ -12,7 +12,7 @@ import {
 import { ParserException } from 'shared/parser/pipelineXmlConverter/parser'
 import { GetStateFunction } from 'shared/types/store'
 
-import { WebSocket } from 'ws'
+import { WebSocket, type CloseEvent } from 'ws'
 import { readableStatus } from 'shared/jobName'
 import { jobXmlToJson } from 'shared/parser/pipelineXmlConverter'
 
@@ -50,11 +50,26 @@ export function startMonitor(
 
     let fetchJobDataFn = pipelineAPI.fetchJobData(j)
 
+    // Track whether a terminal status has been received so other sockets
+    // don't trigger processJobStatusUpdate after it's already been handled
+    let terminalStatusReceived = false
+
+    const terminalStatuses = [
+        JobStatus.ERROR,
+        JobStatus.FAIL,
+        JobStatus.SUCCESS,
+    ]
+
     // refetch the job and update only the messages field
     let socketOnMessage = async (event) => {
         let jobUpdateData = jobXmlToJson(event.data)
         if (jobUpdateData.messages && jobUpdateData.messages.length > 0) {
             const fetchData = await fetchJobDataFn(ws)
+            if (terminalStatuses.includes(fetchData.status)) {
+                terminalStatusReceived = true
+                processJobStatusUpdate(j, getState, dispatch, fetchData)
+                return
+            }
             const currentJob =
                 selectPipeline(getState()).jobs.find(
                     (job) => job.internalId === j.internalId
@@ -74,6 +89,14 @@ export function startMonitor(
     let socketOnProgress = async (event) => {
         let jobUpdateData = jobXmlToJson(event.data)
         if (jobUpdateData.progress) {
+            if (!terminalStatusReceived) {
+                const fetchData = await fetchJobDataFn(ws)
+                if (terminalStatuses.includes(fetchData.status)) {
+                    terminalStatusReceived = true
+                    processJobStatusUpdate(j, getState, dispatch, fetchData)
+                    return
+                }
+            }
             const currentJob =
                 selectPipeline(getState()).jobs.find(
                     (job) => job.internalId === j.internalId
@@ -88,6 +111,7 @@ export function startMonitor(
             dispatch(updateJob(updatedJob))
         }
     }
+
     // update the status field and handle completed jobs
     let socketOnStatus = async (event) => {
         debug('socketOnStatus event.data', event.data)
@@ -100,9 +124,25 @@ export function startMonitor(
         if (wsJobData.status) {
             fetchData.status = wsJobData.status
         }
-        await processJobStatusUpdate(j, getState, dispatch, fetchData)
+        if (terminalStatuses.includes(fetchData.status)) {
+            terminalStatusReceived = true
+        }
+        processJobStatusUpdate(j, getState, dispatch, fetchData)
     }
+
     let socketOnError = (err) => error('Job monitoring failed')
+
+    const socketOnClose = async (event: CloseEvent) => {
+        debug('socket closed, code:', event.code, 'reason:', event.target.url)
+        if (!terminalStatusReceived) {
+            const fetchData = await fetchJobDataFn(ws)
+            debug('socketOnClose fetchData.status', fetchData.status)
+            if (terminalStatuses.includes(fetchData.status)) {
+                terminalStatusReceived = true
+                processJobStatusUpdate(j, getState, dispatch, fetchData)
+            }
+        }
+    }
 
     messagesSocket.addEventListener('message', socketOnMessage)
     statusSocket.addEventListener('message', socketOnStatus)
@@ -111,6 +151,9 @@ export function startMonitor(
     messagesSocket.addEventListener('error', socketOnError)
     statusSocket.addEventListener('error', socketOnError)
     progressSocket.addEventListener('error', socketOnError)
+
+    messagesSocket.addEventListener('close', socketOnClose)
+    progressSocket.addEventListener('close', socketOnClose)
 }
 
 function processJobStatusUpdate(

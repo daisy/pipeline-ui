@@ -72,6 +72,7 @@ export type ApplicationSettings = {
     sortScriptsByFrequency: boolean
     suggestOptionValues: boolean
     lastUsedScriptOptionOverrides: Array<ScriptOptionOverrides>
+    logLevel?: 'error' | 'warn' | 'info' | 'verbose' | 'debug' | 'silly'
 }
 
 export function migrateSettings(

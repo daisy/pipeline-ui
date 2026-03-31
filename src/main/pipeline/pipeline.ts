@@ -1,6 +1,6 @@
 import { ChildProcessWithoutNullStreams, spawn } from 'child_process'
 import { app, dialog } from 'electron'
-import { existsSync, mkdirSync, readFileSync, rmSync } from 'fs'
+import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'fs'
 import { delimiter, relative, resolve } from 'path'
 import { ENVIRONMENT } from 'shared/constants'
 import {
@@ -22,6 +22,7 @@ import { pathToFileURL } from 'url'
 import { createServer } from 'node:net'
 import { setTimeout } from 'timers/promises'
 import { resolveUnpacked, walk } from '../utils'
+import { DOMParser, XMLSerializer } from '@xmldom/xmldom'
 import fs from 'fs-extra'
 import { selectAiEngineProperties, selectTtsConfig } from 'shared/data/slices/settings'
 
@@ -347,6 +348,46 @@ Then close the program using the port and restart this application.`,
                     : []),
             ].filter((o) => o != null)
 
+            const logbackLevelMap: Record<string, string> = {
+                error: 'ERROR',
+                warn: 'WARN',
+                info: 'INFO',
+                verbose: 'INFO',
+                debug: 'DEBUG',
+                silly: 'TRACE',
+            }
+            const effectiveLogLevel =
+                store.getState().settings.logLevel ||
+                (ENVIRONMENT.IS_DEV ? 'silly' : undefined)
+            const logbackConfigPath = (() => {
+                const sourcePath = resolve(
+                    this.props.pipelineHome,
+                    'etc',
+                    'logback.xml'
+                )
+                const javaLevel = logbackLevelMap[effectiveLogLevel]
+                if (!javaLevel) return pathToFileURL(sourcePath).href
+                try {
+                    const xml = readFileSync(sourcePath, 'utf8')
+                    const doc = new DOMParser().parseFromString(xml, 'text/xml')
+                    const root = doc.getElementsByTagName('root')[0]
+                    if (root) root.setAttribute('level', javaLevel)
+                    const destPath = resolve(
+                        this.props.appDataFolder,
+                        'logback.xml'
+                    )
+                    writeFileSync(
+                        destPath,
+                        new XMLSerializer().serializeToString(doc),
+                        'utf8'
+                    )
+                    return pathToFileURL(destPath).href
+                } catch (e) {
+                    error('Failed to modify logback.xml', e)
+                    return pathToFileURL(sourcePath).href
+                }
+            })()
+
             let SystemProps = [
                 '-Dorg.daisy.pipeline.properties="' +
                     resolve(
@@ -356,11 +397,7 @@ Then close the program using the port and restart this application.`,
                     ) +
                     '"',
                 // Logback configuration file
-                '-Dlogback.configurationFile=' +
-                    pathToFileURL(
-                        resolve(this.props.pipelineHome, 'etc', 'logback.xml')
-                    ).href +
-                    '',
+                '-Dlogback.configurationFile=' + logbackConfigPath,
                 // XMLCalabash base configuration file
                 // '-Dorg.daisy.pipeline.xproc.configuration="' +
                 //     resolve(

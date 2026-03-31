@@ -1,3 +1,5 @@
+declare const BUILD_LOG_LEVEL: string | undefined
+
 declare module '*.css'
 declare module '*.scss'
 declare module '*.sass'

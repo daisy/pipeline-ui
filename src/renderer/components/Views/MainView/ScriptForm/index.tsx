@@ -30,6 +30,7 @@ import { CustomName } from '../../../Widgets/CustomName'
 import { validateJobRequestAsync } from 'renderer/utils/jobRequestValidator'
 //@ts-ignore
 import { JobRequestError } from './jobRequestError'
+import { debug } from 'electron-log'
 const { App } = window
 
 export function ScriptForm({ job }: { job: Job }) {
@@ -64,6 +65,13 @@ export function ScriptForm({ job }: { job: Job }) {
     useEffect(() => {
         setSubmitInProgress(job.state == JobState.SUBMITTING)
     }, [job.state])
+
+    useEffect(() => {
+        debug(
+            'stylesheetParameters changed',
+            JSON.stringify(job.stylesheetParameters)
+        )
+    }, [job.stylesheetParameters])
 
     // for to-pef scripts
     // the job request must be splitted in two step
@@ -203,6 +211,12 @@ export function ScriptForm({ job }: { job: Job }) {
     // submit a job
     let onSubmit = async (e) => {
         e.preventDefault()
+        // log a lite version the job json
+        debug(
+            'onSubmit',
+            JSON.stringify({ ...job, validation: '', script: null }, null, '  ')
+        )
+
         if (job.is2StepsJob && job.stylesheetParameters == null) {
             /*  constraints on the stylesheet parameters :
                 the /stylesheet-parameters call should not be made if
@@ -219,16 +233,28 @@ export function ScriptForm({ job }: { job: Job }) {
             const sourceInput = job.jobRequest.inputs.find(
                 (i) => i.name == 'source'
             )
+            debug('script.id', job.script.id)
+            debug('hasAudio', hasAudio)
+            debug('hasBraille', hasBraille)
+            debug('sourceInput', sourceInput)
+            if (!sourceInput) {
+                debug('ERROR: no source input found on job', job.script.id)
+            }
+
             if (
                 ((hasAudio &&
                     (hasAudio.value === true || hasAudio.value !== 'false')) ||
-                    (hasBraille && hasBraille.value === true) ||
+                    (hasBraille &&
+                        (hasBraille.value === true ||
+                            hasBraille.value !== 'false')) ||
                     job.script.id.endsWith('to-pef') ||
                     job.script.id.endsWith('ebraille')) &&
                 sourceInput.value.length == 1
             ) {
+                debug('Requesting stylesheet parameters')
                 App.store.dispatch(requestStylesheetParameters(job))
             } else {
+                debug('Setting stylesheet parameters to []')
                 App.store.dispatch(
                     updateJob({
                         ...job,
@@ -322,6 +348,19 @@ export function ScriptForm({ job }: { job: Job }) {
             return ''
         }
     }
+
+    debug(
+        'ScriptForm render',
+        job.internalId,
+        'is2Steps:',
+        job.is2StepsJob,
+        'stylesheetParameters:',
+        job.stylesheetParameters == null
+            ? 'null'
+            : `array[${job.stylesheetParameters}]`,
+        'jobRequestError:',
+        job.jobRequestError
+    )
 
     if (job.jobRequestError) {
         return (

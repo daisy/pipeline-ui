@@ -17,7 +17,7 @@ export const settingsFile = resolve(app.getPath('userData'), 'settings.json')
 const logsBase =
     process.platform === 'darwin'
         ? resolve(app.getPath('home'), 'Library', 'Logs', 'DAISY Pipeline')
-        : resolve(app.getPath('appData'), 'DAISY Pipeline')
+        : app.getPath('userData')
 
 mkdirSync(resolve(logsBase, 'app-logs'), { recursive: true })
 mkdirSync(resolve(logsBase, 'engine-logs'), { recursive: true })

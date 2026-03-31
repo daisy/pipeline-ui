@@ -43,12 +43,13 @@ migrate_logs() {
     fi
 }
 
-install -d -o "$CURRENT_USER" "$USER_LOGS/DAISY Pipeline"
-install -d -o "$CURRENT_USER" "$NEW_APP_LOGS"
-install -d -o "$CURRENT_USER" "$NEW_ENGINE_LOGS"
+mkdir -p "$NEW_APP_LOGS"
+mkdir -p "$NEW_ENGINE_LOGS"
 
 migrate_logs "$USER_SUPPORT/pipeline-ui/pipeline-logs" "$NEW_ENGINE_LOGS"
 migrate_logs "$USER_LOGS/pipeline-ui" "$NEW_APP_LOGS"
 migrate_logs "$USER_LOGS/DAISY Pipeline - App" "$NEW_APP_LOGS"
+
+chown -R "$CURRENT_USER" "$USER_LOGS/DAISY Pipeline"
 
 exit 0

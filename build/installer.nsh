@@ -64,27 +64,28 @@
     EndCustomInstall:
 
     ; Ensure log directories exist
-    CreateDirectory "$APPDATA\DAISY Pipeline\app-logs"
-    CreateDirectory "$APPDATA\DAISY Pipeline\engine-logs"
+    CreateDirectory "$APPDATA\pipeline-ui\app-logs"
+    CreateDirectory "$APPDATA\pipeline-ui\engine-logs"
 
     ; Migrate old log locations to new ones
     IfFileExists "$APPDATA\pipeline-ui\logs" 0 SkipOldAppLogs
-        CreateDirectory "$APPDATA\DAISY Pipeline\app-logs"
-        CopyFiles /SILENT "$APPDATA\pipeline-ui\logs\*" "$APPDATA\DAISY Pipeline\app-logs"
+        CreateDirectory "$APPDATA\pipeline-ui\app-logs"
+        CopyFiles /SILENT "$APPDATA\pipeline-ui\logs\*" "$APPDATA\pipeline-ui\app-logs"
         RMDir /r "$APPDATA\pipeline-ui\logs"
     SkipOldAppLogs:
 
     IfFileExists "$APPDATA\pipeline-ui\pipeline-logs" 0 SkipOldEngineLogs
-        CreateDirectory "$APPDATA\DAISY Pipeline\engine-logs"
-        CopyFiles /SILENT "$APPDATA\pipeline-ui\pipeline-logs\*" "$APPDATA\DAISY Pipeline\engine-logs"
+        CreateDirectory "$APPDATA\pipeline-ui\engine-logs"
+        CopyFiles /SILENT "$APPDATA\pipeline-ui\pipeline-logs\*" "$APPDATA\pipeline-ui\engine-logs"
         RMDir /r "$APPDATA\pipeline-ui\pipeline-logs"
     SkipOldEngineLogs:
 
     IfFileExists "$APPDATA\pipeline-ui\DAISY Pipeline - App" 0 SkipOldAppNameLogs
-        CreateDirectory "$APPDATA\DAISY Pipeline\app-logs"
-        CopyFiles /SILENT "$APPDATA\pipeline-ui\DAISY Pipeline - App\*" "$APPDATA\DAISY Pipeline\app-logs"
+        CreateDirectory "$APPDATA\pipeline-ui\app-logs"
+        CopyFiles /SILENT "$APPDATA\pipeline-ui\DAISY Pipeline - App\*" "$APPDATA\pipeline-ui\app-logs"
         RMDir /r "$APPDATA\pipeline-ui\DAISY Pipeline - App"
     SkipOldAppNameLogs:
+
 !macroend
 
 ; TODO I'd like to remove the path from the user PATH

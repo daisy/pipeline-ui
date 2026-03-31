@@ -104,7 +104,8 @@ function canDeleteJob(
             (job.state == JobState.SUBMITTED || job.state == JobState.ENDED) &&
             job.jobData &&
             job.jobData.status != JobStatus.RUNNING &&
-            job.jobData.status != JobStatus.IDLE
+            job.jobData.status != JobStatus.IDLE &&
+            job.jobData.status != null
         )
     }
 }

@@ -103,9 +103,9 @@ function canDeleteJob(
             job &&
             (job.state == JobState.SUBMITTED || job.state == JobState.ENDED) &&
             job.jobData &&
-            job.jobData.status != JobStatus.RUNNING &&
-            job.jobData.status != JobStatus.IDLE &&
-            job.jobData.status != null
+            [JobStatus.SUCCESS, JobStatus.ERROR, JobStatus.FAIL].includes(
+                job.jobData.status
+            )
         )
     }
 }

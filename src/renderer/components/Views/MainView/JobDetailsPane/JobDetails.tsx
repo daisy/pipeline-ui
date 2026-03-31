@@ -192,8 +192,11 @@ export function JobDetails({ job }: { job: Job }) {
                 )}
             </section>
 
-            {job.jobData.status != JobStatus.RUNNING &&
-                job.jobData.status != JobStatus.IDLE && (
+            {[
+                JobStatus.SUCCESS,
+                JobStatus.ERROR,
+                JobStatus.FAIL,
+            ].includes(job.jobData.status) && (
                     <>
                         {!canRunJob && (
                             <div className="warnings">

@@ -131,6 +131,9 @@ module.exports = {
             process: JSON.stringify({
                 platform: process.platform,
             }),
+            BUILD_ENABLE_MISTRAL: process.env.ENABLE_MISTRAL !== undefined
+                ? process.env.ENABLE_MISTRAL === 'true'
+                : isDev,
         }),
 
         new HTMLWebpackPlugin({

@@ -1,4 +1,5 @@
 declare const BUILD_LOG_LEVEL: string | undefined
+declare const BUILD_ENABLE_MISTRAL: boolean
 
 declare module '*.css'
 declare module '*.scss'

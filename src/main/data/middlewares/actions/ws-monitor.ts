@@ -1,5 +1,5 @@
 import { Job, JobState, JobStatus, Webservice } from 'shared/types'
-import { info, error } from 'electron-log'
+import { info, error, debug } from 'electron-log'
 import { pipelineAPI } from '../../apis/pipeline'
 import { downloadJobLog, downloadJobResults } from './download'
 
@@ -90,7 +90,16 @@ export function startMonitor(
     }
     // update the status field and handle completed jobs
     let socketOnStatus = async (event) => {
+        debug('socketOnStatus event.data', event.data)
+        const wsJobData = jobXmlToJson(event.data)
+        debug('socketOnStatus wsJobData.status', wsJobData.status)
         const fetchData = await fetchJobDataFn(ws)
+        debug('socketOnStatus fetchData.status', fetchData.status)
+        // The WS event data has the authoritative status;
+        // the REST API may be momentarily stale
+        if (wsJobData.status) {
+            fetchData.status = wsJobData.status
+        }
         await processJobStatusUpdate(j, getState, dispatch, fetchData)
     }
     let socketOnError = (err) => error('Job monitoring failed')
@@ -120,6 +129,16 @@ function processJobStatusUpdate(
             JobStatus.FAIL,
             JobStatus.SUCCESS,
         ].includes(jobUpdateData.status)
+        debug(
+            'processJobStatusUpdate status:',
+            jobUpdateData.status,
+            'finished:',
+            finished,
+            'resultsDownloaded:',
+            updatedJob.resultsDownloaded,
+            'logDownloaded:',
+            updatedJob.logDownloaded
+        )
         if (finished) {
             updatedJob.state = JobState.ENDED
         }
@@ -132,10 +151,17 @@ function processJobStatusUpdate(
             updatedJob.jobData?.results?.namedResults &&
             !updatedJob.resultsDownloaded
         ) {
+            debug('processJobStatusUpdate: downloading results')
             // If job has results, download them
             downloadJobResults(updatedJob, `${downloadFolder}/${newJobName}`)
                 .then((downloadedJob) => {
                     downloadedJob.resultsDownloaded = true
+                    debug(
+                        'processJobStatusUpdate: dispatching after results download, state:',
+                        downloadedJob.state,
+                        'status:',
+                        downloadedJob.jobData?.status
+                    )
                     dispatch(updateJob(downloadedJob))
                     // Only delete job if it has been downloaded
                     if (downloadedJob.jobData.downloadedFolder) {
@@ -154,11 +180,19 @@ function processJobStatusUpdate(
                     error('Error downloading job results', e)
                 })
         } else if (finished && !updatedJob.logDownloaded) {
-            info('job is finished without results')
+            debug(
+                'processJobStatusUpdate: finished without results, downloading log'
+            )
             // job is finished wihout results : keep the log
             downloadJobLog(updatedJob, `${downloadFolder}/${newJobName}`).then(
                 (jobWithLog) => {
                     jobWithLog.logDownloaded = true
+                    debug(
+                        'processJobStatusUpdate: dispatching after log download, state:',
+                        jobWithLog.state,
+                        'status:',
+                        jobWithLog.jobData?.status
+                    )
                     dispatch(updateJob(jobWithLog))
                     const deleteJob = pipelineAPI.deleteJob(jobWithLog)
                     deleteJob().then((response) => {

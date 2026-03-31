@@ -1,7 +1,7 @@
 /*
 Data manager and owner of tab view
 */
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 import { JobStatus } from 'shared/types'
 import { useWindowStore } from 'renderer/store'
 
@@ -16,6 +16,7 @@ import {
     selectNextJob,
     selectPrevJob,
     removeBatchJob,
+    setAnnouncement,
 } from 'shared/data/slices/pipeline'
 // @ts-ignore
 import { NewJobPane } from './NewJobPane'
@@ -32,11 +33,16 @@ import { TabList } from 'renderer/components/Widgets/TabList'
 import { areAllJobsInBatchDone } from 'shared/utils'
 import { CanDo } from 'shared/canDo'
 import * as Utils from 'shared/utils'
+import { createAnnouncement } from 'shared/at-announce'
 const { App } = window
 
 export function MainView() {
     const { pipeline, settings } = useWindowStore()
-    const [visibleJobs, setVisibleJobs] = useState([])
+    const visibleJobs = pipeline.jobs.filter(
+        (job) =>
+            (settings.editJobOnNewTab || !job.invisible) &&
+            (!job.jobRequest?.batchId || job.isPrimaryForBatch)
+    )
 
     useEffect(() => {
         if (!(pipeline.jobs && pipeline.jobs.length > 0)) {
@@ -56,21 +62,21 @@ export function MainView() {
 
     useEffect(() => {
         if (pipeline.selectedJobId !== '') {
-            // for the narrators to announce it
-            document
-                .getElementById(`${ID(pipeline.selectedJobId)}-tab`)
-                ?.focus()
+            const selectedJob = pipeline.jobs.find(
+                (j) => j.internalId === pipeline.selectedJobId
+            )
+            if (!selectedJob || selectedJob.state !== JobState.NEW) {
+                document
+                    .getElementById(`${ID(pipeline.selectedJobId)}-tab`)
+                    ?.focus()
+            } else {
+                document
+                    .getElementById(`${ID(pipeline.selectedJobId)}-tabpanel`)
+                    ?.querySelector('select')
+                    ?.focus()
+            }
         }
     }, [pipeline.selectedJobId])
-
-    useEffect(() => {
-        let visibleJobs_ = pipeline.jobs.filter(
-            (job) =>
-                (settings.editJobOnNewTab || !job.invisible) &&
-                (!job.jobRequest?.batchId || job.isPrimaryForBatch) // job is not part of a batch or it's the primary
-        )
-        setVisibleJobs([...visibleJobs_])
-    }, [pipeline.jobs])
 
     let onKeyDown = (e) => {
         switch (e.key) {
@@ -144,6 +150,9 @@ export function MainView() {
                         title={`Create a job (${
                             PLATFORM.IS_MAC ? 'Cmd' : 'Ctrl'
                         }+N)`}
+                        aria-label={`Create a job (${
+                            PLATFORM.IS_MAC ? 'Cmd' : 'Ctrl'
+                        }+N)`}
                         onClick={(e) => {
                             const newJob_ = newJob(pipeline)
                             App.store.dispatch(addJob(newJob_))
@@ -154,7 +163,7 @@ export function MainView() {
                     </button>
                 )}
             </div>
-            {visibleJobs.map((job, idx) => {
+            {visibleJobs.map((job) => {
                 return (
                     <div
                         className={`${
@@ -166,7 +175,7 @@ export function MainView() {
                         role="tabpanel"
                         aria-labelledby={`${ID(job.internalId)}-tab`}
                         tabIndex={0}
-                        key={idx}
+                        key={job.internalId}
                     >
                         <button
                             disabled={
@@ -204,6 +213,7 @@ export function MainView() {
                                 }
                             }}
                             title={Utils.closeOrCancelLabel(pipeline, job)}
+                            aria-label={Utils.closeOrCancelLabel(pipeline, job)}
                             className="close-tab invisible"
                         >
                             <X width={20} height={20} />

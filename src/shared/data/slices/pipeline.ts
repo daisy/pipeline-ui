@@ -4,6 +4,7 @@ import {
     validateJobRequestAsync,
     validateJobRequestSync,
 } from 'renderer/utils/jobRequestValidator'
+import * as utils from '../../utils'
 
 import {
     Job,
@@ -23,6 +24,7 @@ import {
     ScriptOption,
 } from 'shared/types'
 import { RootState } from 'shared/types/store'
+import { createAnnouncement } from 'shared/at-announce'
 
 const initialState = {
     status: PipelineStatus.STOPPED,
@@ -138,10 +140,10 @@ export const pipeline = createSlice({
         },
         setProperties: (
             state: PipelineState,
-            param: PayloadAction<Array<EngineProperty>>
+            param: PayloadAction<{values: Array<EngineProperty>, sendToAPI: boolean}>
         ) => {
             // Merge EngineProperty array (retrieved from engine api) into properties map
-            state.properties = param.payload.reduce(
+            state.properties = param.payload.values.reduce(
                 (acc, prop) => {
                     acc[prop.name] = prop
                     return acc
@@ -212,6 +214,14 @@ export const pipeline = createSlice({
                     ? param.payload
                     : job
             })
+            let announcement = createAnnouncement(
+                param.payload,
+                state.jobs,
+                state.selectedJobId
+            )
+            if (announcement != '') {
+                state.announcement = announcement
+            }
         },
         removeJob: (state: PipelineState, param: PayloadAction<Job>) => {
             const searchedJob = param.payload
@@ -393,6 +403,12 @@ export const pipeline = createSlice({
                 state.ttsEnginesStates
             )
         },
+        setAnnouncement: (
+            state: PipelineState,
+            param: PayloadAction<string>
+        ) => {
+            state.announcement = param.payload
+        },
     },
 })
 
@@ -427,6 +443,7 @@ export const {
     setProperties,
     setTtsEngineState,
     requestStylesheetParameters,
+    setAnnouncement,
 } = pipeline.actions
 
 export const selectors = {
@@ -481,6 +498,8 @@ export const selectors = {
             internalId: `job-${pipeline.internalJobCounter}`,
             state: JobState.NEW,
             jobRequest: null,
+            resultsDownloaded: false,
+            logDownloaded: false,
         } as Job),
     prepareJobRequest: (
         job: Job,
@@ -514,7 +533,11 @@ export const selectors = {
                     value:
                         (hasJobRequestOnScript &&
                             job.jobRequest.options[index].value) ||
-                        getStoredOptionValue(job, script, item, state) ||
+                        utils.getStoredOptionValue(
+                            script,
+                            item,
+                            state.settings
+                        ) ||
                         item.default ||
                         null,
                     type: item.type,
@@ -531,34 +554,6 @@ export const selectors = {
         jobRequest.validation = [...validationResults]
         return jobRequest
     },
-}
-
-function getStoredOptionValue(
-    job: Job,
-    script: Script,
-    option: ScriptOption,
-    state: RootState
-) {
-    // see if there's a last-used value for this option in settings
-    if (
-        state.settings &&
-        state.settings.suggestOptionValues &&
-        state.settings.lastUsedScriptOptionOverrides
-    ) {
-        let lastUsedValues = state.settings.lastUsedScriptOptionOverrides.find(
-            (soo) => soo.scriptId == script.id
-        )
-        if (lastUsedValues) {
-            // if current value is the default value for this script, see if there's an override
-            let optionOverride = lastUsedValues.optionOverrides.find(
-                (oo) => oo.name == option.name
-            )
-            if (optionOverride) {
-                return optionOverride.value
-            }
-        }
-    }
-    return null
 }
 
 export const {

@@ -1,21 +1,19 @@
-import {
-    Job,
-    JobState,
-    JobStatus,
-    PipelineStatus,
-    Webservice,
-} from 'shared/types'
-import { info, error } from 'electron-log'
+import { Job, JobState, JobStatus, Webservice } from 'shared/types'
+import { info, error, debug } from 'electron-log'
 import { pipelineAPI } from '../../apis/pipeline'
 import { downloadJobLog, downloadJobResults } from './download'
 
 import { selectDownloadPath } from 'shared/data/slices/settings'
-import { updateJob, selectStatus } from 'shared/data/slices/pipeline'
+import {
+    updateJob,
+    setAnnouncement,
+    selectPipeline,
+} from 'shared/data/slices/pipeline'
 import { ParserException } from 'shared/parser/pipelineXmlConverter/parser'
 import { GetStateFunction } from 'shared/types/store'
 
-import { WebSocket } from 'ws'
-import { jobResponseXmlToJson } from 'shared/parser/pipelineXmlConverter/jobResponseToJson'
+import { WebSocket, type CloseEvent } from 'ws'
+import { readableStatus } from 'shared/jobName'
 import { jobXmlToJson } from 'shared/parser/pipelineXmlConverter'
 
 /**
@@ -52,39 +50,144 @@ export function startMonitor(
 
     let fetchJobDataFn = pipelineAPI.fetchJobData(j)
 
-    let socketOnMessage = async (event) => {
-        const fetchData = await fetchJobDataFn(ws)
-        await processJobUpdate(j, getState, dispatch, fetchData)
+    const terminalStatuses = [
+        JobStatus.ERROR,
+        JobStatus.FAIL,
+        JobStatus.SUCCESS,
+    ]
+
+    // Single synchronous gate for all terminal-status processing.
+    // Because JS is single-threaded, the check+set here is atomic: whichever
+    // concurrent async handler resumes first and calls handleJobUpdate wins;
+    // any subsequent caller sees the flag already set and returns immediately.
+    let terminalStatusReceived = false
+    const handleJobUpdate = (
+        jobUpdateData: ReturnType<typeof jobXmlToJson>
+    ) => {
+        if (terminalStatuses.includes(jobUpdateData.status)) {
+            if (terminalStatusReceived) return
+            terminalStatusReceived = true
+        }
+        processJobStatusUpdate(j, getState, dispatch, jobUpdateData)
     }
-    let socketOnError = (err) => error('Job monitoring failed')
+
+    // refetch the job and update only the messages field
+    let socketOnMessage = async (event) => {
+        let jobUpdateData = jobXmlToJson(event.data)
+        if (jobUpdateData.messages && jobUpdateData.messages.length > 0) {
+            const fetchData = await fetchJobDataFn(ws)
+            if (terminalStatuses.includes(fetchData.status)) {
+                handleJobUpdate(fetchData)
+                return
+            }
+            const currentJob =
+                selectPipeline(getState()).jobs.find(
+                    (job) => job.internalId === j.internalId
+                ) ?? j
+            dispatch(
+                updateJob({
+                    ...currentJob,
+                    jobData: {
+                        ...currentJob.jobData,
+                        messages: fetchData.messages,
+                    },
+                })
+            )
+        }
+    }
+
+    // just update the job progress field if exists
+    let socketOnProgress = async (event) => {
+        let jobUpdateData = jobXmlToJson(event.data)
+        if (jobUpdateData.progress) {
+            if (!terminalStatusReceived) {
+                const fetchData = await fetchJobDataFn(ws)
+                if (terminalStatuses.includes(fetchData.status)) {
+                    handleJobUpdate(fetchData)
+                    return
+                }
+            }
+            const currentJob =
+                selectPipeline(getState()).jobs.find(
+                    (job) => job.internalId === j.internalId
+                ) ?? j
+            dispatch(
+                updateJob({
+                    ...currentJob,
+                    jobData: {
+                        ...currentJob.jobData,
+                        progress: jobUpdateData.progress,
+                    },
+                })
+            )
+        }
+    }
+
+    // update the status field and handle completed jobs
+    let socketOnStatus = async (event) => {
+        debug('socketOnStatus event.data', event.data)
+        const wsJobData = jobXmlToJson(event.data)
+        debug('socketOnStatus wsJobData.status', wsJobData.status)
+        const fetchData = await fetchJobDataFn(ws)
+        debug('socketOnStatus fetchData.status', fetchData.status)
+        // The WS event data has the authoritative status;
+        // the REST API may be momentarily stale
+        if (wsJobData.status) {
+            fetchData.status = wsJobData.status
+        }
+        handleJobUpdate(fetchData)
+    }
+
+    let socketOnError = () => error('Job monitoring failed')
+
+    const socketOnClose = async (event: CloseEvent) => {
+        debug('socket closed, code:', event.code, 'reason:', event.target.url)
+        if (terminalStatusReceived) return
+        const fetchData = await fetchJobDataFn(ws)
+        debug('socketOnClose fetchData.status', fetchData.status)
+        if (terminalStatuses.includes(fetchData.status)) {
+            handleJobUpdate(fetchData)
+        }
+    }
 
     messagesSocket.addEventListener('message', socketOnMessage)
-    statusSocket.addEventListener('message', socketOnMessage)
-    progressSocket.addEventListener('message', socketOnMessage)
+    statusSocket.addEventListener('message', socketOnStatus)
+    progressSocket.addEventListener('message', socketOnProgress)
 
     messagesSocket.addEventListener('error', socketOnError)
     statusSocket.addEventListener('error', socketOnError)
     progressSocket.addEventListener('error', socketOnError)
+
+    messagesSocket.addEventListener('close', socketOnClose)
+    progressSocket.addEventListener('close', socketOnClose)
 }
 
-function processJobUpdate(
+function processJobStatusUpdate(
     j: Job,
     getState: GetStateFunction,
     dispatch,
     jobUpdateData: any
 ) {
     try {
-        let parsedData = jobUpdateData //jobXmlToJson(jobUpdateData)
-
         let updatedJob = {
             ...j,
-            jobData: parsedData,
+            jobData: jobUpdateData,
         }
         const finished = [
             JobStatus.ERROR,
             JobStatus.FAIL,
             JobStatus.SUCCESS,
-        ].includes(parsedData.status)
+        ].includes(jobUpdateData.status)
+        debug(
+            'processJobStatusUpdate status:',
+            jobUpdateData.status,
+            'finished:',
+            finished,
+            'resultsDownloaded:',
+            updatedJob.resultsDownloaded,
+            'logDownloaded:',
+            updatedJob.logDownloaded
+        )
         if (finished) {
             updatedJob.state = JobState.ENDED
         }
@@ -93,10 +196,21 @@ function processJobUpdate(
         }_${timestamp()}`
         const downloadFolder = selectDownloadPath(getState())
 
-        if (updatedJob.jobData?.results?.namedResults) {
+        if (
+            updatedJob.jobData?.results?.namedResults &&
+            !updatedJob.resultsDownloaded
+        ) {
+            debug('processJobStatusUpdate: downloading results')
             // If job has results, download them
             downloadJobResults(updatedJob, `${downloadFolder}/${newJobName}`)
                 .then((downloadedJob) => {
+                    downloadedJob.resultsDownloaded = true
+                    debug(
+                        'processJobStatusUpdate: dispatching after results download, state:',
+                        downloadedJob.state,
+                        'status:',
+                        downloadedJob.jobData?.status
+                    )
                     dispatch(updateJob(downloadedJob))
                     // Only delete job if it has been downloaded
                     if (downloadedJob.jobData.downloadedFolder) {
@@ -114,11 +228,20 @@ function processJobUpdate(
                 .catch((e) => {
                     error('Error downloading job results', e)
                 })
-        } else if (finished) {
-            info('job is finished without results')
+        } else if (finished && !updatedJob.logDownloaded) {
+            debug(
+                'processJobStatusUpdate: finished without results, downloading log'
+            )
             // job is finished wihout results : keep the log
             downloadJobLog(updatedJob, `${downloadFolder}/${newJobName}`).then(
                 (jobWithLog) => {
+                    jobWithLog.logDownloaded = true
+                    debug(
+                        'processJobStatusUpdate: dispatching after log download, state:',
+                        jobWithLog.state,
+                        'status:',
+                        jobWithLog.jobData?.status
+                    )
                     dispatch(updateJob(jobWithLog))
                     const deleteJob = pipelineAPI.deleteJob(jobWithLog)
                     deleteJob().then((response) => {

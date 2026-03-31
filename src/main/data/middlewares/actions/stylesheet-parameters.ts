@@ -42,7 +42,9 @@ export function requestStylesheetParameters(
                 // the same name as existing script options
                 let uniqueParameters = parameters.filter(
                     (p) => !job.script.options.find((o) => o.name == p.name)
-                )
+                    )
+                    .filter((p) => !(p.type == 'sass-map')) // also filter out the new "sass-map" parameter
+                
                 // update job options with new parameters
                 const stylesheetParameterOptions = [
                     ...job.jobRequest.stylesheetParameterOptions,

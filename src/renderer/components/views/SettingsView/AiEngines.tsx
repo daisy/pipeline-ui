@@ -25,10 +25,11 @@ export function AiEngines() {
         App.store.dispatch(save())
         App.store.dispatch(
             setProperties(
-                aiEngineProperties_.map((p) => ({
+                { values: aiEngineProperties_.map((p) => ({
                     name: p.key,
                     value: p.value,
-                }))
+                })), 
+                sendToAPI: true}
             )
         )
     }

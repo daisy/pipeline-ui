@@ -11,7 +11,9 @@ function ttsConfigToXml(ttsConfig: TtsConfig): string {
     // we already know the voice is "preferred"
     // just find out if it's a default
     let isDefault = (voice: TtsVoice) =>
-        ttsConfig.defaultVoices.find((v) => v.id == voice.id)
+        ttsConfig.defaultVoices.find(
+            (v) => v.engine === voice.engine && v.name === voice.name
+        )
     let xmlString = `<?xml version="1.0" encoding="UTF-8" standalone="no"?>
   <config>
     ${ttsConfig.preferredVoices

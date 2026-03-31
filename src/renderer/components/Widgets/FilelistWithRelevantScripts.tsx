@@ -52,7 +52,8 @@ export function FilelistWithRelevantScripts({
         <fieldset className="files-by-script">
             <legend>{categoryName}</legend>
             <div className="row">
-                <select onChange={(e) => onSelectScript(e)}>
+                <label htmlFor={`${jobInternalId}-${categoryName}-script`} className="visually-hidden">{categoryName} Scripts</label>
+                <select id={`${jobInternalId}-${categoryName}-script`} onChange={(e) => onSelectScript(e)}>
                     {relevantScripts.map((script, idx) => (
                         <option key={idx} value={script.id}>
                             {script?.nicename}
@@ -65,7 +66,6 @@ export function FilelistWithRelevantScripts({
                 <button
                     type="button"
                     disabled={selectedFiles.length == 0}
-                    aria-disabled={selectedFiles.length == 0}
                     onClick={(e) => initJob()}
                 >
                     Create job

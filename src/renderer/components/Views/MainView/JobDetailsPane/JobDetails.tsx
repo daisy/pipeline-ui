@@ -14,7 +14,7 @@ import { editJob, runJob } from 'shared/data/slices/pipeline'
 import { readableStatus } from 'shared/jobName'
 import { FileLink } from '../../../Widgets/FileLink'
 import { useWindowStore } from 'renderer/store'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { JobStatusIcon } from '../../../Widgets/SvgIcons'
 import { CanDo } from 'shared/canDo'
 
@@ -34,6 +34,11 @@ export function JobDetails({ job }: { job: Job }) {
             [JobState.SUBMITTING, JobState.SUBMITTED].includes(job.state)
         )
     }, [job.state])
+
+    const messagesSeen = useRef(false)
+    if (job.jobData.messages?.length > 0) {
+        messagesSeen.current = true
+    }
 
     let jobIsBatch =
         job.jobRequest.batchId != null && job.jobRequest.batchId != ''
@@ -84,9 +89,9 @@ export function JobDetails({ job }: { job: Job }) {
     }
     return (
         <div className="job-details">
-            <div className="job-status info">
-                <p aria-live="polite" className="row">
-                    Status:&nbsp;
+            <section className="job-status info">
+                <div className="row">
+                    <h2>Status:</h2>
                     <span
                         className={`status ${
                             job.jobData?.status
@@ -110,17 +115,17 @@ export function JobDetails({ job }: { job: Job }) {
                             }
                         )}
                     </span>
-                </p>
+                </div>
                 {job.jobData.progress &&
                 job.jobData?.status == JobStatus.RUNNING ? (
-                    <p aria-live="polite">
+                    <p>
                         Progress:&nbsp;
                         <span>{Math.ceil(job.jobData.progress * 100)}%</span>
                     </p>
                 ) : (
                     ''
                 )}
-            </div>
+            </section>
             <details className="job-configuration">
                 <summary>
                     <h2>Job Configuration</h2>
@@ -167,7 +172,7 @@ export function JobDetails({ job }: { job: Job }) {
                         below for more information.
                     </p>
                 )}
-                {job.jobData.messages && job.jobData.messages.length > 0 ? (
+                {messagesSeen.current ? (
                     <details>
                         <summary>Show messages</summary>
                         <Messages job={job} />
@@ -187,8 +192,11 @@ export function JobDetails({ job }: { job: Job }) {
                 )}
             </section>
 
-            {job.jobData.status != JobStatus.RUNNING &&
-                job.jobData.status != JobStatus.IDLE && (
+            {[
+                JobStatus.SUCCESS,
+                JobStatus.ERROR,
+                JobStatus.FAIL,
+            ].includes(job.jobData.status) && (
                     <>
                         {!canRunJob && (
                             <div className="warnings">

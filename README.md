@@ -12,9 +12,11 @@ A user interface for the DAISY Pipeline 2
 ## Usage notes
 
 * Download and install the latest [release](https://github.com/daisy/pipeline-ui/releases)
+* On Mac computers with Apple silicon chips, you must first [install Rosetta](https://support.apple.com/en-us/102527) before running the Pipeline
 * Start the Pipeline App and wait for the Pipeline engine to start
 * Choose a script and fill out the appropriate fields
 * Run the job and observe its progress and results
+
 
 
 ## Keyboard shortcuts

@@ -37,6 +37,11 @@ module.exports = {
         },
     },
 
+    watchOptions: {
+        poll: 1000,
+        ignored: /node_modules/,
+    },
+
     output: {
         path: resolve(FOLDERS.DEV_TEMP_BUILD),
         filename: 'renderer.js',
@@ -126,6 +131,9 @@ module.exports = {
             process: JSON.stringify({
                 platform: process.platform,
             }),
+            BUILD_ENABLE_MISTRAL: process.env.ENABLE_MISTRAL !== undefined
+                ? process.env.ENABLE_MISTRAL === 'true'
+                : isDev,
         }),
 
         new HTMLWebpackPlugin({

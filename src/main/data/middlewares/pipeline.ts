@@ -43,32 +43,8 @@ export function pipelineMiddleware({ getState, dispatch }) {
                 actions.useWebservice(action, dispatch, getState)
                 break
             case setScripts.type:
-                for (const script of action.payload as Array<Script>) {
-                    pipelineAPI
-                        .fetchScriptDetails(script)()
-                        .then((updated) => {
-                            dispatch(updateScript(updated))
-                        })
-                        .catch((e) =>
-                            error('error fetching script details', script, e)
-                        )
-                }
                 break
             case setDatatypes.type:
-                for (const datatype of action.payload as Array<Datatype>) {
-                    pipelineAPI
-                        .fetchDatatypeDetails(datatype)()
-                        .then((updated) => {
-                            dispatch(updateDatatype(updated))
-                        })
-                        .catch((e) =>
-                            error(
-                                'error fetching datatype details',
-                                datatype,
-                                e
-                            )
-                        )
-                }
                 break
             case removeJobs.type: // Batch removal of jobs in engine (no state check on removal)
                 actions.removeJobs(action)

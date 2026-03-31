@@ -206,14 +206,13 @@ function validateCustom(value, datatype: Datatype) {
             try {
                 // @ts-ignore
                 let pattern = String.raw`${dtChoice.pattern}`
-                let regex = new RegExp(pattern, 'g')
+                let regex = new RegExp(`^(?:${pattern})$`)
                 let result = regex.exec(value)
                 if (result) {
                     isValid = true
                 }
             } catch (err) {
-                // TODO should we pass through values that cause an exception in pattern matching? Or say that they failed?
-                isValid = true
+                isValid = false
             }
         } else if (dtChoice.hasOwnProperty('type')) {
             // TODO what are the possible values for 'type' in this case?

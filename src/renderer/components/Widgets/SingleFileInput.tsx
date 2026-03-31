@@ -20,7 +20,7 @@ const SingleFileInput: React.FC<FileInputProps> = ({
     let isValid = () => required && file && file.trim() != ''
     // debug("SingleFileInput initialValue", initialValue)
     let getLabel = () => {
-        let str = 'Select '
+        let str = ''
         if (allowFile) {
             str += 'file'
             if (allowFolder) {
@@ -47,7 +47,7 @@ const SingleFileInput: React.FC<FileInputProps> = ({
                     }
                 }}
                 enabled={enabled}
-                label={getLabel()}
+                label={`Select ${getLabel()}`}
             />
             {file != '' && (
                 <>
@@ -58,7 +58,12 @@ const SingleFileInput: React.FC<FileInputProps> = ({
                 </>
             )}
 
-            {required && !isValid() && <p className="error">File required</p>}
+            {required && !isValid() && (
+                <p className="error">
+                    {getLabel().charAt(0).toUpperCase() + getLabel().slice(1)}{' '}
+                    required
+                </p>
+            )}
         </div>
     )
 }

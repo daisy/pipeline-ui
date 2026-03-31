@@ -1,6 +1,8 @@
 import { useState } from 'react'
 import { TtsVoice } from 'shared/types/ttsConfig'
+// @ts-ignore
 import { voicesTransliterations } from './voiceTransliterations'
+// @ts-ignore
 import { VoicePreview } from './VoicePreview'
 import { SettingsMenuItem } from '..'
 
@@ -191,6 +193,11 @@ export function BrowseVoices({
         ]
         onChangeVoiceFilters(filters)
     }
+    const selectedVoice =
+        voiceId !== 'None'
+            ? availableVoices.find((v) => `${v.engine}-${v.name}` == voiceId)
+            : null
+
     return (
         <>
             <div className="voice-filters">
@@ -365,7 +372,7 @@ export function BrowseVoices({
                             .sort((a, b) => (a.name < b.name ? -1 : 1))
                             .map((v: TtsVoice, idx) => (
                                 //@ts-ignore
-                                <option value={v.id} key={`voice-${v.id}`}>
+                                <option value={`${v.engine}-${v.name}`} key={`voice-${v.engine}-${v.name}`}>
                                     {voicesTransliterations[v.name] ?? v.name}
                                 </option>
                             ))}
@@ -373,37 +380,26 @@ export function BrowseVoices({
                 </div>
             </div>
             <div className="voice-details">
-                {voiceId != 'None' ? (
+                {selectedVoice ? (
                     <>
                         <p className="selected-voice">
                             <b>Selected</b>: "
-                            {voicesTransliterations[
-                                availableVoices.find((v) => v.id == voiceId)
-                                    .name
-                            ] ??
-                                availableVoices.find((v) => v.id == voiceId)
-                                    .name}
+                            {voicesTransliterations[selectedVoice.name] ??
+                                selectedVoice.name}
                             ",{' '}
-                            {languageNames.of(
-                                availableVoices.find((v) => v.id == voiceId)
-                                    .lang
-                            )}
-                            ,{' '}
-                            {
-                                availableVoices.find((v) => v.id == voiceId)
-                                    .engine
-                            }
-                            ,{' '}
-                            {
-                                availableVoices.find((v) => v.id == voiceId)
-                                    .gender
-                            }
-                            .
+                            {languageNames.of(selectedVoice.lang)},{' '}
+                            {selectedVoice.engine},{' '}
+                            {selectedVoice.gender}.
                         </p>
                         <VoicePreview
-                            voice={availableVoices.find((v) => v.id == voiceId)}
+                            voice={selectedVoice}
+                            availableVoices={availableVoices}
                         ></VoicePreview>
-                        {preferredVoices.find((v) => v.id == voiceId) ? (
+                        {preferredVoices.find(
+                            (v) =>
+                                v.engine === selectedVoice.engine &&
+                                v.name === selectedVoice.name
+                        ) ? (
                             <p className="voice-already-exists">
                                 This voice has been added to{' '}
                                 <a
@@ -420,12 +416,8 @@ export function BrowseVoices({
                         ) : (
                             <button
                                 type="button"
-                                onClick={(e) =>
-                                    addToPreferredVoices(
-                                        availableVoices.find(
-                                            (v) => v.id == voiceId
-                                        )
-                                    )
+                                onClick={() =>
+                                    addToPreferredVoices(selectedVoice)
                                 }
                             >
                                 Add to preferred voices

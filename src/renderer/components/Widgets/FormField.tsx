@@ -2,14 +2,15 @@
 // item.type can be:
 // anyFileURI, anyDirURI, xsd:string, xsd:dateTime, xsd:boolean, xsd:integer, xsd:float, xsd:double, xsd:decimal
 
-import { ScriptItemBase, TypeChoice } from 'shared/types'
+import { Script, ScriptItemBase, ScriptOption, TypeChoice } from 'shared/types'
 import { formFieldFactory } from './formFieldFactory'
 import Markdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import { externalLinkClick, valueIsNotEmpty } from 'renderer/utils'
 import { useWindowStore } from 'renderer/store'
 import { CustomFieldDocumentation } from './CustomFieldDocumentation'
-import { findInputType } from 'shared/utils'
+import { findInputType, getStoredOptionValue } from 'shared/utils'
+
 const { App } = window
 
 // item.mediaType is a file type e.g. application/x-dtbook+xml
@@ -18,15 +19,17 @@ export function FormField({
     idprefix,
     onChange,
     initialValue,
+    script,
     error,
 }: {
     item: ScriptItemBase
     idprefix: string
     onChange: (value: any, item: ScriptItemBase) => void // function to set the value in a parent-level collection.
     initialValue: any // the initial value for the field
+    script: Script
     error?: string // error message to display
 }) {
-    const { pipeline } = useWindowStore()
+    const { pipeline, settings } = useWindowStore()
     // create the widget for this item (checkbox, file picker, etc)
     let control = formFieldFactory(
         item,
@@ -51,6 +54,14 @@ export function FormField({
         )
     }
 
+    let storedOptionValue = null
+    if (item.kind == 'option') {
+        storedOptionValue = getStoredOptionValue(
+            script,
+            item as ScriptOption,
+            settings
+        )
+    }
     return (
         <div className="field">
             {item.desc ? (
@@ -92,14 +103,33 @@ export function FormField({
                 </span>
             )}
             {control}
-            {valueIsNotEmpty(error) && (
-                <span
-                    id={idprefix + '-error'}
-                    className="field-errors"
-                    aria-live="polite"
-                >
-                    {error}
+            {storedOptionValue && (
+                <span className="field-value-options">
+                    Use the{' '}
+                    <button
+                        type="button"
+                        onClick={(e) =>
+                            onChange((item as ScriptOption).default, item)
+                        }
+                    >
+                        default
+                    </button>{' '}
+                    value or the{' '}
+                    <button
+                        type="button"
+                        onClick={(e) => onChange(storedOptionValue, item)}
+                    >
+                        last-used
+                    </button>{' '}
+                    value
                 </span>
+            )}
+            {valueIsNotEmpty(error) && (
+                <>
+                    <span id={idprefix + '-error'} className="field-errors">
+                        {error}
+                    </span>
+                </>
             )}
         </div>
     )

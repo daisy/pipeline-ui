@@ -3,13 +3,18 @@ import { pipelineAPI } from 'main/data/apis/pipeline'
 import {
     selectWebservice,
     selectProperties,
+    selectScripts,
     setDatatypes,
     setScripts,
     setTtsEngineState,
     setTtsVoices,
 } from 'shared/data/slices/pipeline'
 import { selectTtsConfig } from 'shared/data/slices/settings'
-import { Datatype, EngineProperty, Script, TtsEngineState, TtsVoice } from 'shared/types'
+import {
+    EngineProperty,
+    TtsEngineState,
+    TtsVoice,
+} from 'shared/types'
 import { GetStateFunction } from 'shared/types/store'
 
 export function setProperties(
@@ -19,7 +24,7 @@ export function setProperties(
 ) {
     const webservice = selectWebservice(getState())
     const currentProperties = selectProperties(getState())
-    const newProperties = action.payload as EngineProperty[]
+    const newProperties = action.payload.values as EngineProperty[]
     let ttsEnginesStatesStart = {
         ...(getState().pipeline.ttsEnginesStates as {
             [key: string]: TtsEngineState
@@ -88,21 +93,25 @@ export function setProperties(
     let disconnectedEngines = engineIds.filter(
         (id) => !getState().settings.ttsConfig.ttsEnginesConnected[id]
     )
-    let newProperties_ = newProperties.filter(
-        (p) =>
-            disconnectedEngines.filter((eId) => p.name.indexOf(eId) != -1)
-                .length == 0
-    )
+    let newProperties_ = action.payload.sendToAPI
+        ? newProperties
+        : newProperties.filter(
+              (p) =>
+                  disconnectedEngines.filter((eId) => p.name.indexOf(eId) != -1)
+                      .length == 0
+          )
 
     Promise.all(
         newProperties_.map((prop) => {
-            let currProp = currentProperties[prop.name]
-            if (currProp)  {
+            const currProp = currentProperties[prop.name]
+            if (currProp) {
                 // preserve the desc and href data
                 prop.desc = currProp.desc
                 prop.href = currProp.href
             }
-            pipelineAPI.setProperty(prop)(webservice)
+            if (action.payload.sendToAPI) {
+                return pipelineAPI.setProperty(prop)(webservice)
+            }
         })
     )
         //.then(() => pipelineAPI.fetchProperties()(webservice))
@@ -141,8 +150,22 @@ export function setProperties(
                             if (ttsEnginesStates[engineKey].status) {
                                 switch (ttsEnginesStates[engineKey].status) {
                                     case 'available':
+                                        // If engine was available but has no voices
+                                        // in this fetch, it's no longer connected
+                                        if (
+                                            !voices.find(
+                                                (v) => v.engine === engineKey
+                                            )
+                                        ) {
+                                            ttsEnginesStates[engineKey] = {
+                                                ...ttsEnginesStates[engineKey],
+                                                status: 'disabled',
+                                                message: '',
+                                            }
+                                        }
+                                        break
                                     case 'disabled':
-                                        // success or no change
+                                        // no change
                                         break
                                     case 'disconnecting':
                                         // confirm disconnection
@@ -184,34 +207,92 @@ export function setProperties(
                             ...ttsEnginesConnected_,
                         }
 
-                        // console.log('tts states', states)
-                        dispatch(setTtsEngineState(states))
+                        // Normalize and filter states from the engine:
+                        // - 'available' with no voices → downgrade to 'disabled'
+                        // - Only dispatch terminal states to avoid intermediate
+                        //   engine error messages flashing in the UI
+                        Object.keys(states).forEach((k) => {
+                            if (states[k].status === 'available') {
+                                if (
+                                    !getState().pipeline.ttsVoices?.some(
+                                        (v) => v.engine === k
+                                    )
+                                ) {
+                                    states[k].status = 'disabled'
+                                    states[k].message = ''
+                                } else if (!states[k].message) {
+                                    states[k].message = 'Connected'
+                                }
+                            }
+                        })
+                        const terminalStates = Object.fromEntries(
+                            Object.entries(states).filter(([, v]) =>
+                                [
+                                    'available',
+                                    'disabled',
+                                    'disconnected',
+                                ].includes((v as TtsEngineState).status)
+                            )
+                        )
+                        dispatch(setTtsEngineState(terminalStates))
                     })
             }
         })
-        .then(() => {
-            // if the mistral ai property was set, refetch the scripts list
-            if (newProperties.find(np => np.name.indexOf('mistral') != -1)) {
+        .then(async () => {
+            if (
+                action.payload.sendToAPI &&
+                newProperties.find((np) => np.name.indexOf('mistral') != -1)
+            ) {
+                const currentScripts = selectScripts(getState())
+                const currentScriptIds = new Set(
+                    currentScripts.map((s) => s.id)
+                )
                 const fetchScripts = pipelineAPI.fetchScripts()
-                return fetchScripts(webservice)
-            }
-            return []
-        })
-        .then((scripts: Array<Script>) => {
-            if (scripts.length > 0) {
-                dispatch(setScripts(scripts))
-            }
-        })
-        .then(() => {
-            if (newProperties.find(np => np.name.indexOf('mistral') != -1)) {
-                const fetchDatatypes = pipelineAPI.fetchDatatypes()
-                return fetchDatatypes(webservice)
-            }
-            return []
-        })
-        .then((datatypes: Array<Datatype>) => {
-            if (datatypes.length > 0) {
-                dispatch(setDatatypes(datatypes))
+                for (let i = 0; i < 10; i++) {
+                    await new Promise((r) => setTimeout(r, 300))
+                    const scripts = await fetchScripts(webservice)
+                    if (
+                        scripts.length !== currentScripts.length ||
+                        scripts.some((s) => !currentScriptIds.has(s.id))
+                    ) {
+                        const newScripts = scripts.filter(
+                            (s) => !currentScriptIds.has(s.id)
+                        )
+                        const newDetailed = await Promise.all(
+                            newScripts.map((s) =>
+                                pipelineAPI.fetchScriptDetails(s)()
+                            )
+                        )
+                        dispatch(
+                            setScripts([
+                                ...selectScripts(getState()),
+                                ...newDetailed,
+                            ])
+                        )
+                        const currentDatatypeIds = new Set(
+                            getState().pipeline.datatypes.map((d) => d.id)
+                        )
+                        const datatypes =
+                            await pipelineAPI.fetchDatatypes()(webservice)
+                        const newDatatypes = datatypes.filter(
+                            (d) => !currentDatatypeIds.has(d.id)
+                        )
+                        const newDetailedDatatypes = await Promise.all(
+                            newDatatypes.map((d) =>
+                                pipelineAPI.fetchDatatypeDetails(d)()
+                            )
+                        )
+                        if (newDetailedDatatypes.length > 0) {
+                            dispatch(
+                                setDatatypes([
+                                    ...getState().pipeline.datatypes,
+                                    ...newDetailedDatatypes,
+                                ])
+                            )
+                        }
+                        return
+                    }
+                }
             }
         })
 }

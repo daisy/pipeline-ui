@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { setProperties } from 'shared/data/slices/pipeline'
 import { TtsEngineState } from 'shared/types'
 import { SingleFileInput } from 'renderer/components/Widgets/SingleFileInput'
+import { X } from 'renderer/components/Widgets/SvgIcons'
 
 const { App } = window
 
@@ -37,11 +38,18 @@ export function MoreTTSOptions({
         )?.value ?? '100%'
     )
 
+    const [lexiconKey, setLexiconKey] = useState(0)
+
     let onLexiconChange = async (filename) => {
         if (filename && filename.length > 0) {
             let fileurl = await App.pathToFileURL(filename[0])
             onPropertyChange('org.daisy.pipeline.tts.default-lexicon', fileurl)
         }
+    }
+
+    let clearLexicon = () => {
+        onPropertyChange('org.daisy.pipeline.tts.default-lexicon', '')
+        setLexiconKey((k) => k + 1)
     }
     let onInputChange = (e, propName) => {
         e.preventDefault()
@@ -82,7 +90,7 @@ export function MoreTTSOptions({
         })
         setEngineProperties([...engineProperties_])
         App.store.dispatch(
-            setProperties([{ name: propName, value: propValue }])
+            setProperties({values: [{ name: propName, value: propValue }], sendToAPI: true})
         )
 
         onChangeTtsEngineProperties([...engineProperties_])
@@ -240,20 +248,35 @@ export function MoreTTSOptions({
             </div>
             <div className="field">
                 <label htmlFor="lexicon-select">Choose a lexicon:</label>
-                <SingleFileInput
-                    allowFile={true}
-                    allowFolder={false}
-                    elemId="lexicon-select"
-                    mediaType={['application/pls+xml']}
-                    onChange={onLexiconChange}
-                    initialValue={[
-                        engineProperties.find(
-                            (p) =>
-                                p.key ==
-                                'org.daisy.pipeline.tts.default-lexicon'
-                        )?.value ?? '',
-                    ]}
-                />
+                <div style={{ display: 'flex', alignItems: 'flex-end' }}>
+                    <SingleFileInput
+                        key={lexiconKey}
+                        allowFile={true}
+                        allowFolder={false}
+                        elemId="lexicon-select"
+                        mediaType={['application/pls+xml']}
+                        onChange={onLexiconChange}
+                        initialValue={[
+                            engineProperties.find(
+                                (p) =>
+                                    p.key ==
+                                    'org.daisy.pipeline.tts.default-lexicon'
+                            )?.value ?? '',
+                        ]}
+                    />
+                    {engineProperties.find(
+                        (p) => p.key == 'org.daisy.pipeline.tts.default-lexicon'
+                    )?.value && (
+                        <button
+                            type="button"
+                            className="invisible"
+                            onClick={clearLexicon}
+                            aria-label="Clear lexicon"
+                        >
+                            <X width="20" height="20" />
+                        </button>
+                    )}
+                </div>
             </div>
         </div>
     )

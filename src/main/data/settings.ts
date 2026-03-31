@@ -1,6 +1,6 @@
 import { app } from 'electron'
-import { info, error, debug } from 'electron-log'
-import { existsSync, readFileSync, writeFile } from 'fs'
+import log, { info, error, debug } from 'electron-log'
+import { existsSync, mkdirSync, readFileSync, writeFile } from 'fs'
 import { resolveUnpacked } from 'main/utils'
 import { resolve } from 'path'
 import { ENVIRONMENT } from 'shared/constants'
@@ -14,9 +14,20 @@ import { fileURLToPath, pathToFileURL } from 'url'
 
 export const settingsFile = resolve(app.getPath('userData'), 'settings.json')
 
+const logsBase =
+    process.platform === 'darwin'
+        ? resolve(app.getPath('home'), 'Library', 'Logs', 'DAISY Pipeline')
+        : app.getPath('userData')
+
+mkdirSync(resolve(logsBase, 'app-logs'), { recursive: true })
+mkdirSync(resolve(logsBase, 'engine-logs'), { recursive: true })
+
+log.transports.file.resolvePathFn = () =>
+    resolve(logsBase, 'app-logs', 'main.log')
+
 export function readSettings() {
     let settings: ApplicationSettings = {
-        settingsVersion: '1.7.0',
+        settingsVersion: '1.8.0',
         downloadFolder: pathToFileURL(
             resolve(app.getPath('home'), 'Documents', 'DAISY Pipeline results')
         ).href,
@@ -34,7 +45,7 @@ export function readSettings() {
             pipelineHome: resolveUnpacked('resources', 'daisy-pipeline'),
             jrePath: resolveUnpacked('resources', 'daisy-pipeline', 'jre'),
             appDataFolder: app.getPath('userData'),
-            logsFolder: resolve(app.getPath('userData'), 'pipeline-logs'),
+            logsFolder: resolve(logsBase, 'engine-logs'),
         },
         colorScheme: 'system',
         onClosingMainWindow: undefined, // Undeterminate to display the app-opening dialog
@@ -56,6 +67,7 @@ export function readSettings() {
         sortScriptsByFrequency: true,
         scriptFrequency: [],
         lastUsedScriptOptionOverrides: [],
+        logLevel: 'info',
     }
     try {
         if (existsSync(settingsFile)) {
@@ -78,6 +90,7 @@ export function readSettings() {
                 pipelineInstanceProps: {
                     ...settings.pipelineInstanceProps,
                     ...loaded?.pipelineInstanceProps,
+                    logsFolder: resolve(logsBase, 'engine-logs'),
                     webservice: {
                         ...settings.pipelineInstanceProps.webservice,
                         ...loaded?.pipelineInstanceProps?.webservice,
@@ -122,6 +135,14 @@ export function readSettings() {
 
     // Remove pipeline props loading for dev
     //if (ENVIRONMENT.IS_DEV) settings.pipelineInstanceProps = undefined
+
+    if (BUILD_LOG_LEVEL) {
+        settings.logLevel = BUILD_LOG_LEVEL as typeof settings.logLevel
+    }
+    if (settings.logLevel) {
+        log.transports.file.level = settings.logLevel as log.LevelOption
+        log.transports.console.level = settings.logLevel as log.LevelOption
+    }
 
     return settings
 }

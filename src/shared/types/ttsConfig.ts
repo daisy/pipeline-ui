@@ -6,9 +6,7 @@ export type TtsVoice = {
     lang: string
     gender: string
     priority?: number
-    id?: string
-    href: string
-    preview: string
+    preview?: string
 }
 
 export type TtsConfig = {

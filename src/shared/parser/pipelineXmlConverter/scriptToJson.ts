@@ -66,6 +66,9 @@ function scriptElementToJson(scriptElm: Element): Script {
                 default: optionElm.getAttribute('default'),
                 kind: 'option',
                 isStylesheetParameter: false,
+                reusable:
+                    optionElm.hasAttribute('reusable') &&
+                    optionElm.getAttribute('reusable') == 'true',
             }
         }
     )
@@ -80,7 +83,8 @@ function scriptElementToJson(scriptElm: Element): Script {
     if (firstRequiredInput?.sequence) {
         script.multidoc = true
     }
-
+    // a script is parsed twice: first the short version, and then the longer version
+    // the short version lists no inputs. only consider a script loaded after we've parsed the long version.
     return script
 }
 

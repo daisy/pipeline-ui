@@ -69,16 +69,8 @@ export function useWebservice(
                     dispatch(save())
                     dispatch(setAlive(alive))
                 })
-                .then(() => fetchScripts(newWebservice))
-                .then((scripts: Array<Script>) => {
-                    dispatch(setScripts(scripts))
-                    dispatch(setStatus(PipelineStatus.RUNNING))
-                    return pipelineAPI.fetchDatatypes()(newWebservice)
-                })
-                .then((datatypes) => {
-                    dispatch(setDatatypes(datatypes))
-                    return pipelineAPI.fetchProperties()(newWebservice)
-                })
+                // .then(() => pipelineAPI.fetchScripts()(newWebservice))
+                .then(() => pipelineAPI.fetchProperties()(newWebservice))
                 .then((properties: EngineProperty[]) => {
                     // Note : here we merge the instance properties
                     // with the one extracted from settings
@@ -109,26 +101,72 @@ export function useWebservice(
                         )
                         return {
                             ...p,
-                            desc: correspondingEngineProp.desc,
-                            href: correspondingEngineProp.href,
+                            desc: correspondingEngineProp?.desc ?? '',
+                            href: correspondingEngineProp?.href ?? '',
                         }
                     })
-                    dispatch(setProperties(properties_))
-                    // return pipelineAPI.fetchTtsVoices(
-                    //     selectTtsConfig(getState())
-                    // )(newWebservice)
+                    dispatch(
+                        setProperties({ values: properties_, sendToAPI: false })
+                    )
+                    // For engines the user has explicitly disconnected, send
+                    // empty credentials + enabled=false to prevent the engine
+                    // from auto-reconnecting using its persisted state
+                    const ttsEnginesConnected =
+                        getState().settings.ttsConfig.ttsEnginesConnected
+                    const ttsEngineProperties =
+                        getState().settings.ttsConfig.ttsEngineProperties
+                    const disconnectProps: EngineProperty[] = []
+                    for (const [engineId, isConnected] of Object.entries(
+                        ttsEnginesConnected
+                    )) {
+                        if (!isConnected) {
+                            ttsEngineProperties
+                                .filter((p) => p.key.startsWith(engineId))
+                                .forEach((p) =>
+                                    disconnectProps.push({
+                                        name: p.key,
+                                        value: '',
+                                    })
+                                )
+                            disconnectProps.push({
+                                name: engineId + '.enabled',
+                                value: 'false',
+                            })
+                        }
+                    }
+                    if (disconnectProps.length > 0) {
+                        dispatch(
+                            setProperties({
+                                values: disconnectProps,
+                                sendToAPI: true,
+                            })
+                        )
+                    }
                 })
-                // .then((voices: Array<TtsVoice>) => {
-                //     // console.log('TTS Voices', voices)
-                //     dispatch(setTtsVoices(voices))
-                //     return pipelineAPI.fetchTtsEnginesState()(
-                //         newWebservice
-                //     )
-                // })
-                // .then((states) => {
-                //     //console.log('tts states', states)
-                //     dispatch(setTtsEngineState(states))
-                // })
+                .then(() => fetchScripts(newWebservice))
+                .then((scripts: Array<Script>) =>
+                    Promise.all(
+                        scripts.map((s) => pipelineAPI.fetchScriptDetails(s)())
+                    )
+                )
+                .then((scripts) => {
+                    dispatch(setScripts(scripts))
+                    return pipelineAPI.fetchDatatypes()(newWebservice)
+                })
+                .then((datatypes) =>
+                    Promise.all(
+                        datatypes.map((d) =>
+                            pipelineAPI.fetchDatatypeDetails(d)()
+                        )
+                    )
+                )
+                .then((datatypes) => {
+                    dispatch(setDatatypes(datatypes))
+                })
+                .then(() => {
+                    info(`Pipeline is running`)
+                    dispatch(setStatus(PipelineStatus.RUNNING))
+                })
                 .catch((e) => {
                     error('useWebservice', e, e.parsedText)
                     if (e instanceof AbortError) {

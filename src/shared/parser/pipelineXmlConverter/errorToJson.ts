@@ -2,7 +2,13 @@ import { JobRequestError } from 'shared/types'
 import { parseXml } from './parser'
 
 function errorXmlToJson(xmlString: string): JobRequestError {
-    let errorElm = parseXml(xmlString, 'error')
+    let errorElm = null
+    try {
+        errorElm = parseXml(xmlString, 'error')
+    }
+    catch(error) {
+        return null
+    }
     let descElms = errorElm.getElementsByTagName('description')
     let traceElms = errorElm.getElementsByTagName('trace')
 

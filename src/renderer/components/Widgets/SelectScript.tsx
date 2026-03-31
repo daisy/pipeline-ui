@@ -1,6 +1,5 @@
 import { isScriptTTSEnhanced } from 'shared/utils'
 import { ID } from 'renderer/utils/utils'
-import { useEffect, useRef } from 'react'
 let ScriptOptionElm = ({ script, key }) =>
     script != null &&
     script != undefined && (
@@ -16,18 +15,7 @@ export function SelectScript({
     jobInternalId,
     onSelectChange,
     message,
-    autoFocus,
 }) {
-    let selectRef = useRef(null)
-
-    // this should work to give focus to the select element but it's not having an effect
-    // maybe something is shifting the focus elsewhere after this renders?
-    useEffect(() => {
-        if (selectRef.current && autoFocus) {
-            selectRef.current.focus()
-        }
-    }, [])
-
     return (
         <div className="select-script">
             <label
@@ -42,21 +30,26 @@ export function SelectScript({
                 onChange={(e) => {
                     onSelectChange(e.target.value)
                 }}
-                ref={selectRef}
             >
                 <option value={null}>None</option>
                 {priorityScripts.length > 0 && (
-                    <optgroup label="Frequently-used scripts">
-                        {priorityScripts.map((script, idx) => (
-                            <ScriptOptionElm
-                                script={script}
-                                key={`${idx}-prio`}
-                            />
+                    <>
+                        {priorityScripts.filter(s => s != null && s != undefined).map((script, idx) => (
+                            <option key={`${idx}-prio`} value={script?.id}>
+                                {script?.nicename}
+                                {script && isScriptTTSEnhanced(script)
+                                    ? ' (TTS Enhanced)'
+                                    : ''}
+                            </option>
                         ))}
-                    </optgroup>
+                        <option disabled>--------------------------</option>
+                    </>
                 )}
-                {scripts.map((script, idx) => (
-                    <ScriptOptionElm script={script} key={`${idx}-reg`} />
+                {scripts.filter(s => s != null && s != undefined).map((script, idx) => (
+                    <option key={`${idx}-reg`} value={script?.id}>
+                        {script?.nicename ?? script?.id}
+                        {script && isScriptTTSEnhanced(script) ? ' (TTS Enhanced)' : ''}
+                    </option>
                 ))}
             </select>
         </div>

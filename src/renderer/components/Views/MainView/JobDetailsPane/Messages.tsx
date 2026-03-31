@@ -1,11 +1,8 @@
 import { useState } from 'react'
 import { Job, Message, MessageLevel } from 'shared/types'
 
-let messageSort = (a, b) => (a.sequence < b.sequence ? b : a)
-
+let messageSort = (a, b) => a.sequence - b.sequence
 function MessageDisplay(m: Message, key, depth, verbose) {
-    // show messages that pass the verbosity filter
-    // always show error and warning
     let renderMessageChildren = (messages) => (
         <>
             {messages.map((msg, idx) =>
@@ -14,10 +11,15 @@ function MessageDisplay(m: Message, key, depth, verbose) {
         </>
     )
 
+    // show messages that pass the verbosity filter
+    // always show error and warning
     return (
         <>
             {verbose || m.level == 'ERROR' || m.level == 'WARNING' ? (
-                <li key={key} className={'msg-' + MessageLevel[m.level].toLowerCase()}>
+                <li
+                    key={key}
+                    className={'msg-' + MessageLevel[m.level].toLowerCase()}
+                >
                     {m.level == 'INFO'
                         ? m.content
                         : `${m.level} - ${m.content}`}
@@ -39,7 +41,6 @@ function MessageDisplay(m: Message, key, depth, verbose) {
 
 export function Messages({ job }: { job: Job }) {
     const [verbose, setVerbose] = useState(false)
-
     return (
         <>
             <div className="field row">
@@ -49,14 +50,14 @@ export function Messages({ job }: { job: Job }) {
                 <input
                     id={`${job.internalId}-verbose`}
                     type="checkbox"
-                    //@ts-ignore
-                    onClick={(e) => setVerbose(!e.target.checked)}
-                    defaultChecked={!verbose}
+                    checked={!verbose}
+                    onChange={(e) => setVerbose(!e.target.checked)}
                 ></input>
             </div>
             <ul>
                 {job.jobData.messages
-                    ?.sort(messageSort)
+                    ?.slice()
+                    .sort(messageSort)
                     .map((message: Message, idx) =>
                         MessageDisplay(
                             message,

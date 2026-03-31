@@ -88,6 +88,8 @@ export function formFieldFactory(
                 id={controlId}
                 value={initialValue}
                 aria-labelledby={`${controlId}-label`}
+                aria-invalid={error ? 'true' : 'false'}
+                aria-errormessage={controlId + '-error'}
             ></input>
         )
     } else if (inputType == 'custom') {

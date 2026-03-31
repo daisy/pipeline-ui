@@ -3,6 +3,7 @@ import { pipelineAPI } from '../../apis/pipeline'
 import { saveFile, unzipFile } from 'main/ipcs/file'
 import { pathToFileURL } from 'url'
 import { error } from 'electron-log'
+import { errorXmlToJson } from 'shared/parser/pipelineXmlConverter/errorToJson'
 
 export async function downloadNamedResult(r: NamedResult, targetUrl: string) {
     return pipelineAPI
@@ -40,6 +41,11 @@ export async function downloadJobLog(j: Job, targetFolder: string) {
     return pipelineAPI
         .fetchJobLog(j)()
         .then((log) => {
+            // if this fetch returns error xml, don't save it as the log file
+            // this can happen if the job results + log have already been saved and the job was deleted
+            if (errorXmlToJson(log) != null) {
+                throw new Error('Job log not available')
+            }
             // @ts-ignore
             saveFile(new TextEncoder().encode(log), jobTargetUrl)
             return {

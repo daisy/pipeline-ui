@@ -87,7 +87,7 @@ export class PipelineAPI {
                 this.info(
                     `createPipelineFetchFunction - Fetching ${launch}`,
                     url,
-                    JSON.stringify(options)
+                    JSON.stringify(options) ?? ''
                 )
                 this.fetchCache.set(url, {
                     count: launch,
@@ -99,7 +99,7 @@ export class PipelineAPI {
                             this.info(
                                 `createPipelineFetchFunction - Response ${launch} to request`,
                                 url,
-                                JSON.stringify(options)
+                                JSON.stringify(options) ?? ''
                             )
                             // Try to delete the cache if the fetch is successful
                             this.fetchCache.delete(url)

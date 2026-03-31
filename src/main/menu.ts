@@ -15,6 +15,7 @@ import {
     getJobsInBatch,
 } from 'shared/utils'
 import { CanDo } from 'shared/canDo'
+import { createAnnouncement } from 'shared/at-announce'
 
 export function buildMenuTemplate({
     appName,
@@ -44,7 +45,7 @@ export function buildMenuTemplate({
     const isMac = process.platform === 'darwin'
 
     let multipleJobs = jobs.length > 1
-    let status = 'new job'
+    let status = 'Status: new job'
     let currentJob = jobs.find((j) => j.internalId == selectedJobId)
     let jobsInBatch = getJobsInBatch(
         selectPipeline(store.getState()),
@@ -52,13 +53,12 @@ export function buildMenuTemplate({
     )
 
     if (currentJob?.isPrimaryForBatch) {
-        let numJobsDone = getCompletedCountInBatch(currentJob, jobsInBatch)
-        status = `Batch status: (${numJobsDone}/${jobsInBatch?.length ?? '?'})`
+        status = createAnnouncement(currentJob, jobs, selectedJobId)
     } else if (currentJob?.jobData?.status) {
-        status = readableStatus[currentJob.jobData.status]
+        status = 'Status: ' + readableStatus[currentJob.jobData.status]
     }
     if (pipelineStatus != PipelineStatus.RUNNING) {
-        status = 'unavailable'
+        status = 'Status unavailable'
     }
 
     // take off the suffix '- App' -- we only want that to appear on the window title
@@ -73,7 +73,6 @@ export function buildMenuTemplate({
             ? 'Next'
             : 'Run job'
 
-    
     // @ts-ignore
     const template: MenuItemConstructorOptions = [
         // { role: 'appMenu' }
@@ -125,10 +124,9 @@ export function buildMenuTemplate({
                 ...(!isMac
                     ? [
                           {
-                            label: 'Settings',
-                            click: onShowSettings,
-                            accelerator: 'CommandOrControl+,',
-
+                              label: 'Settings',
+                              click: onShowSettings,
+                              accelerator: 'CommandOrControl+,',
                           },
                       ]
                     : []),
@@ -148,12 +146,12 @@ export function buildMenuTemplate({
                 ...(currentJob
                     ? [
                           {
-                              label: `Status: ${status}`,
+                              label: status,
                               accelerator: 'CommandOrControl+Shift+I',
                               click: async () => {
                                   await dialog.showMessageBox({
                                       type: 'info',
-                                      message: `Status: ${status}`,
+                                      message: status,
                                   })
                               },
                           },

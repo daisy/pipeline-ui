@@ -72,4 +72,16 @@ form.script {
     p.error {
         color: var(--error);
     }
+    .field-value-options {
+        font-size: smaller;
+        
+        button {
+            background: none;
+            border: none;
+            color: var(--fg);
+            padding: 0;
+            margin: 0;
+            text-decoration: underline;
+        }
+    }
 }

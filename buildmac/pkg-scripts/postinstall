@@ -25,4 +25,31 @@ remove_app () {
 remove_app 'DAISY Pipeline (2023)'
 remove_app 'DAISY Pipeline 2'
 
+# Migrate old log locations to new ones
+CURRENT_USER=$(stat -f '%Su' /dev/console)
+USER_HOME=$(dscl . -read /Users/$CURRENT_USER NFSHomeDirectory | awk '{print $2}')
+USER_SUPPORT="$USER_HOME/Library/Application Support"
+USER_LOGS="$USER_HOME/Library/Logs"
+NEW_APP_LOGS="$USER_LOGS/DAISY Pipeline/app-logs"
+NEW_ENGINE_LOGS="$USER_LOGS/DAISY Pipeline/engine-logs"
+
+migrate_logs() {
+    local SRC="$1"
+    local DEST="$2"
+    if [ -d "$SRC" ]; then
+        mkdir -p "$DEST"
+        cp -rn "$SRC/." "$DEST/"
+        rm -rf "$SRC"
+    fi
+}
+
+mkdir -p "$NEW_APP_LOGS"
+mkdir -p "$NEW_ENGINE_LOGS"
+
+migrate_logs "$USER_SUPPORT/pipeline-ui/pipeline-logs" "$NEW_ENGINE_LOGS"
+migrate_logs "$USER_LOGS/pipeline-ui" "$NEW_APP_LOGS"
+migrate_logs "$USER_LOGS/DAISY Pipeline - App" "$NEW_APP_LOGS"
+
+chown -R "$CURRENT_USER" "$USER_LOGS/DAISY Pipeline"
+
 exit 0

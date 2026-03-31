@@ -2,7 +2,7 @@
   "displayName": "DAISY Pipeline",
   "name": "pipeline-ui",
   "description": "User interface for the DAISY Pipeline",
-  "version": "1.10.0",
+  "version": "1.11.0",
   "main": "./node_modules/.dev-temp-build/main.js",
   "devTempBuildFolder": "./node_modules/.dev-temp-build",
   "devServer": "http://localhost:4927",
@@ -47,13 +47,16 @@
     "nodemon:start": "nodemon --watch src/main --watch src/renderer/bridge --watch src/shared --ignore src/resources --ext \"*\" --exec yarn dev:main",
     "predist": "yarn build",
     "dist": "./node_modules/.bin/electron-builder --publish never",
+    "predist-debug:mac": "cross-env LOG_LEVEL=debug yarn build",
+    "dist-debug:mac": "SKIP_NOTARIZATION=true ./node_modules/.bin/electron-builder --publish never --mac -c.mac.identity=null",
+    "predist-debug:win": "cross-env LOG_LEVEL=debug yarn build",
+    "dist-debug:win": "./node_modules/.bin/electron-builder --publish never --win",
     "prerelease": "yarn build",
     "release": "./node_modules/.bin/electron-builder --publish always",
     "clean": "rimraf dist",
     "prepare": "husky install",
     "r": "yarn run-s",
-    "permissions": "node ./bin/utils/fixPermissions.js",
-    "dist-mac-dev": "SKIP_NOTARIZATION=true yarn run dist --mac -c.mac.identity=null"
+    "permissions": "node ./bin/utils/fixPermissions.js"
   },
   "dependencies": {
     "@reduxjs/toolkit": "^1.9.1",

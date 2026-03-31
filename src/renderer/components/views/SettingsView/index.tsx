@@ -98,9 +98,16 @@ export function SettingsView(
 
     const [voiceFilters, setVoiceFilters] = useState([])
 
+    const savedVoice = ({ engine, name, lang, gender }) => ({
+        engine,
+        name,
+        lang,
+        gender,
+    })
+
     const onTtsVoicesPreferenceChange = (voices) => {
         const newConfig = {
-            preferredVoices: [...voices],
+            preferredVoices: voices.map(savedVoice),
             defaultVoices: [...settings.ttsConfig.defaultVoices],
             ttsEngineProperties: [...settings.ttsConfig.ttsEngineProperties],
             xmlFilepath: newSettings.ttsConfig.xmlFilepath,
@@ -113,12 +120,14 @@ export function SettingsView(
         // make sure the default voices are also preferred voices
         let tmpVoices = [...voices]
         tmpVoices = tmpVoices.filter((vx) =>
-            settings.ttsConfig.preferredVoices.find((v) => v.id == vx.id)
+            settings.ttsConfig.preferredVoices.find(
+                (v) => v.engine === vx.engine && v.name === vx.name
+            )
         )
 
         const newConfig = {
-            preferredVoices: [...settings.ttsConfig.preferredVoices],
-            defaultVoices: [...tmpVoices],
+            preferredVoices: settings.ttsConfig.preferredVoices.map(savedVoice),
+            defaultVoices: tmpVoices.map(savedVoice),
             ttsEngineProperties: [...settings.ttsConfig.ttsEngineProperties],
             xmlFilepath: newSettings.ttsConfig.xmlFilepath,
             ttsEnginesConnected: { ...settings.ttsConfig.ttsEnginesConnected },
@@ -133,11 +142,13 @@ export function SettingsView(
         // make sure the default voices are also preferred voices
         let tmpVoices = [...defaultVoices]
         tmpVoices = tmpVoices.filter((vx) =>
-            settings.ttsConfig.preferredVoices.find((v) => v.id == vx.id)
+            settings.ttsConfig.preferredVoices.find(
+                (v) => v.engine === vx.engine && v.name === vx.name
+            )
         )
         const newConfig = {
-            preferredVoices: [...preferredVoices],
-            defaultVoices: [...tmpVoices],
+            preferredVoices: preferredVoices.map(savedVoice),
+            defaultVoices: tmpVoices.map(savedVoice),
             ttsEngineProperties: [...settings.ttsConfig.ttsEngineProperties],
             xmlFilepath: newSettings.ttsConfig.xmlFilepath,
             ttsEnginesConnected: { ...settings.ttsConfig.ttsEnginesConnected },
@@ -160,10 +171,13 @@ export function SettingsView(
         let ttsEnginesConnected = { ...settings.ttsConfig.ttsEnginesConnected }
         ttsEnginesConnected[engineId] = isConnected
 
+        const dedupedProps = Object.values(
+            Object.fromEntries(engineProps.map((p) => [p.key, p]))
+        )
         const newConfig = {
             preferredVoices: [...settings.ttsConfig.preferredVoices],
             defaultVoices: [...settings.ttsConfig.defaultVoices],
-            ttsEngineProperties: [...engineProps],
+            ttsEngineProperties: dedupedProps,
             xmlFilepath: newSettings.ttsConfig.xmlFilepath,
             ttsEnginesConnected: { ...ttsEnginesConnected },
         }
@@ -226,6 +240,7 @@ export function SettingsView(
             markup: pipeline.ttsVoices ? (
                 <PreferredVoices
                     ttsEnginesStates={pipeline.ttsEnginesStates}
+                    ttsVoices={pipeline.ttsVoices}
                     userPreferredVoices={newSettings.ttsConfig.preferredVoices}
                     userDefaultVoices={newSettings.ttsConfig.defaultVoices}
                     onChangePreferredVoices={onTtsVoicesPreferenceChange}

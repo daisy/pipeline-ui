@@ -178,7 +178,6 @@ export function NewJobPane({ job }: { job: Job }) {
                         scripts={scriptsInOrder}
                         onSelectChange={onSelectChange}
                         message={'Or, select a script'}
-                        autoFocus={true}
                     />
                 )}
                 {showSponsorshipMessage && (

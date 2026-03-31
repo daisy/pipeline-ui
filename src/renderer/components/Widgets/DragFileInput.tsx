@@ -83,14 +83,10 @@ const DragFileInput: React.FC<FileInputProps> = ({
                 onDragOver={onDragOver}
                 onDragLeave={onDragLeave}
                 onDrop={onDrop}
-                tabIndex={enabled ? 0 : -1}
-                aria-disabled={!enabled}
                 id={elemId}
             >
                 <Upload size={32} />
-                <p className="drop-target-text">
-                    Drop files here
-                </p>
+                <p className="drop-target-text">Drop files here</p>
             </div>
             <div className="buttons">
                 {isMac ? (

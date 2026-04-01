@@ -1,13 +1,5 @@
-# dependencies
-/node_modules
-/.pnp
-.pnp.js
-
-# testing
-/coverage
-
-# production
-/dist
+node_modules
+dist
 
 # misc
 .DS_Store
@@ -17,15 +9,13 @@
 .env.test.local
 .env.production.local
 .eslintcache
-.swc
 
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
-node_modules
 
 daisy-pipeline
-.vscode/settings.json
-.vscode/launch.json
+.vscode
+.vscode
 
 out

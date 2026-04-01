@@ -34,9 +34,9 @@ export function walk(
 // Some comments on SOF say that hostname resolution is OS dependent, but some clues on github issues for nodejs
 // states that the resolution for 'localhost' defaults to ipv6, starting a version of nodejs i can't remember the number
 
-const __baseUnpackagedPath = __dirname.endsWith('.asar')
-    ? __dirname + '.unpacked'
-    : __dirname
+const __baseUnpackagedPath = __dirname.includes('.asar')
+    ? __dirname.substring(0, __dirname.indexOf('.asar')) + '.asar.unpacked'
+    : resolve(__dirname, '..')
 
 /**
  * Resolve a path relative to the asar unpacked folder

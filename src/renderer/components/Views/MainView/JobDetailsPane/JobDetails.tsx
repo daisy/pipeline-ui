@@ -1,7 +1,7 @@
 /*
 Details of a submitted job
 */
-import { Job, JobState, JobStatus, MessageLevel } from '/shared/types'
+import { Job, JobState, JobStatus, MessageLevel } from 'shared/types'
 //@ts-ignore
 import { Messages } from './Messages'
 //@ts-ignore

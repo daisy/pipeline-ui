@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { Fragment, useState } from 'react'
 import { Job, Message, MessageLevel } from 'shared/types'
 
 let messageSort = (a, b) => a.sequence - b.sequence
@@ -14,7 +14,7 @@ function MessageDisplay(m: Message, key, depth, verbose) {
     // show messages that pass the verbosity filter
     // always show error and warning
     return (
-        <>
+        <Fragment key={key}>
             {verbose || m.level == 'ERROR' || m.level == 'WARNING' ? (
                 <li
                     key={key}
@@ -35,7 +35,7 @@ function MessageDisplay(m: Message, key, depth, verbose) {
             {!verbose && m.messages && m.messages.length
                 ? renderMessageChildren(m.messages)
                 : ''}
-        </>
+        </Fragment>
     )
 }
 

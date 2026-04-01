@@ -90,6 +90,8 @@ export function readSettings() {
                 pipelineInstanceProps: {
                     ...settings.pipelineInstanceProps,
                     ...loaded?.pipelineInstanceProps,
+                    pipelineHome: settings.pipelineInstanceProps.pipelineHome,
+                    jrePath: settings.pipelineInstanceProps.jrePath,
                     logsFolder: resolve(logsBase, 'engine-logs'),
                     webservice: {
                         ...settings.pipelineInstanceProps.webservice,

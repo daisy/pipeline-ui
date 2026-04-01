@@ -1,7 +1,7 @@
 /*
 Details of a submitted job
 */
-import { Job, JobState } from '/shared/types'
+import { Job, JobState } from 'shared/types'
 import { useWindowStore } from 'renderer/store'
 import { useState, useEffect } from 'react'
 import { JobDetails } from './JobDetails'

@@ -2,7 +2,6 @@ import { app, BrowserWindow } from 'electron'
 
 import { ENVIRONMENT, IPC, PLATFORM } from 'shared/constants'
 import { WindowProps } from 'shared/types'
-import { APP_CONFIG } from '~/app.config'
 
 import { PipelineInstance } from '../../pipeline/pipeline'
 
@@ -40,7 +39,7 @@ export function createWindow(
 ) {
     const window = new BrowserWindow(settings)
 
-    const devServerURL = `${APP_CONFIG.RENDERER.DEV_SERVER.URL}#/${id}${hash}`
+    const devServerURL = `${process.env['ELECTRON_RENDERER_URL']}#/${id}${hash}`
 
     ENVIRONMENT.IS_DEV
         ? window.loadURL(devServerURL)

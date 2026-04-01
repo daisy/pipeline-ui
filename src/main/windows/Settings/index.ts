@@ -27,7 +27,7 @@ export function SettingsWindow(hash: string = '') {
             alwaysOnTop: false,
 
             webPreferences: {
-                preload: join(__dirname, 'bridge.js'),
+                preload: join(__dirname, '../preload/bridge.js'),
                 nodeIntegration: false,
                 contextIsolation: true,
                 spellcheck: false,

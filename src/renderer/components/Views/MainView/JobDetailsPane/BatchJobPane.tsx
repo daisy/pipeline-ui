@@ -1,7 +1,7 @@
 /*
 Details of a submitted job
 */
-import { Job, JobStatus } from '/shared/types'
+import { Job, JobStatus } from 'shared/types'
 
 import { cancelBatchJob } from 'shared/data/slices/pipeline'
 import { useState, useEffect } from 'react'

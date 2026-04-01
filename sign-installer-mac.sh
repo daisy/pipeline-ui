@@ -1,4 +1,4 @@
-source .env
+[ -f .env ] && source .env
 if [ -z "$1" ]
   then
     echo "Error: No file supplied"

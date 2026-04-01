@@ -1,6 +1,6 @@
 const { defineConfig } = require('electron-vite')
 const { resolve } = require('path')
-const { cpSync } = require('fs')
+const { cpSync, existsSync } = require('fs')
 const react = require('@vitejs/plugin-react')
 
 const { APP_CONFIG } = require('./app.config')
@@ -27,11 +27,12 @@ module.exports = defineConfig({
             {
                 name: 'copy-resources',
                 closeBundle() {
-                    cpSync(
-                        resolve(APP_CONFIG.FOLDERS.RESOURCES),
-                        resolve('out/resources'),
-                        { recursive: true }
-                    )
+                    const src = resolve(APP_CONFIG.FOLDERS.RESOURCES)
+                    if (existsSync(src)) {
+                        cpSync(src, resolve('out/resources'), { recursive: true })
+                    } else {
+                        console.warn('Resources not found, skipping copy:', src)
+                    }
                 },
             },
         ],

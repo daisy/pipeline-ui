@@ -45,6 +45,10 @@ module.exports = {
         icon: `${FOLDERS.RESOURCES}/icons/logo_256x256.png`,
         target: ['nsis'],
     },
+    publish: {
+        provider: 'github',
+        releaseType: 'draft',
+    },
     afterSign: 'buildtools/notarize.js',
     asarUnpack: ['resources/daisy-pipeline'],
     nsis: {

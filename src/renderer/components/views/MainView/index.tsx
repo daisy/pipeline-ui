@@ -110,8 +110,6 @@ export function MainView() {
     //     }
     // }
 
-    
-
     return (
         <main>
             <div className="tablist-container">

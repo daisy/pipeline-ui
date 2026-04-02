@@ -252,12 +252,12 @@ const migrators: Map<string, (prev: any) => any> = new Map<
                     appStateOnClosingMainWindow == undefined
                         ? undefined
                         : appStateOnClosingMainWindow == 'ask'
-                        ? 'ask'
-                        : appStateOnClosingMainWindow == 'close'
-                        ? 'close'
-                        : jobsStateOnClosingMainWindow == 'close'
-                        ? 'keepengine'
-                        : 'keepall',
+                          ? 'ask'
+                          : appStateOnClosingMainWindow == 'close'
+                            ? 'close'
+                            : jobsStateOnClosingMainWindow == 'close'
+                              ? 'keepengine'
+                              : 'keepall',
                 ...toKeep,
             } as _ApplicationSettings_v130
         },

@@ -180,16 +180,17 @@ export function TTSEngines({
         const ttsProps = [
             ...engineProperties.filter(
                 (k) =>
-                    k.key.startsWith(engineKey) &&
-                    !k.key.endsWith('.enabled')
+                    k.key.startsWith(engineKey) && !k.key.endsWith('.enabled')
             ),
         ]
         // send the properties to the engine for voices reloading
         // add the enabled property to the list - it's not used by the UI but it helps the engine do the right thing
         ttsProps.push({ key: engineKey + '.enabled', value: 'true' })
         App.store.dispatch(
-            setProperties({values:ttsProps.map((p) => ({ name: p.key, value: p.value })), sendToAPI: true}
-            )
+            setProperties({
+                values: ttsProps.map((p) => ({ name: p.key, value: p.value })),
+                sendToAPI: true,
+            })
         )
         const updatedSettings = [
             ...ttsEngineProperties.filter((k) => !k.key.startsWith(engineKey)),
@@ -324,7 +325,8 @@ export function TTSEngines({
                         {!isConnecting[engineId] &&
                             engineMessage[engineId] &&
                             !hasChangedProps(engineId) &&
-                            (connected[engineId] || attemptedConnection[engineId] === true) &&
+                            (connected[engineId] ||
+                                attemptedConnection[engineId] === true) &&
                             ['available', 'disabled', 'disconnected'].includes(
                                 engineStatus[engineId]
                             ) && (

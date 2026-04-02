@@ -1,6 +1,6 @@
 // set CSS properties based on the settings
 
-import { ApplicationSettings } from "shared/types";
+import { ApplicationSettings } from 'shared/types'
 
 /* font options
     --font-system: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont;
@@ -22,4 +22,3 @@ export function loadStyleProperties(settings: ApplicationSettings) {
         `var(--font-${settings.fontName})`
     )
 }
-

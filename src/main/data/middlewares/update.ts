@@ -56,14 +56,17 @@ export function updateMiddleware({ getState, dispatch }) {
                     if (action.payload === true) {
                         userIsWarnedAboutUpdate = false
                     }
-                    if (action.payload === true ||
-                        (
-                            ( !ENVIRONMENT.IS_DEV ||
-                                autoUpdater.forceDevUpdateConfig) && 
-                            !update.updateError
-                        )
+                    if (
+                        action.payload === true ||
+                        ((!ENVIRONMENT.IS_DEV ||
+                            autoUpdater.forceDevUpdateConfig) &&
+                            !update.updateError)
                     ) {
-                        dispatch(setUpdateMessage('Checking for automatic updates ...'))
+                        dispatch(
+                            setUpdateMessage(
+                                'Checking for automatic updates ...'
+                            )
+                        )
                         autoUpdater
                             .checkForUpdates()
                             .then((res) => {
@@ -71,12 +74,18 @@ export function updateMiddleware({ getState, dispatch }) {
                                     dispatch(setUpdateAvailable(res.updateInfo))
                                 } else {
                                     dispatch(
-                                        setUpdateMessage('No automatic updates available')
+                                        setUpdateMessage(
+                                            'No automatic updates available'
+                                        )
                                     )
                                 }
                             })
                             .catch((v) => {
-                                dispatch(setUpdateMessage('Checking for manual updates ...'))
+                                dispatch(
+                                    setUpdateMessage(
+                                        'Checking for manual updates ...'
+                                    )
+                                )
                                 // Assuming releases tags will follow major.minor.patch
                                 // for official release
                                 // (while RC or beta version would remain marked as pre-release)
@@ -87,7 +96,7 @@ export function updateMiddleware({ getState, dispatch }) {
                                 // Quick version check assuming each part is unsigned byte
                                 const currentVersion =
                                     (+major << 16) | (+minor << 8) | +patch
-                                // TODO : might need to change this for forks (hardcoded github repo url), 
+                                // TODO : might need to change this for forks (hardcoded github repo url),
                                 fetch(
                                     `https://github.com/daisy/${packageJson.name}/releases/latest`
                                 )
@@ -271,7 +280,10 @@ export function updateMiddleware({ getState, dispatch }) {
                     info('Update message : ' + action.payload)
                     break
                 case setUpdateError.type:
-                    error('An error occured during the update process : ' + JSON.stringify(action.payload))
+                    error(
+                        'An error occured during the update process : ' +
+                            JSON.stringify(action.payload)
+                    )
                     break
                 default:
                     break

@@ -372,7 +372,10 @@ export function BrowseVoices({
                             .sort((a, b) => (a.name < b.name ? -1 : 1))
                             .map((v: TtsVoice, idx) => (
                                 //@ts-ignore
-                                <option value={`${v.engine}-${v.name}`} key={`voice-${v.engine}-${v.name}`}>
+                                <option
+                                    value={`${v.engine}-${v.name}`}
+                                    key={`voice-${v.engine}-${v.name}`}
+                                >
                                     {voicesTransliterations[v.name] ?? v.name}
                                 </option>
                             ))}
@@ -386,10 +389,8 @@ export function BrowseVoices({
                             <b>Selected</b>: "
                             {voicesTransliterations[selectedVoice.name] ??
                                 selectedVoice.name}
-                            ",{' '}
-                            {languageNames.of(selectedVoice.lang)},{' '}
-                            {selectedVoice.engine},{' '}
-                            {selectedVoice.gender}.
+                            ", {languageNames.of(selectedVoice.lang)},{' '}
+                            {selectedVoice.engine}, {selectedVoice.gender}.
                         </p>
                         <VoicePreview
                             voice={selectedVoice}

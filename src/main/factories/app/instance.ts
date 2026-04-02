@@ -27,7 +27,11 @@ async function getWebserviceFromSettings(remain: number, startingTime: number) {
 }
 
 export const reservedFlag = ['--bg', '--hidden']
-export const settingsCommands = ['browse-voices', 'preferred-voices', 'external-services']
+export const settingsCommands = [
+    'browse-voices',
+    'preferred-voices',
+    'external-services',
+]
 const electronOptions = ['--remote-debugging-port']
 
 export function makeAppWithSingleInstanceLock(fn: () => void) {

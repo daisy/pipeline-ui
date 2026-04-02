@@ -192,59 +192,57 @@ export function JobDetails({ job }: { job: Job }) {
                 )}
             </section>
 
-            {[
-                JobStatus.SUCCESS,
-                JobStatus.ERROR,
-                JobStatus.FAIL,
-            ].includes(job.jobData.status) && (
-                    <>
-                        {!canRunJob && (
-                            <div className="warnings">
-                                <p className="warning">
-                                    Go under settings and choose a results
-                                    folder location before re-running the job.
-                                </p>
-                            </div>
+            {[JobStatus.SUCCESS, JobStatus.ERROR, JobStatus.FAIL].includes(
+                job.jobData.status
+            ) && (
+                <>
+                    {!canRunJob && (
+                        <div className="warnings">
+                            <p className="warning">
+                                Go under settings and choose a results folder
+                                location before re-running the job.
+                            </p>
+                        </div>
+                    )}
+                    <div className="row">
+                        {!jobIsBatch && (
+                            <button
+                                className="important"
+                                type="button"
+                                onClick={(e) => {
+                                    App.store.dispatch(runJob(job))
+                                    setIsRerunning(true)
+                                }}
+                                disabled={!canRunJob || isRerunning}
+                            >
+                                Re-run job
+                            </button>
                         )}
-                        <div className="row">
-                            {!jobIsBatch && (
+
+                        {!jobIsBatch && (
+                            <>
                                 <button
                                     className="important"
                                     type="button"
                                     onClick={(e) => {
-                                        App.store.dispatch(runJob(job))
-                                        setIsRerunning(true)
+                                        let job_ = { ...job }
+                                        job_.jobRequest = {
+                                            ...job.jobRequest,
+                                        }
+                                        job_.jobData = null
+                                        job_.errors = []
+                                        job_.isPrimaryForBatch = false
+                                        job_.jobRequest.batchId = null
+                                        App.store.dispatch(editJob(job))
                                     }}
-                                    disabled={!canRunJob || isRerunning}
                                 >
-                                    Re-run job
+                                    Edit job
                                 </button>
-                            )}
-
-                            {!jobIsBatch && (
-                                <>
-                                    <button
-                                        className="important"
-                                        type="button"
-                                        onClick={(e) => {
-                                            let job_ = { ...job }
-                                            job_.jobRequest = {
-                                                ...job.jobRequest,
-                                            }
-                                            job_.jobData = null
-                                            job_.errors = []
-                                            job_.isPrimaryForBatch = false
-                                            job_.jobRequest.batchId = null
-                                            App.store.dispatch(editJob(job))
-                                        }}
-                                    >
-                                        Edit job
-                                    </button>
-                                </>
-                            )}
-                        </div>
-                    </>
-                )}
+                            </>
+                        )}
+                    </div>
+                </>
+            )}
         </div>
     )
 }

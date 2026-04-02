@@ -52,7 +52,7 @@ function jobRequestToXml(jobRequest: JobRequest): string {
                                       }"/>`
                               )
                               .join('')
-                        : option.value.toString().trim() ?? ''
+                        : (option.value.toString().trim() ?? '')
                 }</option>`
         )
         .join('')}

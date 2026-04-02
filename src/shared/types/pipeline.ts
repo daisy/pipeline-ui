@@ -27,7 +27,7 @@ export function baseurl(ws: Webservice) {
     if (host == '0.0.0.0') {
         host = '127.0.0.1'
     }
-    // eslint-disable-next-line
+
     return `${ws.ssl ? 'https' : 'http'}://${host}${ws.port ? ':' + ws.port : ''}${ws.path ?? ''}`
 }
 
@@ -222,7 +222,7 @@ export type Job = {
      * There is one job per tab except for batch jobs
      * In this case, the job-tab association is only for the 'primary' job in the batch
      * eg the job for which the tab was made in the first place
-    */
+     */
     isPrimaryForBatch?: boolean
     // keep track of what we downloaded
     // this prevents multiple output folders from being created, in the case where

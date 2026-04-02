@@ -34,23 +34,29 @@ export function SelectScript({
                 <option value={null}>None</option>
                 {priorityScripts.length > 0 && (
                     <>
-                        {priorityScripts.filter(s => s != null && s != undefined).map((script, idx) => (
-                            <option key={`${idx}-prio`} value={script?.id}>
-                                {script?.nicename}
-                                {script && isScriptTTSEnhanced(script)
-                                    ? ' (TTS Enhanced)'
-                                    : ''}
-                            </option>
-                        ))}
+                        {priorityScripts
+                            .filter((s) => s != null && s != undefined)
+                            .map((script, idx) => (
+                                <option key={`${idx}-prio`} value={script?.id}>
+                                    {script?.nicename}
+                                    {script && isScriptTTSEnhanced(script)
+                                        ? ' (TTS Enhanced)'
+                                        : ''}
+                                </option>
+                            ))}
                         <option disabled>--------------------------</option>
                     </>
                 )}
-                {scripts.filter(s => s != null && s != undefined).map((script, idx) => (
-                    <option key={`${idx}-reg`} value={script?.id}>
-                        {script?.nicename ?? script?.id}
-                        {script && isScriptTTSEnhanced(script) ? ' (TTS Enhanced)' : ''}
-                    </option>
-                ))}
+                {scripts
+                    .filter((s) => s != null && s != undefined)
+                    .map((script, idx) => (
+                        <option key={`${idx}-reg`} value={script?.id}>
+                            {script?.nicename ?? script?.id}
+                            {script && isScriptTTSEnhanced(script)
+                                ? ' (TTS Enhanced)'
+                                : ''}
+                        </option>
+                    ))}
             </select>
         </div>
     )

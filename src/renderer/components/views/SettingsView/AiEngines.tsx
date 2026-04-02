@@ -24,13 +24,13 @@ export function AiEngines() {
         App.store.dispatch(setAiEngineProperties(aiEngineProperties_))
         App.store.dispatch(save())
         App.store.dispatch(
-            setProperties(
-                { values: aiEngineProperties_.map((p) => ({
+            setProperties({
+                values: aiEngineProperties_.map((p) => ({
                     name: p.key,
                     value: p.value,
-                })), 
-                sendToAPI: true}
-            )
+                })),
+                sendToAPI: true,
+            })
         )
     }
 
@@ -55,22 +55,22 @@ export function AiEngines() {
                             .filter((propkey) => propkey.includes(engineId))
                             .map((propkey, idx) => (
                                 <div>
-                                <div className="field" key={idx}>
-                                    <label htmlFor={propkey}>
-                                        {getPropkeyLabel(propkey, engineId)}
-                                    </label>
-                                    <input
-                                        id={propkey}
-                                        type="text"
-                                        onChange={(e) =>
-                                            onPropertyChange(e, propkey)
-                                        }
-                                        value={
-                                            settings.aiEngineProperties.find(
-                                                (p) => p.key == propkey
-                                            )?.value ?? ''
-                                        }
-                                    />
+                                    <div className="field" key={idx}>
+                                        <label htmlFor={propkey}>
+                                            {getPropkeyLabel(propkey, engineId)}
+                                        </label>
+                                        <input
+                                            id={propkey}
+                                            type="text"
+                                            onChange={(e) =>
+                                                onPropertyChange(e, propkey)
+                                            }
+                                            value={
+                                                settings.aiEngineProperties.find(
+                                                    (p) => p.key == propkey
+                                                )?.value ?? ''
+                                            }
+                                        />
                                     </div>
                                     <p className="description">
                                         {pipeline.properties

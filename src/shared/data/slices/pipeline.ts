@@ -140,7 +140,10 @@ export const pipeline = createSlice({
         },
         setProperties: (
             state: PipelineState,
-            param: PayloadAction<{values: Array<EngineProperty>, sendToAPI: boolean}>
+            param: PayloadAction<{
+                values: Array<EngineProperty>
+                sendToAPI: boolean
+            }>
         ) => {
             // Merge EngineProperty array (retrieved from engine api) into properties map
             state.properties = param.payload.values.reduce(
@@ -500,7 +503,7 @@ export const selectors = {
             jobRequest: null,
             resultsDownloaded: false,
             logDownloaded: false,
-        } as Job),
+        }) as Job,
     prepareJobRequest: (
         job: Job,
         script: Script,

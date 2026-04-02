@@ -36,12 +36,11 @@ export function findValue(
         item.value === true
             ? 'true'
             : // @ts-ignore
-            item.value === false
-            ? 'false'
-            : item.value
+              item.value === false
+              ? 'false'
+              : item.value
     return value
 }
-
 
 export function externalLinkClick(e, app) {
     e.preventDefault()

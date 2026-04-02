@@ -31,15 +31,13 @@ export async function unzipFile(buffer: ArrayBuffer, pathFileURL: string) {
     }
     return decompress(Buffer.from(buffer), systemPath)
         .then((files: DecompressedFile[]) =>
-            files.map((file) => resolve(systemPath, file.path)
-        ))
+            files.map((file) => resolve(systemPath, file.path))
+        )
         .catch((err) => {
             error(err)
             return [] as Array<string>
         })
 }
-
-
 
 export function registerFileIPC() {
     ipcMain.handle(

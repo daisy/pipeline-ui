@@ -321,11 +321,12 @@ export function buildMenuTemplate({
                                   click: () => onGotoTab(j),
                               }
                               if (idx < 10) {
-                                  menuItem[
-                                      'accelerator'
-                                  ] = `CommandOrControl+Alt+${
-                                      (idx % 10) + 1 != 10 ? (idx % 10) + 1 : 0
-                                  }`
+                                  menuItem['accelerator'] =
+                                      `CommandOrControl+Alt+${
+                                          (idx % 10) + 1 != 10
+                                              ? (idx % 10) + 1
+                                              : 0
+                                      }`
                               }
                               return menuItem
                           })

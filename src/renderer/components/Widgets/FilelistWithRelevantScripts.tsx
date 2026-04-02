@@ -9,7 +9,9 @@ export function FilelistWithRelevantScripts({
     jobInternalId,
     createJob,
 }) {
-    const [selectedFiles, setSelectedFiles] = useState(files.length == 1 ? [files[0]] : [])
+    const [selectedFiles, setSelectedFiles] = useState(
+        files.length == 1 ? [files[0]] : []
+    )
     const [selectedScriptId, setSelectedScriptId] = useState(
         relevantScripts[0]?.id ?? null
     )
@@ -52,8 +54,16 @@ export function FilelistWithRelevantScripts({
         <fieldset className="files-by-script">
             <legend>{categoryName}</legend>
             <div className="row">
-                <label htmlFor={`${jobInternalId}-${categoryName}-script`} className="visually-hidden">{categoryName} Scripts</label>
-                <select id={`${jobInternalId}-${categoryName}-script`} onChange={(e) => onSelectScript(e)}>
+                <label
+                    htmlFor={`${jobInternalId}-${categoryName}-script`}
+                    className="visually-hidden"
+                >
+                    {categoryName} Scripts
+                </label>
+                <select
+                    id={`${jobInternalId}-${categoryName}-script`}
+                    onChange={(e) => onSelectScript(e)}
+                >
                     {relevantScripts.map((script, idx) => (
                         <option key={idx} value={script.id}>
                             {script?.nicename}

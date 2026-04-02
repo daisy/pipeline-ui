@@ -10,8 +10,9 @@ import {
     updateScript,
     updateDatatype,
     removeJobs,
-    removeBatchJob, setProperties,
-    requestStylesheetParameters
+    removeBatchJob,
+    setProperties,
+    requestStylesheetParameters,
 } from 'shared/data/slices/pipeline'
 
 import { Datatype, Job, Script } from 'shared/types'

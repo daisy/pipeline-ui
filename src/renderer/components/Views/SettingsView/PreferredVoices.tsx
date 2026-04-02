@@ -145,114 +145,134 @@ export function PreferredVoices({
                                                         lv.name === v.name
                                                 )
                                             return (
-                                            <tr key={`${v.engine}-${v.name}`} className={available ? '' : 'voice-unavailable'}>
-                                                <th className="voice-name">
-                                                    <span>
-                                                        {voicesTransliterations[
-                                                            v.name
-                                                        ] ?? v.name}
-                                                        {!available && (
-                                                            <span className="unavailable-label"> (unavailable)</span>
-                                                        )}
-                                                    </span>
-                                                    <audio
-                                                        id={`preview-${v.lang}-${idx}`}
-                                                        src={ttsVoices?.find(
-                                                            (lv) =>
-                                                                lv.engine ===
-                                                                    v.engine &&
-                                                                lv.name ===
-                                                                    v.name
-                                                        )?.preview}
-                                                    ></audio>
-                                                    <button
-                                                        type="button"
-                                                        className="invisible"
-                                                        aria-label={`Preview for ${
-                                                            voicesTransliterations[
+                                                <tr
+                                                    key={`${v.engine}-${v.name}`}
+                                                    className={
+                                                        available
+                                                            ? ''
+                                                            : 'voice-unavailable'
+                                                    }
+                                                >
+                                                    <th className="voice-name">
+                                                        <span>
+                                                            {voicesTransliterations[
                                                                 v.name
-                                                            ] ?? v.name
-                                                        }`}
-                                                        onClick={() => {
-                                                            let audioelm =
-                                                                document.getElementById(
-                                                                    `preview-${v.lang}-${idx}`
-                                                                ) as HTMLAudioElement
-                                                            if (
-                                                                audioelm.paused
-                                                            ) {
-                                                                audioelm.play()
-                                                            } else {
-                                                                audioelm.pause()
+                                                            ] ?? v.name}
+                                                            {!available && (
+                                                                <span className="unavailable-label">
+                                                                    {' '}
+                                                                    (unavailable)
+                                                                </span>
+                                                            )}
+                                                        </span>
+                                                        <audio
+                                                            id={`preview-${v.lang}-${idx}`}
+                                                            src={
+                                                                ttsVoices?.find(
+                                                                    (lv) =>
+                                                                        lv.engine ===
+                                                                            v.engine &&
+                                                                        lv.name ===
+                                                                            v.name
+                                                                )?.preview
                                                             }
-                                                        }}
-                                                    >
-                                                        <PlayIcon
-                                                            width="20"
-                                                            height="20"
-                                                        />
-                                                    </button>
-                                                </th>
+                                                        ></audio>
+                                                        <button
+                                                            type="button"
+                                                            className="invisible"
+                                                            aria-label={`Preview for ${
+                                                                voicesTransliterations[
+                                                                    v.name
+                                                                ] ?? v.name
+                                                            }`}
+                                                            onClick={() => {
+                                                                let audioelm =
+                                                                    document.getElementById(
+                                                                        `preview-${v.lang}-${idx}`
+                                                                    ) as HTMLAudioElement
+                                                                if (
+                                                                    audioelm.paused
+                                                                ) {
+                                                                    audioelm.play()
+                                                                } else {
+                                                                    audioelm.pause()
+                                                                }
+                                                            }}
+                                                        >
+                                                            <PlayIcon
+                                                                width="20"
+                                                                height="20"
+                                                            />
+                                                        </button>
+                                                    </th>
 
-                                                <td>
-                                                    {ttsEnginesStates[v.engine]
-                                                        ?.name ?? v.engine}
-                                                </td>
-                                                <td>
-                                                    {languageNames.of(v.lang)}
-                                                </td>
-                                                <td className="gender">
-                                                    {v.gender}
-                                                </td>
-                                                <td className="set-default">
-                                                    <input
-                                                        type="radio"
-                                                        name={getLang(v.lang)}
-                                                        id={`cb-${v.engine}-${v.name}`}
-                                                        onChange={(e) =>
-                                                            selectDefault(e, v)
-                                                        }
-                                                        aria-label={`Set ${
-                                                            voicesTransliterations[
-                                                                v.name
-                                                            ] ?? v.name
-                                                        } as the default voice for ${languageNames.of(
-                                                            getLang(v.lang)
-                                                        )}`}
-                                                        checked={
-                                                            defaultVoices?.find(
-                                                                (vx) =>
-                                                                    vx.engine ===
-                                                                        v.engine &&
-                                                                    vx.name ===
-                                                                        v.name
-                                                            ) != undefined
-                                                        }
-                                                    ></input>
-                                                </td>
-                                                <td className="remove">
-                                                    <button
-                                                        type="button"
-                                                        className="invisible"
-                                                        onClick={(e) => {
-                                                            removeFromPreferredVoices(
-                                                                v
-                                                            )
-                                                        }}
-                                                        aria-label={`Remove ${
-                                                            voicesTransliterations[
-                                                                v.name
-                                                            ] ?? v.name
-                                                        } from preferred voices`}
-                                                    >
-                                                        <X
-                                                            width={20}
-                                                            height={20}
-                                                        />
-                                                    </button>
-                                                </td>
-                                            </tr>
-                                        )
+                                                    <td>
+                                                        {ttsEnginesStates[
+                                                            v.engine
+                                                        ]?.name ?? v.engine}
+                                                    </td>
+                                                    <td>
+                                                        {languageNames.of(
+                                                            v.lang
+                                                        )}
+                                                    </td>
+                                                    <td className="gender">
+                                                        {v.gender}
+                                                    </td>
+                                                    <td className="set-default">
+                                                        <input
+                                                            type="radio"
+                                                            name={getLang(
+                                                                v.lang
+                                                            )}
+                                                            id={`cb-${v.engine}-${v.name}`}
+                                                            onChange={(e) =>
+                                                                selectDefault(
+                                                                    e,
+                                                                    v
+                                                                )
+                                                            }
+                                                            aria-label={`Set ${
+                                                                voicesTransliterations[
+                                                                    v.name
+                                                                ] ?? v.name
+                                                            } as the default voice for ${languageNames.of(
+                                                                getLang(v.lang)
+                                                            )}`}
+                                                            checked={
+                                                                defaultVoices?.find(
+                                                                    (vx) =>
+                                                                        vx.engine ===
+                                                                            v.engine &&
+                                                                        vx.name ===
+                                                                            v.name
+                                                                ) != undefined
+                                                            }
+                                                        ></input>
+                                                    </td>
+                                                    <td className="remove">
+                                                        <button
+                                                            type="button"
+                                                            className="invisible"
+                                                            onClick={(e) => {
+                                                                removeFromPreferredVoices(
+                                                                    v
+                                                                )
+                                                            }}
+                                                            aria-label={`Remove ${
+                                                                voicesTransliterations[
+                                                                    v.name
+                                                                ] ?? v.name
+                                                            } from preferred voices`}
+                                                        >
+                                                            <X
+                                                                width={20}
+                                                                height={20}
+                                                            />
+                                                        </button>
+                                                    </td>
+                                                </tr>
+                                            )
                                         })}
                                 </tbody>
                             </table>

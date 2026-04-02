@@ -1,7 +1,11 @@
 import { PayloadAction } from '@reduxjs/toolkit'
 import { error } from 'electron-log'
 import { pipelineAPI } from 'main/data/apis/pipeline'
-import { selectWebservice, setDatatypes, updateJob } from 'shared/data/slices/pipeline'
+import {
+    selectWebservice,
+    setDatatypes,
+    updateJob,
+} from 'shared/data/slices/pipeline'
 import { Job, JobRequestError, JobStatus, ScriptOption } from 'shared/types'
 import { GetStateFunction } from 'shared/types/store'
 import { findInputType } from 'shared/utils'
@@ -40,11 +44,12 @@ export function requestStylesheetParameters(
             } else {
                 // don't add stylesheet parameters if they have
                 // the same name as existing script options
-                let uniqueParameters = parameters.filter(
-                    (p) => !job.script.options.find((o) => o.name == p.name)
+                let uniqueParameters = parameters
+                    .filter(
+                        (p) => !job.script.options.find((o) => o.name == p.name)
                     )
                     .filter((p) => !(p.type == 'sass-map')) // also filter out the new "sass-map" parameter
-                
+
                 // update job options with new parameters
                 const stylesheetParameterOptions = [
                     ...job.jobRequest.stylesheetParameterOptions,

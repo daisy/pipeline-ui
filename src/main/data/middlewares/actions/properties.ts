@@ -10,11 +10,7 @@ import {
     setTtsVoices,
 } from 'shared/data/slices/pipeline'
 import { selectTtsConfig } from 'shared/data/slices/settings'
-import {
-    EngineProperty,
-    TtsEngineState,
-    TtsVoice,
-} from 'shared/types'
+import { EngineProperty, TtsEngineState, TtsVoice } from 'shared/types'
 import { GetStateFunction } from 'shared/types/store'
 
 export function setProperties(

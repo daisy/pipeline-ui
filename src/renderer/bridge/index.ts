@@ -45,7 +45,8 @@ const API = {
     sniffEncoding: ipcs.sniffEncoding,
     copyToClipboard: ipcs.copyToClipboard,
     oneTimeFetch: ipcs.oneTimeFetch,
-    onScriptFormSubmit: (channel, listener) => ipcRenderer.on(channel, listener),
+    onScriptFormSubmit: (channel, listener) =>
+        ipcRenderer.on(channel, listener),
     // we can add on to this API and restructure it as we move more commands to the redux side
     store: {
         dispatch,

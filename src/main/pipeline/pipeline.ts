@@ -24,7 +24,10 @@ import { setTimeout } from 'timers/promises'
 import { resolveUnpacked, walk } from '../utils'
 import { DOMParser, XMLSerializer } from '@xmldom/xmldom'
 import fs from 'fs-extra'
-import { selectAiEngineProperties, selectTtsConfig } from 'shared/data/slices/settings'
+import {
+    selectAiEngineProperties,
+    selectTtsConfig,
+} from 'shared/data/slices/settings'
 
 /**
  * Local DAISY Pipeline 2 management class

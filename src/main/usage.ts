@@ -98,7 +98,7 @@ function getOptionOverrides(job: Job): Array<NameValue> {
             ({
                 name: oo.name,
                 value: oo.value?.toString(),
-            } as NameValue)
+            }) as NameValue
     )
 }
 

@@ -85,7 +85,7 @@ const UpdateButton = (update: UpdateState) => {
 export function AboutView({ title }) {
     const { App } = window
 
-    const { pipeline, update } = useWindowStore()
+    const { pipeline, update, settings } = useWindowStore()
     let version = packageJson.version
     let engineVersion = pipeline.alive?.version
     document.title = title
@@ -137,7 +137,30 @@ export function AboutView({ title }) {
             </a>
             <p className="versions">
                 <ul>
-                    <li>App version: {version}</li>
+                    <li>
+                        App version: {version}
+                        {(settings.logLevel && settings.logLevel !== 'info') ||
+                        BUILD_ENABLE_MISTRAL ? (
+                            <br />
+                        ) : null}
+                        {((settings.logLevel &&
+                            settings.logLevel !== 'info') ||
+                            BUILD_ENABLE_MISTRAL) && (
+                            <small>
+                                <em>
+                                    {settings.logLevel &&
+                                        settings.logLevel !== 'info' &&
+                                        `log level: ${settings.logLevel}`}
+                                    {settings.logLevel &&
+                                        settings.logLevel !== 'info' &&
+                                        BUILD_ENABLE_MISTRAL &&
+                                        ' · '}
+                                    {BUILD_ENABLE_MISTRAL &&
+                                        'with Mistral support'}
+                                </em>
+                            </small>
+                        )}
+                    </li>
                     <li>Engine version: {engineVersion}</li>
                     <li>
                         Engine is{'  '}

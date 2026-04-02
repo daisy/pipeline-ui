@@ -7,6 +7,15 @@ const { APP_CONFIG } = require('./app.config')
 
 const isDev = process.env.NODE_ENV !== 'production'
 
+const enableMistral =
+    process.env.ENABLE_MISTRAL !== undefined
+        ? process.env.ENABLE_MISTRAL === 'true'
+        : isDev
+
+console.log('Build options:')
+console.log('  LOG_LEVEL:      ', process.env.LOG_LEVEL || '(default: info)')
+console.log('  ENABLE_MISTRAL: ', enableMistral)
+
 module.exports = defineConfig({
     main: {
         resolve: {
@@ -18,10 +27,7 @@ module.exports = defineConfig({
         },
         define: {
             BUILD_LOG_LEVEL: JSON.stringify(process.env.LOG_LEVEL),
-            BUILD_ENABLE_MISTRAL:
-                process.env.ENABLE_MISTRAL !== undefined
-                    ? process.env.ENABLE_MISTRAL === 'true'
-                    : isDev,
+            BUILD_ENABLE_MISTRAL: enableMistral,
         },
         plugins: [
             {
@@ -71,15 +77,11 @@ module.exports = defineConfig({
                 renderer: resolve('src/renderer'),
                 shared: resolve('src/shared'),
                 '~': resolve('.'),
-                react: resolve('node_modules/react'),
             },
         },
         define: {
             'process.platform': JSON.stringify(process.platform),
-            BUILD_ENABLE_MISTRAL:
-                process.env.ENABLE_MISTRAL !== undefined
-                    ? process.env.ENABLE_MISTRAL === 'true'
-                    : isDev,
+            BUILD_ENABLE_MISTRAL: enableMistral,
         },
         plugins: [react()],
         server: {

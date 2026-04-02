@@ -1,10 +1,11 @@
+import React from 'react'
 import { HashRouter as Router, Routes } from 'react-router-dom'
 
 export { Route } from 'react-router-dom'
 
 interface WindowRouter {
     routes: {
-        [windowID: string]: () => JSX.Element
+        [windowID: string]: () => React.ReactElement
     }
 }
 

@@ -24,11 +24,11 @@ import { calculateJobName } from 'shared/jobName'
 import { PLATFORM } from 'shared/constants'
 import { Plus, X } from '../../Widgets/SvgIcons'
 // @ts-ignore
-import { BatchJobDetailsPane } from 'renderer/components/Views/MainView/JobDetailsPane/BatchJobPane'
+import { BatchJobDetailsPane } from 'renderer/components/views/MainView/JobDetailsPane/BatchJobPane'
 // @ts-ignore
-import { SingleJobDetailsPane } from 'renderer/components/Views/MainView/JobDetailsPane/SingleJobPane'
+import { SingleJobDetailsPane } from 'renderer/components/views/MainView/JobDetailsPane/SingleJobPane'
 // @ts-ignore
-import { ScriptForm } from 'renderer/components/Views/MainView/ScriptForm'
+import { ScriptForm } from 'renderer/components/views/MainView/ScriptForm'
 import { TabList } from 'renderer/components/Widgets/TabList'
 import { areAllJobsInBatchDone } from 'shared/utils'
 import { CanDo } from 'shared/canDo'

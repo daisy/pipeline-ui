@@ -4,7 +4,7 @@ import { TtsVoice } from 'shared/types/ttsConfig'
 import { voicesTransliterations } from './voiceTransliterations'
 // @ts-ignore
 import { VoicePreview } from './VoicePreview'
-import { SettingsMenuItem } from '..'
+import { SettingsMenuItem } from '../types'
 
 export function BrowseVoices({
     availableVoices,

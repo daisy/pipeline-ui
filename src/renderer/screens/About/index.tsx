@@ -1,5 +1,5 @@
 //@ts-ignore
-import { AboutView } from 'renderer/components/Views/AboutView'
+import { AboutView } from 'renderer/components/views/AboutView'
 import { useWindowStore } from 'renderer/store'
 import { loadStyleProperties } from 'renderer/utils'
 

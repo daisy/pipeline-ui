@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { TtsVoice } from 'shared/types/ttsConfig'
 import { voicesTransliterations } from './BrowseVoices/voiceTransliterations'
 import { PauseIcon, PlayIcon, X } from 'renderer/components/Widgets/SvgIcons'
-import { SettingsMenuItem } from '.'
+import { SettingsMenuItem } from './types'
 
 // return the first part of the language code (e.g. 'en' for 'en-US')
 // or return the whole thing if there is no dash

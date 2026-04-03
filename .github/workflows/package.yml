@@ -2,6 +2,9 @@ name: Package
 
 on:
   workflow_dispatch:
+  push:
+    branches:
+      - develop-engine-snapshot
 
 jobs:
   build:

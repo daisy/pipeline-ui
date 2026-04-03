@@ -1,0 +1,69 @@
+name: Package
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - develop-engine-snapshot
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      matrix:
+        os: [macos-latest, windows-latest]
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: yarn
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: Install GNU Make (macOS)
+        if: runner.os == 'macOS'
+        run: brew install make
+
+      - name: Cache Maven dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: ${{ runner.os }}-maven-
+
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile --ignore-scripts
+
+      - name: Build and package (macOS)
+        if: runner.os == 'macOS'
+        run: yarn dist-test:mac
+
+      - name: Build and package (Windows)
+        if: runner.os == 'Windows'
+        run: yarn dist-test:win
+
+      - name: Upload artifact (macOS)
+        if: runner.os == 'macOS'
+        uses: actions/upload-artifact@v4
+        with:
+          name: daisy-pipeline-mac
+          path: dist/*.pkg
+
+      - name: Upload artifact (Windows)
+        if: runner.os == 'Windows'
+        uses: actions/upload-artifact@v4
+        with:
+          name: daisy-pipeline-win
+          path: dist/*.exe

@@ -1,0 +1,92 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v[0-9]+.[0-9]+.[0-9]+'
+      - 'v*-beta*'
+
+env:
+  GH_TOKEN: ${{ secrets.GH_PIPELINE_TOKEN }}
+  APPLE_ID: ${{ secrets.APPLE_ID }}
+  APPLE_ID_PASS: ${{ secrets.APPLE_ID_PASS }}
+  APPLE_ID_TEAM: ${{ secrets.APPLE_ID_TEAM }}
+  CSC_LINK: ${{ secrets.CSC_LINK }}
+  CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      matrix:
+        os: [macos-latest, windows-latest]
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: yarn
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: Install GNU Make (macOS)
+        if: runner.os == 'macOS'
+        run: brew install make
+
+      - name: Cache Maven dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: ${{ runner.os }}-maven-
+
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile --ignore-scripts
+
+      - name: Import installer signing certificate (macOS)
+        if: runner.os == 'macOS'
+        run: |
+          CERT_PATH=$RUNNER_TEMP/installer.p12
+          KEYCHAIN_PATH=$RUNNER_TEMP/signing.keychain-db
+          echo -n "$INSTALLER_CERT_P12" | base64 --decode -o $CERT_PATH
+          security create-keychain -p "${{ github.run_id }}" $KEYCHAIN_PATH
+          security set-keychain-settings -lut 21600 $KEYCHAIN_PATH
+          security unlock-keychain -p "${{ github.run_id }}" $KEYCHAIN_PATH
+          security import $CERT_PATH -P "$INSTALLER_CERT_PASSWORD" -A -t cert -f pkcs12 -k $KEYCHAIN_PATH
+          security list-keychain -d user -s $KEYCHAIN_PATH
+        env:
+          INSTALLER_CERT_P12: ${{ secrets.INSTALLER_CERT_P12 }}
+          INSTALLER_CERT_PASSWORD: ${{ secrets.INSTALLER_CERT_PASSWORD }}
+
+      - name: Build and release (macOS)
+        if: runner.os == 'macOS'
+        run: yarn release
+
+      - name: Sign installer (macOS)
+        if: runner.os == 'macOS'
+        run: bash sign-installer-mac.sh dist/*.pkg
+        env:
+          DEV_ID_INSTALLER: ${{ secrets.DEV_ID_INSTALLER }}
+
+      - name: Re-upload signed installer to release (macOS)
+        if: runner.os == 'macOS'
+        run: gh release upload ${{ github.ref_name }} dist/*.pkg --clobber
+
+      - name: Clean up keychain (macOS)
+        if: runner.os == 'macOS' && always()
+        run: security delete-keychain $RUNNER_TEMP/signing.keychain-db
+
+      - name: Build and release (Windows)
+        if: runner.os == 'Windows'
+        run: yarn release

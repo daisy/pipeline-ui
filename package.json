@@ -28,6 +28,7 @@
   "scripts": {
     "prebuild": "yarn r predev",
     "build": "cross-env NODE_ENV=production electron-vite build",
+    "build:ci": "cross-env NODE_ENV=production electron-vite build",
     "postbuild": "node ./bin/modules/postbuild/index.js",
     "clean:dev": "rimraf out",
     "predev": "yarn r clean:dev pipeline:install",

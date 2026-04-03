@@ -30,4 +30,4 @@ jobs:
         run: yarn tsc --noEmit
 
       - name: Build
-        run: yarn build
+        run: yarn build:ci

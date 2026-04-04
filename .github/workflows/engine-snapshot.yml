@@ -47,5 +47,5 @@ jobs:
       - name: Create or update develop-engine-snapshot branch
         run: |
           SHA="${{ steps.engine.outputs.sha }}"
-          git commit -m "chore: update engine submodule to ${SHA:0:7} (engine develop)"
+          git diff --cached --quiet || git commit -m "chore: update engine submodule to ${SHA:0:7} (engine develop)"
           git push origin HEAD:develop-engine-snapshot --force

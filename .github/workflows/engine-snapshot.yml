@@ -48,4 +48,5 @@ jobs:
         run: |
           SHA="${{ steps.engine.outputs.sha }}"
           git diff --cached --quiet || git commit -m "chore: update engine submodule to ${SHA:0:7} (engine develop)"
+          git commit --allow-empty -m "ci: trigger package build for engine ${SHA:0:7}"
           git push origin HEAD:refs/heads/develop-engine-snapshot --force

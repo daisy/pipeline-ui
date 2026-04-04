@@ -19,9 +19,12 @@ jobs:
       - name: Check out pipeline-ui develop
         uses: actions/checkout@v4
         with:
-          ref: develop
+          ref: refs/heads/develop
           fetch-depth: 0
           token: ${{ secrets.GH_PIPELINE_TOKEN }}
+
+      - name: Verify checkout
+        run: git log --oneline -3
 
       - name: Configure git
         run: |

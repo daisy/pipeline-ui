@@ -1,6 +1,5 @@
 name: Engine Snapshot
 
-# Triggered by engine repo's develop branch when it gets a new commit.
 # Creates/updates the 'develop-engine-snapshot' branch in pipeline-ui
 # with the engine submodule pointing at the given engine SHA.
 # A push to that branch then triggers the Package workflow.

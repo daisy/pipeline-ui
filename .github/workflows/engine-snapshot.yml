@@ -21,7 +21,6 @@ jobs:
         uses: actions/checkout@v4
         with:
           ref: develop
-          submodules: true
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Configure git

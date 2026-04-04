@@ -31,6 +31,9 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
+      - name: Initialize engine submodule
+        run: git submodule update --init engine
+
       - name: Resolve engine SHA
         id: engine
         run: |
@@ -43,8 +46,8 @@ jobs:
       - name: Point engine submodule at resolved SHA
         run: |
           cd engine
-          git fetch origin
-          git checkout "${{ steps.engine.outputs.sha }}"
+          git fetch --depth 1 origin "${{ steps.engine.outputs.sha }}"
+          git checkout FETCH_HEAD
           cd ..
           git add engine
 

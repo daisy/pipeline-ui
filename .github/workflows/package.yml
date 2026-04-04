@@ -19,7 +19,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Check out engine submodule (no recurse)
-        run: git submodule update --init engine
+        run: git -c submodule.recurse=false submodule update --init engine
 
       - name: Set up Node.js
         uses: actions/setup-node@v4

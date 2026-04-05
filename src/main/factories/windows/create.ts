@@ -1,4 +1,5 @@
 import { app, BrowserWindow } from 'electron'
+import { join } from 'path'
 
 import { ENVIRONMENT, IPC, PLATFORM } from 'shared/constants'
 import { WindowProps } from 'shared/types'
@@ -43,7 +44,7 @@ export function createWindow(
 
     ENVIRONMENT.IS_DEV
         ? window.loadURL(devServerURL)
-        : window.loadFile('index.html', {
+        : window.loadFile(join(__dirname, '../renderer/index.html'), {
               hash: `/${id}${hash}`,
           })
     window.on('closed', window.destroy)

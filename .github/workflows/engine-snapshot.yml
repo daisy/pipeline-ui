@@ -1,6 +1,5 @@
 name: Engine Snapshot
 
-# Triggered by engine repo's develop branch when it gets a new commit.
 # Creates/updates the 'develop-engine-snapshot' branch in pipeline-ui
 # with the engine submodule pointing at the given engine SHA.
 # A push to that branch then triggers the Package workflow.
@@ -20,14 +19,20 @@ jobs:
       - name: Check out pipeline-ui develop
         uses: actions/checkout@v4
         with:
-          ref: develop
-          submodules: recursive
-          token: ${{ secrets.GITHUB_TOKEN }}
+          ref: refs/heads/develop
+          fetch-depth: 0
+          token: ${{ secrets.GH_PIPELINE_TOKEN }}
+
+      - name: Verify checkout
+        run: git log --oneline -3
 
       - name: Configure git
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Initialize engine submodule
+        run: git submodule update --init engine
 
       - name: Resolve engine SHA
         id: engine
@@ -41,13 +46,14 @@ jobs:
       - name: Point engine submodule at resolved SHA
         run: |
           cd engine
-          git fetch origin
-          git checkout "${{ steps.engine.outputs.sha }}"
+          git fetch --depth 1 origin "${{ steps.engine.outputs.sha }}"
+          git checkout FETCH_HEAD
           cd ..
           git add engine
 
       - name: Create or update develop-engine-snapshot branch
         run: |
           SHA="${{ steps.engine.outputs.sha }}"
-          git commit -m "chore: update engine submodule to ${SHA:0:7} (engine develop)"
-          git push origin HEAD:develop-engine-snapshot --force
+          git diff --cached --quiet || git commit -m "chore: update engine submodule to ${SHA:0:7} (engine develop)"
+          git commit --allow-empty -m "ci: trigger package build for engine ${SHA:0:7}"
+          git push origin HEAD:refs/heads/develop-engine-snapshot --force

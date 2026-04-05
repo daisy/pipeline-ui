@@ -49,11 +49,11 @@ jobs:
 
       - name: Build and package (macOS)
         if: runner.os == 'macOS'
-        run: yarn dist-test:mac
+        run: yarn dist-debug:mac
 
       - name: Build and package (Windows)
         if: runner.os == 'Windows'
-        run: yarn dist-test:win
+        run: yarn dist-debug:win
 
       - name: Upload artifact (macOS)
         if: runner.os == 'macOS'

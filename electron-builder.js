@@ -21,6 +21,7 @@ module.exports = {
         category: 'public.app-category.utilities',
         identity: 'US Fund for DAISY (SAMG8AWD69)',
         hardenedRuntime: true,
+        notarize: false,
         target: 'pkg',
         "extendInfo": {
             "LSUIElement": 1

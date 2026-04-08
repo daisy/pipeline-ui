@@ -2,6 +2,7 @@
   "displayName": "DAISY Pipeline",
   "name": "pipeline-ui",
   "description": "User interface for the DAISY Pipeline",
+  "version": "1.12.0",
   "main": "./out/main/index.js",
   "devTempBuildFolder": "./out",
   "devServer": "http://localhost:4927",

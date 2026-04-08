@@ -30,6 +30,7 @@ module.exports = [
                 clearInterval: 'readonly',
                 BUILD_LOG_LEVEL: 'readonly',
                 BUILD_ENABLE_MISTRAL: 'readonly',
+                BUILD_VERSION: 'readonly',
             },
         },
         plugins: {

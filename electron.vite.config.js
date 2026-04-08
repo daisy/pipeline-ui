@@ -1,6 +1,7 @@
 const { defineConfig } = require('electron-vite')
 const { resolve } = require('path')
 const { cpSync, existsSync } = require('fs')
+const { execSync } = require('child_process')
 const react = require('@vitejs/plugin-react')
 
 const { APP_CONFIG } = require('./app.config')
@@ -12,9 +13,19 @@ const enableMistral =
         ? process.env.ENABLE_MISTRAL === 'true'
         : isDev
 
+const buildVersion = process.env.DEV_BUILD === 'true'
+    ? (() => {
+        const { version } = require('./package.json')
+        const hash = execSync('git rev-parse --short HEAD').toString().trim()
+        const branch = execSync('git rev-parse --abbrev-ref HEAD').toString().trim()
+        return `${version}-${branch}-${hash}`
+    })()
+    : undefined
+
 console.log('Build options:')
 console.log('  LOG_LEVEL:      ', process.env.LOG_LEVEL || '(default: info)')
 console.log('  ENABLE_MISTRAL: ', enableMistral)
+console.log('  BUILD_VERSION:  ', buildVersion || '(from package.json)')
 
 module.exports = defineConfig({
     main: {
@@ -82,6 +93,7 @@ module.exports = defineConfig({
         define: {
             'process.platform': JSON.stringify(process.platform),
             BUILD_ENABLE_MISTRAL: enableMistral,
+            BUILD_VERSION: JSON.stringify(buildVersion),
         },
         plugins: [react()],
         server: {

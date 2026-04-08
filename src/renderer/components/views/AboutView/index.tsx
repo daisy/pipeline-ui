@@ -86,7 +86,7 @@ export function AboutView({ title }) {
     const { App } = window
 
     const { pipeline, update, settings } = useWindowStore()
-    let version = packageJson.version
+    let version = BUILD_VERSION ?? packageJson.version
     let engineVersion = pipeline.alive?.version
     document.title = title
     let closeAboutBox = () => {

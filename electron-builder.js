@@ -1,4 +1,5 @@
 const { APP_CONFIG } = require('./app.config')
+const { execSync } = require('child_process')
 
 const { APP_ID, AUTHOR, TITLE, DESCRIPTION, FOLDERS, ARTIFACT_NAME } =
     APP_CONFIG
@@ -6,7 +7,18 @@ const { APP_ID, AUTHOR, TITLE, DESCRIPTION, FOLDERS, ARTIFACT_NAME } =
 const CURRENT_YEAR = new Date().getFullYear()
 // take off the suffix '- App' -- we only want that to appear on the window title
 let adjustedAppName = TITLE.replace(' - App', '')
+
+const devVersion = process.env.DEV_BUILD === 'true'
+    ? (() => {
+        const { version } = require('./package.json')
+        const hash = execSync('git rev-parse --short HEAD').toString().trim()
+        const branch = execSync('git rev-parse --abbrev-ref HEAD').toString().trim()
+        return `${version}-${branch}-${hash}`
+    })()
+    : undefined
+
 module.exports = {
+    ...(devVersion ? { extraMetadata: { version: devVersion } } : {}),
     appId: APP_ID,
     productName: adjustedAppName,
     copyright: `Copyright © ${CURRENT_YEAR} — ${AUTHOR.name}`,

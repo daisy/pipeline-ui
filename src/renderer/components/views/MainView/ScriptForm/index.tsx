@@ -89,6 +89,8 @@ export function ScriptForm({ job }: { job: Job }) {
         'audio',
         'braille',
         'tts',
+        'braille-code',
+        'formatting-standard',
     ]
     const hiddenOptions = [
         'transform',

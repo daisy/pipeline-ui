@@ -162,7 +162,7 @@ function isURL(str: string) {
     if (str.toLowerCase().startsWith('file://')) {
         return true
     }
-    return false
+    return true
 }
 function setupFileSystemEvents() {
     // comes from the renderer process (ipcRenderer.send())

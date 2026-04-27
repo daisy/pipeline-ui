@@ -22,6 +22,10 @@ function scriptElementToJson(scriptElm: Element): Script {
         homepage: (homepageElm[0] as Element)?.textContent.trim() ?? '',
         batchable: false,
         multidoc: false,
+        inputFilesets:
+            scriptElm.getAttribute('input-filesets').split(' ') ?? [],
+        outputFilesets:
+            scriptElm.getAttribute('output-filesets').split(' ') ?? [],
     }
 
     script.inputs = Array.from(scriptElm.getElementsByTagName('input')).map(

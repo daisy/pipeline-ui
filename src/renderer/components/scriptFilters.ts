@@ -6,25 +6,29 @@ export function getRelevantScripts(filetype) {
     const { pipeline } = useWindowStore()
     let retval
     if (filetype == 'ncc') {
-        retval = pipeline.scripts.filter((s) => s.id.indexOf('daisy202-') != -1)
+        retval = pipeline.scripts.filter((s) =>
+            s.inputFilesets.some((f) => f == 'daisy202')
+        )
     } else if (filetype == 'daisy3opf') {
-        retval = pipeline.scripts
-            .filter((s) => s.id.indexOf('daisy3-') != -1)
-            .concat(
-                pipeline.scripts.filter((s) => s.id.indexOf('nimas-') != -1)
-            )
+        retval = pipeline.scripts.filter((s) =>
+            s.inputFilesets.some((f) => f == 'daisy3')
+        )
     } else if (filetype == 'epub3opf') {
-        retval = pipeline.scripts
-            .filter((s) => s.id.indexOf('epub3-') != -1)
-            .concat(pipeline.scripts.filter((s) => s.id.indexOf('epub-') != -1))
+        retval = pipeline.scripts.filter((s) =>
+            s.inputFilesets.some((f) => f == 'epub3')
+        )
     } else if (filetype == 'epub2opf') {
-        retval = pipeline.scripts
-            .filter((s) => s.id.indexOf('epub2-') != -1)
-            .concat(pipeline.scripts.filter((s) => s.id.indexOf('epub-') != -1))
+        retval = pipeline.scripts.filter((s) =>
+            s.inputFilesets.some((f) => f == 'epub2')
+        )
     } else if (filetype == 'word') {
-        retval = pipeline.scripts.filter((s) => s.id.indexOf('word-') != -1)
+        retval = pipeline.scripts.filter((s) =>
+            s.inputFilesets.some((f) => f == 'docx')
+        )
     } else if (filetype == 'text/html' || filetype == 'application/xhtml+xml') {
-        retval = pipeline.scripts.filter((s) => s.id.indexOf('html-') != -1)
+        retval = pipeline.scripts.filter((s) =>
+            s.inputFilesets.some((f) => f == 'html')
+        )
     } else {
         retval = pipeline.scripts.filter((s) =>
             s.inputs.find((i) => i.mediaType.includes(filetype))

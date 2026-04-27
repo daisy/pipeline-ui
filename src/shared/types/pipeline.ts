@@ -305,6 +305,8 @@ export type Script = {
     homepage?: string
     batchable: boolean // not 2 step and not multidoc
     multidoc: boolean // the primary input supports an array of documents
+    inputFilesets?: Array<string>
+    outputFilesets?: Array<string>
 }
 
 export type NameValue = {

@@ -1,4 +1,4 @@
-name: Engine Snapshot
+name: Snapshot
 
 # Triggered by engine repo's develop branch when it gets a new commit.
 # Creates/updates the 'develop-engine-snapshot' branch in pipeline-ui

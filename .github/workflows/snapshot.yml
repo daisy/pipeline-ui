@@ -1,4 +1,4 @@
-name: Engine Snapshot
+name: Snapshot
 
 # Creates/updates the 'develop-engine-snapshot' branch in pipeline-ui
 # with the engine submodule pointing at the given engine SHA.

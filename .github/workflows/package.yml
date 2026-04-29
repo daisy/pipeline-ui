@@ -68,3 +68,45 @@ jobs:
         with:
           name: daisy-pipeline-win
           path: dist/*.exe
+
+  publish-snapshot:
+    needs: build
+    if: github.ref == 'refs/heads/develop-engine-snapshot'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Download macOS artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: daisy-pipeline-mac
+          path: artifacts/mac
+
+      - name: Download Windows artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: daisy-pipeline-win
+          path: artifacts/win
+
+      - name: Create Snapshot release if it doesn't exist
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release view snapshot --repo ${{ github.repository }} > /dev/null 2>&1 || \
+            gh release create snapshot \
+              --repo ${{ github.repository }} \
+              --draft \
+              --title "Snapshot" \
+              --notes "Latest snapshot build from engine develop."
+
+      - name: Replace Snapshot release assets
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release view snapshot --repo ${{ github.repository }} --json assets \
+            --jq '.assets[].name' | while read name; do
+              gh release delete-asset snapshot "$name" --repo ${{ github.repository }} --yes
+            done
+          gh release upload snapshot artifacts/mac/*.pkg artifacts/win/*.exe \
+            --repo ${{ github.repository }}

@@ -1,6 +1,7 @@
+import { readFileSync } from 'fs'
+import { join } from 'path'
 import { app, ipcMain, Menu, nativeImage, Tray } from 'electron'
 import { store } from 'main/data/store'
-import { resolveUnpacked } from 'main/utils'
 import { closeApplication, MainWindow } from 'main/windows'
 import { IPC, PLATFORM } from 'shared/constants'
 import {
@@ -25,15 +26,21 @@ export class PipelineTray {
     pipelineStatus: PipelineStatus
 
     constructor() {
-        const icon = nativeImage.createFromPath(
-            resolveUnpacked(
-                'resources',
-                'icons',
-                PLATFORM.IS_MAC
-                    ? 'logo_mac_40x40_Template.png'
-                    : 'logo_32x32.png'
-            )
+        const icon = nativeImage.createFromBuffer(
+            readFileSync(
+                join(
+                    __dirname,
+                    '..',
+                    'resources',
+                    'icons',
+                    PLATFORM.IS_MAC
+                        ? 'logo_mac_40x40_Template@2x.png'
+                        : 'logo_32x32.png'
+                )
+            ),
+            PLATFORM.IS_MAC ? { scaleFactor: 2 } : undefined
         )
+        if (PLATFORM.IS_MAC) icon.setTemplateImage(true)
         this.tray = new Tray(icon)
 
         const instance = getPipelineInstance(store.getState())

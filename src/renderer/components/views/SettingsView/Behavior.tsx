@@ -2,6 +2,7 @@ import {
     save,
     setEditJobOnNewTab,
     setClosingMainWindowAction,
+    setConfirmOnCloseFinishedJob,
 } from 'shared/data/slices/settings'
 import { ClosingMainWindowAction } from 'shared/types'
 const { App } = window
@@ -9,6 +10,11 @@ const { App } = window
 export function Behavior({ newSettings }) {
     const editJobOnNewTabChanged = (e) => {
         App.store.dispatch(setEditJobOnNewTab(e.target.checked))
+        App.store.dispatch(save())
+    }
+
+    const confirmOnCloseFinishedJobChanged = (e) => {
+        App.store.dispatch(setConfirmOnCloseFinishedJob(e.target.checked))
         App.store.dispatch(save())
     }
 
@@ -59,6 +65,21 @@ export function Behavior({ newSettings }) {
                         }
                     )}
                 </select>
+            </div>
+            <div className="field">
+                <label htmlFor="confirmOnCloseFinishedJob">
+                    Confirm before closing finished jobs
+                </label>
+                <span className="description">
+                    If checked, a confirmation dialog appears when closing a
+                    finished job.
+                </span>
+                <input
+                    type="checkbox"
+                    id="confirmOnCloseFinishedJob"
+                    checked={newSettings.confirmOnCloseFinishedJob ?? true}
+                    onChange={confirmOnCloseFinishedJobChanged}
+                />
             </div>
             {/* insert local pipeline settings form part here */}
             {/* insert remote pipeline settings form part here */}

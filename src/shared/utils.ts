@@ -245,3 +245,29 @@ export function getStoredOptionValue(
     }
     return null
 }
+
+export function isJobUnchanged(
+    job: Job,
+    settings: ApplicationSettings
+): boolean {
+    if (job.script == null) return true
+    if (!job.jobRequest) return true
+
+    const allInputsEmpty = job.jobRequest.inputs.every((input) => {
+        const v = input.value
+        return v == null || (Array.isArray(v) && v.length === 0)
+    })
+    if (!allInputsEmpty) return false
+
+    return job.jobRequest.options.every((option) => {
+        const scriptOption = job.script.options?.find(
+            (o) => o.name === option.name
+        )
+        if (!scriptOption) return true
+        const initialValue =
+            getStoredOptionValue(job.script, scriptOption, settings) ||
+            scriptOption.default ||
+            null
+        return option.value === initialValue
+    })
+}

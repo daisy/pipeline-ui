@@ -98,6 +98,12 @@ export const settings = createSlice({
         ) => {
             state.editJobOnNewTab = action.payload
         },
+        setConfirmOnCloseFinishedJob: (
+            state: ApplicationSettings,
+            action: PayloadAction<boolean>
+        ) => {
+            state.confirmOnCloseFinishedJob = action.payload
+        },
         setTtsConfig: (
             state: ApplicationSettings,
             action: PayloadAction<TtsConfig>
@@ -165,6 +171,7 @@ export const {
     setTtsConfig,
     setAutoCheckUpdate,
     setEditJobOnNewTab,
+    setConfirmOnCloseFinishedJob,
     setSponsorshipMessageLastShown,
     setFont,
     setTextSize,
@@ -183,6 +190,8 @@ export const selectors = {
     selectColorScheme: (s: RootState) => s.settings.colorScheme,
     selectClosingAction: (s: RootState) => s.settings.onClosingMainWindow,
     selectEditOnNewTab: (s: RootState) => s.settings.editJobOnNewTab,
+    selectConfirmOnCloseFinishedJob: (s: RootState) =>
+        s.settings.confirmOnCloseFinishedJob,
     selectTtsConfig: (s: RootState) => s.settings.ttsConfig,
     selectAutoCheckUpdate: (s: RootState) => s.settings.autoCheckUpdate,
 
@@ -209,4 +218,5 @@ export const {
     selectSortScriptsByFrequency,
     selectSuggestOptionValues,
     selectLastUsedScriptOptionOverrides,
+    selectConfirmOnCloseFinishedJob,
 } = selectors

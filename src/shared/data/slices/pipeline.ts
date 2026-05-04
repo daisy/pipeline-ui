@@ -481,7 +481,21 @@ export const selectors = {
                 (state.settings.editJobOnNewTab || !j.invisible) &&
                 ((j.jobRequest != null &&
                     j.jobRequest != ({ nicename: '' } as JobRequest)) ||
-                    (j.jobData != null && j.jobData != ({} as JobData)))
+                    (j.jobData != null && j.jobData != ({} as JobData))) &&
+                !(
+                    j.state === JobState.NEW &&
+                    utils.isJobUnchanged(j, state.settings)
+                ) &&
+                !(
+                    ((j.jobData?.status &&
+                        [
+                            JobStatus.ERROR,
+                            JobStatus.FAIL,
+                            JobStatus.SUCCESS,
+                        ].includes(j.jobData.status)) ||
+                        !!j.jobRequestError) &&
+                    state.settings.confirmOnCloseFinishedJob === false
+                )
         ),
     selectRunningJobs: (state: RootState) =>
         state.pipeline.jobs.filter(

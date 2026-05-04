@@ -202,11 +202,31 @@ export function MainView() {
                                     }
                                 } else {
                                     // remove a single job
-                                    let result = await App.showMessageBoxYesNo(
-                                        'Are you sure you want to close this job?'
-                                    )
-                                    if (result) {
+                                    if (
+                                        job.state === JobState.NEW &&
+                                        Utils.isJobUnchanged(job, settings)
+                                    ) {
                                         App.store.dispatch(removeJob(job))
+                                    } else if (
+                                        ((job.jobData?.status &&
+                                            [
+                                                JobStatus.ERROR,
+                                                JobStatus.FAIL,
+                                                JobStatus.SUCCESS,
+                                            ].includes(job.jobData.status)) ||
+                                            !!job.jobRequestError) &&
+                                        settings.confirmOnCloseFinishedJob ===
+                                            false
+                                    ) {
+                                        App.store.dispatch(removeJob(job))
+                                    } else {
+                                        let result =
+                                            await App.showMessageBoxYesNo(
+                                                'Are you sure you want to close this job?'
+                                            )
+                                        if (result) {
+                                            App.store.dispatch(removeJob(job))
+                                        }
                                     }
                                 }
                             }}

@@ -62,6 +62,7 @@ export type ApplicationSettings = {
     // Actions to perform when closing the main window
     onClosingMainWindow?: keyof typeof ClosingMainWindowAction
     editJobOnNewTab?: boolean
+    confirmOnCloseFinishedJob?: boolean
     ttsConfig?: TtsConfig
     autoCheckUpdate?: boolean
     textSize?: number

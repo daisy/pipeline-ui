@@ -39,7 +39,7 @@ jobs:
         run: |
           SHA="${{ github.event.inputs.engine_sha }}"
           if [ -z "$SHA" ]; then
-            SHA="$(git -C engine ls-remote origin HEAD | cut -f1)"
+            SHA="$(git -C engine ls-remote origin refs/heads/develop | cut -f1)"
           fi
           echo "sha=$SHA" >> "$GITHUB_OUTPUT"
 

@@ -38,14 +38,14 @@ Required secrets: `GH_PIPELINE_TOKEN`, `APPLE_ID`, `APPLE_ID_PASS`, `APPLE_ID_TE
 
 ---
 
-## engine-snapshot.yml — Engine Snapshot
+## snapshot.yml — Engine Snapshot
 
 **Triggers:** Manual dispatch with an optional `engine_sha` input field
 
-Creates or force-updates the `develop-engine-snapshot` branch in this repo. That branch is always: **current `develop` UI code + a specific engine commit**. The push to `develop-engine-snapshot` then triggers `package.yml` to produce a downloadable artifact.
+Creates or force-updates the `develop-engine-snapshot` branch in this repo. That branch is always: **current `develop` UI code + `develop` engine code or a specific engine commit**. The push to `develop-engine-snapshot` then triggers `package.yml` to produce a downloadable artifact.
 
 Engine SHA resolution:
 1. `engine_sha` input if provided
-2. HEAD of the engine repo's default branch (fallback)
+2. HEAD of engine `develop` branch if no SHA is given
 
 The `develop-engine-snapshot` branch is a disposable build branch — it is never merged back into `develop` or `main`.

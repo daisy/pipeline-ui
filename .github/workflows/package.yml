@@ -93,20 +93,20 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh release view snapshot --repo ${{ github.repository }} > /dev/null 2>&1 || \
-            gh release create snapshot \
+          gh release view ci-snapshot --repo ${{ github.repository }} > /dev/null 2>&1 || \
+            gh release create ci-snapshot \
               --repo ${{ github.repository }} \
               --draft \
-              --title "Snapshot" \
-              --notes "Latest snapshot build from engine develop."
+              --title "CI Snapshot" \
+              --notes "Latest CI snapshot build from engine develop."
 
-      - name: Replace Snapshot release assets
+      - name: Replace CI Snapshot release assets
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh release view snapshot --repo ${{ github.repository }} --json assets \
+          gh release view ci-snapshot --repo ${{ github.repository }} --json assets \
             --jq '.assets[].name' | while read name; do
-              gh release delete-asset snapshot "$name" --repo ${{ github.repository }} --yes
+              gh release delete-asset ci-snapshot "$name" --repo ${{ github.repository }} --yes
             done
-          gh release upload snapshot artifacts/mac/*.pkg artifacts/win/*.exe \
+          gh release upload ci-snapshot artifacts/mac/*.pkg artifacts/win/*.exe \
             --repo ${{ github.repository }}

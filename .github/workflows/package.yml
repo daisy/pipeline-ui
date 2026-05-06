@@ -54,7 +54,14 @@ jobs:
       - name: Build and package (Windows)
         if: runner.os == 'Windows'
         run: yarn dist-debug:win
-
+      
+      - name: Store maven.log
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: "maven-${{matrix.os}}.log"
+          path: engine/maven.log
+      
       - name: Upload artifact (macOS)
         if: runner.os == 'macOS'
         uses: actions/upload-artifact@v4

@@ -321,6 +321,7 @@ async function buildPipeline(platform = null) {
             execOpts(java_home, mvnHome)
         )
         if (makeCall.error) throw makeCall.error
+        if (makeCall.status !== 0) throw new Error(`make exited with status ${makeCall.status}`)
     } catch (err) {
         console.error(err)
         throw err
@@ -336,6 +337,7 @@ async function buildPipeline(platform = null) {
             execOpts(java_home, mvnHome)
         )
         if (makeCall.error) throw makeCall.error
+        if (makeCall.status !== 0) throw new Error(`make exited with status ${makeCall.status}`)
     } catch (err) {
         console.error(err)
         throw err
@@ -360,5 +362,8 @@ if (refresh) {
             ].indexOf(arg) >= 0
     )[0]
 
-    buildPipeline(platform ?? os.platform())
+    buildPipeline(platform ?? os.platform()).catch((err) => {
+        console.error(err)
+        process.exit(1)
+    })
 }

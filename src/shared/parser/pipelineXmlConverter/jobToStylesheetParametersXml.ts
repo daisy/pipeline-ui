@@ -1,4 +1,5 @@
 import { Job } from 'shared/types'
+import { debug } from 'electron-log'
 
 /**
  * Media type to be used in the userAgentStylesheet tag
@@ -20,6 +21,26 @@ const ScriptMediaType = {
     'zedai-to-epub3': 'application/z3998-auth+xml',
 }
 
+const EmbossedMedia = (j: Job) => {
+    // braille script have width and height options to be used in a media tag
+        const width = j.jobRequest.options.filter(
+            (option) => option.name === 'page-width'
+        )
+        const height = j.jobRequest.options.filter(
+            (option) => option.name === 'page-height'
+        )
+        debug("Width", width)
+        debug("Height", height)
+
+    let goodValue = (widthOrHeight) =>
+        widthOrHeight &&
+        widthOrHeight.length > 0 &&
+        widthOrHeight[0] &&
+        widthOrHeight[0].value !== undefined &&
+        widthOrHeight[0].value !== null
+        
+        return `<media value="embossed${goodValue(width) ? ` AND (width:${width[0].value})` : ''}${goodValue(height) ? ` AND (height:${height[0].value})` : ''}"/>`
+}
 /**
  * media tag builders to be used in the request with the following per script values :
  * - "embossed AND (width:XXX) AND (height:XXX)" for "dtbook-to-pef", "html-to-pef" and "epub3-to-pef"
@@ -27,44 +48,11 @@ const ScriptMediaType = {
  * - "braille, speech" or "braille" or "speech" for "epub3-to-epub3"
  */
 const ScriptMediaTag = {
-    'dtbook-to-pef': (j: Job) => {
-        // braille script have width and height options to be used in a media tag
-        const width = j.jobRequest.options.filter(
-            (option) => option.name === 'page-width'
-        )
-        const height = j.jobRequest.options.filter(
-            (option) => option.name === 'page-height'
-        )
-        return `<media value="embossed${
-            width[0] !== undefined && ` AND (width:${width[0].value})`
-        }${height[0] !== undefined && ` AND (height:${height[0].value})`}"/>`
-    },
+    'dtbook-to-pef': (j: Job) => EmbossedMedia(j),
     'dtbook-to-daisy3': () => `<media value="speech"/>`,
     'dtbook-to-epub3': () => `<media value="speech"/>`,
-    'html-to-pef': (j: Job) => {
-        // braille script have width and height options to be used in a media tag
-        const width = j.jobRequest.options.filter(
-            (option) => option.name === 'page-width'
-        )
-        const height = j.jobRequest.options.filter(
-            (option) => option.name === 'page-height'
-        )
-        return `<media value="embossed${
-            width[0] !== undefined && ` AND (width:${width[0].value})`
-        }${height[0] !== undefined && ` AND (height:${height[0].value})`}"/>`
-    },
-    'epub3-to-pef': (j: Job) => {
-        // braille script have width and height options to be used in a media tag
-        const width = j.jobRequest.options.filter(
-            (option) => option.name === 'page-width'
-        )
-        const height = j.jobRequest.options.filter(
-            (option) => option.name === 'page-height'
-        )
-        return `<media value="embossed${
-            width[0] !== undefined && ` AND (width:${width[0].value})`
-        }${height[0] !== undefined && ` AND (height:${height[0].value})`}"/>`
-    },
+    'html-to-pef': (j: Job) => EmbossedMedia(j),
+    'epub3-to-pef': (j: Job) => EmbossedMedia(j),
     'epub3-to-epub3': (j: Job) => {
         const values = j.jobRequest.options
             .filter(

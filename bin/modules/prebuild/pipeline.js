@@ -69,7 +69,8 @@ const execOpts = (java_home, maven_home = '') => ({
             path.join(java_home, 'bin'),
             ...(maven_home != '' ? [path.join(maven_home, 'bin')] : []),
         ].join(path.delimiter), // Required on MacOS : path is not forwarded as on windows
-	OS: process.env.OS,
+	    OS: process.env.OS,
+        FIXED_BUILD: process.env.FIXED_BUILD,
     },
     stderr: 'inherit',
     stdio: 'inherit',

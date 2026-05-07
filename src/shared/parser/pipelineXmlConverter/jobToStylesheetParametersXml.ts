@@ -23,14 +23,12 @@ const ScriptMediaType = {
 
 const EmbossedMedia = (j: Job) => {
     // braille script have width and height options to be used in a media tag
-        const width = j.jobRequest.options.filter(
-            (option) => option.name === 'page-width'
-        )
-        const height = j.jobRequest.options.filter(
-            (option) => option.name === 'page-height'
-        )
-        debug("Width", width)
-        debug("Height", height)
+    const width = j.jobRequest.options.filter(
+        (option) => option.name === 'page-width'
+    )
+    const height = j.jobRequest.options.filter(
+        (option) => option.name === 'page-height'
+    )
 
     let goodValue = (widthOrHeight) =>
         widthOrHeight &&
@@ -38,8 +36,8 @@ const EmbossedMedia = (j: Job) => {
         widthOrHeight[0] &&
         widthOrHeight[0].value !== undefined &&
         widthOrHeight[0].value !== null
-        
-        return `<media value="embossed${goodValue(width) ? ` AND (width:${width[0].value})` : ''}${goodValue(height) ? ` AND (height:${height[0].value})` : ''}"/>`
+
+    return `<media value="embossed${goodValue(width) ? ` AND (width:${width[0].value})` : ''}${goodValue(height) ? ` AND (height:${height[0].value})` : ''}"/>`
 }
 /**
  * media tag builders to be used in the request with the following per script values :

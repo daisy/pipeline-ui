@@ -28,6 +28,7 @@ import {
     selectAiEngineProperties,
     selectTtsConfig,
 } from 'shared/data/slices/settings'
+import * as portscanner from 'portscanner'
 
 /**
  * Local DAISY Pipeline 2 management class
@@ -645,33 +646,17 @@ async function getAvailablePort(
     endPort: number,
     host: string = '127.0.0.1'
 ) {
-    let server = createServer()
-    let portChecked = startPort
-    let portOpened = 0
-
-    // Port seeking : if port is in use, retry with a different port
-    server.on('error', (err: NodeJS.ErrnoException) => {
-        info(`Port ${portChecked.toString()} is not usable : `)
+    try {
+        let availablePort = await portscanner.findAPortNotInUse(
+            startPort,
+            endPort,
+            host
+        )
+        return availablePort
+    } catch (err) {
+        info(
+            `Not able to find an available port. Tried ${startPort} to ${endPort} on host ${host}`
+        )
         info(err)
-        portChecked += 1
-        if (portChecked <= endPort) {
-            info(' -> Checking for ' + portChecked.toString())
-            server.listen(portChecked, host)
-        }
-    })
-    // Listening successfully on a port
-    server.on('listening', (event) => {
-        // close the server if listening a port succesfully
-        server.close(() => {
-            // select the port when the server is closed
-            portOpened = portChecked
-        })
-        info(portChecked.toString() + ' is available')
-    })
-    // Start the port seeking
-    server.listen(portChecked, host)
-    while (portOpened == 0 && portChecked <= endPort) {
-        await setTimeout(1000)
     }
-    return portOpened
 }

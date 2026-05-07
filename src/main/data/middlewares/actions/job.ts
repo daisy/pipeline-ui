@@ -123,6 +123,7 @@ export function runJob(jobToRun: Job, dispatch, getState: GetStateFunction) {
     if (jobToRun.jobData && jobToRun.jobData.results) {
         jobToRun.jobData.results = undefined
     }
+    jobToRun.resultsDownloaded = false
     if (
         jobToRun.state === JobState.SUBMITTED ||
         jobToRun.state === JobState.SUBMITTING

@@ -35,7 +35,9 @@ jobs:
 
       - name: Install GNU Make (macOS)
         if: runner.os == 'macOS'
-        run: brew install make
+        run: |
+          brew update
+          brew install make
 
       - name: Cache Maven dependencies
         uses: actions/cache@v4

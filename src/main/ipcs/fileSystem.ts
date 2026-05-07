@@ -152,17 +152,8 @@ function isDirectory(itemPath: string) {
     return false
 }
 function isURL(str: string) {
-    try {
-        // see if it can be a URL object
-        new URL(str)
-    } catch (_) {
-        return false
-    }
-    // however, this can return a false positive on windows, so check other things too
-    if (str.toLowerCase().startsWith('file://')) {
-        return true
-    }
-    return true
+    // use explicit scheme check instead of new URL() test to avoid false positives on windows
+    return /^[a-zA-Z][a-zA-Z0-9+\-.]{2,}:\/\//.test(str)
 }
 function setupFileSystemEvents() {
     // comes from the renderer process (ipcRenderer.send())

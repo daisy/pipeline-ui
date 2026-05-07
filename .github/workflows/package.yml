@@ -106,10 +106,11 @@ jobs:
             gh release create ci-snapshot \
               --repo ${{ github.repository }} \
               --draft \
-              --title "CI Snapshot" \
-              --notes "Latest CI snapshot build from engine develop."
+              --latest=false \
+              --title "Development Snapshot" \
+              --notes "Latest snapshot builds from engine develop and pipeline-ui develop branches."
 
-      - name: Replace CI Snapshot release assets
+      - name: Replace Development Snapshot release assets
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |

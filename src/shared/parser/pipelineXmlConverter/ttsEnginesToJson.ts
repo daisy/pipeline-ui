@@ -15,7 +15,7 @@ function ttsEnginesToJson(
                 if (ttsEngineElem.getAttribute('features').length > 0) {
                     acc[key].features = ttsEngineElem
                         .getAttribute('features')
-                        ?.split(';')
+                        ?.split(' ')
                 }
                 if (ttsEngineElem.getAttribute('status').length > 0) {
                     acc[key].status = ttsEngineElem.getAttribute('status')

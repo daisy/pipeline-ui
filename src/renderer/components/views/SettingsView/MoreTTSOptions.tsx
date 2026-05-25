@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { setProperties } from 'shared/data/slices/pipeline'
 import { TtsEngineState } from 'shared/types'
 import { SingleFileInput } from 'renderer/components/Widgets/SingleFileInput'
@@ -11,6 +11,42 @@ const { App } = window
 const clone = (propsArray: Array<{ key: string; value: string }>) => [
     ...propsArray.map((kv) => ({ key: kv.key, value: kv.value })),
 ]
+
+function getEnginesWithSampleRateSupport(ttsEnginesStates: {
+    [key: string]: TtsEngineState
+}) {
+    let enginesWithSampleRateSupport = []
+    // until the API provides this info, we can just hardcode it
+    // google is the only one that support it now
+    let hasSampleRateSupport = (engineId) => engineId == 'google'
+    for (const engine in ttsEnginesStates) {
+        if (
+            hasSampleRateSupport(engine) &&
+            ttsEnginesStates[engine].status == 'available'
+        ) {
+            enginesWithSampleRateSupport.push(engine)
+        }
+    }
+    return enginesWithSampleRateSupport
+}
+
+function getEnginesWithSpeechRateSupport(ttsEnginesStates: {
+    [key: string]: TtsEngineState
+}) {
+    let enginesWithSpeechRateSupport = []
+    for (const engine in ttsEnginesStates) {
+        if (
+            ttsEnginesStates[engine].features &&
+            ttsEnginesStates[engine].features?.find((f) =>
+                ['speech-rate'].includes(f)
+            ) &&
+            ttsEnginesStates[engine].status == 'available'
+        ) {
+            enginesWithSpeechRateSupport.push(engine)
+        }
+    }
+    return enginesWithSpeechRateSupport
+}
 
 export function MoreTTSOptions({
     ttsEngineProperties,
@@ -32,6 +68,11 @@ export function MoreTTSOptions({
         [engineKey: string]: string
     }>({})
 
+    const [enginesWithSampleRateSupport, setEnginesWithSampleRateSupport] =
+        useState(getEnginesWithSampleRateSupport(ttsEnginesStates))
+    const [enginesWithSpeechRateSupport, setEnginesWithSpeechRateSupport] =
+        useState(getEnginesWithSpeechRateSupport(ttsEnginesStates))
+
     const [speechRateDisplay, setSpeechRateDisplay] = useState(
         engineProperties.find(
             (prop) => prop.key == 'org.daisy.pipeline.tts.speech-rate'
@@ -39,6 +80,15 @@ export function MoreTTSOptions({
     )
 
     const [lexiconKey, setLexiconKey] = useState(0)
+
+    useEffect(() => {
+        setEnginesWithSampleRateSupport(
+            getEnginesWithSampleRateSupport(ttsEnginesStates)
+        )
+        setEnginesWithSpeechRateSupport(
+            getEnginesWithSpeechRateSupport(ttsEnginesStates)
+        )
+    }, [ttsEnginesStates])
 
     let onLexiconChange = async (filename) => {
         if (filename && filename.length > 0) {
@@ -102,31 +152,6 @@ export function MoreTTSOptions({
     let resetSpeechRate = (e) => {
         onPropertyChange('org.daisy.pipeline.tts.speech-rate', '100%')
         setSpeechRateDisplay('100%')
-    }
-
-    let enginesWithSpeechRateSupport = []
-    for (const engine in ttsEnginesStates) {
-        if (
-            ttsEnginesStates[engine].features &&
-            ttsEnginesStates[engine].features?.find((f) =>
-                ['speech-rate'].includes(f)
-            ) &&
-            ttsEnginesStates[engine].status == 'available'
-        ) {
-            enginesWithSpeechRateSupport.push(engine)
-        }
-    }
-    let enginesWithSampleRateSupport = []
-    // until the API provides this info, we can just hardcode it
-    // google is the only one that support it now
-    let hasSampleRateSupport = (engineId) => engineId == 'google'
-    for (const engine in ttsEnginesStates) {
-        if (
-            hasSampleRateSupport(engine) &&
-            ttsEnginesStates[engine].status == 'available'
-        ) {
-            enginesWithSampleRateSupport.push(engine)
-        }
     }
 
     return (

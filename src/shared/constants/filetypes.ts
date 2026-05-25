@@ -124,6 +124,11 @@ let scriptInputFiletypes: Array<Filetype> = [
         name: 'Open Braille Formatting Language',
         extensions: ['obfl'],
     },
+    {
+        type: 'pdf',
+        name: 'Portable Document Format',
+        extensions: ['pdf'],
+    },
 ]
 // filter out the things that are never found as script sources
 scriptInputFiletypes = scriptInputFiletypes.concat(

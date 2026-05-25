@@ -10,7 +10,7 @@ import { debug } from 'electron-log'
 // or if none of those fit, it returns the extension
 export async function sniffFile(filepath: string): Promise<string> {
     const ext = extname(filepath).toLowerCase()
-
+    debug('sniffFile ext', ext)
     if (path.basename(filepath).toLowerCase() == 'ncc.html') {
         return 'ncc'
     }
@@ -21,6 +21,10 @@ export async function sniffFile(filepath: string): Promise<string> {
         path.basename(filepath).startsWith('#')
     ) {
         return ext
+    }
+
+    if (ext == '.pdf') {
+        return 'pdf'
     }
 
     // handle opf, xml and html files with a quick sax parse

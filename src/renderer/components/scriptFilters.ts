@@ -5,6 +5,7 @@ import { debug } from 'electron-log'
 export function getRelevantScripts(filetype) {
     const { pipeline } = useWindowStore()
     let retval
+    debug('getRelevantScripts filetype', filetype)
     if (filetype == 'ncc') {
         retval = pipeline.scripts.filter((s) =>
             s.inputFilesets.some((f) => f == 'daisy202')
@@ -28,6 +29,10 @@ export function getRelevantScripts(filetype) {
     } else if (filetype == 'text/html' || filetype == 'application/xhtml+xml') {
         retval = pipeline.scripts.filter((s) =>
             s.inputFilesets.some((f) => f == 'html')
+        )
+    } else if (filetype == 'pdf') {
+        retval = pipeline.scripts.filter((s) =>
+            s.inputFilesets.some((f) => f == 'pdf')
         )
     } else {
         retval = pipeline.scripts.filter((s) =>

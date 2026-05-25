@@ -81,7 +81,10 @@ export function ScriptForm({ job }: { job: Job }) {
     // - page-width
     // - page-height
 
-    // Filter out the options that are to be defined in the first step of braille script
+    // is this job a 2-step job because it has a braille-translator-stylesheet-parameters option?
+    const is2StepBrailleTranslatorStylesheetParametersJob = optional.some(
+        (item) => item.name == 'braille-translator-stylesheet-parameters'
+    )
     const filteredOptions = [
         'stylesheet',
         'page-width',
@@ -89,8 +92,13 @@ export function ScriptForm({ job }: { job: Job }) {
         'audio',
         'braille',
         'tts',
-        'braille-code',
-        'formatting-standard',
+        ...(is2StepBrailleTranslatorStylesheetParametersJob
+            ? [
+                  'braille-code',
+                  'formatting-standard',
+                  'braille-translator-stylesheet',
+              ]
+            : []),
     ]
     const hiddenOptions = [
         'transform',

@@ -11,9 +11,11 @@ let adjustedAppName = TITLE.replace(' - App', '')
 const devVersion = process.env.DEV_BUILD === 'true'
     ? (() => {
         const { version } = require('./package.json')
-        const hash = execSync('git rev-parse --short HEAD').toString().trim()
-        const branch = execSync('git rev-parse --abbrev-ref HEAD').toString().trim()
-        return `${version}-${branch}-${hash}`
+        const uiHash = execSync('git rev-parse --short HEAD').toString().trim()
+        const engineHash = execSync('git rev-parse --short HEAD:engine')
+            .toString()
+            .trim()
+        return `${version}-ui-${uiHash}-engine-${engineHash}`
     })()
     : undefined
 

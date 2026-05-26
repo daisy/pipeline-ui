@@ -1,6 +1,14 @@
-import { app, ipcMain, Menu, shell, nativeTheme } from 'electron'
+import {
+    app,
+    BrowserWindow,
+    ipcMain,
+    Menu,
+    shell,
+    nativeTheme,
+} from 'electron'
 
-import { error } from 'electron-log'
+import { error, debug } from 'electron-log'
+import * as fs from 'fs-extra'
 
 import {
     makeAppSetup,
@@ -50,6 +58,18 @@ import { setupClipboardEvents } from './ipcs/clipboard'
 import { checkForUpdate } from 'shared/data/slices/update'
 import { setupOneTimeFetchEvent } from './ipcs/one-time-fetch'
 import { DefaultTextSize, TextSizeOptions } from 'shared/types'
+import { sniffFile } from './ipcs/sniffFile'
+
+let pendingOpenFile: string | null = null
+
+app.on('open-file', (event, filePath) => {
+    event.preventDefault()
+    pendingOpenFile = filePath
+    if (app.isReady()) {
+        pendingOpenFile = null
+        handleFileOpen(filePath, true)
+    }
+})
 
 makeAppWithSingleInstanceLock(async () => {
     app.setName(APP_CONFIG.TITLE)
@@ -90,6 +110,17 @@ makeAppWithSingleInstanceLock(async () => {
     setupMessageBoxEvent()
     buildMenu()
 
+    const fileArg = parseFileArg(process.argv)
+    debug('[open-file debug] fileArg:', fileArg)
+    if (fileArg) {
+        pendingOpenFile = fileArg
+    }
+    if (pendingOpenFile) {
+        const filePath = pendingOpenFile
+        pendingOpenFile = null
+        handleFileOpen(filePath, false)
+    }
+
     store.subscribe(() => {
         buildMenu()
     })
@@ -118,6 +149,14 @@ makeAppWithSingleInstanceLock(async () => {
                 return
             }
             // no settings command, continue with the main window
+            const file = parseFileArg(commandLine)
+            if (file) {
+                MainWindow().then(() => {
+                    handleFileOpen(file, true)
+                })
+                return
+            }
+
             const cliArgs = additionalData?.argv || []
             if (!commandLine.includes('--hidden') && cliArgs.length == 0) {
                 MainWindow().then((window) => {
@@ -147,6 +186,74 @@ makeAppWithSingleInstanceLock(async () => {
     // Parse pipeline commands
     //parsePipelineCommands(process.argv)
 })
+
+function parseFileArg(argv: string[]): string | null {
+    return (
+        argv.find(
+            (arg) =>
+                !arg.startsWith('--') &&
+                ['.epub', '.opf'].some((ext) =>
+                    arg.toLowerCase().endsWith(ext)
+                ) &&
+                fs.existsSync(arg)
+        ) ?? null
+    )
+}
+
+async function handleFileOpen(
+    filePath: string,
+    appWasAlreadyOpen: boolean
+) {
+    const epubType = await sniffFile(filePath)
+    debug('[open-file debug] epubType:', epubType)
+
+    if (epubType === 'epub2opf') {
+        const openUpgrader = showMessageBoxYesNo(
+            'This is an EPUB 2 file. The EPUB Validator only supports EPUB 3.\n\nWould you like to open the EPUB Upgrader to convert it to EPUB 3 first?'
+        )
+        if (!openUpgrader) {
+            if (!appWasAlreadyOpen) {
+                app.quit()
+            }
+            return
+        }
+        MainWindow().then((w) =>
+            sendOpenFileToRenderer(w, filePath, 'epub2-to-epub3', false)
+        )
+        return
+    }
+
+    if (epubType === 'epub3opf') {
+        MainWindow().then((w) =>
+            sendOpenFileToRenderer(w, filePath, 'epub3-validator', true)
+        )
+    }
+}
+
+async function sendOpenFileToRenderer(
+    w: BrowserWindow,
+    filePath: string,
+    scriptIdFragment: string,
+    autoRun: boolean
+) {
+    if (w.isMinimized()) {
+        w.restore()
+    }
+    w.show()
+    w.focus()
+
+    if (w.webContents.isLoading()) {
+        await new Promise<void>((resolve) => {
+            w.webContents.once('did-finish-load', () => resolve())
+        })
+    }
+
+    w.webContents.send('open-file-in-app', {
+        filePath,
+        scriptIdFragment,
+        autoRun,
+    })
+}
 
 function buildMenu() {
     let jobs = selectPipeline(store.getState()).jobs

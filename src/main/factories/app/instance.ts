@@ -1,6 +1,7 @@
 import { app } from 'electron'
 
 import { spawn } from 'child_process'
+import { existsSync } from 'fs'
 import { readSettings } from 'main/data/settings'
 import { runCliTool } from './cli'
 
@@ -34,9 +35,17 @@ export const settingsCommands = [
 ]
 const electronOptions = ['--remote-debugging-port']
 
+function isOpenFileArg(arg: string) {
+    return (
+        ['.epub', '.opf'].some((ext) => arg.toLowerCase().endsWith(ext)) &&
+        existsSync(arg)
+    )
+}
+
 export function makeAppWithSingleInstanceLock(fn: () => void) {
     let isElectron = false
     let commandLineArgs = []
+    let cliArgs = []
     let appLaunchArgs = []
     if (process.argv) {
         isElectron = process.argv[0]
@@ -55,6 +64,7 @@ export function makeAppWithSingleInstanceLock(fn: () => void) {
                 (arg) =>
                     electronOptions.filter((e) => arg.startsWith(e)).length == 0
             )
+        cliArgs = commandLineArgs.filter((arg) => !isOpenFileArg(arg))
     }
     const isPrimaryInstance = app.requestSingleInstanceLock({
         argv: commandLineArgs,
@@ -63,7 +73,7 @@ export function makeAppWithSingleInstanceLock(fn: () => void) {
     if (isPrimaryInstance) {
         // basic initialisation of the app if
         // it does not have cli args or background launch is not requested
-        if (commandLineArgs.length == 0 && !process.argv.includes('--bg')) {
+        if (cliArgs.length == 0 && !process.argv.includes('--bg')) {
             app.dock?.show()
             fn()
         } else {
@@ -77,8 +87,7 @@ export function makeAppWithSingleInstanceLock(fn: () => void) {
                 ...(isElectron ? [appLaunchArgs[1]] : []),
                 // If command line arguments are provided (for cli usage),
                 // launch the app in hidden mode
-                ...(commandLineArgs.length > 0 ||
-                process.argv.includes('--hidden')
+                ...(cliArgs.length > 0 || process.argv.includes('--hidden')
                     ? ['--hidden']
                     : []),
             ]
@@ -99,10 +108,10 @@ export function makeAppWithSingleInstanceLock(fn: () => void) {
         // Do not continue the original app launch
         app.quit()
     }
-    if (commandLineArgs.length > 0) {
+    if (cliArgs.length > 0) {
         getWebserviceFromSettings(10, startingTime)
             .then((webservice) => {
-                runCliTool(webservice, commandLineArgs)
+                runCliTool(webservice, cliArgs)
             })
             .catch((error) => {
                 console.error('Error:', error)

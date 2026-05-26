@@ -59,7 +59,6 @@ export function DragDropFilterFiles({
     // resolve folder contents and add files to the current files list
     let onDragInputChange = async (filenames) => {
         let resolvedFilenames = await resolveItems(filenames)
-        console.log("onDragInputChange", filenames)
         await addFiles(resolvedFilenames)
     }
     // add a list of files to the current files list and filter out duplicates
@@ -74,10 +73,7 @@ export function DragDropFilterFiles({
         let uniqueNewFilesThatAreSupported = []
         // assign a filetype to each one
         for (let file of uniqueNewFiles) {
-            console.log(`Detecting type of ${file}`)
-
             let filetype = await App.detectFiletype(file)
-            console.log(filetype)
             if (filetype) {
                 uniqueNewFilesThatAreSupported.push({
                     filepath: file,
@@ -188,7 +184,6 @@ export function DragDropFilterFiles({
                             .
                         </p>
                         {uniqueFiletypes.map((filetype, idx) => {
-                            console.log("DragDropFilterFiles", filetype)
                             let filesOfType = filteredFiles
                                 .filter((f) => f.filetype.type == filetype)
                                 .sort((a, b) => (a.name < b.name ? -1 : 1))

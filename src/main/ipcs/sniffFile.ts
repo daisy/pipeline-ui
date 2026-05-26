@@ -10,7 +10,6 @@ import { debug } from 'electron-log'
 // or if none of those fit, it returns the extension
 export async function sniffFile(filepath: string): Promise<string> {
     const ext = extname(filepath).toLowerCase()
-    debug('sniffFile ext', ext)
     if (path.basename(filepath).toLowerCase() == 'ncc.html') {
         return 'ncc'
     }

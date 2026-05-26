@@ -5,7 +5,6 @@ import { debug } from 'electron-log'
 export function getRelevantScripts(filetype) {
     const { pipeline } = useWindowStore()
     let retval
-    debug('getRelevantScripts filetype', filetype)
     if (filetype == 'ncc') {
         retval = pipeline.scripts.filter((s) =>
             s.inputFilesets.some((f) => f == 'daisy202')

@@ -17,3 +17,4 @@ export * from './file/unzip'
 export * from './oneTimeFetch'
 
 export * from './messageBox'
+export * from './openExternalFile'

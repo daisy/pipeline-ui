@@ -59,6 +59,7 @@ import { checkForUpdate } from 'shared/data/slices/update'
 import { setupOneTimeFetchEvent } from './ipcs/one-time-fetch'
 import { DefaultTextSize, TextSizeOptions } from 'shared/types'
 import { sniffFile } from './ipcs/sniffFile'
+import { IPC_EVENT_openExternalFile } from 'shared/main-renderer-events'
 
 let pendingOpenFile: string | null = null
 
@@ -248,7 +249,7 @@ async function sendOpenFileToRenderer(
         })
     }
 
-    w.webContents.send('open-file-in-app', {
+    w.webContents.send(IPC_EVENT_openExternalFile, {
         filePath,
         scriptIdFragment,
         autoRun,

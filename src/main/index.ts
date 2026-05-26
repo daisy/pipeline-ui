@@ -7,7 +7,7 @@ import {
     nativeTheme,
 } from 'electron'
 
-import { error, debug } from 'electron-log'
+import { error } from 'electron-log'
 import * as fs from 'fs-extra'
 
 import {
@@ -112,7 +112,6 @@ makeAppWithSingleInstanceLock(async () => {
     buildMenu()
 
     const fileArg = parseFileArg(process.argv)
-    debug('[open-file debug] fileArg:', fileArg)
     if (fileArg) {
         pendingOpenFile = fileArg
     }
@@ -206,7 +205,6 @@ async function handleFileOpen(
     appWasAlreadyOpen: boolean
 ) {
     const epubType = await sniffFile(filePath)
-    debug('[open-file debug] epubType:', epubType)
 
     if (epubType === 'epub2opf') {
         const openUpgrader = showMessageBoxYesNo(

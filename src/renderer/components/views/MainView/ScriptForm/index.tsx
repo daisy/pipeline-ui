@@ -204,7 +204,9 @@ export function ScriptForm({ job }: { job: Job }) {
             pipeline.datatypes
         )
         let invalidItems = requestValidationResult.filter(
-            (v) => valueIsNotEmpty(v.item.value) && !v.validValue
+            (v) =>
+                (v.required && !valueIsNotEmpty(v.item.value)) ||
+                (valueIsNotEmpty(v.item.value) && !v.validValue)
         )
         modifiedJobRequest.validation = [...requestValidationResult]
         setIsValidJobRequest(invalidItems.length == 0)

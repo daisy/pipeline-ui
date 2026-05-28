@@ -92,12 +92,9 @@ export function ScriptForm({ job }: { job: Job }) {
         'audio',
         'braille',
         'tts',
+        'formatting-standard',
         ...(is2StepBrailleTranslatorStylesheetParametersJob
-            ? [
-                  'braille-code',
-                  'formatting-standard',
-                  'braille-translator-stylesheet',
-              ]
+            ? ['braille-code', 'braille-translator-stylesheet']
             : []),
     ]
     const hiddenOptions = [

@@ -131,6 +131,7 @@ export class PipelineTray {
                     if (window.isMinimized()) {
                         window.restore()
                     }
+                    window.show()
                     window.focus()
                 })
             },
@@ -145,6 +146,7 @@ export class PipelineTray {
                     if (window.isMinimized()) {
                         window.restore()
                     }
+                    window.show()
                     window.focus()
                 })
                 store.dispatch(selectJob(job))

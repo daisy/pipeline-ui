@@ -272,6 +272,12 @@ export function ScriptForm({ job }: { job: Job }) {
                 )
             }
         } else {
+            // Read nicename from the store at submit time
+            const latestNicename =
+                App.store
+                    .getState()
+                    .pipeline.jobs.find((j) => j.internalId === job.internalId)
+                    ?.jobRequest?.nicename ?? ''
             let options = [...job.jobRequest.options]
             if (job.is2StepsJob) {
                 // format all the stylesheet parameter options as a string
@@ -305,6 +311,7 @@ export function ScriptForm({ job }: { job: Job }) {
                             ...job,
                             jobRequest: {
                                 ...job.jobRequest,
+                                nicename: latestNicename,
                                 options: [...options],
                             },
                         })
@@ -323,6 +330,7 @@ export function ScriptForm({ job }: { job: Job }) {
                             ...job,
                             jobRequest: {
                                 ...job.jobRequest,
+                                nicename: latestNicename,
                                 inputs: [...inputs_],
                                 options: [...options],
                             },
@@ -336,6 +344,7 @@ export function ScriptForm({ job }: { job: Job }) {
                         ...job,
                         jobRequest: {
                             ...job.jobRequest,
+                            nicename: latestNicename,
                             options: [...options],
                         },
                     })

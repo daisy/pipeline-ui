@@ -2,6 +2,7 @@ import { FilelistWithRelevantScripts } from './FilelistWithRelevantScripts'
 import { getRelevantScripts } from '../scriptFilters'
 import { DragFileInput } from '../Widgets/DragFileInput'
 import { useState, useEffect } from 'react'
+import { useWindowStore } from 'renderer/store'
 import { FileTreeEntry } from 'main/ipcs/fileSystem'
 import { ID } from 'renderer/utils'
 import { X } from './SvgIcons'
@@ -14,6 +15,7 @@ export function DragDropFilterFiles({
     onChange,
     initialValue,
 }) {
+    const { pipeline } = useWindowStore()
     // files is [{filepath, filetype},...]
     const [files, setFiles] = useState(initialValue)
     const [filteredFiles, setFilteredFiles] = useState(initialValue)
@@ -206,7 +208,8 @@ export function DragDropFilterFiles({
                                     key={idx}
                                     files={filesOfType.map((f) => f.filepath)}
                                     relevantScripts={getRelevantScripts(
-                                        filetype
+                                        filetype,
+                                        pipeline.scripts
                                     )}
                                     categoryName={filesOfType[0]?.filetype.name}
                                     jobInternalId={job?.internalId}

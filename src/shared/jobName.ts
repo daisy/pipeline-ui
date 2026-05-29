@@ -1,4 +1,4 @@
-import { Job, JobState, JobStatus } from './types'
+import { Job, JobState } from './types'
 
 const readableStatus = {
     LAUNCHING: 'Launching',
@@ -24,24 +24,7 @@ function calculateJobName(job: Job, jobs: Array<Job>) {
         }
     }
 
-    if (job.jobRequest?.batchId && job?.isPrimaryForBatch) {
-        if (jobs) {
-            let jobsInBatch = jobs.filter(
-                (j) =>
-                    j.jobRequest?.batchId &&
-                    job.jobRequest?.batchId &&
-                    j.jobRequest?.batchId == job.jobRequest?.batchId
-            )
-            let numJobsDone = jobsInBatch.filter((j) =>
-                [JobStatus.ERROR, JobStatus.FAIL, JobStatus.SUCCESS].includes(
-                    j.jobData.status
-                )
-            ).length
-            return `${jobName} (${numJobsDone}/${jobsInBatch.length})`
-        }
-    } else {
-        return `${jobName} ${jobStatus ? '-' : ''} ${jobStatus}`.trim()
-    }
+    return `${jobName} ${jobStatus ? '-' : ''} ${jobStatus}`.trim()
 }
 
 export { calculateJobName, readableStatus }

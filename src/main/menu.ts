@@ -1,21 +1,14 @@
 import { BrowserWindow, dialog, MenuItem } from 'electron'
 import { selectPipeline, selectStatus } from 'shared/data/slices/pipeline'
 import { calculateJobName, readableStatus } from 'shared/jobName'
-import { Job, JobState, JobStatus, PipelineStatus } from 'shared/types'
+import { Job, PipelineStatus } from 'shared/types'
 import { getPipelineInstance } from './data/instance'
 import { store } from './data/store'
 import { closeApplication } from './windows'
 import { selectEditOnNewTab } from 'shared/data/slices/settings'
 import { selectDownloadPath } from 'shared/data/slices/settings'
-import {
-    areAllJobsInBatchDone,
-    closeOrCancelLabel,
-    getCompletedCountInBatch,
-    getIdleCountInBatch,
-    getJobsInBatch,
-} from 'shared/utils'
+import { closeOrCancelLabel } from 'shared/utils'
 import { CanDo } from 'shared/canDo'
-import { createAnnouncement } from 'shared/at-announce'
 
 export function buildMenuTemplate({
     appName,
@@ -31,7 +24,6 @@ export function buildMenuTemplate({
     onRemoveJob,
     onEditJob,
     onShowAbout,
-    onCancelBatchJob,
     onResetTextSize,
     onLargerText,
     onSmallerText,
@@ -47,14 +39,8 @@ export function buildMenuTemplate({
     let multipleJobs = jobs.length > 1
     let status = 'Status: new job'
     let currentJob = jobs.find((j) => j.internalId == selectedJobId)
-    let jobsInBatch = getJobsInBatch(
-        selectPipeline(store.getState()),
-        currentJob
-    )
 
-    if (currentJob?.isPrimaryForBatch) {
-        status = createAnnouncement(currentJob, jobs, selectedJobId)
-    } else if (currentJob?.jobData?.status) {
+    if (currentJob?.jobData?.status) {
         status = 'Status: ' + readableStatus[currentJob.jobData.status]
     }
     if (pipelineStatus != PipelineStatus.RUNNING) {
@@ -178,18 +164,7 @@ export function buildMenuTemplate({
                                   currentJob
                               ),
                               click: () => {
-                                  if (currentJob?.jobRequest?.batchId) {
-                                      if (
-                                          getIdleCountInBatch(
-                                              currentJob,
-                                              jobsInBatch
-                                          ) > 0
-                                      ) {
-                                          onCancelBatchJob(jobsInBatch)
-                                      }
-                                  } else {
-                                      onRemoveJob(currentJob)
-                                  }
+                                  onRemoveJob(currentJob)
                               },
                               accelerator: 'CommandOrControl+D',
                               enabled: CanDo.cancelJob(
@@ -305,12 +280,6 @@ export function buildMenuTemplate({
                               (j: Job) =>
                                   !j.invisible ||
                                   selectEditOnNewTab(store.getState())
-                          )
-                          .filter(
-                              (j: Job) =>
-                                  !j.jobRequest?.hasOwnProperty('batchId') ||
-                                  (j.jobRequest?.batchId != '' &&
-                                      j.isPrimaryForBatch == true)
                           )
                           .map((j: Job, idx: number) => {
                               let menuItem = {

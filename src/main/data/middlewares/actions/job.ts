@@ -45,18 +45,6 @@ export function removeJobs(action: PayloadAction<any>) {
         }
     }
 }
-export function removeBatchJob(
-    action: PayloadAction<any>,
-    dispatch,
-    getState: GetStateFunction
-) {
-    const visibleJobs = selectVisibleJobs(getState())
-    removeJobs(action)
-    // add a job if the batch was the last job
-    if (visibleJobs.length == action.payload.length) {
-        dispatch(addJob(newJob(selectPipeline(getState()))))
-    }
-}
 
 export function removeJob(
     action: PayloadAction<any>,
@@ -212,8 +200,6 @@ export function runBatchJobs(
 
     // mark the job request as a batch request
     job.jobRequest.batchId = uuidv4()
-    // mark this job as batch primary
-    job.isPrimaryForBatch = true
 
     // get the batch input
     let batchInput = getBatchInput(job.script)
@@ -227,7 +213,7 @@ export function runBatchJobs(
 
     // use one for the default job
     job.jobRequest.inputs.find((input) => input.name == batchInput.name).value =
-        batchJobRequestInputValues[0]
+        [batchJobRequestInputValues[0]]
     // run the default job
     runJob(job, dispatch, getState)
 
@@ -242,13 +228,11 @@ export function runBatchJobs(
         // @ts-ignore
         newJob_.jobRequest.inputs = job.jobRequest.inputs.map((input) => {
             if (input.name == batchInput.name) {
-                return { name: input.name, value: inputValue }
+                return { name: input.name, value: [inputValue] }
             } else {
                 return input
             }
         })
-        newJob_.isPrimaryForBatch = false
-
         // normally, the addJob action assigns an ID and adds job to state.pipeline.jobs
         // we aren't dispatching new actions from within this function so we'll do it
         // manually

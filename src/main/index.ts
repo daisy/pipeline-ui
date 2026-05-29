@@ -51,8 +51,6 @@ import {
     selectPipeline,
     selectNextJob,
     selectPrevJob,
-    removeBatchJob,
-    cancelBatchJob,
 } from 'shared/data/slices/pipeline'
 import { setupClipboardEvents } from './ipcs/clipboard'
 import { checkForUpdate } from 'shared/data/slices/update'
@@ -298,24 +296,11 @@ function buildMenu() {
             // )
         },
         onRemoveJob: async (job) => {
-            if (job.isPrimaryForBatch) {
-                let jobsInBatch = jobs.filter(
-                    (j) => j.jobRequest?.batchId == job.jobRequest?.batchId
-                )
-                // Ask delete confirmation for visible jobs deletion
-                let action = showMessageBoxYesNo(
-                    'Are you sure you want to close these jobs?'
-                )
-                if (action) {
-                    store.dispatch(removeBatchJob(jobsInBatch))
-                }
-            } else {
-                let result = showMessageBoxYesNo(
-                    'Are you sure you want to close this job?'
-                )
-                if (result) {
-                    store.dispatch(removeJob(job))
-                }
+            let result = showMessageBoxYesNo(
+                'Are you sure you want to close this job?'
+            )
+            if (result) {
+                store.dispatch(removeJob(job))
             }
         },
         onEditJob: async (job) => {
@@ -324,9 +309,6 @@ function buildMenu() {
         onShowAbout: async () => {
             // Open the settings window
             ipcMain.emit(IPC.WINDOWS.ABOUT.CREATE)
-        },
-        onCancelBatchJob: async (jobsInBatch) => {
-            store.dispatch(cancelBatchJob(jobsInBatch))
         },
         onResetTextSize: () => {
             store.dispatch(setTextSize(DefaultTextSize))

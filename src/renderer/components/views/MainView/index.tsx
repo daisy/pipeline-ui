@@ -15,8 +15,6 @@ import {
     selectJob,
     selectNextJob,
     selectPrevJob,
-    removeBatchJob,
-    setAnnouncement,
 } from 'shared/data/slices/pipeline'
 // @ts-ignore
 import { NewJobPane } from './NewJobPane'
@@ -24,24 +22,18 @@ import { calculateJobName } from 'shared/jobName'
 import { PLATFORM } from 'shared/constants'
 import { Plus, X } from '../../Widgets/SvgIcons'
 // @ts-ignore
-import { BatchJobDetailsPane } from 'renderer/components/views/MainView/JobDetailsPane/BatchJobPane'
-// @ts-ignore
 import { SingleJobDetailsPane } from 'renderer/components/views/MainView/JobDetailsPane/SingleJobPane'
 // @ts-ignore
 import { ScriptForm } from 'renderer/components/views/MainView/ScriptForm'
 import { TabList } from 'renderer/components/Widgets/TabList'
-import { areAllJobsInBatchDone } from 'shared/utils'
 import { CanDo } from 'shared/canDo'
 import * as Utils from 'shared/utils'
-import { createAnnouncement } from 'shared/at-announce'
 const { App } = window
 
 export function MainView() {
     const { pipeline, settings } = useWindowStore()
     const visibleJobs = pipeline.jobs.filter(
-        (job) =>
-            (settings.editJobOnNewTab || !job.invisible) &&
-            (!job.jobRequest?.batchId || job.isPrimaryForBatch)
+        (job) => settings.editJobOnNewTab || !job.invisible
     )
 
     useEffect(() => {
@@ -88,28 +80,6 @@ export function MainView() {
                 break
         }
     }
-    // let canClose = (job) => {
-    //     if (job.jobRequest && job.jobRequest.batchId) {
-    //         let jobsInBatch = pipeline.jobs.filter(
-    //             (j) =>
-    //                 j.jobRequest &&
-    //                 j.jobRequest.batchId &&
-    //                 j.jobRequest.batchId == job.jobRequest.batchId
-    //         )
-    //         return areAllJobsInBatchDone(job, jobsInBatch)
-    //     } else if (job.jobData?.status) {
-    //         return (
-    //             [JobStatus.ERROR, JobStatus.FAIL, JobStatus.SUCCESS].includes(
-    //                 job.jobData?.status
-    //             ) || job.state == JobState.NEW
-    //         )
-    //     } else if (job.jobRequestError) {
-    //         return true
-    //     } else if (job.state == JobState.NEW) {
-    //         return true
-    //     }
-    // }
-
     return (
         <main>
             <div className="tablist-container">
@@ -183,50 +153,29 @@ export function MainView() {
                             type="button"
                             id={`cancel-job-${job.internalId}`}
                             onClick={async (e) => {
-                                if (job.jobRequest?.batchId) {
-                                    // remove all jobs in batch
-                                    let jobsInBatch = pipeline.jobs.filter(
-                                        (j) =>
-                                            j.jobRequest &&
-                                            j.jobRequest.batchId &&
-                                            j.jobRequest.batchId ==
-                                                job.jobRequest.batchId
-                                    )
+                                // remove a single job
+                                if (
+                                    job.state === JobState.NEW &&
+                                    Utils.isJobUnchanged(job, settings)
+                                ) {
+                                    App.store.dispatch(removeJob(job))
+                                } else if (
+                                    ((job.jobData?.status &&
+                                        [
+                                            JobStatus.ERROR,
+                                            JobStatus.FAIL,
+                                            JobStatus.SUCCESS,
+                                        ].includes(job.jobData.status)) ||
+                                        !!job.jobRequestError) &&
+                                    settings.confirmOnCloseFinishedJob === false
+                                ) {
+                                    App.store.dispatch(removeJob(job))
+                                } else {
                                     let result = await App.showMessageBoxYesNo(
-                                        'Are you sure you want to close these jobs?'
+                                        'Are you sure you want to close this job?'
                                     )
                                     if (result) {
-                                        App.store.dispatch(
-                                            removeBatchJob(jobsInBatch)
-                                        )
-                                    }
-                                } else {
-                                    // remove a single job
-                                    if (
-                                        job.state === JobState.NEW &&
-                                        Utils.isJobUnchanged(job, settings)
-                                    ) {
                                         App.store.dispatch(removeJob(job))
-                                    } else if (
-                                        ((job.jobData?.status &&
-                                            [
-                                                JobStatus.ERROR,
-                                                JobStatus.FAIL,
-                                                JobStatus.SUCCESS,
-                                            ].includes(job.jobData.status)) ||
-                                            !!job.jobRequestError) &&
-                                        settings.confirmOnCloseFinishedJob ===
-                                            false
-                                    ) {
-                                        App.store.dispatch(removeJob(job))
-                                    } else {
-                                        let result =
-                                            await App.showMessageBoxYesNo(
-                                                'Are you sure you want to close this job?'
-                                            )
-                                        if (result) {
-                                            App.store.dispatch(removeJob(job))
-                                        }
                                     }
                                 }
                             }}
@@ -254,26 +203,8 @@ export function MainView() {
                                         <ScriptForm job={job} />
                                     )}
                                 {job.script != null &&
-                                    job.state != JobState.NEW &&
-                                    job.jobRequest.batchId == null && (
+                                    job.state != JobState.NEW && (
                                         <SingleJobDetailsPane job={job} />
-                                    )}
-                                {job.script != null &&
-                                    job.state != JobState.NEW &&
-                                    job.jobRequest.batchId != null && (
-                                        <BatchJobDetailsPane
-                                            jobs={[
-                                                job,
-                                                pipeline.jobs.filter(
-                                                    (j) =>
-                                                        j.internalId !=
-                                                            job.internalId &&
-                                                        j.jobRequest?.batchId ==
-                                                            job.jobRequest
-                                                                ?.batchId
-                                                ),
-                                            ].flat()}
-                                        />
                                     )}
                             </div>
                         )}

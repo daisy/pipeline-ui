@@ -40,9 +40,6 @@ export function JobDetails({ job }: { job: Job }) {
         messagesSeen.current = true
     }
 
-    let jobIsBatch =
-        job.jobRequest.batchId != null && job.jobRequest.batchId != ''
-
     if (job.jobRequestError) {
         return (
             <div>
@@ -205,40 +202,28 @@ export function JobDetails({ job }: { job: Job }) {
                         </div>
                     )}
                     <div className="row">
-                        {!jobIsBatch && (
+                        <button
+                            className="important"
+                            type="button"
+                            onClick={(e) => {
+                                App.store.dispatch(runJob(job))
+                                setIsRerunning(true)
+                            }}
+                            disabled={!canRunJob || isRerunning}
+                        >
+                            Re-run job
+                        </button>
+
+                        {CanDo.editJob(pipeline, pipeline.status, job) && (
                             <button
                                 className="important"
                                 type="button"
                                 onClick={(e) => {
-                                    App.store.dispatch(runJob(job))
-                                    setIsRerunning(true)
+                                    App.store.dispatch(editJob(job))
                                 }}
-                                disabled={!canRunJob || isRerunning}
                             >
-                                Re-run job
+                                Edit job
                             </button>
-                        )}
-
-                        {!jobIsBatch && (
-                            <>
-                                <button
-                                    className="important"
-                                    type="button"
-                                    onClick={(e) => {
-                                        let job_ = { ...job }
-                                        job_.jobRequest = {
-                                            ...job.jobRequest,
-                                        }
-                                        job_.jobData = null
-                                        job_.errors = []
-                                        job_.isPrimaryForBatch = false
-                                        job_.jobRequest.batchId = null
-                                        App.store.dispatch(editJob(job))
-                                    }}
-                                >
-                                    Edit job
-                                </button>
-                            </>
                         )}
                     </div>
                 </>

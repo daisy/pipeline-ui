@@ -3,7 +3,6 @@ import { selectPipeline } from './data/slices/pipeline'
 import {
     ApplicationSettings,
     Job,
-    JobStatus,
     NameValue,
     PipelineState,
     Script,
@@ -110,38 +109,6 @@ export function getAllOptional(script: Script) {
         : []
 }
 
-export function areAllJobsInBatchDone(
-    primaryJob: Job,
-    jobsInBatch: Array<Job>
-) {
-    let numJobsDone = getCompletedCountInBatch(primaryJob, jobsInBatch)
-    return numJobsDone == jobsInBatch?.length
-}
-
-export function getCompletedCountInBatch(
-    primaryJob: Job,
-    jobsInBatch: Array<Job>
-) {
-    if (jobsInBatch) {
-        return (
-            jobsInBatch.filter((j) =>
-                [JobStatus.ERROR, JobStatus.FAIL, JobStatus.SUCCESS].includes(
-                    j.jobData?.status
-                )
-            ).length + jobsInBatch.filter((j) => j.jobRequestError).length
-        )
-    }
-
-    return 0
-}
-
-export function getIdleCountInBatch(primaryJob: Job, jobsInBatch: Array<Job>) {
-    let numJobsIdle =
-        jobsInBatch?.filter((j) => j.jobData.status == JobStatus.IDLE).length ??
-        0
-    return numJobsIdle
-}
-
 export function isScriptTTSEnhanced(script: Script) {
     let ttsInput = script.inputs.find((i) =>
         i.mediaType.includes('application/vnd.pipeline.tts-config+xml')
@@ -181,39 +148,11 @@ export function findInputType(type) {
     return inputType
 }
 
-export function getJobsInBatch(state: PipelineState, job: Job) {
-    if (!state.jobs || state.jobs.length == 0) {
-        return []
-    }
-    if (!job) {
-        return []
-    }
-    if (!job.jobRequest) {
-        return []
-    }
-    if (job.jobRequest.batchId == null || job.jobRequest.batchId == '') {
-        return []
-    }
-
-    let jobsInBatch = state.jobs.filter(
-        (j) => j.jobRequest?.batchId == job.jobRequest.batchId
-    )
-    return jobsInBatch
-}
-
 export function closeOrCancelLabel(state: PipelineState, job: Job) {
     if (CanDo.closeJob(state, job)) {
-        if (job?.jobRequest?.batchId) {
-            return 'Close all jobs'
-        } else {
-            return 'Close job'
-        }
+        return 'Close job'
     } else if (CanDo.cancelJob(state, job)) {
-        if (job?.jobRequest?.batchId) {
-            return 'Cancel scheduled jobs'
-        } else {
-            return 'Cancel job'
-        }
+        return 'Cancel job'
     }
     return 'Cancel job'
 }

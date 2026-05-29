@@ -21,7 +21,6 @@ import {
     TtsVoice,
     EngineProperty,
     TtsEngineState,
-    ScriptOption,
 } from 'shared/types'
 import { RootState } from 'shared/types/store'
 import { createAnnouncement } from 'shared/at-announce'
@@ -40,14 +39,6 @@ const initialState = {
     ttsEnginesStates: {},
 } as PipelineState
 
-function isNonPrimaryInBatch(job) {
-    let retval =
-        job &&
-        job.jobRequest &&
-        job.jobRequest.batchId &&
-        !job.isPrimaryForBatch
-    return retval
-}
 export const pipeline = createSlice({
     name: 'pipeline',
     initialState,
@@ -259,32 +250,6 @@ export const pipeline = createSlice({
                 state.selectedJobId = state.jobs[0].internalId
             }
         },
-        // same as above
-        removeBatchJob: (state: PipelineState, param: PayloadAction<Job[]>) => {
-            const removedId = param.payload.map((j) => j.internalId)
-            state.jobs = state.jobs.filter(
-                (j) => !removedId.includes(j.internalId)
-            )
-            if (state.jobs.length === 0) {
-                state.selectedJobId = ''
-            } else if (removedId.includes(state.selectedJobId)) {
-                state.selectedJobId = state.jobs[0].internalId
-            }
-        },
-        cancelBatchJob: (state: PipelineState, param: PayloadAction<Job[]>) => {
-            let jobIdsToCancel = param.payload
-                .filter((j) => j.jobData?.status == JobStatus.IDLE)
-                .map((j) => j.internalId)
-
-            state.jobs = state.jobs.filter(
-                (j) => !jobIdsToCancel.includes(j.internalId)
-            )
-            if (state.jobs.length === 0) {
-                state.selectedJobId = ''
-            } else if (jobIdsToCancel.includes(state.selectedJobId)) {
-                state.selectedJobId = state.jobs[0].internalId
-            }
-        },
         /**
          * Request script options from stylesheet parameters endpoint
          *
@@ -349,17 +314,13 @@ export const pipeline = createSlice({
                 (j) => j.internalId == state.selectedJobId
             )
 
-            let i = 0
             do {
                 selectedJobIndex =
                     (state.jobs.length + selectedJobIndex + 1) %
                     state.jobs.length
-                ++i
             } while (
                 (!alsoSelectInvisible &&
-                    state.jobs[selectedJobIndex].invisible) ||
-                (isNonPrimaryInBatch(state.jobs[selectedJobIndex]) &&
-                    i < state.jobs.length)
+                    state.jobs[selectedJobIndex].invisible)
             )
             state.selectedJobId = state.jobs[selectedJobIndex].internalId
         },
@@ -371,17 +332,13 @@ export const pipeline = createSlice({
             let selectedJobIndex = state.jobs.findIndex(
                 (j) => j.internalId == state.selectedJobId
             )
-            let i = 0
             do {
                 selectedJobIndex =
                     (state.jobs.length + selectedJobIndex - 1) %
                     state.jobs.length
-                ++i
             } while (
                 (!alsoSelectInvisible &&
-                    state.jobs[selectedJobIndex].invisible) ||
-                (isNonPrimaryInBatch(state.jobs[selectedJobIndex]) &&
-                    i < state.jobs.length)
+                    state.jobs[selectedJobIndex].invisible)
             )
             state.selectedJobId = state.jobs[selectedJobIndex].internalId
         },
@@ -436,8 +393,6 @@ export const {
     restoreJob,
     removeJob,
     removeJobs,
-    removeBatchJob,
-    cancelBatchJob,
     selectJob,
     selectNextJob,
     selectPrevJob,

@@ -218,12 +218,6 @@ export type Job = {
      */
     stylesheetParameters?: ScriptOption[]
     is2StepsJob?: boolean
-    /**
-     * There is one job per tab except for batch jobs
-     * In this case, the job-tab association is only for the 'primary' job in the batch
-     * eg the job for which the tab was made in the first place
-     */
-    isPrimaryForBatch?: boolean
     // keep track of what we downloaded
     // this prevents multiple output folders from being created, in the case where
     // web socket callbacks happen more than once

@@ -24,7 +24,8 @@ module.exports = {
     appId: APP_ID,
     productName: adjustedAppName,
     copyright: `Copyright © ${CURRENT_YEAR} — ${AUTHOR.name}`,
-    artifactName: ARTIFACT_NAME + '-${version}-${os}.${ext}',
+    // Added -${arch} here so global artifacts remain unique
+    artifactName: ARTIFACT_NAME + '-${version}-${os}-${arch}.${ext}',
     directories: {
         app: FOLDERS.DEV_TEMP_BUILD,
         output: 'dist',
@@ -37,8 +38,8 @@ module.exports = {
         hardenedRuntime: true,
         notarize: false,
         target: 'pkg',
-        "extendInfo": {
-            "LSUIElement": 1
+        extendInfo: {
+            LSUIElement: 1
         },
     },
     pkg: {
@@ -47,7 +48,8 @@ module.exports = {
     },
     dmg: {
         icon: false,
-        artifactName: ARTIFACT_NAME + '-setup-${version}.${ext}',
+        // Added -${arch} to avoid the builds overwriting each other
+        artifactName: ARTIFACT_NAME + '-setup-${version}-${arch}.${ext}',
     },
 
     linux: {

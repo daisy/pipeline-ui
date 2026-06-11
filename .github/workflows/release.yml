@@ -72,7 +72,7 @@ jobs:
 
       - name: Build and release (macOS)
         if: runner.os == 'macOS'
-        run: yarn release
+        run: yarn release:mac
 
       - name: Sign installer (macOS)
         if: runner.os == 'macOS'
@@ -80,7 +80,7 @@ jobs:
         env:
           DEV_ID_INSTALLER: ${{ secrets.DEV_ID_INSTALLER }}
 
-      - name: Re-upload signed installer to release (macOS)
+      - name: Re-upload signed installers to release (macOS)
         if: runner.os == 'macOS'
         run: gh release upload ${{ github.ref_name }} dist/*.pkg --clobber
 
@@ -90,4 +90,4 @@ jobs:
 
       - name: Build and release (Windows)
         if: runner.os == 'Windows'
-        run: yarn release
+        run: yarn release:win

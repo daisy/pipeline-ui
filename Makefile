@@ -23,10 +23,10 @@ exe : src/resources/daisy-pipeline
 release: src/resources/daisy-pipeline
 ifeq ($(OS), WINDOWS)
 	exec("yarn.cmd");
-	exec("yarn.cmd", "release");
+	exec("yarn.cmd", "release:win");
 else
 	exec("yarn");
-	exec("yarn", "release");
+	exec("yarn", "release:mac");
 endif
 
 # ifeq ($(OS), WINDOWS)

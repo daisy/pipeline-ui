@@ -39,7 +39,6 @@ export function MainScreen() {
     }, [pipeline.announcement])
 
     useEffect(() => {
-        console.log('[open-file debug] effect fired, status:', pipeline.status, 'pendingFile:', pendingFile)
         if (
             pipeline.status === PipelineStatus.RUNNING &&
             pendingFile !== null &&

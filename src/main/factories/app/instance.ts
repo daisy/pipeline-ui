@@ -35,11 +35,40 @@ export const settingsCommands = [
 ]
 const electronOptions = ['--remote-debugging-port']
 
-function isOpenFileArg(arg: string) {
+export function isOpenFileArg(arg: string) {
     return (
         ['.epub', '.opf'].some((ext) => arg.toLowerCase().endsWith(ext)) &&
         existsSync(arg)
     )
+}
+
+// A dp2 command starts with a script name (a non-flag token that isn't a file),
+// e.g. `script-name --param value`. When that's why the app launched, forward
+// everything to dp2 and skip the open-file flow.
+export function isCliCommand(args: string[]) {
+    return args.some((arg) => !arg.startsWith('--') && !isOpenFileArg(arg))
+}
+
+// Strip the executable prefix and the flags the app handles itself, leaving the
+// user-provided arguments. Works on a process' own argv or on the commandLine
+// reported by the 'second-instance' event.
+export function parseCommandLineArgs(argv: string[]): string[] {
+    if (!argv || argv.length === 0) {
+        return []
+    }
+    const isElectron = argv[0]
+        .replaceAll('.exe', '')
+        .toLowerCase()
+        .endsWith('electron')
+    return argv
+        .slice(isElectron ? 2 : 1)
+        .filter(
+            (arg) =>
+                !reservedFlag.includes(arg) && !settingsCommands.includes(arg)
+        )
+        .filter(
+            (arg) => electronOptions.filter((e) => arg.startsWith(e)).length == 0
+        )
 }
 
 export function makeAppWithSingleInstanceLock(fn: () => void) {
@@ -53,22 +82,13 @@ export function makeAppWithSingleInstanceLock(fn: () => void) {
             .toLowerCase()
             .endsWith('electron')
         appLaunchArgs = process.argv.slice(0, isElectron ? 2 : 1)
-        commandLineArgs = process.argv
-            .slice(isElectron ? 2 : 1)
-            .filter(
-                (arg) =>
-                    !reservedFlag.includes(arg) &&
-                    !settingsCommands.includes(arg)
-            )
-            .filter(
-                (arg) =>
-                    electronOptions.filter((e) => arg.startsWith(e)).length == 0
-            )
-        cliArgs = commandLineArgs.filter((arg) => !isOpenFileArg(arg))
+        commandLineArgs = parseCommandLineArgs(process.argv)
+        cliArgs = isCliCommand(commandLineArgs) ? commandLineArgs : []
     }
-    const isPrimaryInstance = app.requestSingleInstanceLock({
-        argv: commandLineArgs,
-    })
+    // NOTE: do NOT pass additionalData here.
+    // requestSingleInstanceLock({ argv }) with argv.length >= 9 causes kill/restart behavior. 
+    // The second-instance handler reads the args from its `commandLine` parameter instead.
+    const isPrimaryInstance = app.requestSingleInstanceLock()
     const startingTime = isPrimaryInstance ? Date.now() : 0
     if (isPrimaryInstance) {
         // basic initialisation of the app if

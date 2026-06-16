@@ -11,8 +11,10 @@ import { error } from 'electron-log'
 import * as fs from 'fs-extra'
 
 import {
+    isCliCommand,
     makeAppSetup,
     makeAppWithSingleInstanceLock,
+    parseCommandLineArgs,
     settingsCommands,
 } from './factories'
 
@@ -128,12 +130,7 @@ makeAppWithSingleInstanceLock(async () => {
     //  and the existing one receive this event along the passed command line arguments of the killed on)
     app.on(
         'second-instance',
-        (
-            event,
-            commandLine,
-            workingDirectory,
-            additionalData: { argv: string[] }
-        ) => {
+        (event, commandLine) => {
             // Check if a settings command is present in the command line
             for (const settingCommand of settingsCommands) {
                 if (!commandLine.includes(settingCommand)) {
@@ -146,17 +143,26 @@ makeAppWithSingleInstanceLock(async () => {
                 settingsWindow.focus()
                 return
             }
-            // no settings command, continue with the main window
-            const file = parseFileArg(commandLine)
-            if (file) {
-                MainWindow().then(() => {
-                    handleFileOpen(file, true)
-                })
-                return
+            // no settings command, continue with the main window.
+            // Derive the args from `commandLine` (NOT additionalData — see the
+            // requestSingleInstanceLock note in instance.ts).
+            const cliArgs = parseCommandLineArgs(commandLine)
+            // Only open a file when this wasn't a dp2 command launch, so an
+            // .epub/.opf passed as a script param value isn't opened as a file.
+            if (!isCliCommand(cliArgs)) {
+                const file = parseFileArg(commandLine)
+                if (file) {
+                    MainWindow().then(() => {
+                        handleFileOpen(file, true)
+                    })
+                    return
+                }
             }
 
-            const cliArgs = additionalData?.argv || []
-            if (!commandLine.includes('--hidden') && cliArgs.length == 0) {
+            // Plain relaunch (no dp2 command): just focus the existing window.
+            // Using !isCliCommand rather than a length check tolerates the extra
+            // flags Electron injects into commandLine for second instances.
+            if (!commandLine.includes('--hidden') && !isCliCommand(cliArgs)) {
                 MainWindow().then((window) => {
                     if (window.isMinimized()) {
                         window.restore()

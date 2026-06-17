@@ -206,7 +206,7 @@ export function BrowseVoices({
                     <select
                         id="select-language"
                         onChange={(e) => selectLanguage(e)}
-                        defaultValue={lang}
+                        value={lang}
                     >
                         <option value="All">All</option>
                         {Array.from(
@@ -229,7 +229,7 @@ export function BrowseVoices({
                     <select
                         id="select-engine"
                         onChange={(e) => selectEngine(e)}
-                        defaultValue={engine}
+                        value={engine}
                     >
                         <option value="All">All</option>
                         {Array.from(
@@ -257,7 +257,7 @@ export function BrowseVoices({
                     <select
                         id="select-dialect"
                         onChange={(e) => selectLangcode(e)}
-                        defaultValue={langcode}
+                        value={langcode}
                     >
                         <option value="All">All</option>
                         {Array.from(
@@ -295,7 +295,7 @@ export function BrowseVoices({
                     <select
                         id="select-gender"
                         onChange={(e) => selectGender(e)}
-                        defaultValue={gender}
+                        value={gender}
                     >
                         <option value="All">All</option>
                         {Array.from(
@@ -336,7 +336,7 @@ export function BrowseVoices({
                     <select
                         id="select-voice"
                         onChange={(e) => selectVoice(e)}
-                        defaultValue={voiceId}
+                        value={voiceId}
                     >
                         <option value="None">None</option>
                         {Array.from(

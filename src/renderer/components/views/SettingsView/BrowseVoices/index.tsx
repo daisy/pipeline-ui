@@ -5,6 +5,7 @@ import { voicesTransliterations } from './voiceTransliterations'
 // @ts-ignore
 import { VoicePreview } from './VoicePreview'
 import { SettingsMenuItem } from '../types'
+import { formatGenderAgePart, parseGenderAge } from 'shared/utils'
 
 export function BrowseVoices({
     availableVoices,
@@ -31,9 +32,13 @@ export function BrowseVoices({
     const [gender, setGender] = useState(
         voiceFilters.find((vf) => vf.id == 'select-gender')?.value ?? 'All'
     )
+    const [age, setAge] = useState(
+        voiceFilters.find((vf) => vf.id == 'select-age')?.value ?? 'All'
+    )
     const [voiceId, setVoiceId] = useState(
         voiceFilters.find((vf) => vf.id == 'select-voice')?.value ?? 'None'
     )
+    const noAgeValue = 'none'
 
     let languageNames = new Intl.DisplayNames(['en'], { type: 'language' })
 
@@ -51,152 +56,212 @@ export function BrowseVoices({
         return str.slice(0, idxOfDash == -1 ? undefined : idxOfDash)
     }
 
-    let selectLanguage = (e) => {
-        setLang(e.target.value)
-        setEngine('All')
-        setLangcode('All')
-        setGender('All')
-        setVoiceId('None')
+    type VoiceFilterValues = {
+        lang: string
+        engine: string
+        langcode: string
+        gender: string
+        age: string
+        voiceId: string
+    }
 
-        let filters = [
-            {
-                id: 'select-lang',
-                value: e.target.value,
-            },
-            {
-                id: 'select-engine',
-                value: 'All',
-            },
-            {
-                id: 'select-dialect',
-                value: 'All',
-            },
-            {
-                id: 'select-gender',
-                value: 'All',
-            },
-            {
-                id: 'select-voice',
-                value: 'None',
-            },
-        ]
-        onChangeVoiceFilters(filters)
+    const voiceKey = (voice: TtsVoice) => `${voice.engine}-${voice.name}`
+
+    const voiceMatchesFilters = (
+        voice: TtsVoice,
+        filters: VoiceFilterValues,
+        includeVoice = false
+    ) => {
+        const parsed = parseGenderAge(voice.gender)
+        return (
+            (filters.lang == 'All' || getLang(voice.lang) == filters.lang) &&
+            (filters.engine == 'All' || voice.engine == filters.engine) &&
+            (filters.langcode == 'All' || voice.lang == filters.langcode) &&
+            (filters.gender == 'All' || parsed.gender == filters.gender) &&
+            (filters.age == 'All' ||
+                (filters.age == noAgeValue
+                    ? parsed.age == undefined
+                    : parsed.age == filters.age)) &&
+            (!includeVoice ||
+                filters.voiceId == 'None' ||
+                voiceKey(voice) == filters.voiceId)
+        )
+    }
+
+    const hasMatchingVoice = (
+        filters: VoiceFilterValues,
+        includeVoice = false
+    ) =>
+        availableVoices.some((voice) =>
+            voiceMatchesFilters(voice, filters, includeVoice)
+        )
+
+    const resolveFilterValues = (
+        changes: Partial<VoiceFilterValues>
+    ): VoiceFilterValues => {
+        const resolved: VoiceFilterValues = {
+            lang,
+            engine,
+            langcode,
+            gender,
+            age,
+            voiceId,
+            ...changes,
+        }
+
+        if (
+            resolved.engine != 'All' &&
+            !hasMatchingVoice({
+                ...resolved,
+                langcode: 'All',
+                gender: 'All',
+                age: 'All',
+                voiceId: 'None',
+            })
+        ) {
+            resolved.engine = 'All'
+        }
+
+        if (
+            resolved.langcode != 'All' &&
+            !hasMatchingVoice({
+                ...resolved,
+                gender: 'All',
+                age: 'All',
+                voiceId: 'None',
+            })
+        ) {
+            resolved.langcode = 'All'
+        }
+
+        if (
+            resolved.gender != 'All' &&
+            !hasMatchingVoice({
+                ...resolved,
+                age: 'All',
+                voiceId: 'None',
+            })
+        ) {
+            resolved.gender = 'All'
+        }
+
+        if (
+            resolved.age != 'All' &&
+            !hasMatchingVoice({
+                ...resolved,
+                voiceId: 'None',
+            })
+        ) {
+            resolved.age = 'All'
+        }
+
+        if (
+            resolved.voiceId != 'None' &&
+            !hasMatchingVoice(resolved, true)
+        ) {
+            resolved.voiceId = 'None'
+        }
+
+        return resolved
+    }
+
+    const filtersFromValues = (filters: VoiceFilterValues) => [
+        {
+            id: 'select-lang',
+            value: filters.lang,
+        },
+        {
+            id: 'select-engine',
+            value: filters.engine,
+        },
+        {
+            id: 'select-dialect',
+            value: filters.langcode,
+        },
+        {
+            id: 'select-gender',
+            value: filters.gender,
+        },
+        {
+            id: 'select-age',
+            value: filters.age,
+        },
+        {
+            id: 'select-voice',
+            value: filters.voiceId,
+        },
+    ]
+
+    const applyFilterValues = (filters: VoiceFilterValues) => {
+        setLang(filters.lang)
+        setEngine(filters.engine)
+        setLangcode(filters.langcode)
+        setGender(filters.gender)
+        setAge(filters.age)
+        setVoiceId(filters.voiceId)
+        onChangeVoiceFilters(filtersFromValues(filters))
+    }
+
+    let selectLanguage = (e) => {
+        applyFilterValues(resolveFilterValues({ lang: e.target.value }))
     }
     let selectEngine = (e) => {
-        setEngine(e.target.value)
-        setLangcode('All')
-        setGender('All')
-        setVoiceId('None')
-
-        let filters = [
-            {
-                id: 'select-lang',
-                value: lang,
-            },
-            {
-                id: 'select-engine',
-                value: e.target.value,
-            },
-            {
-                id: 'select-dialect',
-                value: 'All',
-            },
-            {
-                id: 'select-gender',
-                value: 'All',
-            },
-            {
-                id: 'select-voice',
-                value: 'None',
-            },
-        ]
-        onChangeVoiceFilters(filters)
+        applyFilterValues(resolveFilterValues({ engine: e.target.value }))
     }
     let selectLangcode = (e) => {
-        setLangcode(e.target.value)
-        setGender('All')
-        setVoiceId('None')
-        let filters = [
-            {
-                id: 'select-lang',
-                value: lang,
-            },
-            {
-                id: 'select-engine',
-                value: engine,
-            },
-            {
-                id: 'select-dialect',
-                value: e.target.value,
-            },
-            {
-                id: 'select-gender',
-                value: 'All',
-            },
-            {
-                id: 'select-voice',
-                value: 'None',
-            },
-        ]
-        onChangeVoiceFilters(filters)
+        applyFilterValues(resolveFilterValues({ langcode: e.target.value }))
     }
     let selectGender = (e) => {
-        setGender(e.target.value)
-        setVoiceId('None')
-        let filters = [
-            {
-                id: 'select-lang',
-                value: lang,
-            },
-            {
-                id: 'select-engine',
-                value: engine,
-            },
-            {
-                id: 'select-dialect',
-                value: langcode,
-            },
-            {
-                id: 'select-gender',
-                value: e.target.value,
-            },
-            {
-                id: 'select-voice',
-                value: 'None',
-            },
-        ]
-        onChangeVoiceFilters(filters)
+        applyFilterValues(resolveFilterValues({ gender: e.target.value }))
+    }
+    let selectAge = (e) => {
+        applyFilterValues(resolveFilterValues({ age: e.target.value }))
     }
     let selectVoice = (e) => {
-        setVoiceId(e.target.value)
-        let filters = [
-            {
-                id: 'select-lang',
-                value: lang,
-            },
-            {
-                id: 'select-engine',
-                value: engine,
-            },
-            {
-                id: 'select-dialect',
-                value: langcode,
-            },
-            {
-                id: 'select-gender',
-                value: gender,
-            },
-            {
-                id: 'select-voice',
-                value: e.target.value,
-            },
-        ]
-        onChangeVoiceFilters(filters)
+        applyFilterValues(resolveFilterValues({ voiceId: e.target.value }))
     }
+    let resetFilters = () => {
+        applyFilterValues({
+            lang: 'All',
+            engine: 'All',
+            langcode: 'All',
+            gender: 'All',
+            age: 'All',
+            voiceId: 'None',
+        })
+    }
+    const filtersAreActive =
+        lang != 'All' ||
+        engine != 'All' ||
+        langcode != 'All' ||
+        gender != 'All' ||
+        age != 'All' ||
+        voiceId != 'None'
     const selectedVoice =
         voiceId !== 'None'
-            ? availableVoices.find((v) => `${v.engine}-${v.name}` == voiceId)
+            ? availableVoices.find((v) => voiceKey(v) == voiceId)
             : null
+
+    const matchesLanguage = (voice: TtsVoice) =>
+        lang == 'All' || getLang(voice.lang) == lang
+    const matchesEngine = (voice: TtsVoice) =>
+        engine == 'All' || voice.engine == engine
+    const matchesDialect = (voice: TtsVoice) =>
+        langcode == 'All' || voice.lang == langcode
+    const matchesGender = (voice: TtsVoice) =>
+        gender == 'All' || parseGenderAge(voice.gender).gender == gender
+    const matchesAge = (voice: TtsVoice) =>
+        age == 'All' ||
+        (age == noAgeValue
+            ? parseGenderAge(voice.gender).age == undefined
+            : parseGenderAge(voice.gender).age == age)
+
+    const matchingVoices = availableVoices
+        .filter(matchesLanguage)
+        .filter(matchesEngine)
+        .filter(matchesDialect)
+        .filter(matchesGender)
+        .filter(matchesAge)
 
     return (
         <>
@@ -235,12 +300,7 @@ export function BrowseVoices({
                         {Array.from(
                             new Set(
                                 availableVoices
-                                    .filter((v) => {
-                                        if (lang == 'All') {
-                                            return true
-                                        }
-                                        return getLang(v.lang) == lang
-                                    })
+                                    .filter(matchesLanguage)
                                     .map((v) => v.engine)
                             )
                         )
@@ -263,18 +323,8 @@ export function BrowseVoices({
                         {Array.from(
                             new Set(
                                 availableVoices
-                                    .filter((v) => {
-                                        if (lang == 'All') {
-                                            return true
-                                        }
-                                        return getLang(v.lang) == lang
-                                    })
-                                    .filter((v) => {
-                                        if (engine == 'All') {
-                                            return true
-                                        }
-                                        return v.engine == engine
-                                    })
+                                    .filter(matchesLanguage)
+                                    .filter(matchesEngine)
                                     .map((v) => v.lang)
                             )
                         )
@@ -291,7 +341,7 @@ export function BrowseVoices({
                     </select>
                 </div>
                 <div className="field">
-                    <label htmlFor="select-gender">Gender/Age</label>
+                    <label htmlFor="select-gender">Gender</label>
                     <select
                         id="select-gender"
                         onChange={(e) => selectGender(e)}
@@ -301,32 +351,48 @@ export function BrowseVoices({
                         {Array.from(
                             new Set(
                                 availableVoices
-                                    .filter((v) => {
-                                        if (lang == 'All') {
-                                            return true
-                                        }
-                                        return getLang(v.lang) == lang
-                                    })
-                                    .filter((v) => {
-                                        if (engine == 'All') {
-                                            return true
-                                        }
-                                        return v.engine == engine
-                                    })
-                                    .filter((v) => {
-                                        if (langcode == 'All') {
-                                            return true
-                                        }
-                                        return v.lang == langcode
-                                    })
-                                    .map((v) => v.gender)
+                                    .filter(matchesLanguage)
+                                    .filter(matchesEngine)
+                                    .filter(matchesDialect)
+                                    .map((v) => parseGenderAge(v.gender).gender)
                             )
                         )
                             .sort((a: string, b: string) => (a < b ? -1 : 1))
                             .map((gender: string, idx: number) => (
                                 <option value={gender} key={gender}>
-                                    {gender.charAt(0).toUpperCase() +
-                                        gender.substring(1)}
+                                    {formatGenderAgePart(gender)}
+                                </option>
+                            ))}
+                    </select>
+                </div>
+                <div className="field">
+                    <label htmlFor="select-age">Age</label>
+                    <select
+                        id="select-age"
+                        onChange={(e) => selectAge(e)}
+                        value={age}
+                    >
+                        <option value="All">All</option>
+                        {Array.from(
+                            new Set(
+                                availableVoices
+                                    .filter(matchesLanguage)
+                                    .filter(matchesEngine)
+                                    .filter(matchesDialect)
+                                    .filter(matchesGender)
+                                    .map(
+                                        (v) =>
+                                            parseGenderAge(v.gender).age ??
+                                            noAgeValue
+                                    )
+                            )
+                        )
+                            .sort((a: string, b: string) => (a < b ? -1 : 1))
+                            .map((age: string, idx: number) => (
+                                <option value={age} key={age}>
+                                    {formatGenderAgePart(
+                                        age == noAgeValue ? undefined : age
+                                    )}
                                 </option>
                             ))}
                     </select>
@@ -342,30 +408,11 @@ export function BrowseVoices({
                         {Array.from(
                             new Set(
                                 availableVoices
-                                    .filter((v) => {
-                                        if (lang == 'All') {
-                                            return true
-                                        }
-                                        return getLang(v.lang) == lang
-                                    })
-                                    .filter((v) => {
-                                        if (engine == 'All') {
-                                            return true
-                                        }
-                                        return v.engine == engine
-                                    })
-                                    .filter((v) => {
-                                        if (langcode == 'All') {
-                                            return true
-                                        }
-                                        return v.lang == langcode
-                                    })
-                                    .filter((v) => {
-                                        if (gender == 'All') {
-                                            return true
-                                        }
-                                        return v.gender == gender
-                                    })
+                                    .filter(matchesLanguage)
+                                    .filter(matchesEngine)
+                                    .filter(matchesDialect)
+                                    .filter(matchesGender)
+                                    .filter(matchesAge)
                             )
                         )
                             // @ts-ignore
@@ -382,6 +429,19 @@ export function BrowseVoices({
                     </select>
                 </div>
             </div>
+            <div className="voice-count-row">
+                <p className="voice-count" aria-live="polite">
+                    {matchingVoices.length}{' '}
+                    {matchingVoices.length === 1 ? 'voice' : 'voices'} match
+                </p>
+                <button
+                    type="button"
+                    onClick={resetFilters}
+                    disabled={!filtersAreActive}
+                >
+                    Reset filters
+                </button>
+            </div>
             <div className="voice-details">
                 {selectedVoice ? (
                     <>
@@ -390,7 +450,15 @@ export function BrowseVoices({
                             {voicesTransliterations[selectedVoice.name] ??
                                 selectedVoice.name}
                             ", {languageNames.of(selectedVoice.lang)},{' '}
-                            {selectedVoice.engine}, {selectedVoice.gender}.
+                            {selectedVoice.engine}, Gender:{' '}
+                            {formatGenderAgePart(
+                                parseGenderAge(selectedVoice.gender).gender
+                            )}
+                            , Age:{' '}
+                            {formatGenderAgePart(
+                                parseGenderAge(selectedVoice.gender).age
+                            )}
+                            .
                         </p>
                         <VoicePreview
                             voice={selectedVoice}

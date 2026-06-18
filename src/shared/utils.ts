@@ -11,6 +11,26 @@ import {
     ScriptOption,
 } from './types'
 
+export function parseGenderAge(raw: string = ''): {
+    gender: string
+    age?: string
+} {
+    const [rawGender, rawAge] = raw.trim().toLowerCase().split('-')
+    const gender = !rawGender || rawGender === '*' ? 'neutral' : rawGender
+    const age = rawAge || undefined
+
+    return { gender, age }
+}
+
+export function formatGenderAgePart(value?: string): string {
+    if (!value) {
+        return '—'
+    }
+
+    const normalized = value === '*' ? 'neutral' : value
+    return normalized.charAt(0).toUpperCase() + normalized.substring(1)
+}
+
 // returns true if the script does not support sequences for input
 // and is not a 2-steps script
 export function isScriptBatchable(script: Script) {

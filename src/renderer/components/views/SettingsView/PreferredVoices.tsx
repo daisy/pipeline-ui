@@ -3,6 +3,7 @@ import { TtsVoice } from 'shared/types/ttsConfig'
 import { voicesTransliterations } from './BrowseVoices/voiceTransliterations'
 import { PauseIcon, PlayIcon, X } from 'renderer/components/Widgets/SvgIcons'
 import { SettingsMenuItem } from './types'
+import { formatGenderAgePart, parseGenderAge } from 'shared/utils'
 
 // return the first part of the language code (e.g. 'en' for 'en-US')
 // or return the whole thing if there is no dash
@@ -106,7 +107,7 @@ export function PreferredVoices({
                     return (
                         <div key={idx}>
                             <table
-                                aria-colcount={5}
+                                aria-colcount={7}
                                 aria-rowcount={
                                     userPreferredVoices.filter(
                                         (v) => getLang(v.lang) == getLang(lang)
@@ -121,7 +122,8 @@ export function PreferredVoices({
                                         <th>Name</th>
                                         <th>Engine</th>
                                         <th>Language</th>
-                                        <th>Gender/Age</th>
+                                        <th>Gender</th>
+                                        <th>Age</th>
                                         <th>Set default</th>
                                         <th>Remove</th>
                                     </tr>
@@ -217,7 +219,18 @@ export function PreferredVoices({
                                                         )}
                                                     </td>
                                                     <td className="gender">
-                                                        {v.gender}
+                                                        {formatGenderAgePart(
+                                                            parseGenderAge(
+                                                                v.gender
+                                                            ).gender
+                                                        )}
+                                                    </td>
+                                                    <td className="age">
+                                                        {formatGenderAgePart(
+                                                            parseGenderAge(
+                                                                v.gender
+                                                            ).age
+                                                        )}
                                                     </td>
                                                     <td className="set-default">
                                                         <input

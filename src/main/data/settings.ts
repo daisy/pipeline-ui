@@ -8,6 +8,7 @@ import { ttsConfigToXml } from 'shared/parser/pipelineXmlConverter/ttsConfigToXm
 import {
     ApplicationSettings,
     DefaultTextSize,
+    DefaultVoiceTableThreshold,
     migrateSettings,
 } from 'shared/types'
 import { fileURLToPath, pathToFileURL } from 'url'
@@ -27,7 +28,7 @@ log.transports.file.resolvePathFn = () =>
 
 export function readSettings() {
     let settings: ApplicationSettings = {
-        settingsVersion: '1.8.0',
+        settingsVersion: '1.9.0',
         downloadFolder: pathToFileURL(
             resolve(app.getPath('home'), 'Documents', 'DAISY Pipeline results')
         ).href,
@@ -67,6 +68,7 @@ export function readSettings() {
         sortScriptsByFrequency: true,
         scriptFrequency: [],
         lastUsedScriptOptionOverrides: [],
+        voiceTableThreshold: DefaultVoiceTableThreshold,
         logLevel: 'info',
     }
     try {

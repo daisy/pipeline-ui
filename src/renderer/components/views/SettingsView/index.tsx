@@ -1,7 +1,15 @@
 import { useEffect, useState } from 'react'
 import { useWindowStore } from 'renderer/store'
-import { ApplicationSettings, PipelineStatus } from 'shared/types'
-import { save, setTtsConfig } from 'shared/data/slices/settings'
+import {
+    ApplicationSettings,
+    DefaultVoiceTableThreshold,
+    PipelineStatus,
+} from 'shared/types'
+import {
+    save,
+    setTtsConfig,
+    setVoiceTableThreshold,
+} from 'shared/data/slices/settings'
 //@ts-ignore
 import { TTSEngines } from './TTSEngines'
 //@ts-ignore
@@ -176,6 +184,14 @@ export function SettingsView(
     const onTtsVoiceFiltersChange = (vf: VoiceFilter[]) => {
         setVoiceFilters(vf)
     }
+    const onVoiceTableThresholdChange = (value: string | number) => {
+        const threshold = Math.max(
+            1,
+            Number(value) || DefaultVoiceTableThreshold
+        )
+        App.store.dispatch(setVoiceTableThreshold(threshold))
+        App.store.dispatch(save())
+    }
 
     let address = pipeline.webservice
         ? `${pipeline.webservice.host}:${pipeline.webservice.port}${pipeline.webservice.path}`
@@ -217,6 +233,8 @@ export function SettingsView(
                     ttsEnginesStates={pipeline.ttsEnginesStates}
                     onChangeVoiceFilters={onTtsVoiceFiltersChange}
                     voiceFilters={voiceFilters}
+                    voiceTableThreshold={newSettings.voiceTableThreshold}
+                    onChangeVoiceTableThreshold={onVoiceTableThresholdChange}
                     onSelectSection={setSelectedSection}
                 />
             ) : (

@@ -58,6 +58,9 @@ export const settings = createSlice({
             if (action.payload.autoCheckUpdate !== undefined) {
                 state.autoCheckUpdate = action.payload.autoCheckUpdate
             }
+            if (action.payload.voiceTableThreshold !== undefined) {
+                state.voiceTableThreshold = action.payload.voiceTableThreshold
+            }
         },
         save: (state: ApplicationSettings) => {
             // save action to trigger middleware save on disk
@@ -158,6 +161,12 @@ export const settings = createSlice({
         ) => {
             state.lastUsedScriptOptionOverrides = action.payload
         },
+        setVoiceTableThreshold: (
+            state: ApplicationSettings,
+            action: PayloadAction<number>
+        ) => {
+            state.voiceTableThreshold = action.payload
+        },
     },
 })
 
@@ -180,6 +189,7 @@ export const {
     setSortScriptsByFrequency,
     setSuggestOptionValues,
     setLastUsedScriptOptionOverrides,
+    setVoiceTableThreshold,
 } = settings.actions
 
 export const selectors = {
@@ -202,6 +212,8 @@ export const selectors = {
     selectSuggestOptionValues: (s: RootState) => s.settings.suggestOptionValues,
     selectLastUsedScriptOptionOverrides: (s: RootState) =>
         s.settings.lastUsedScriptOptionOverrides,
+    selectVoiceTableThreshold: (s: RootState) =>
+        s.settings.voiceTableThreshold,
 }
 // prettier-ignore
 export const {
@@ -218,5 +230,6 @@ export const {
     selectSortScriptsByFrequency,
     selectSuggestOptionValues,
     selectLastUsedScriptOptionOverrides,
+    selectVoiceTableThreshold,
     selectConfirmOnCloseFinishedJob,
 } = selectors

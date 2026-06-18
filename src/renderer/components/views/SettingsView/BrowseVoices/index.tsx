@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { TtsVoice } from 'shared/types/ttsConfig'
 // @ts-ignore
 import { voicesTransliterations } from './voiceTransliterations'
@@ -6,6 +6,7 @@ import { voicesTransliterations } from './voiceTransliterations'
 import { VoicePreview } from './VoicePreview'
 import { SettingsMenuItem } from '../types'
 import { formatGenderAgePart, parseGenderAge } from 'shared/utils'
+import { DefaultVoiceTableThreshold } from 'shared/types'
 
 export function BrowseVoices({
     availableVoices,
@@ -14,6 +15,8 @@ export function BrowseVoices({
     ttsEnginesStates,
     voiceFilters,
     onChangeVoiceFilters,
+    voiceTableThreshold = DefaultVoiceTableThreshold,
+    onChangeVoiceTableThreshold,
     onSelectSection,
 }) {
     const [preferredVoices, setPreferredVoices] = useState([
@@ -38,7 +41,24 @@ export function BrowseVoices({
     const [voiceId, setVoiceId] = useState(
         voiceFilters.find((vf) => vf.id == 'select-voice')?.value ?? 'None'
     )
+    const [nameSearch, setNameSearch] = useState('')
+    const [showLargeVoiceTable, setShowLargeVoiceTable] = useState(false)
     const noAgeValue = 'none'
+    const voiceTableThresholdMax = Math.max(1, availableVoices.length)
+    const clampVoiceTableThreshold = (value: string | number) =>
+        Math.min(
+            voiceTableThresholdMax,
+            Math.max(1, Number(value) || DefaultVoiceTableThreshold)
+        )
+    const normalizedVoiceTableThreshold =
+        clampVoiceTableThreshold(voiceTableThreshold)
+    const [voiceTableThresholdInput, setVoiceTableThresholdInput] = useState(
+        String(normalizedVoiceTableThreshold)
+    )
+
+    useEffect(() => {
+        setVoiceTableThresholdInput(String(normalizedVoiceTableThreshold))
+    }, [normalizedVoiceTableThreshold])
 
     let languageNames = new Intl.DisplayNames(['en'], { type: 'language' })
 
@@ -199,6 +219,7 @@ export function BrowseVoices({
         setGender(filters.gender)
         setAge(filters.age)
         setVoiceId(filters.voiceId)
+        setShowLargeVoiceTable(false)
         onChangeVoiceFilters(filtersFromValues(filters))
     }
 
@@ -221,6 +242,7 @@ export function BrowseVoices({
         applyFilterValues(resolveFilterValues({ voiceId: e.target.value }))
     }
     let resetFilters = () => {
+        setNameSearch('')
         applyFilterValues({
             lang: 'All',
             engine: 'All',
@@ -230,13 +252,31 @@ export function BrowseVoices({
             voiceId: 'None',
         })
     }
+    let selectNameSearch = (value: string) => {
+        setNameSearch(value)
+        setShowLargeVoiceTable(false)
+        if (
+            voiceId !== 'None' &&
+            !availableVoices
+                .filter(matchesLanguage)
+                .filter(matchesEngine)
+                .filter(matchesDialect)
+                .filter(matchesGender)
+                .filter(matchesAge)
+                .filter((voice) => matchesName(voice, value))
+                .some((voice) => voiceKey(voice) === voiceId)
+        ) {
+            applyFilterValues(resolveFilterValues({ voiceId: 'None' }))
+        }
+    }
     const filtersAreActive =
         lang != 'All' ||
         engine != 'All' ||
         langcode != 'All' ||
         gender != 'All' ||
         age != 'All' ||
-        voiceId != 'None'
+        voiceId != 'None' ||
+        nameSearch.trim() != ''
     const selectedVoice =
         voiceId !== 'None'
             ? availableVoices.find((v) => voiceKey(v) == voiceId)
@@ -255,6 +295,15 @@ export function BrowseVoices({
         (age == noAgeValue
             ? parseGenderAge(voice.gender).age == undefined
             : parseGenderAge(voice.gender).age == age)
+    const matchesName = (voice: TtsVoice, search: string = nameSearch) => {
+        const query = search.trim().toLowerCase()
+        if (query == '') {
+            return true
+        }
+        return (voicesTransliterations[voice.name] ?? voice.name)
+            .toLowerCase()
+            .includes(query)
+    }
 
     const matchingVoices = availableVoices
         .filter(matchesLanguage)
@@ -262,6 +311,25 @@ export function BrowseVoices({
         .filter(matchesDialect)
         .filter(matchesGender)
         .filter(matchesAge)
+        .filter((voice) => matchesName(voice))
+
+    const sortedMatchingVoices = matchingVoices.toSorted((a, b) =>
+        (voicesTransliterations[a.name] ?? a.name) >
+        (voicesTransliterations[b.name] ?? b.name)
+            ? 1
+            : -1
+    )
+    const visibleVoices = showLargeVoiceTable
+        ? sortedMatchingVoices
+        : sortedMatchingVoices.slice(0, normalizedVoiceTableThreshold)
+    const selectVoiceFromRow = (voice: TtsVoice) => {
+        applyFilterValues(resolveFilterValues({ voiceId: voiceKey(voice) }))
+    }
+    const commitVoiceTableThreshold = () => {
+        const threshold = clampVoiceTableThreshold(voiceTableThresholdInput)
+        setVoiceTableThresholdInput(String(threshold))
+        onChangeVoiceTableThreshold(threshold)
+    }
 
     return (
         <>
@@ -398,6 +466,15 @@ export function BrowseVoices({
                     </select>
                 </div>
                 <div className="field">
+                    <label htmlFor="voice-name-search">Search name</label>
+                    <input
+                        id="voice-name-search"
+                        type="search"
+                        value={nameSearch}
+                        onChange={(e) => selectNameSearch(e.target.value)}
+                    />
+                </div>
+                <div className="field">
                     <label htmlFor="select-voice">Voice</label>
                     <select
                         id="select-voice"
@@ -413,6 +490,7 @@ export function BrowseVoices({
                                     .filter(matchesDialect)
                                     .filter(matchesGender)
                                     .filter(matchesAge)
+                                    .filter((voice) => matchesName(voice))
                             )
                         )
                             // @ts-ignore
@@ -434,6 +512,46 @@ export function BrowseVoices({
                     {matchingVoices.length}{' '}
                     {matchingVoices.length === 1 ? 'voice' : 'voices'} match
                 </p>
+                <fieldset className="voice-table-display-control">
+                    <legend>Show</legend>
+                    <label>
+                        <input
+                            type="radio"
+                            name="voice-table-display"
+                            checked={!showLargeVoiceTable}
+                            onChange={() => setShowLargeVoiceTable(false)}
+                        />
+                        up to
+                        <input
+                            id="voice-table-threshold"
+                            type="number"
+                            min="1"
+                            max={voiceTableThresholdMax}
+                            step="1"
+                            value={voiceTableThresholdInput}
+                            onChange={(e) =>
+                                setVoiceTableThresholdInput(e.target.value)
+                            }
+                            onBlur={commitVoiceTableThreshold}
+                            onKeyDown={(e) => {
+                                if (e.key === 'Enter') {
+                                    commitVoiceTableThreshold()
+                                }
+                            }}
+                            aria-label="Voice table auto-show limit"
+                        />
+                        voices
+                    </label>
+                    <label>
+                        <input
+                            type="radio"
+                            name="voice-table-display"
+                            checked={showLargeVoiceTable}
+                            onChange={() => setShowLargeVoiceTable(true)}
+                        />
+                        all
+                    </label>
+                </fieldset>
                 <button
                     type="button"
                     onClick={resetFilters}
@@ -441,6 +559,92 @@ export function BrowseVoices({
                 >
                     Reset filters
                 </button>
+            </div>
+            <div className="voice-results" role="region">
+                <table>
+                    <caption>
+                        Matching voices
+                        {!showLargeVoiceTable &&
+                            matchingVoices.length >
+                                normalizedVoiceTableThreshold &&
+                            `, showing first ${visibleVoices.length} of ${matchingVoices.length}`}
+                    </caption>
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Engine</th>
+                            <th>Dialect</th>
+                            <th>Gender</th>
+                            <th>Age</th>
+                            <th>Preview</th>
+                            <th>Add</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {visibleVoices.map((voice) => {
+                            const parsed = parseGenderAge(voice.gender)
+                            const voiceName =
+                                voicesTransliterations[voice.name] ??
+                                voice.name
+                            const alreadyPreferred =
+                                preferredVoices.find(
+                                    (v) =>
+                                        v.engine === voice.engine &&
+                                        v.name === voice.name
+                                ) !== undefined
+                            return (
+                                <tr
+                                    key={`voice-row-${voice.engine}-${voice.name}`}
+                                >
+                                    <th>
+                                        <button
+                                            type="button"
+                                            className="link-button"
+                                            onClick={() =>
+                                                selectVoiceFromRow(voice)
+                                            }
+                                        >
+                                            {voiceName}
+                                        </button>
+                                    </th>
+                                    <td>
+                                        {ttsEnginesStates[voice.engine]?.name ??
+                                            voice.engine}
+                                    </td>
+                                    <td>{languageNames.of(voice.lang)}</td>
+                                    <td>
+                                        {formatGenderAgePart(parsed.gender)}
+                                    </td>
+                                    <td>{formatGenderAgePart(parsed.age)}</td>
+                                    <td>
+                                        <button
+                                            type="button"
+                                            onClick={() =>
+                                                selectVoiceFromRow(voice)
+                                            }
+                                        >
+                                            Preview
+                                        </button>
+                                    </td>
+                                    <td>
+                                        {alreadyPreferred ? (
+                                            <span>Added</span>
+                                        ) : (
+                                            <button
+                                                type="button"
+                                                onClick={() =>
+                                                    addToPreferredVoices(voice)
+                                                }
+                                            >
+                                                Add
+                                            </button>
+                                        )}
+                                    </td>
+                                </tr>
+                            )
+                        })}
+                    </tbody>
+                </table>
             </div>
             <div className="voice-details">
                 {selectedVoice ? (

@@ -77,6 +77,108 @@
         p {
             margin: 0;
         }
+        .voice-table-display-control {
+            display: flex;
+            flex-direction: row;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 0.35rem;
+            min-height: 0;
+            padding: 0;
+            border: 0;
+            background-color: transparent;
+
+            legend {
+                float: left;
+                margin-right: 0.25rem;
+                font-size: inherit;
+                font-weight: bold;
+                background-color: transparent;
+            }
+            label {
+                display: flex;
+                align-items: center;
+                gap: 0.25rem;
+                font-weight: normal;
+            }
+            input[type="radio"] {
+                margin: 0;
+            }
+
+            input[type="number"] {
+                width: 5rem;
+            }
+        }
+    }
+    .voice-results {
+        max-height: 22rem;
+        max-width: 100%;
+        overflow: auto;
+
+        table {
+            width: 100%;
+            table-layout: fixed;
+            border: var(--bw) solid var(--secondary);
+            border-radius: var(--br);
+            border-spacing: 0;
+            border-collapse: separate;
+        }
+        caption {
+            text-align: left;
+            font-weight: bold;
+            padding-bottom: 0.25rem;
+        }
+        th, td {
+            padding: 0.2rem 0.3rem;
+            text-align: left;
+            vertical-align: middle;
+            overflow-wrap: anywhere;
+        }
+        th:nth-child(1), td:nth-child(1) {
+            width: 18%;
+            overflow-wrap: normal;
+            word-break: normal;
+        }
+        th:nth-child(2), td:nth-child(2) {
+            width: 16%;
+        }
+        th:nth-child(3), td:nth-child(3) {
+            width: 16%;
+        }
+        td:nth-child(3) {
+            white-space: normal;
+            overflow-wrap: break-word;
+            word-break: normal;
+        }
+        th:nth-child(4), td:nth-child(4),
+        th:nth-child(5), td:nth-child(5) {
+            width: 11%;
+        }
+        th:nth-child(6), td:nth-child(6),
+        th:nth-child(7), td:nth-child(7) {
+            width: 14%;
+            white-space: nowrap;
+        }
+        thead th {
+            background-color: var(--secondary);
+            color: var(--secondary-contrast);
+            white-space: nowrap;
+        }
+        tr:nth-child(odd) {
+            background-color: var(--bg-off);
+        }
+        .link-button {
+            appearance: none;
+            border: 0;
+            background: transparent;
+            color: inherit;
+            padding: 0;
+            text-align: left;
+            text-decoration: underline;
+            white-space: normal;
+            overflow-wrap: break-word;
+            word-break: normal;
+        }
     }
     .voice-selection {
         display: flex;

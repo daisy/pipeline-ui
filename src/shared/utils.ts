@@ -16,7 +16,11 @@ export function parseGenderAge(raw: string = ''): {
     age?: string
 } {
     const [rawGender, rawAge] = raw.trim().toLowerCase().split('-')
-    const gender = !rawGender || rawGender === '*' ? 'neutral' : rawGender
+    if (rawGender === '*') {
+        return { gender: 'unknown', age: 'unknown' }
+    }
+
+    const gender = rawGender || 'neutral'
     const age = rawAge || undefined
 
     return { gender, age }
@@ -27,7 +31,7 @@ export function formatGenderAgePart(value?: string): string {
         return '—'
     }
 
-    const normalized = value === '*' ? 'neutral' : value
+    const normalized = value === '*' ? 'unknown' : value
     return normalized.charAt(0).toUpperCase() + normalized.substring(1)
 }
 

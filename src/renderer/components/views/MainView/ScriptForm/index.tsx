@@ -282,10 +282,10 @@ export function ScriptForm({ job }: { job: Job }) {
             if (job.is2StepsJob) {
                 // format all the stylesheet parameter options as a string
                 // and assign it to the 'stylesheet-parameters' option
-                let stylesheetParametersOption =
-                    job.jobRequest.stylesheetParameterOptions
-                        .map((o) => `(${o.name}:"${CSS.escape(o.value)}")`)
-                        .join('')
+                let stylesheetParametersOption = `(${job.jobRequest.stylesheetParameterOptions
+                    //.map((o) => `(${o.name}:"${CSS.escape(o.value)}")`)
+                    .map((o) => `${o.name}: "${CSS.escape(o.value)}"`)
+                    .join(', ')})`
                 options = updateArrayValue(
                     stylesheetParametersOption,
                     job.script.options.find(

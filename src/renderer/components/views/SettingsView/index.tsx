@@ -235,7 +235,6 @@ export function SettingsView(
                     voiceFilters={voiceFilters}
                     voiceTableThreshold={newSettings.voiceTableThreshold}
                     onChangeVoiceTableThreshold={onVoiceTableThresholdChange}
-                    onSelectSection={setSelectedSection}
                 />
             ) : (
                 <p>Loading voices...</p>

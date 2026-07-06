@@ -299,6 +299,7 @@ export function MoreTTSOptions({
                             type="button"
                             className="invisible"
                             onClick={clearLexicon}
+                            title="Clear lexicon"
                             aria-label="Clear lexicon"
                         >
                             <X width="20" height="20" />

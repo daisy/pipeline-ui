@@ -1,10 +1,8 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { TtsVoice } from 'shared/types/ttsConfig'
 // @ts-ignore
 import { voicesTransliterations } from './voiceTransliterations'
-// @ts-ignore
-import { VoicePreview } from './VoicePreview'
-import { SettingsMenuItem } from '../types'
+import { PauseIcon, PlayIcon, X } from 'renderer/components/Widgets/SvgIcons'
 import { formatGenderAgePart, parseGenderAge } from 'shared/utils'
 import { DefaultVoiceTableThreshold } from 'shared/types'
 
@@ -17,7 +15,6 @@ export function BrowseVoices({
     onChangeVoiceFilters,
     voiceTableThreshold = DefaultVoiceTableThreshold,
     onChangeVoiceTableThreshold,
-    onSelectSection,
 }) {
     const [preferredVoices, setPreferredVoices] = useState([
         ...userPreferredVoices,
@@ -38,11 +35,14 @@ export function BrowseVoices({
     const [age, setAge] = useState(
         voiceFilters.find((vf) => vf.id == 'select-age')?.value ?? 'All'
     )
-    const [voiceId, setVoiceId] = useState(
-        voiceFilters.find((vf) => vf.id == 'select-voice')?.value ?? 'None'
-    )
     const [nameSearch, setNameSearch] = useState('')
-    const [showLargeVoiceTable, setShowLargeVoiceTable] = useState(false)
+    const [customPreviewText, setCustomPreviewText] = useState('')
+    const [currentPage, setCurrentPage] = useState(0)
+    const [playingPreviewKey, setPlayingPreviewKey] = useState<string | null>(
+        null
+    )
+    const nameSearchInputRef = useRef<HTMLInputElement>(null)
+    const previewAudioRef = useRef<HTMLAudioElement>(null)
     const noAgeValue = 'none'
     const voiceTableThresholdMax = Math.max(1, availableVoices.length)
     const clampVoiceTableThreshold = (value: string | number) =>
@@ -68,6 +68,11 @@ export function BrowseVoices({
         onChangePreferredVoices(tmpVoices)
     }
 
+    const stopPreview = () => {
+        previewAudioRef.current?.pause()
+        setPlayingPreviewKey(null)
+    }
+
     // return the first part of the language code (e.g. 'en' for 'en-US')
     // or return the whole thing if there is no dash
     let getLang = (str) => {
@@ -82,15 +87,13 @@ export function BrowseVoices({
         langcode: string
         gender: string
         age: string
-        voiceId: string
     }
 
     const voiceKey = (voice: TtsVoice) => `${voice.engine}-${voice.name}`
 
     const voiceMatchesFilters = (
         voice: TtsVoice,
-        filters: VoiceFilterValues,
-        includeVoice = false
+        filters: VoiceFilterValues
     ) => {
         const parsed = parseGenderAge(voice.gender)
         return (
@@ -101,19 +104,59 @@ export function BrowseVoices({
             (filters.age == 'All' ||
                 (filters.age == noAgeValue
                     ? parsed.age == undefined
-                    : parsed.age == filters.age)) &&
-            (!includeVoice ||
-                filters.voiceId == 'None' ||
-                voiceKey(voice) == filters.voiceId)
+                    : parsed.age == filters.age))
         )
     }
 
-    const hasMatchingVoice = (
-        filters: VoiceFilterValues,
-        includeVoice = false
-    ) =>
+    const hasMatchingVoice = (filters: VoiceFilterValues) =>
         availableVoices.some((voice) =>
-            voiceMatchesFilters(voice, filters, includeVoice)
+            voiceMatchesFilters(voice, filters)
+        )
+
+    const selectedFilterValues: VoiceFilterValues = {
+        lang,
+        engine,
+        langcode,
+        gender,
+        age,
+    }
+
+    const matchesName = (voice: TtsVoice, search: string = nameSearch) => {
+        const query = search.trim().toLowerCase()
+        if (query == '') {
+            return true
+        }
+        return (voicesTransliterations[voice.name] ?? voice.name)
+            .toLowerCase()
+            .includes(query)
+    }
+
+    const sortVoicesByName = (a: TtsVoice, b: TtsVoice) =>
+        (voicesTransliterations[a.name] ?? a.name) >
+        (voicesTransliterations[b.name] ?? b.name)
+            ? 1
+            : -1
+
+    const sortedVoicesFor = (
+        filters: VoiceFilterValues,
+        search: string = nameSearch
+    ) =>
+        availableVoices
+            .filter((voice) => voiceMatchesFilters(voice, filters))
+            .filter((voice) => matchesName(voice, search))
+            .toSorted(sortVoicesByName)
+
+    const voiceRowsAreSame = (a: TtsVoice[], b: TtsVoice[]) =>
+        a.length === b.length &&
+        a.every((voice, index) => voiceKey(voice) === voiceKey(b[index]))
+
+    const filterChangePreservesRows = (
+        filters: VoiceFilterValues,
+        search: string = nameSearch
+    ) =>
+        voiceRowsAreSame(
+            sortedVoicesFor(selectedFilterValues, nameSearch),
+            sortedVoicesFor(filters, search)
         )
 
     const resolveFilterValues = (
@@ -125,7 +168,6 @@ export function BrowseVoices({
             langcode,
             gender,
             age,
-            voiceId,
             ...changes,
         }
 
@@ -136,7 +178,6 @@ export function BrowseVoices({
                 langcode: 'All',
                 gender: 'All',
                 age: 'All',
-                voiceId: 'None',
             })
         ) {
             resolved.engine = 'All'
@@ -148,7 +189,6 @@ export function BrowseVoices({
                 ...resolved,
                 gender: 'All',
                 age: 'All',
-                voiceId: 'None',
             })
         ) {
             resolved.langcode = 'All'
@@ -159,27 +199,13 @@ export function BrowseVoices({
             !hasMatchingVoice({
                 ...resolved,
                 age: 'All',
-                voiceId: 'None',
             })
         ) {
             resolved.gender = 'All'
         }
 
-        if (
-            resolved.age != 'All' &&
-            !hasMatchingVoice({
-                ...resolved,
-                voiceId: 'None',
-            })
-        ) {
+        if (resolved.age != 'All' && !hasMatchingVoice(resolved)) {
             resolved.age = 'All'
-        }
-
-        if (
-            resolved.voiceId != 'None' &&
-            !hasMatchingVoice(resolved, true)
-        ) {
-            resolved.voiceId = 'None'
         }
 
         return resolved
@@ -206,20 +232,22 @@ export function BrowseVoices({
             id: 'select-age',
             value: filters.age,
         },
-        {
-            id: 'select-voice',
-            value: filters.voiceId,
-        },
     ]
 
-    const applyFilterValues = (filters: VoiceFilterValues) => {
+    const applyFilterValues = (
+        filters: VoiceFilterValues,
+        search: string = nameSearch
+    ) => {
+        const preservesRows = filterChangePreservesRows(filters, search)
         setLang(filters.lang)
         setEngine(filters.engine)
         setLangcode(filters.langcode)
         setGender(filters.gender)
         setAge(filters.age)
-        setVoiceId(filters.voiceId)
-        setShowLargeVoiceTable(false)
+        if (!preservesRows) {
+            setCurrentPage(0)
+            stopPreview()
+        }
         onChangeVoiceFilters(filtersFromValues(filters))
     }
 
@@ -238,36 +266,33 @@ export function BrowseVoices({
     let selectAge = (e) => {
         applyFilterValues(resolveFilterValues({ age: e.target.value }))
     }
-    let selectVoice = (e) => {
-        applyFilterValues(resolveFilterValues({ voiceId: e.target.value }))
-    }
     let resetFilters = () => {
         setNameSearch('')
-        applyFilterValues({
-            lang: 'All',
-            engine: 'All',
-            langcode: 'All',
-            gender: 'All',
-            age: 'All',
-            voiceId: 'None',
-        })
+        applyFilterValues(
+            {
+                lang: 'All',
+                engine: 'All',
+                langcode: 'All',
+                gender: 'All',
+                age: 'All',
+            },
+            ''
+        )
     }
     let selectNameSearch = (value: string) => {
+        const preservesRows = filterChangePreservesRows(
+            selectedFilterValues,
+            value
+        )
         setNameSearch(value)
-        setShowLargeVoiceTable(false)
-        if (
-            voiceId !== 'None' &&
-            !availableVoices
-                .filter(matchesLanguage)
-                .filter(matchesEngine)
-                .filter(matchesDialect)
-                .filter(matchesGender)
-                .filter(matchesAge)
-                .filter((voice) => matchesName(voice, value))
-                .some((voice) => voiceKey(voice) === voiceId)
-        ) {
-            applyFilterValues(resolveFilterValues({ voiceId: 'None' }))
+        if (!preservesRows) {
+            setCurrentPage(0)
+            stopPreview()
         }
+    }
+    let clearNameSearch = () => {
+        selectNameSearch('')
+        nameSearchInputRef.current?.focus()
     }
     const filtersAreActive =
         lang != 'All' ||
@@ -275,12 +300,7 @@ export function BrowseVoices({
         langcode != 'All' ||
         gender != 'All' ||
         age != 'All' ||
-        voiceId != 'None' ||
         nameSearch.trim() != ''
-    const selectedVoice =
-        voiceId !== 'None'
-            ? availableVoices.find((v) => voiceKey(v) == voiceId)
-            : null
 
     const matchesLanguage = (voice: TtsVoice) =>
         lang == 'All' || getLang(voice.lang) == lang
@@ -295,39 +315,76 @@ export function BrowseVoices({
         (age == noAgeValue
             ? parseGenderAge(voice.gender).age == undefined
             : parseGenderAge(voice.gender).age == age)
-    const matchesName = (voice: TtsVoice, search: string = nameSearch) => {
-        const query = search.trim().toLowerCase()
-        if (query == '') {
-            return true
+    const sortedMatchingVoices = sortedVoicesFor(selectedFilterValues)
+    const matchingVoices = sortedMatchingVoices
+    const pageSize = normalizedVoiceTableThreshold
+    const pageCount = Math.max(
+        1,
+        Math.ceil(sortedMatchingVoices.length / pageSize)
+    )
+    const activePage = Math.min(currentPage, pageCount - 1)
+    const pageStart = activePage * pageSize
+    const visibleVoices = sortedMatchingVoices.slice(
+        pageStart,
+        pageStart + pageSize
+    )
+    const showTableControls = sortedMatchingVoices.length > pageSize
+    const firstVisibleVoice =
+        sortedMatchingVoices.length === 0 ? 0 : pageStart + 1
+    const lastVisibleVoice = Math.min(
+        pageStart + visibleVoices.length,
+        sortedMatchingVoices.length
+    )
+
+    useEffect(() => {
+        if (currentPage !== activePage) {
+            setCurrentPage(activePage)
         }
-        return (voicesTransliterations[voice.name] ?? voice.name)
-            .toLowerCase()
-            .includes(query)
+    }, [activePage, currentPage])
+
+    useEffect(() => {
+        stopPreview()
+    }, [customPreviewText])
+
+    const previewUrlForVoice = (voice: TtsVoice) => {
+        const previewUrl =
+            availableVoices.find(
+                (v) => v.engine === voice.engine && v.name === voice.name
+            )?.preview ?? voice.preview
+        if (!previewUrl) return undefined
+        const text = customPreviewText.trim()
+        return text.length
+            ? `${previewUrl}?text=${encodeURIComponent(text).replaceAll(
+                  '%20',
+                  '+'
+              )}`
+            : previewUrl
     }
 
-    const matchingVoices = availableVoices
-        .filter(matchesLanguage)
-        .filter(matchesEngine)
-        .filter(matchesDialect)
-        .filter(matchesGender)
-        .filter(matchesAge)
-        .filter((voice) => matchesName(voice))
-
-    const sortedMatchingVoices = matchingVoices.toSorted((a, b) =>
-        (voicesTransliterations[a.name] ?? a.name) >
-        (voicesTransliterations[b.name] ?? b.name)
-            ? 1
-            : -1
-    )
-    const visibleVoices = showLargeVoiceTable
-        ? sortedMatchingVoices
-        : sortedMatchingVoices.slice(0, normalizedVoiceTableThreshold)
-    const selectVoiceFromRow = (voice: TtsVoice) => {
-        applyFilterValues(resolveFilterValues({ voiceId: voiceKey(voice) }))
+    const toggleVoicePreview = async (voice: TtsVoice) => {
+        const key = voiceKey(voice)
+        const audio = previewAudioRef.current
+        const previewUrl = previewUrlForVoice(voice)
+        if (!audio || !previewUrl) return
+        if (playingPreviewKey === key && !audio.paused) {
+            stopPreview()
+            return
+        }
+        audio.pause()
+        audio.src = previewUrl
+        audio.load()
+        try {
+            await audio.play()
+            setPlayingPreviewKey(key)
+        } catch {
+            setPlayingPreviewKey(null)
+        }
     }
     const commitVoiceTableThreshold = () => {
         const threshold = clampVoiceTableThreshold(voiceTableThresholdInput)
         setVoiceTableThresholdInput(String(threshold))
+        setCurrentPage(0)
+        stopPreview()
         onChangeVoiceTableThreshold(threshold)
     }
 
@@ -467,61 +524,57 @@ export function BrowseVoices({
                 </div>
                 <div className="field">
                     <label htmlFor="voice-name-search">Search name</label>
-                    <input
-                        id="voice-name-search"
-                        type="search"
-                        value={nameSearch}
-                        onChange={(e) => selectNameSearch(e.target.value)}
-                    />
+                    <div className="voice-name-search-control">
+                        <input
+                            id="voice-name-search"
+                            ref={nameSearchInputRef}
+                            type="search"
+                            value={nameSearch}
+                            onChange={(e) => selectNameSearch(e.target.value)}
+                        />
+                        <button
+                            type="button"
+                            className="invisible"
+                            onClick={clearNameSearch}
+                            disabled={nameSearch == ''}
+                            title="Clear text"
+                            aria-label="Clear text"
+                        >
+                            <X width="20" height="20" />
+                        </button>
+                    </div>
                 </div>
-                <div className="field">
-                    <label htmlFor="select-voice">Voice</label>
-                    <select
-                        id="select-voice"
-                        onChange={(e) => selectVoice(e)}
-                        value={voiceId}
+                <div className="field voice-filter-actions">
+                    <button
+                        type="button"
+                        onClick={resetFilters}
+                        disabled={!filtersAreActive}
                     >
-                        <option value="None">None</option>
-                        {Array.from(
-                            new Set(
-                                availableVoices
-                                    .filter(matchesLanguage)
-                                    .filter(matchesEngine)
-                                    .filter(matchesDialect)
-                                    .filter(matchesGender)
-                                    .filter(matchesAge)
-                                    .filter((voice) => matchesName(voice))
-                            )
-                        )
-                            // @ts-ignore
-                            .sort((a, b) => (a.name < b.name ? -1 : 1))
-                            .map((v: TtsVoice, idx) => (
-                                //@ts-ignore
-                                <option
-                                    value={`${v.engine}-${v.name}`}
-                                    key={`voice-${v.engine}-${v.name}`}
-                                >
-                                    {voicesTransliterations[v.name] ?? v.name}
-                                </option>
-                            ))}
-                    </select>
+                        Reset filters
+                    </button>
                 </div>
+            </div>
+            <div className="field voice-preview-text-control">
+                <label htmlFor="voice-preview-text">
+                    Custom preview text
+                </label>
+                <input
+                    id="voice-preview-text"
+                    type="text"
+                    value={customPreviewText}
+                    onChange={(e) => setCustomPreviewText(e.target.value)}
+                />
             </div>
             <div className="voice-count-row">
                 <p className="voice-count" aria-live="polite">
                     {matchingVoices.length}{' '}
                     {matchingVoices.length === 1 ? 'voice' : 'voices'} match
                 </p>
-                <fieldset className="voice-table-display-control">
-                    <legend>Show</legend>
-                    <label>
-                        <input
-                            type="radio"
-                            name="voice-table-display"
-                            checked={!showLargeVoiceTable}
-                            onChange={() => setShowLargeVoiceTable(false)}
-                        />
-                        up to
+                {showTableControls && (
+                    <div
+                        className="voice-table-display-control"
+                        aria-label="Voice table pages"
+                    >
                         <input
                             id="voice-table-threshold"
                             type="number"
@@ -538,36 +591,50 @@ export function BrowseVoices({
                                     commitVoiceTableThreshold()
                                 }
                             }}
-                            aria-label="Voice table auto-show limit"
+                            aria-label="Voices per page"
                         />
-                        voices
-                    </label>
-                    <label>
-                        <input
-                            type="radio"
-                            name="voice-table-display"
-                            checked={showLargeVoiceTable}
-                            onChange={() => setShowLargeVoiceTable(true)}
-                        />
-                        all
-                    </label>
-                </fieldset>
-                <button
-                    type="button"
-                    onClick={resetFilters}
-                    disabled={!filtersAreActive}
-                >
-                    Reset filters
-                </button>
+                        <label htmlFor="voice-table-threshold">
+                            per page
+                        </label>
+                        <div
+                            className="voice-pagination"
+                            aria-label="Voice result pages"
+                        >
+                            <button
+                                type="button"
+                                onClick={() =>
+                                    setCurrentPage((page) =>
+                                        Math.max(0, page - 1)
+                                    )
+                                }
+                                disabled={activePage === 0}
+                            >
+                                Previous
+                            </button>
+                            <span aria-live="polite">
+                                Page {activePage + 1} of {pageCount}
+                            </span>
+                            <button
+                                type="button"
+                                onClick={() =>
+                                    setCurrentPage((page) =>
+                                        Math.min(pageCount - 1, page + 1)
+                                    )
+                                }
+                                disabled={activePage >= pageCount - 1}
+                            >
+                                Next
+                            </button>
+                        </div>
+                    </div>
+                )}
             </div>
             <div className="voice-results" role="region">
                 <table>
                     <caption>
                         Matching voices
-                        {!showLargeVoiceTable &&
-                            matchingVoices.length >
-                                normalizedVoiceTableThreshold &&
-                            `, showing first ${visibleVoices.length} of ${matchingVoices.length}`}
+                        {showTableControls &&
+                            `, showing ${firstVisibleVoice}-${lastVisibleVoice} of ${matchingVoices.length}`}
                     </caption>
                     <thead>
                         <tr>
@@ -581,11 +648,19 @@ export function BrowseVoices({
                         </tr>
                     </thead>
                     <tbody>
+                        {visibleVoices.length === 0 && (
+                            <tr>
+                                <td colSpan={7}>No matching voices.</td>
+                            </tr>
+                        )}
                         {visibleVoices.map((voice) => {
                             const parsed = parseGenderAge(voice.gender)
                             const voiceName =
                                 voicesTransliterations[voice.name] ??
                                 voice.name
+                            const key = voiceKey(voice)
+                            const previewIsPlaying = playingPreviewKey === key
+                            const previewUrl = previewUrlForVoice(voice)
                             const alreadyPreferred =
                                 preferredVoices.find(
                                     (v) =>
@@ -593,20 +668,8 @@ export function BrowseVoices({
                                         v.name === voice.name
                                 ) !== undefined
                             return (
-                                <tr
-                                    key={`voice-row-${voice.engine}-${voice.name}`}
-                                >
-                                    <th>
-                                        <button
-                                            type="button"
-                                            className="link-button"
-                                            onClick={() =>
-                                                selectVoiceFromRow(voice)
-                                            }
-                                        >
-                                            {voiceName}
-                                        </button>
-                                    </th>
+                                <tr key={`voice-row-${key}`}>
+                                    <th>{voiceName}</th>
                                     <td>
                                         {ttsEnginesStates[voice.engine]?.name ??
                                             voice.engine}
@@ -619,11 +682,28 @@ export function BrowseVoices({
                                     <td>
                                         <button
                                             type="button"
+                                            className="invisible"
                                             onClick={() =>
-                                                selectVoiceFromRow(voice)
+                                                toggleVoicePreview(voice)
                                             }
+                                            disabled={!previewUrl}
+                                            aria-label={`${
+                                                previewIsPlaying
+                                                    ? 'Pause preview'
+                                                    : 'Preview'
+                                            } for ${voiceName}`}
                                         >
-                                            Preview
+                                            {previewIsPlaying ? (
+                                                <PauseIcon
+                                                    width="20"
+                                                    height="20"
+                                                />
+                                            ) : (
+                                                <PlayIcon
+                                                    width="20"
+                                                    height="20"
+                                                />
+                                            )}
                                         </button>
                                     </td>
                                     <td>
@@ -645,63 +725,10 @@ export function BrowseVoices({
                         })}
                     </tbody>
                 </table>
-            </div>
-            <div className="voice-details">
-                {selectedVoice ? (
-                    <>
-                        <p className="selected-voice">
-                            <b>Selected</b>: "
-                            {voicesTransliterations[selectedVoice.name] ??
-                                selectedVoice.name}
-                            ", {languageNames.of(selectedVoice.lang)},{' '}
-                            {selectedVoice.engine}, Gender:{' '}
-                            {formatGenderAgePart(
-                                parseGenderAge(selectedVoice.gender).gender
-                            )}
-                            , Age:{' '}
-                            {formatGenderAgePart(
-                                parseGenderAge(selectedVoice.gender).age
-                            )}
-                            .
-                        </p>
-                        <VoicePreview
-                            voice={selectedVoice}
-                            availableVoices={availableVoices}
-                        ></VoicePreview>
-                        {preferredVoices.find(
-                            (v) =>
-                                v.engine === selectedVoice.engine &&
-                                v.name === selectedVoice.name
-                        ) ? (
-                            <p className="voice-already-exists">
-                                This voice has been added to{' '}
-                                <a
-                                    onClick={() =>
-                                        onSelectSection(
-                                            SettingsMenuItem.TTSPreferredVoices
-                                        )
-                                    }
-                                >
-                                    your list
-                                </a>
-                                .
-                            </p>
-                        ) : (
-                            <button
-                                type="button"
-                                onClick={() =>
-                                    addToPreferredVoices(selectedVoice)
-                                }
-                            >
-                                Add to preferred voices
-                            </button>
-                        )}
-                    </>
-                ) : (
-                    <p>
-                        <i>No voice selected</i>
-                    </p>
-                )}
+                <audio
+                    ref={previewAudioRef}
+                    onEnded={() => setPlayingPreviewKey(null)}
+                />
             </div>
         </>
     )

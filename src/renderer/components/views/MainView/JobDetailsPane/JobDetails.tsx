@@ -14,7 +14,7 @@ import { editJob, runJob } from 'shared/data/slices/pipeline'
 import { readableStatus } from 'shared/jobName'
 import { FileLink } from '../../../Widgets/FileLink'
 import { useWindowStore } from 'renderer/store'
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect } from 'react'
 import { JobStatusIcon } from '../../../Widgets/SvgIcons'
 import { CanDo } from 'shared/canDo'
 
@@ -35,10 +35,7 @@ export function JobDetails({ job }: { job: Job }) {
         )
     }, [job.state])
 
-    const messagesSeen = useRef(false)
-    if (job.jobData.messages?.length > 0) {
-        messagesSeen.current = true
-    }
+    const hasMessages = (job.jobData.messages?.length ?? 0) > 0
 
     if (job.jobRequestError) {
         return (
@@ -84,6 +81,9 @@ export function JobDetails({ job }: { job: Job }) {
         }
         return searchMessages(job.jobData.messages, MessageLevel.WARNING)
     }
+    const hasIndividualResults =
+        (job.jobData.results?.namedResults?.length ?? 0) > 0
+
     return (
         <div className="job-details">
             <section className="job-status info">
@@ -138,14 +138,16 @@ export function JobDetails({ job }: { job: Job }) {
                     </FileLink>
                 )}
 
-                {job.jobData.results?.namedResults.length > 0 ? (
+                {hasIndividualResults ? (
                     <details>
                         <summary>Individual results</summary>
 
                         <Results job={job} />
                     </details>
                 ) : (
-                    <p className="info">No results available</p>
+                    !job.jobData.downloadedFolder && (
+                        <p className="info">No results available</p>
+                    )
                 )}
             </section>
             <section className="job-messages">
@@ -169,7 +171,7 @@ export function JobDetails({ job }: { job: Job }) {
                         below for more information.
                     </p>
                 )}
-                {messagesSeen.current ? (
+                {hasMessages ? (
                     <details>
                         <summary>Show messages</summary>
                         <Messages job={job} />

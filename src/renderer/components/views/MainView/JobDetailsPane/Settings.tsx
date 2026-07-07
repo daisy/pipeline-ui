@@ -1,5 +1,5 @@
 // these settings represent the parameters used by a job (as opposed to the application settings dialog)
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useWindowStore } from 'renderer/store'
 import { externalLinkClick, findValue } from 'renderer/utils/utils'
 import { Job } from 'shared/types'
@@ -55,12 +55,20 @@ export function Settings({ job }: { job: Job }) {
     const [jobValues, setJobValues] = useState([])
     const { pipeline } = useWindowStore()
     const scriptId = job.jobData?.script?.id || job.script?.id
-    const scriptDetails = pipeline.scripts.find((s) => s.id == scriptId)
+    const scriptDetails =
+        pipeline.scripts.find((s) => s.id == scriptId) ?? job.script
 
-    let scriptRequiredItems = getAllRequired(job.script)
-    let scriptOptionalItems = getAllOptional(job.script)
+    const scriptRequiredItems = useMemo(
+        () => getAllRequired(job.script),
+        [job.script]
+    )
+    const scriptOptionalItems = useMemo(
+        () => getAllOptional(job.script),
+        [job.script]
+    )
 
-    useMemo(() => {
+    useEffect(() => {
+        let cancelled = false
         // put values in the script items, for display convenience and because of async issues
         const doConversion = async () => {
             let jobValues_ = await getValuesForScriptItems(
@@ -68,10 +76,13 @@ export function Settings({ job }: { job: Job }) {
                 job
             )
             // @ts-ignore
-            setJobValues(jobValues_)
+            if (!cancelled) setJobValues(jobValues_)
         }
         doConversion()
-    }, [jobValues])
+        return () => {
+            cancelled = true
+        }
+    }, [job.internalId])
     return (
         <ul>
             <li>

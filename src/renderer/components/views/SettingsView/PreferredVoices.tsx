@@ -272,6 +272,11 @@ export function PreferredVoices({
                                                                     v
                                                                 )
                                                             }}
+                                                            title={`Remove ${
+                                                                voicesTransliterations[
+                                                                    v.name
+                                                                ] ?? v.name
+                                                            } from preferred voices`}
                                                             aria-label={`Remove ${
                                                                 voicesTransliterations[
                                                                     v.name

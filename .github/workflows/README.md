@@ -18,7 +18,9 @@ No artifacts produced.
 
 Builds unsigned installers on macOS and Windows without signing or notarizing. Uploads `.pkg` and `.exe` as downloadable workflow artifacts. Useful for internal testing or sharing a build without going through a full release.
 
-No GitHub Release is created.
+When triggered by a push to `develop-engine-snapshot`, this workflow also creates or updates the draft `ci-snapshot` GitHub Release. The release description includes links to open issues in the current open milestone with the `ready-for-testing` label.
+
+If the snapshot trigger requested a testing snapshot, this workflow also creates a duplicate draft release with the title `testing-snapshot <milestone>-<index>`. The tag uses a URL-safe form, `testing-snapshot-<milestone-slug>-<index>`, and the index is one higher than the existing testing snapshots for that milestone.
 
 ---
 
@@ -40,7 +42,7 @@ Required secrets: `GH_PIPELINE_TOKEN`, `APPLE_ID`, `APPLE_ID_PASS`, `APPLE_ID_TE
 
 ## snapshot.yml — Engine Snapshot
 
-**Triggers:** Manual dispatch with an optional `engine_sha` input field
+**Triggers:** Manual dispatch with an optional `engine_sha` input field and an optional testing snapshot checkbox
 
 Creates or force-updates the `develop-engine-snapshot` branch in this repo. That branch is always: **current `develop` UI code + `develop` engine code or a specific engine commit**. The push to `develop-engine-snapshot` then triggers `package.yml` to produce a downloadable artifact.
 

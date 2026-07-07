@@ -84,6 +84,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+      issues: read
 
     steps:
       - name: Download macOS artifact
@@ -98,17 +99,88 @@ jobs:
           name: daisy-pipeline-win
           path: artifacts/win
 
-      - name: Create Snapshot release if it doesn't exist
+      - name: Build Snapshot release notes
+        id: snapshot-notes
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+        run: |
+          NOTES="$RUNNER_TEMP/snapshot-release-notes.md"
+          MILESTONES="$RUNNER_TEMP/open-milestones.json"
+          ISSUES="$RUNNER_TEMP/ready-for-testing-issues.json"
+
+          gh api --paginate "repos/$REPO/milestones?state=open&per_page=100" > "$MILESTONES"
+
+          MILESTONE_TITLE="$(jq -sr '
+            add
+            | sort_by((.due_on // "9999-12-31T23:59:59Z"), .number)
+            | .[0].title // ""
+          ' "$MILESTONES")"
+          MILESTONE_URL="$(jq -sr '
+            add
+            | sort_by((.due_on // "9999-12-31T23:59:59Z"), .number)
+            | .[0].html_url // ""
+          ' "$MILESTONES")"
+          MILESTONE_SLUG="$(printf '%s' "$MILESTONE_TITLE" \
+            | tr '[:upper:]' '[:lower:]' \
+            | sed -E 's/[^a-z0-9]+/-/g; s/^-+//; s/-+$//')"
+          if [ -z "$MILESTONE_SLUG" ]; then
+            MILESTONE_SLUG="no-milestone"
+          fi
+
+          {
+            echo "Latest snapshot builds from engine develop and pipeline-ui develop branches."
+            echo
+
+            if [ -n "$MILESTONE_TITLE" ]; then
+              echo "Ready for testing in current milestone: [$MILESTONE_TITLE]($MILESTONE_URL)"
+              echo
+
+              gh issue list \
+                --repo "$REPO" \
+                --state open \
+                --label "ready-for-testing" \
+                --milestone "$MILESTONE_TITLE" \
+                --limit 1000 \
+                --json number,title,url \
+                > "$ISSUES"
+
+              if jq -e 'length > 0' "$ISSUES" > /dev/null; then
+                jq -r 'sort_by(.number)[] | "- [#\(.number) \(.title)](\(.url))"' "$ISSUES"
+              else
+                echo "_No open ready-for-testing issues for this milestone._"
+              fi
+            else
+              echo "_No open milestone found._"
+            fi
+          } > "$NOTES"
+
+          echo "milestone_title=${MILESTONE_TITLE:-no milestone}" >> "$GITHUB_OUTPUT"
+          echo "milestone_slug=$MILESTONE_SLUG" >> "$GITHUB_OUTPUT"
+          cat "$NOTES"
+
+      - name: Create or update Snapshot release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh release view ci-snapshot --repo ${{ github.repository }} > /dev/null 2>&1 || \
-            gh release create ci-snapshot \
+          NOTES="$RUNNER_TEMP/snapshot-release-notes.md"
+
+          if gh release view ci-snapshot --repo ${{ github.repository }} > /dev/null 2>&1; then
+            gh release edit ci-snapshot \
               --repo ${{ github.repository }} \
               --draft \
               --latest=false \
               --title "Development Snapshot" \
-              --notes "Latest snapshot builds from engine develop and pipeline-ui develop branches."
+              --notes-file "$NOTES"
+          else
+            gh release create ci-snapshot \
+              --repo ${{ github.repository }} \
+              --draft \
+              --latest=false \
+              --target "$GITHUB_SHA" \
+              --title "Development Snapshot" \
+              --notes-file "$NOTES"
+          fi
 
       - name: Replace Development Snapshot release assets
         env:
@@ -120,3 +192,41 @@ jobs:
             done
           gh release upload ci-snapshot artifacts/mac/*.pkg artifacts/win/*.exe \
             --repo ${{ github.repository }}
+
+      - name: Create Testing Snapshot release
+        if: github.event_name == 'push' && contains(github.event.head_commit.message, '[testing-snapshot]')
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          MILESTONE_TITLE: ${{ steps.snapshot-notes.outputs.milestone_title }}
+          MILESTONE_SLUG: ${{ steps.snapshot-notes.outputs.milestone_slug }}
+        run: |
+          NOTES="$RUNNER_TEMP/snapshot-release-notes.md"
+          PREFIX="testing-snapshot-${MILESTONE_SLUG}-"
+          NEXT_INDEX="$(gh release list \
+            --repo "$REPO" \
+            --limit 1000 \
+            --json tagName \
+            --jq '.[].tagName' \
+            | awk -v prefix="$PREFIX" '
+                index($0, prefix) == 1 {
+                  n = substr($0, length(prefix) + 1)
+                  if (n ~ /^[0-9]+$/) {
+                    index_number = n + 0
+                    if (index_number > max) {
+                      max = index_number
+                    }
+                  }
+                }
+                END { print max + 1 }
+              ')"
+          TAG="${PREFIX}${NEXT_INDEX}"
+          TITLE="testing-snapshot ${MILESTONE_TITLE}-${NEXT_INDEX}"
+
+          gh release create "$TAG" artifacts/mac/*.pkg artifacts/win/*.exe \
+            --repo "$REPO" \
+            --draft \
+            --latest=false \
+            --target "$GITHUB_SHA" \
+            --title "$TITLE" \
+            --notes-file "$NOTES"

@@ -10,6 +10,11 @@ on:
       engine_sha:
         description: 'Engine commit SHA (defaults to HEAD of engine develop branch)'
         required: false
+      create_testing_snapshot:
+        description: 'Also create a numbered testing snapshot release after packaging'
+        required: false
+        default: false
+        type: boolean
 
 jobs:
   update-snapshot-branch:
@@ -54,6 +59,11 @@ jobs:
       - name: Create or update develop-engine-snapshot branch
         run: |
           SHA="${{ steps.engine.outputs.sha }}"
+          TESTING_SNAPSHOT="${{ github.event.inputs.create_testing_snapshot }}"
+          COMMIT_MESSAGE="ci: trigger package build for engine ${SHA:0:7}"
+          if [ "$TESTING_SNAPSHOT" = "true" ]; then
+            COMMIT_MESSAGE="$COMMIT_MESSAGE [testing-snapshot]"
+          fi
           git diff --cached --quiet || git commit -m "chore: update engine submodule to ${SHA:0:7} (engine develop)"
-          git commit --allow-empty -m "ci: trigger package build for engine ${SHA:0:7}"
+          git commit --allow-empty -m "$COMMIT_MESSAGE"
           git push origin HEAD:refs/heads/develop-engine-snapshot --force

@@ -21,6 +21,15 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Verify GH_PIPELINE_TOKEN is available
+        env:
+          GH_PIPELINE_TOKEN: ${{ secrets.GH_PIPELINE_TOKEN }}
+        run: |
+          if [ -z "$GH_PIPELINE_TOKEN" ]; then
+            echo "::error::GH_PIPELINE_TOKEN is not available to this workflow"
+            exit 1
+          fi
+
       - name: Check out pipeline-ui develop
         uses: actions/checkout@v4
         with:

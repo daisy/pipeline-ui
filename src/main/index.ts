@@ -1,9 +1,6 @@
 import {
     app,
     BrowserWindow,
-    ipcMain,
-    Menu,
-    shell,
     nativeTheme,
 } from 'electron'
 
@@ -26,11 +23,8 @@ import {
     SettingsWindow,
 } from './windows'
 
-import { buildMenuTemplate } from './menu'
-
 import { registerStoreIPC, store } from './data/store'
 import { setupFileDialogEvents } from './ipcs/fileDialogs'
-import { IPC } from 'shared/constants'
 import { setupShowInFolderEvents } from './ipcs/folder'
 import { registerFileIPC } from './ipcs/file'
 import { setupFileSystemEvents } from './ipcs/fileSystem'
@@ -38,26 +32,11 @@ import { setupOpenInBrowserEvents } from './ipcs/browser'
 import { setupMessageBoxEvent, showMessageBoxYesNo } from './ipcs/messageBox'
 import { APP_CONFIG } from '~/app.config'
 import { getPipelineInstance } from './data/instance'
-import {
-    save,
-    selectColorScheme,
-    selectEditOnNewTab,
-    setTextSize,
-} from 'shared/data/slices/settings'
-import {
-    addJob,
-    editJob,
-    newJob,
-    removeJob,
-    selectJob,
-    selectPipeline,
-    selectNextJob,
-    selectPrevJob,
-} from 'shared/data/slices/pipeline'
+import { selectColorScheme } from 'shared/data/slices/settings'
 import { setupClipboardEvents } from './ipcs/clipboard'
 import { checkForUpdate } from 'shared/data/slices/update'
 import { setupOneTimeFetchEvent } from './ipcs/one-time-fetch'
-import { DefaultTextSize, TextSizeOptions } from 'shared/types'
+import { buildApplicationMenu } from './application-menu'
 import { sniffFile } from './ipcs/sniffFile'
 import { IPC_EVENT_openExternalFile } from 'shared/main-renderer-events'
 
@@ -138,7 +117,7 @@ makeAppWithSingleInstanceLock(async () => {
     setupClipboardEvents()
     setupOneTimeFetchEvent()
     setupMessageBoxEvent()
-    buildMenu()
+    buildApplicationMenu()
 
     const fileArg = parseFileArg(process.argv)
     if (fileArg) {
@@ -151,7 +130,7 @@ makeAppWithSingleInstanceLock(async () => {
     }
 
     store.subscribe(() => {
-        buildMenu()
+        buildApplicationMenu()
     })
     // Note for command line parsing
     // - second-instance event is emitted when a new instance is requested
@@ -285,92 +264,4 @@ async function sendOpenFileToRenderer(
         scriptIdFragment,
         autoRun,
     })
-}
-
-function buildMenu() {
-    let jobs = selectPipeline(store.getState()).jobs
-
-    //@ts-ignore
-    let template = buildMenuTemplate({
-        appName: app.name,
-        jobs,
-        selectedJobId: selectPipeline(store.getState()).selectedJobId,
-        onCreateJob: async () => {
-            const job = newJob(selectPipeline(store.getState()))
-            store.dispatch(addJob(job))
-            store.dispatch(selectJob(job))
-            MainWindow().then((window) => {
-                if (window.isMinimized()) {
-                    window.restore()
-                }
-                window.focus()
-            })
-        },
-        onShowSettings: async () => {
-            // Open the settings window
-            ipcMain.emit(IPC.WINDOWS.SETTINGS.CREATE)
-        },
-        onGotoLink: async (link) => {
-            await shell.openExternal(link)
-        },
-        onNextTab: async () => {
-            store.dispatch(selectNextJob(selectEditOnNewTab(store.getState())))
-        },
-        onPrevTab: async () => {
-            store.dispatch(selectPrevJob(selectEditOnNewTab(store.getState())))
-        },
-        onGotoTab: async (job) => {
-            store.dispatch(selectJob(job))
-        },
-        onRunJob: async (job) => {
-            MainWindow().then((w) => w.webContents.send('submit-script-form'))
-            // store.dispatch(
-            //     runJob({
-            //         ...job,
-            //     })
-            // )
-        },
-        onRemoveJob: async (job) => {
-            let result = showMessageBoxYesNo(
-                'Are you sure you want to close this job?'
-            )
-            if (result) {
-                store.dispatch(removeJob(job))
-            }
-        },
-        onEditJob: async (job) => {
-            store.dispatch(editJob(job))
-        },
-        onShowAbout: async () => {
-            // Open the settings window
-            ipcMain.emit(IPC.WINDOWS.ABOUT.CREATE)
-        },
-        onResetTextSize: () => {
-            store.dispatch(setTextSize(DefaultTextSize))
-            store.dispatch(save())
-        },
-        onLargerText: () => {
-            let textSize = store.getState().settings.textSize
-            let textSizeIndex = TextSizeOptions.findIndex(
-                (opt) => opt == textSize
-            )
-            if (textSizeIndex < TextSizeOptions.length - 1) {
-                store.dispatch(setTextSize(TextSizeOptions[textSizeIndex + 1]))
-                store.dispatch(save())
-            }
-        },
-        onSmallerText: () => {
-            let textSize = store.getState().settings.textSize
-            let textSizeIndex = TextSizeOptions.findIndex(
-                (opt) => opt == textSize
-            )
-            if (textSizeIndex > 0) {
-                store.dispatch(setTextSize(TextSizeOptions[textSizeIndex - 1]))
-                store.dispatch(save())
-            }
-        },
-    })
-    // @ts-ignore
-    const menu = Menu.buildFromTemplate(template)
-    Menu.setApplicationMenu(menu)
 }

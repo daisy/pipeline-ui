@@ -18,9 +18,9 @@ No artifacts produced.
 
 Builds unsigned installers on macOS and Windows without signing or notarizing. Uploads `.pkg` and `.exe` as downloadable workflow artifacts. Useful for internal testing or sharing a build without going through a full release.
 
-When triggered by a push to `develop-engine-snapshot`, this workflow also creates or updates the draft `latest-dev-snapshot` GitHub Release. The release title uses the form `<version>-snapshot-<date>`, where `<date>` is UTC `YYYYMMDD`. The release description includes `ui <branch>@<hash>, engine <branch>@<hash>` and links to open issues in the current open milestone with the `ready-for-testing` label. Release assets are named `daisy-pipeline-<version>-snapshot-<date>-<platform>.<ext>`.
+When triggered by a push to `develop-engine-snapshot`, this workflow also creates or updates the draft prerelease `latest-dev-snapshot` GitHub Release. The release title is `latest development snapshot`. The release description includes `<version>-snapshot-<date>`, `ui <branch>@<hash>, engine <branch>@<hash>`, and links to open issues in the current open milestone with the `ready-for-testing` label. Release assets are named `daisy-pipeline-<version>-snapshot-<date>-<platform>.<ext>`, where `<date>` is UTC `YYYYMMDD`.
 
-If the snapshot trigger requested a test snapshot, this workflow also creates a duplicate draft release with the same `<version>-snapshot-<date>` title. The tag uses the form `test-snapshot-<index>`, and the index is one higher than the existing test snapshots. Release assets use the same `daisy-pipeline-<version>-snapshot-<date>-<platform>.<ext>` names.
+If the snapshot trigger requested a test snapshot, this workflow also creates a duplicate draft prerelease with the same `<version>-snapshot-<date>` title. The tag uses the form `test-snapshot-<index>`, and the index is one higher than the existing test snapshots. Release assets use the same `daisy-pipeline-<version>-snapshot-<date>-<platform>.<ext>` names.
 
 ---
 

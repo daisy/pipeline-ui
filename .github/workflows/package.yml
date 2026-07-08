@@ -188,7 +188,6 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SNAPSHOT_TAG: latest-dev-snapshot
-          RELEASE_NAME: ${{ steps.snapshot-metadata.outputs.release_name }}
         run: |
           NOTES="$RUNNER_TEMP/snapshot-release-notes.md"
 
@@ -200,15 +199,17 @@ jobs:
               --repo ${{ github.repository }} \
               --draft \
               --latest=false \
-              --title "$RELEASE_NAME" \
+              --prerelease \
+              --title "Latest Development Snapshot" \
               --notes-file "$NOTES"
           else
             gh release create "$SNAPSHOT_TAG" \
               --repo ${{ github.repository }} \
               --draft \
               --latest=false \
+              --prerelease \
               --target "$GITHUB_SHA" \
-              --title "$RELEASE_NAME" \
+              --title "Latest Development Snapshot" \
               --notes-file "$NOTES"
           fi
 
@@ -292,6 +293,7 @@ jobs:
             --repo "$REPO" \
             --draft \
             --latest=false \
+            --prerelease \
             --target "$GITHUB_SHA" \
             --title "$RELEASE_NAME" \
             --notes-file "$NOTES"

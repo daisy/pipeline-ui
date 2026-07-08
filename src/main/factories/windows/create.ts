@@ -1,4 +1,5 @@
 import { app, BrowserWindow } from 'electron'
+import { error, warn } from 'electron-log'
 import { join } from 'path'
 
 import { ENVIRONMENT, IPC, PLATFORM } from 'shared/constants'
@@ -48,6 +49,40 @@ export function createWindow(
               hash: `/${id}${hash}`,
           })
     window.on('closed', window.destroy)
+    window.on('unresponsive', () => warn(`window:${id}:unresponsive`))
+    window.webContents.on(
+        'did-fail-load',
+        (_event, errorCode, errorDescription, validatedURL, isMainFrame) => {
+            error(`window:${id}:did-fail-load`, {
+                errorCode,
+                errorDescription,
+                validatedURL,
+                isMainFrame,
+            })
+        }
+    )
+    window.webContents.on('preload-error', (_event, preloadPath, err) => {
+        error(`window:${id}:preload-error`, { preloadPath, err })
+    })
+    window.webContents.on(
+        'console-message',
+        (_event, level, message, line, sourceId) => {
+            if (
+                level < 2 ||
+                sourceId?.includes('/electron-log') ||
+                message.includes(`window:${id}:console-message`)
+            ) {
+                return
+            }
+
+            const payload = { level, message, line, sourceId }
+            if (level >= 3) {
+                error(`window:${id}:console-message`, payload)
+            } else {
+                warn(`window:${id}:console-message`, payload)
+            }
+        }
+    )
 
     // bypass CORS
     window.webContents.session.webRequest.onBeforeSendHeaders(

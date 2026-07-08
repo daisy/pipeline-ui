@@ -86,13 +86,12 @@
         RMDir /r "$APPDATA\pipeline-ui\DAISY Pipeline - App"
     SkipOldAppNameLogs:
 
-    ; Add Explorer context-menu entries for generic Open With
-    WriteRegStr HKCU "SOFTWARE\Classes\SystemFileAssociations\.epub\shell\OpenWithDAISYPipeline" "MUIVerb" "Open with DAISY Pipeline"
-    WriteRegStr HKCU "SOFTWARE\Classes\SystemFileAssociations\.epub\shell\OpenWithDAISYPipeline\command" "" '"$INSTDIR\${PRODUCT_FILENAME}.exe" --action=open "%1"'
-    WriteRegStr HKCU "SOFTWARE\Classes\SystemFileAssociations\.opf\shell\OpenWithDAISYPipeline" "MUIVerb" "Open with DAISY Pipeline"
-    WriteRegStr HKCU "SOFTWARE\Classes\SystemFileAssociations\.opf\shell\OpenWithDAISYPipeline\command" "" '"$INSTDIR\${PRODUCT_FILENAME}.exe" --action=open "%1"'
-    WriteRegStr HKCU "SOFTWARE\Classes\SystemFileAssociations\.docx\shell\OpenWithDAISYPipeline" "MUIVerb" "Open with DAISY Pipeline"
-    WriteRegStr HKCU "SOFTWARE\Classes\SystemFileAssociations\.docx\shell\OpenWithDAISYPipeline\command" "" '"$INSTDIR\${PRODUCT_FILENAME}.exe" --action=open "%1"'
+    ; Remove legacy generic Open With entries now covered by file associations
+    DeleteRegKey HKCU "SOFTWARE\Classes\SystemFileAssociations\.epub\shell\OpenWithDAISYPipeline"
+    DeleteRegKey HKCU "SOFTWARE\Classes\SystemFileAssociations\.opf\shell\OpenWithDAISYPipeline"
+    DeleteRegKey HKCU "SOFTWARE\Classes\SystemFileAssociations\.docx\shell\OpenWithDAISYPipeline"
+
+    ; Add Explorer context-menu entries for filename-specific generic Open With
     WriteRegStr HKCU "SOFTWARE\Classes\SystemFileAssociations\.html\shell\OpenWithDAISYPipeline" "MUIVerb" "Open with DAISY Pipeline"
     WriteRegStr HKCU "SOFTWARE\Classes\SystemFileAssociations\.html\shell\OpenWithDAISYPipeline" "AppliesTo" 'System.FileName:="ncc.html"'
     WriteRegStr HKCU "SOFTWARE\Classes\SystemFileAssociations\.html\shell\OpenWithDAISYPipeline\command" "" '"$INSTDIR\${PRODUCT_FILENAME}.exe" --action=open "%1"'

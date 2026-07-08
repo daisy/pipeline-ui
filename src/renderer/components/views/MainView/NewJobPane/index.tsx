@@ -1,9 +1,9 @@
 /*
 Select a script and submit a new job
 */
-import { useState, useMemo } from 'react'
+import { useEffect, useState } from 'react'
 import { useWindowStore } from 'renderer/store'
-import { Job, Script } from 'shared/types'
+import { Filetype, Job, Script } from 'shared/types'
 import { prepareJobRequest, updateJob } from 'shared/data/slices/pipeline'
 import {
     save,
@@ -12,6 +12,11 @@ import {
 import { externalLinkClick, ID } from 'renderer/utils'
 
 const { App } = window
+
+type SeededFile = {
+    filepath: string
+    filetype: Filetype
+}
 
 import {
     defaultSponsorshipMessage,
@@ -37,7 +42,7 @@ function isExpired(dateInMs: number) {
     return false
 }
 
-export function NewJobPane({ job }: { job: Job }) {
+export function NewJobPane({ job }: { job?: Job }) {
     const { settings, pipeline } = useWindowStore()
     const [sponsorshipMessage, setSponsorshipMessage] = useState(
         defaultSponsorshipMessage
@@ -46,7 +51,50 @@ export function NewJobPane({ job }: { job: Job }) {
         isExpired(settings.sponsorshipMessageLastShown)
     )
 
-    const [files, setFiles] = useState([])
+    const [files, setFiles] = useState<SeededFile[]>([])
+
+    useEffect(() => {
+        if (!job) return
+        if (!job.openWithSource || job.openWithSource.length === 0) return
+        let cancelled = false
+
+        async function seedOpenWithFiles() {
+            const seededFiles: SeededFile[] = []
+            for (const filePath of job.openWithSource) {
+                const filetype = await App.detectFiletype(filePath)
+                if (filetype) {
+                    seededFiles.push({ filepath: filePath, filetype })
+                }
+            }
+            if (cancelled) return
+
+            setFiles(seededFiles)
+            const { openWithSource, ...jobWithoutOpenWithSource } = job
+            App.store.dispatch(updateJob(jobWithoutOpenWithSource))
+        }
+
+        seedOpenWithFiles()
+        return () => {
+            cancelled = true
+        }
+    }, [job?.internalId])
+
+    // see if it's time to show the sponsorship message again
+    useEffect(() => {
+        const fetchData = async () => {
+            let updatedSponsorshipMessage = await updateSponsorshipMessage()
+            setSponsorshipMessage({ ...updatedSponsorshipMessage })
+        }
+        if (isExpired(settings.sponsorshipMessageLastShown)) {
+            fetchData().catch()
+            setShowSponsorshipMessage(true)
+            // update settings with a new date
+            App.store.dispatch(setSponsorshipMessageLastShown(Date.now()))
+            App.store.dispatch(save())
+        }
+    }, [])
+
+    if (!job) return null
 
     let frequentScripts: Array<Script> = []
     let scriptsInOrder = pipeline.scripts.toSorted((a, b) =>
@@ -76,22 +124,6 @@ export function NewJobPane({ job }: { job: Job }) {
             return freqA > freqB ? -1 : 1
         })
     }
-
-    // see if it's time to show the sponsorship message again
-    // useMemo runs once per render (unlike useEffect)
-    useMemo(() => {
-        const fetchData = async () => {
-            let updatedSponsorshipMessage = await updateSponsorshipMessage()
-            setSponsorshipMessage({ ...updatedSponsorshipMessage })
-        }
-        if (isExpired(settings.sponsorshipMessageLastShown)) {
-            fetchData().catch()
-            setShowSponsorshipMessage(true)
-            // update settings with a new date
-            App.store.dispatch(setSponsorshipMessageLastShown(Date.now()))
-            App.store.dispatch(save())
-        }
-    }, [])
 
     // top level script selection
     let onSelectChange = (scriptId) => {
@@ -166,6 +198,9 @@ export function NewJobPane({ job }: { job: Job }) {
         <>
             <div className="new-job">
                 <DragDropFilterFiles
+                    key={`${job.internalId}-${files
+                        .map((file) => file.filepath)
+                        .join('|')}`}
                     job={job}
                     createJob={createJob}
                     initialValue={files}

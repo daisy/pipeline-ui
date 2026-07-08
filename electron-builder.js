@@ -30,6 +30,26 @@ module.exports = {
         app: FOLDERS.DEV_TEMP_BUILD,
         output: 'dist',
     },
+    fileAssociations: [
+        {
+            ext: 'epub',
+            name: 'EPUB',
+            description: 'Open with DAISY Pipeline',
+            role: 'Viewer',
+        },
+        {
+            ext: 'opf',
+            name: 'OPF Package Document',
+            description: 'Open with DAISY Pipeline',
+            role: 'Viewer',
+        },
+        {
+            ext: 'docx',
+            name: 'Word Document',
+            description: 'Open with DAISY Pipeline',
+            role: 'Viewer',
+        },
+    ],
 
     mac: {
         icon: `${FOLDERS.RESOURCES}/icons/logo.icns`,

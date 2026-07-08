@@ -1,11 +1,6 @@
-import {
-    app,
-    BrowserWindow,
-    nativeTheme,
-} from 'electron'
+import { app, nativeTheme } from 'electron'
 
 import { error, info, warn } from 'electron-log'
-import * as fs from 'fs-extra'
 
 import {
     isCliCommand,
@@ -29,7 +24,7 @@ import { setupShowInFolderEvents } from './ipcs/folder'
 import { registerFileIPC } from './ipcs/file'
 import { setupFileSystemEvents } from './ipcs/fileSystem'
 import { setupOpenInBrowserEvents } from './ipcs/browser'
-import { setupMessageBoxEvent, showMessageBoxYesNo } from './ipcs/messageBox'
+import { setupMessageBoxEvent } from './ipcs/messageBox'
 import { APP_CONFIG } from '~/app.config'
 import { getPipelineInstance } from './data/instance'
 import { selectColorScheme } from 'shared/data/slices/settings'
@@ -37,10 +32,14 @@ import { setupClipboardEvents } from './ipcs/clipboard'
 import { checkForUpdate } from 'shared/data/slices/update'
 import { setupOneTimeFetchEvent } from './ipcs/one-time-fetch'
 import { buildApplicationMenu } from './application-menu'
-import { sniffFile } from './ipcs/sniffFile'
-import { IPC_EVENT_openExternalFile } from 'shared/main-renderer-events'
+import {
+    captureExternalFileOpenFromArgv,
+    handleFileOpen,
+    openPendingExternalFile,
+    parseExternalFileOpen,
+    registerExternalFileOpenEvents,
+} from './external-file-open'
 
-let pendingOpenFile: string | null = null
 function registerProcessDiagnostics() {
     process.on('uncaughtException', (err) => {
         error('main process uncaughtException', err)
@@ -70,15 +69,7 @@ function registerProcessDiagnostics() {
 }
 
 registerProcessDiagnostics()
-
-app.on('open-file', (event, filePath) => {
-    event.preventDefault()
-    pendingOpenFile = filePath
-    if (app.isReady()) {
-        pendingOpenFile = null
-        handleFileOpen(filePath, true)
-    }
-})
+registerExternalFileOpenEvents()
 
 makeAppWithSingleInstanceLock(async () => {
     app.setName(APP_CONFIG.TITLE)
@@ -119,15 +110,8 @@ makeAppWithSingleInstanceLock(async () => {
     setupMessageBoxEvent()
     buildApplicationMenu()
 
-    const fileArg = parseFileArg(process.argv)
-    if (fileArg) {
-        pendingOpenFile = fileArg
-    }
-    if (pendingOpenFile) {
-        const filePath = pendingOpenFile
-        pendingOpenFile = null
-        handleFileOpen(filePath, false)
-    }
+    captureExternalFileOpenFromArgv(process.argv)
+    openPendingExternalFile(false)
 
     store.subscribe(() => {
         buildApplicationMenu()
@@ -158,10 +142,14 @@ makeAppWithSingleInstanceLock(async () => {
             // Only open a file when this wasn't a dp2 command launch, so an
             // .epub/.opf passed as a script param value isn't opened as a file.
             if (!isCliCommand(cliArgs)) {
-                const file = parseFileArg(commandLine)
-                if (file) {
+                const externalFileOpen = parseExternalFileOpen(commandLine)
+                if (externalFileOpen) {
                     MainWindow().then(() => {
-                        handleFileOpen(file, true)
+                        handleFileOpen(
+                            externalFileOpen.filePath,
+                            true,
+                            externalFileOpen.action
+                        )
                     })
                     return
                 }
@@ -198,70 +186,3 @@ makeAppWithSingleInstanceLock(async () => {
     // Parse pipeline commands
     //parsePipelineCommands(process.argv)
 })
-
-function parseFileArg(argv: string[]): string | null {
-    return (
-        argv.find(
-            (arg) =>
-                !arg.startsWith('--') &&
-                ['.epub', '.opf'].some((ext) =>
-                    arg.toLowerCase().endsWith(ext)
-                ) &&
-                fs.existsSync(arg)
-        ) ?? null
-    )
-}
-
-async function handleFileOpen(
-    filePath: string,
-    appWasAlreadyOpen: boolean
-) {
-    const epubType = await sniffFile(filePath)
-
-    if (epubType === 'epub2opf') {
-        const openUpgrader = showMessageBoxYesNo(
-            'This is an EPUB 2 file. The EPUB Validator only supports EPUB 3.\n\nWould you like to open the EPUB Upgrader to convert it to EPUB 3 first?'
-        )
-        if (!openUpgrader) {
-            if (!appWasAlreadyOpen) {
-                app.quit()
-            }
-            return
-        }
-        MainWindow().then((w) =>
-            sendOpenFileToRenderer(w, filePath, 'epub2-to-epub3', false)
-        )
-        return
-    }
-
-    if (epubType === 'epub3opf') {
-        MainWindow().then((w) =>
-            sendOpenFileToRenderer(w, filePath, 'epub3-validator', true)
-        )
-    }
-}
-
-async function sendOpenFileToRenderer(
-    w: BrowserWindow,
-    filePath: string,
-    scriptIdFragment: string,
-    autoRun: boolean
-) {
-    if (w.isMinimized()) {
-        w.restore()
-    }
-    w.show()
-    w.focus()
-
-    if (w.webContents.isLoading()) {
-        await new Promise<void>((resolve) => {
-            w.webContents.once('did-finish-load', () => resolve())
-        })
-    }
-
-    w.webContents.send(IPC_EVENT_openExternalFile, {
-        filePath,
-        scriptIdFragment,
-        autoRun,
-    })
-}

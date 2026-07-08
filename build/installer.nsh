@@ -86,6 +86,32 @@
         RMDir /r "$APPDATA\pipeline-ui\DAISY Pipeline - App"
     SkipOldAppNameLogs:
 
+    ; Add Explorer context-menu entries for generic Open With
+    WriteRegStr HKCU "SOFTWARE\Classes\SystemFileAssociations\.epub\shell\OpenWithDAISYPipeline" "MUIVerb" "Open with DAISY Pipeline"
+    WriteRegStr HKCU "SOFTWARE\Classes\SystemFileAssociations\.epub\shell\OpenWithDAISYPipeline\command" "" '"$INSTDIR\${PRODUCT_FILENAME}.exe" --action=open "%1"'
+    WriteRegStr HKCU "SOFTWARE\Classes\SystemFileAssociations\.opf\shell\OpenWithDAISYPipeline" "MUIVerb" "Open with DAISY Pipeline"
+    WriteRegStr HKCU "SOFTWARE\Classes\SystemFileAssociations\.opf\shell\OpenWithDAISYPipeline\command" "" '"$INSTDIR\${PRODUCT_FILENAME}.exe" --action=open "%1"'
+    WriteRegStr HKCU "SOFTWARE\Classes\SystemFileAssociations\.docx\shell\OpenWithDAISYPipeline" "MUIVerb" "Open with DAISY Pipeline"
+    WriteRegStr HKCU "SOFTWARE\Classes\SystemFileAssociations\.docx\shell\OpenWithDAISYPipeline\command" "" '"$INSTDIR\${PRODUCT_FILENAME}.exe" --action=open "%1"'
+    WriteRegStr HKCU "SOFTWARE\Classes\SystemFileAssociations\.html\shell\OpenWithDAISYPipeline" "MUIVerb" "Open with DAISY Pipeline"
+    WriteRegStr HKCU "SOFTWARE\Classes\SystemFileAssociations\.html\shell\OpenWithDAISYPipeline" "AppliesTo" 'System.FileName:="ncc.html"'
+    WriteRegStr HKCU "SOFTWARE\Classes\SystemFileAssociations\.html\shell\OpenWithDAISYPipeline\command" "" '"$INSTDIR\${PRODUCT_FILENAME}.exe" --action=open "%1"'
+    WriteRegStr HKCU "SOFTWARE\Classes\SystemFileAssociations\.xml\shell\OpenWithDAISYPipeline" "MUIVerb" "Open with DAISY Pipeline"
+    WriteRegStr HKCU "SOFTWARE\Classes\SystemFileAssociations\.xml\shell\OpenWithDAISYPipeline" "AppliesTo" 'System.FileName:="dtbook.xml"'
+    WriteRegStr HKCU "SOFTWARE\Classes\SystemFileAssociations\.xml\shell\OpenWithDAISYPipeline\command" "" '"$INSTDIR\${PRODUCT_FILENAME}.exe" --action=open "%1"'
+
+    ; Add Explorer context-menu entries for validation
+    WriteRegStr HKCU "SOFTWARE\Classes\SystemFileAssociations\.epub\shell\ValidateWithDAISYPipeline" "MUIVerb" "Validate with DAISY Pipeline"
+    WriteRegStr HKCU "SOFTWARE\Classes\SystemFileAssociations\.epub\shell\ValidateWithDAISYPipeline\command" "" '"$INSTDIR\${PRODUCT_FILENAME}.exe" --action=validate "%1"'
+    WriteRegStr HKCU "SOFTWARE\Classes\SystemFileAssociations\.opf\shell\ValidateWithDAISYPipeline" "MUIVerb" "Validate with DAISY Pipeline"
+    WriteRegStr HKCU "SOFTWARE\Classes\SystemFileAssociations\.opf\shell\ValidateWithDAISYPipeline\command" "" '"$INSTDIR\${PRODUCT_FILENAME}.exe" --action=validate "%1"'
+    WriteRegStr HKCU "SOFTWARE\Classes\SystemFileAssociations\.html\shell\ValidateWithDAISYPipeline" "MUIVerb" "Validate with DAISY Pipeline"
+    WriteRegStr HKCU "SOFTWARE\Classes\SystemFileAssociations\.html\shell\ValidateWithDAISYPipeline" "AppliesTo" 'System.FileName:="ncc.html"'
+    WriteRegStr HKCU "SOFTWARE\Classes\SystemFileAssociations\.html\shell\ValidateWithDAISYPipeline\command" "" '"$INSTDIR\${PRODUCT_FILENAME}.exe" --action=validate "%1"'
+    WriteRegStr HKCU "SOFTWARE\Classes\SystemFileAssociations\.xml\shell\ValidateWithDAISYPipeline" "MUIVerb" "Validate with DAISY Pipeline"
+    WriteRegStr HKCU "SOFTWARE\Classes\SystemFileAssociations\.xml\shell\ValidateWithDAISYPipeline" "AppliesTo" 'System.FileName:="dtbook.xml"'
+    WriteRegStr HKCU "SOFTWARE\Classes\SystemFileAssociations\.xml\shell\ValidateWithDAISYPipeline\command" "" '"$INSTDIR\${PRODUCT_FILENAME}.exe" --action=validate "%1"'
+
 !macroend
 
 ; TODO I'd like to remove the path from the user PATH
@@ -126,5 +152,16 @@
   IntCmp $6 0 EndCustomUnInstall
     WriteRegExpandStr HKCU "Environment" "Path" "$0"
   EndCustomUnInstall:
+
+  ; Remove Explorer context-menu entries
+  DeleteRegKey HKCU "SOFTWARE\Classes\SystemFileAssociations\.epub\shell\OpenWithDAISYPipeline"
+  DeleteRegKey HKCU "SOFTWARE\Classes\SystemFileAssociations\.opf\shell\OpenWithDAISYPipeline"
+  DeleteRegKey HKCU "SOFTWARE\Classes\SystemFileAssociations\.docx\shell\OpenWithDAISYPipeline"
+  DeleteRegKey HKCU "SOFTWARE\Classes\SystemFileAssociations\.html\shell\OpenWithDAISYPipeline"
+  DeleteRegKey HKCU "SOFTWARE\Classes\SystemFileAssociations\.xml\shell\OpenWithDAISYPipeline"
+  DeleteRegKey HKCU "SOFTWARE\Classes\SystemFileAssociations\.epub\shell\ValidateWithDAISYPipeline"
+  DeleteRegKey HKCU "SOFTWARE\Classes\SystemFileAssociations\.opf\shell\ValidateWithDAISYPipeline"
+  DeleteRegKey HKCU "SOFTWARE\Classes\SystemFileAssociations\.html\shell\ValidateWithDAISYPipeline"
+  DeleteRegKey HKCU "SOFTWARE\Classes\SystemFileAssociations\.xml\shell\ValidateWithDAISYPipeline"
   
 !macroend

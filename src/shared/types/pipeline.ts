@@ -223,6 +223,8 @@ export type Job = {
     // web socket callbacks happen more than once
     resultsDownloaded?: boolean
     logDownloaded?: boolean
+    // File paths seeded by OS "Open with" before the user chooses a script.
+    openWithSource?: string[]
 }
 // JobData is the JSON representation of Pipeline WS data for a single job
 export type JobData = {

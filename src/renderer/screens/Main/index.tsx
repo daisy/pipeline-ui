@@ -14,20 +14,16 @@ import {
 } from 'shared/data/slices/pipeline'
 import { is2StepsScript } from 'shared/utils'
 import { validateJobRequestSync } from 'renderer/utils/jobRequestValidator'
+import type { ExternalFileOpenData } from 'shared/main-renderer-events'
 const queryClient = new QueryClient()
 
 const { App } = window
 
-type PendingFile = {
-    filePath: string
-    scriptIdFragment: string
-    autoRun: boolean
-}
-
 export function MainScreen() {
     const { pipeline, settings } = useWindowStore()
     const [announcement, setAnnouncement] = useState('')
-    const [pendingFile, setPendingFile] = useState<PendingFile | null>(null)
+    const [pendingFile, setPendingFile] =
+        useState<ExternalFileOpenData | null>(null)
     const pendingFileInProgress = useRef(false)
 
     useEffect(() => {
@@ -45,7 +41,7 @@ export function MainScreen() {
             !pendingFileInProgress.current
         ) {
             pendingFileInProgress.current = true
-            openFileAsJob(pendingFile).finally(() => {
+            handleExternalFileOpen(pendingFile).finally(() => {
                 pendingFileInProgress.current = false
                 setPendingFile(null)
             })
@@ -54,11 +50,28 @@ export function MainScreen() {
 
     loadStyleProperties(settings)
 
+    async function handleExternalFileOpen(data: ExternalFileOpenData) {
+        if (data.action === 'open') {
+            openFileGeneric(data.filePath)
+            return
+        }
+        await openFileAsJob(data)
+    }
+
+    function openFileGeneric(filePath: string) {
+        const job = {
+            ...newJob(App.store.getState().pipeline),
+            openWithSource: [filePath],
+        }
+        App.store.dispatch(addJob(job))
+        App.store.dispatch(selectJob(job))
+    }
+
     async function openFileAsJob({
         filePath,
         scriptIdFragment,
         autoRun,
-    }: PendingFile) {
+    }: Extract<ExternalFileOpenData, { action: 'validate' }>) {
         const script = pipeline.scripts.find((s) =>
             s.id.includes(scriptIdFragment)
         )

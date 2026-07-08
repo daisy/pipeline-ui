@@ -36,8 +36,17 @@ export const settingsCommands = [
 const electronOptions = ['--remote-debugging-port']
 
 export function isOpenFileArg(arg: string) {
+    const lowerArg = arg.toLowerCase()
     return (
-        ['.epub', '.opf'].some((ext) => arg.toLowerCase().endsWith(ext)) &&
+        (['.epub', '.opf', '.docx'].some((ext) =>
+            lowerArg.endsWith(ext)
+        ) ||
+            lowerArg.endsWith('/ncc.html') ||
+            lowerArg.endsWith('\\ncc.html') ||
+            lowerArg === 'ncc.html' ||
+            lowerArg.endsWith('/dtbook.xml') ||
+            lowerArg.endsWith('\\dtbook.xml') ||
+            lowerArg === 'dtbook.xml') &&
         existsSync(arg)
     )
 }

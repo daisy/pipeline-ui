@@ -1,11 +1,6 @@
 import { ipcRenderer } from 'electron'
 import * as events from 'shared/main-renderer-events'
-
-export type ExternalFileOpenData = {
-    filePath: string
-    scriptIdFragment: string
-    autoRun: boolean
-}
+import type { ExternalFileOpenData } from 'shared/main-renderer-events'
 
 // Capture any message that arrives before the React listener registers
 let buffered: ExternalFileOpenData | null = null

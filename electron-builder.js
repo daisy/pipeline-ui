@@ -1,5 +1,5 @@
 const { APP_CONFIG } = require('./app.config')
-const { execSync } = require('child_process')
+const { getSnapshotInfo } = require('./build-snapshot-info')
 
 const { APP_ID, AUTHOR, TITLE, DESCRIPTION, FOLDERS, ARTIFACT_NAME } =
     APP_CONFIG
@@ -8,16 +8,13 @@ const CURRENT_YEAR = new Date().getFullYear()
 // take off the suffix '- App' -- we only want that to appear on the window title
 let adjustedAppName = TITLE.replace(' - App', '')
 
-const devVersion = process.env.DEV_BUILD === 'true'
-    ? (() => {
-        const { version } = require('./package.json')
-        const uiHash = execSync('git rev-parse --short HEAD').toString().trim()
-        const engineHash = execSync('git rev-parse --short HEAD:engine')
-            .toString()
-            .trim()
-        return `${version}-ui-${uiHash}-engine-${engineHash}`
-    })()
-    : undefined
+const devVersion =
+    process.env.DEV_BUILD === 'true'
+        ? (() => {
+              const { releaseName } = getSnapshotInfo()
+              return releaseName
+          })()
+        : undefined
 
 module.exports = {
     ...(devVersion ? { extraMetadata: { version: devVersion } } : {}),
@@ -59,7 +56,7 @@ module.exports = {
         notarize: false,
         target: 'pkg',
         extendInfo: {
-            LSUIElement: 1
+            LSUIElement: 1,
         },
     },
     pkg: {

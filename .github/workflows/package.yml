@@ -56,14 +56,14 @@ jobs:
       - name: Build and package (Windows)
         if: runner.os == 'Windows'
         run: yarn dist-debug:win
-      
+
       - name: Store maven.log
         if: ${{ always() }}
         uses: actions/upload-artifact@v4
         with:
           name: "maven-${{matrix.os}}.log"
           path: engine/maven.log
-      
+
       - name: Upload artifact (macOS)
         if: runner.os == 'macOS'
         uses: actions/upload-artifact@v4
@@ -87,6 +87,9 @@ jobs:
       issues: read
 
     steps:
+      - name: Check out snapshot source
+        uses: actions/checkout@v4
+
       - name: Download macOS artifact
         uses: actions/download-artifact@v4
         with:
@@ -99,11 +102,38 @@ jobs:
           name: daisy-pipeline-win
           path: artifacts/win
 
+      - name: Resolve Snapshot metadata
+        id: snapshot-metadata
+        run: |
+          APP_VERSION="$(jq -r '.version' package.json)"
+          UI_BRANCH="${GITHUB_REF_NAME:-$(git rev-parse --abbrev-ref HEAD)}"
+          if [ "$UI_BRANCH" = "HEAD" ]; then
+            UI_BRANCH="develop-engine-snapshot"
+          fi
+          UI_HASH="$(git rev-parse --short HEAD)"
+          ENGINE_BRANCH="develop"
+          ENGINE_HASH="$(git rev-parse --short HEAD:engine)"
+          COMMIT_DATE="$(git show -s --format=%cI HEAD)"
+          SNAPSHOT_DATE="$(date -u -d "$COMMIT_DATE" +%Y%m%d)"
+          RELEASE_NAME="${APP_VERSION}-snapshot-${SNAPSHOT_DATE}"
+          RELEASE_DESCRIPTION="ui ${UI_BRANCH}@${UI_HASH}, engine ${ENGINE_BRANCH}@${ENGINE_HASH}"
+
+          echo "app_version=$APP_VERSION" >> "$GITHUB_OUTPUT"
+          echo "release_name=$RELEASE_NAME" >> "$GITHUB_OUTPUT"
+          echo "release_description=$RELEASE_DESCRIPTION" >> "$GITHUB_OUTPUT"
+          echo "ui_branch=$UI_BRANCH" >> "$GITHUB_OUTPUT"
+          echo "ui_hash=$UI_HASH" >> "$GITHUB_OUTPUT"
+          echo "engine_branch=$ENGINE_BRANCH" >> "$GITHUB_OUTPUT"
+          echo "engine_hash=$ENGINE_HASH" >> "$GITHUB_OUTPUT"
+          echo "snapshot_date=$SNAPSHOT_DATE" >> "$GITHUB_OUTPUT"
+
       - name: Build Snapshot release notes
         id: snapshot-notes
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           REPO: ${{ github.repository }}
+          RELEASE_NAME: ${{ steps.snapshot-metadata.outputs.release_name }}
+          RELEASE_DESCRIPTION: ${{ steps.snapshot-metadata.outputs.release_description }}
         run: |
           NOTES="$RUNNER_TEMP/snapshot-release-notes.md"
           MILESTONES="$RUNNER_TEMP/open-milestones.json"
@@ -121,15 +151,11 @@ jobs:
             | sort_by((.due_on // "9999-12-31T23:59:59Z"), .number)
             | .[0].html_url // ""
           ' "$MILESTONES")"
-          MILESTONE_SLUG="$(printf '%s' "$MILESTONE_TITLE" \
-            | tr '[:upper:]' '[:lower:]' \
-            | sed -E 's/[^a-z0-9]+/-/g; s/^-+//; s/-+$//')"
-          if [ -z "$MILESTONE_SLUG" ]; then
-            MILESTONE_SLUG="no-milestone"
-          fi
-
           {
             echo "Latest snapshot builds from engine develop and pipeline-ui develop branches."
+            echo
+            echo "$RELEASE_NAME"
+            echo "$RELEASE_DESCRIPTION"
             echo
 
             if [ -n "$MILESTONE_TITLE" ]; then
@@ -156,53 +182,76 @@ jobs:
           } > "$NOTES"
 
           echo "milestone_title=${MILESTONE_TITLE:-no milestone}" >> "$GITHUB_OUTPUT"
-          echo "milestone_slug=$MILESTONE_SLUG" >> "$GITHUB_OUTPUT"
           cat "$NOTES"
 
       - name: Create or update Snapshot release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SNAPSHOT_TAG: latest-dev-snapshot
+          RELEASE_NAME: ${{ steps.snapshot-metadata.outputs.release_name }}
         run: |
           NOTES="$RUNNER_TEMP/snapshot-release-notes.md"
 
-          if gh release view ci-snapshot --repo ${{ github.repository }} > /dev/null 2>&1; then
-            gh release edit ci-snapshot \
+          git tag -f "$SNAPSHOT_TAG" "$GITHUB_SHA"
+          git push --force origin "refs/tags/$SNAPSHOT_TAG"
+
+          if gh release view "$SNAPSHOT_TAG" --repo ${{ github.repository }} > /dev/null 2>&1; then
+            gh release edit "$SNAPSHOT_TAG" \
               --repo ${{ github.repository }} \
               --draft \
               --latest=false \
-              --title "Development Snapshot" \
+              --title "$RELEASE_NAME" \
               --notes-file "$NOTES"
           else
-            gh release create ci-snapshot \
+            gh release create "$SNAPSHOT_TAG" \
               --repo ${{ github.repository }} \
               --draft \
               --latest=false \
               --target "$GITHUB_SHA" \
-              --title "Development Snapshot" \
+              --title "$RELEASE_NAME" \
               --notes-file "$NOTES"
           fi
 
-      - name: Replace Development Snapshot release assets
+      - name: Replace Latest Development Snapshot release assets
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SNAPSHOT_TAG: latest-dev-snapshot
+          RELEASE_NAME: ${{ steps.snapshot-metadata.outputs.release_name }}
         run: |
-          gh release view ci-snapshot --repo ${{ github.repository }} --json assets \
+          ASSET_DIR="$RUNNER_TEMP/latest-dev-snapshot-assets"
+          mkdir -p "$ASSET_DIR"
+
+          for file in artifacts/mac/*.pkg; do
+            name="$(basename "$file")"
+            platform="mac"
+            if [[ "$name" == *arm64* ]]; then
+              platform="mac-arm64"
+            elif [[ "$name" == *x64* ]]; then
+              platform="mac-x64"
+            fi
+            cp "$file" "$ASSET_DIR/daisy-pipeline-${RELEASE_NAME}-${platform}.pkg"
+          done
+
+          for file in artifacts/win/*.exe; do
+            cp "$file" "$ASSET_DIR/daisy-pipeline-${RELEASE_NAME}-win.exe"
+          done
+
+          gh release view "$SNAPSHOT_TAG" --repo ${{ github.repository }} --json assets \
             --jq '.assets[].name' | while read name; do
-              gh release delete-asset ci-snapshot "$name" --repo ${{ github.repository }} --yes
+              gh release delete-asset "$SNAPSHOT_TAG" "$name" --repo ${{ github.repository }} --yes
             done
-          gh release upload ci-snapshot artifacts/mac/*.pkg artifacts/win/*.exe \
+          gh release upload "$SNAPSHOT_TAG" "$ASSET_DIR"/* \
             --repo ${{ github.repository }}
 
-      - name: Create Testing Snapshot release
-        if: github.event_name == 'push' && contains(github.event.head_commit.message, '[testing-snapshot]')
+      - name: Create Test Snapshot release
+        if: github.event_name == 'push' && contains(github.event.head_commit.message, '[test-snapshot]')
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           REPO: ${{ github.repository }}
-          MILESTONE_TITLE: ${{ steps.snapshot-notes.outputs.milestone_title }}
-          MILESTONE_SLUG: ${{ steps.snapshot-notes.outputs.milestone_slug }}
+          RELEASE_NAME: ${{ steps.snapshot-metadata.outputs.release_name }}
         run: |
           NOTES="$RUNNER_TEMP/snapshot-release-notes.md"
-          PREFIX="testing-snapshot-${MILESTONE_SLUG}-"
+          PREFIX="test-snapshot-"
           NEXT_INDEX="$(gh release list \
             --repo "$REPO" \
             --limit 1000 \
@@ -221,12 +270,28 @@ jobs:
                 END { print max + 1 }
               ')"
           TAG="${PREFIX}${NEXT_INDEX}"
-          TITLE="testing-snapshot ${MILESTONE_TITLE}-${NEXT_INDEX}"
+          ASSET_DIR="$RUNNER_TEMP/test-snapshot-assets"
+          mkdir -p "$ASSET_DIR"
 
-          gh release create "$TAG" artifacts/mac/*.pkg artifacts/win/*.exe \
+          for file in artifacts/mac/*.pkg; do
+            name="$(basename "$file")"
+            platform="mac"
+            if [[ "$name" == *arm64* ]]; then
+              platform="mac-arm64"
+            elif [[ "$name" == *x64* ]]; then
+              platform="mac-x64"
+            fi
+            cp "$file" "$ASSET_DIR/daisy-pipeline-${RELEASE_NAME}-${platform}.pkg"
+          done
+
+          for file in artifacts/win/*.exe; do
+            cp "$file" "$ASSET_DIR/daisy-pipeline-${RELEASE_NAME}-win.exe"
+          done
+
+          gh release create "$TAG" "$ASSET_DIR"/* \
             --repo "$REPO" \
             --draft \
             --latest=false \
             --target "$GITHUB_SHA" \
-            --title "$TITLE" \
+            --title "$RELEASE_NAME" \
             --notes-file "$NOTES"

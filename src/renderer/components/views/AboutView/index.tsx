@@ -87,6 +87,8 @@ export function AboutView({ title }) {
 
     const { pipeline, update, settings } = useWindowStore()
     let version = BUILD_VERSION ?? packageJson.version
+    let buildDetails = BUILD_DETAILS
+    let versionLabel = buildDetails ? 'Release' : 'App version'
     let engineVersion = pipeline.alive?.version
     document.title = title
     let closeAboutBox = () => {
@@ -104,14 +106,18 @@ export function AboutView({ title }) {
     let engineStatus = pipelineEngineStatus()
 
     let copyToClipboard = (e) => {
-        let info = `App version: ${version}, 
-        Engine version: ${engineVersion}, 
-        Engine is ${engineStatus.status} ${
-            engineStatus.status == PipelineStatus.RUNNING
-                ? ` on ${engineStatus.address}`
-                : ''
-        }
-        `
+        let info = [
+            `${versionLabel}: ${version}`,
+            buildDetails ? `Build details: ${buildDetails}` : null,
+            `Engine version: ${engineVersion}`,
+            `Engine is ${engineStatus.status}${
+                engineStatus.status == PipelineStatus.RUNNING
+                    ? ` on ${engineStatus.address}`
+                    : ''
+            }`,
+        ]
+            .filter(Boolean)
+            .join('\n')
         App.copyToClipboard(info)
     }
 
@@ -138,13 +144,25 @@ export function AboutView({ title }) {
             <p className="versions">
                 <ul>
                     <li>
-                        App version: {version}
-                        {(settings.logLevel && settings.logLevel !== 'info') ||
+                        {versionLabel}: {version}
+                        {buildDetails ||
+                        (settings.logLevel && settings.logLevel !== 'info') ||
                         BUILD_ENABLE_MISTRAL ? (
                             <br />
                         ) : null}
-                        {((settings.logLevel &&
-                            settings.logLevel !== 'info') ||
+                        {buildDetails && (
+                            <>
+                                <small>
+                                    <em>{buildDetails}</em>
+                                </small>
+                                {(settings.logLevel &&
+                                    settings.logLevel !== 'info') ||
+                                BUILD_ENABLE_MISTRAL ? (
+                                    <br />
+                                ) : null}
+                            </>
+                        )}
+                        {((settings.logLevel && settings.logLevel !== 'info') ||
                             BUILD_ENABLE_MISTRAL) && (
                             <small>
                                 <em>

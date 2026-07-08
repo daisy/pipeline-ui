@@ -10,8 +10,8 @@ on:
       engine_sha:
         description: 'Engine commit SHA (defaults to HEAD of engine develop branch)'
         required: false
-      create_testing_snapshot:
-        description: 'Also create a numbered testing snapshot release after packaging'
+      create_test_snapshot:
+        description: 'Also create a test snapshot release'
         required: false
         default: false
         type: boolean
@@ -89,10 +89,10 @@ jobs:
           GH_REPOSITORY: ${{ github.repository }}
         run: |
           SHA="${{ steps.engine.outputs.sha }}"
-          TESTING_SNAPSHOT="${{ github.event.inputs.create_testing_snapshot }}"
+          TEST_SNAPSHOT="${{ github.event.inputs.create_test_snapshot }}"
           COMMIT_MESSAGE="ci: trigger package build for engine ${SHA:0:7}"
-          if [ "$TESTING_SNAPSHOT" = "true" ]; then
-            COMMIT_MESSAGE="$COMMIT_MESSAGE [testing-snapshot]"
+          if [ "$TEST_SNAPSHOT" = "true" ]; then
+            COMMIT_MESSAGE="$COMMIT_MESSAGE [test-snapshot]"
           fi
           git remote set-url origin "https://x-access-token:${GH_PIPELINE_TOKEN}@github.com/${GH_REPOSITORY}.git"
           git diff --cached --quiet || git commit -m "chore: update engine submodule to ${SHA:0:7} (engine develop)"

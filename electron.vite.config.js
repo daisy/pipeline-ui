@@ -1,10 +1,10 @@
 const { defineConfig } = require('electron-vite')
 const { resolve } = require('path')
 const { cpSync, existsSync } = require('fs')
-const { execSync } = require('child_process')
 const react = require('@vitejs/plugin-react')
 
 const { APP_CONFIG } = require('./app.config')
+const { getSnapshotInfo } = require('./build-snapshot-info')
 
 const isDev = process.env.NODE_ENV !== 'production'
 
@@ -13,19 +13,26 @@ const enableMistral =
         ? process.env.ENABLE_MISTRAL === 'true'
         : isDev
 
-const buildVersion = process.env.DEV_BUILD === 'true'
-    ? (() => {
-        const { version } = require('./package.json')
-        const hash = execSync('git rev-parse --short HEAD').toString().trim()
-        const branch = execSync('git rev-parse --abbrev-ref HEAD').toString().trim()
-        return `${version}-${branch}-${hash}`
-    })()
-    : undefined
+const buildVersion =
+    process.env.DEV_BUILD === 'true'
+        ? (() => {
+              const { releaseName } = getSnapshotInfo()
+              return releaseName
+          })()
+        : undefined
+const buildDescription =
+    process.env.DEV_BUILD === 'true'
+        ? (() => {
+              const { releaseDescription } = getSnapshotInfo()
+              return releaseDescription
+          })()
+        : undefined
 
 console.log('Build options:')
 console.log('  LOG_LEVEL:      ', process.env.LOG_LEVEL || '(default: info)')
 console.log('  ENABLE_MISTRAL: ', enableMistral)
 console.log('  BUILD_VERSION:  ', buildVersion || '(from package.json)')
+console.log('  BUILD_DETAILS:  ', buildDescription || '(none)')
 
 module.exports = defineConfig({
     main: {
@@ -46,7 +53,9 @@ module.exports = defineConfig({
                 closeBundle() {
                     const src = resolve(APP_CONFIG.FOLDERS.RESOURCES)
                     if (existsSync(src)) {
-                        cpSync(src, resolve('out/resources'), { recursive: true })
+                        cpSync(src, resolve('out/resources'), {
+                            recursive: true,
+                        })
                     } else {
                         console.warn('Resources not found, skipping copy:', src)
                     }
@@ -93,6 +102,7 @@ module.exports = defineConfig({
         define: {
             'process.platform': JSON.stringify(process.platform),
             BUILD_ENABLE_MISTRAL: enableMistral,
+            BUILD_DETAILS: JSON.stringify(buildDescription),
             BUILD_VERSION: JSON.stringify(buildVersion),
         },
         plugins: [react()],

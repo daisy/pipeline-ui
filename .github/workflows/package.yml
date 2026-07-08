@@ -250,27 +250,39 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           REPO: ${{ github.repository }}
           RELEASE_NAME: ${{ steps.snapshot-metadata.outputs.release_name }}
+          SNAPSHOT_DATE: ${{ steps.snapshot-metadata.outputs.snapshot_date }}
         run: |
           NOTES="$RUNNER_TEMP/snapshot-release-notes.md"
-          PREFIX="test-snapshot-"
-          NEXT_INDEX="$(gh release list \
+          BASE_TAG="test-snapshot-${SNAPSHOT_DATE}"
+          NEXT_SUFFIX="$(gh release list \
             --repo "$REPO" \
             --limit 1000 \
             --json tagName \
             --jq '.[].tagName' \
-            | awk -v prefix="$PREFIX" '
-                index($0, prefix) == 1 {
-                  n = substr($0, length(prefix) + 1)
-                  if (n ~ /^[0-9]+$/) {
-                    index_number = n + 0
-                    if (index_number > max) {
-                      max = index_number
-                    }
+            | awk -v base="$BASE_TAG" '
+                $0 == base {
+                  if (max < 1) {
+                    max = 1
                   }
                 }
-                END { print max + 1 }
+                index($0, base "-") == 1 {
+                  n = substr($0, length(base) + 2)
+                  if (n ~ /^[0-9]+$/ && n + 0 > max) {
+                    max = n + 0
+                  }
+                }
+                END {
+                  if (max == 0) {
+                    print ""
+                  } else {
+                    print max + 1
+                  }
+                }
               ')"
-          TAG="${PREFIX}${NEXT_INDEX}"
+          TAG="$BASE_TAG"
+          if [ -n "$NEXT_SUFFIX" ]; then
+            TAG="${BASE_TAG}-${NEXT_SUFFIX}"
+          fi
           ASSET_DIR="$RUNNER_TEMP/test-snapshot-assets"
           mkdir -p "$ASSET_DIR"
 

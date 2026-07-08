@@ -20,7 +20,7 @@ Builds unsigned installers on macOS and Windows without signing or notarizing. U
 
 When triggered by a push to `develop-engine-snapshot`, this workflow also creates or updates the draft prerelease `latest-dev-snapshot` GitHub Release. The release title is `latest development snapshot`. The release description includes `<version>-snapshot-<date>`, `ui <branch>@<hash>, engine <branch>@<hash>`, and links to open issues in the current open milestone with the `ready-for-testing` label. Release assets are named `daisy-pipeline-<version>-snapshot-<date>-<platform>.<ext>`, where `<date>` is UTC `YYYYMMDD`.
 
-If the snapshot trigger requested a test snapshot, this workflow also creates a duplicate draft prerelease with the same `<version>-snapshot-<date>` title. The tag uses the form `test-snapshot-<index>`, and the index is one higher than the existing test snapshots. Release assets use the same `daisy-pipeline-<version>-snapshot-<date>-<platform>.<ext>` names.
+If the snapshot trigger requested a test snapshot, this workflow also creates a duplicate draft prerelease with the same `<version>-snapshot-<date>` title. The tag uses the form `test-snapshot-<date>`, with `-2`, `-3`, and so on appended if that date already has a test snapshot. Release assets use the same `daisy-pipeline-<version>-snapshot-<date>-<platform>.<ext>` names.
 
 ---
 

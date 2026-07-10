@@ -315,6 +315,14 @@ export function buildMenuTemplate({
                     },
                 },
                 {
+                    label: 'Online Help',
+                    click: () => {
+                        onGotoLink(
+                            'https://daisy.org/info-help/guidance-training/tags/pipeline-app/'
+                        )
+                    }
+                },
+                {
                     label: 'Issue Tracker',
                     click: () => {
                         onGotoLink('https://github.com/daisy/pipeline/issues')

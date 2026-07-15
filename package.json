@@ -74,7 +74,6 @@
     "electron-log": "^5.3.4",
     "electron-updater": "^6.3.9",
     "fflate": "^0.8.2",
-    "lucide-react": "^1.7.0",
     "node-fetch": "^3.3.0",
     "portscanner": "^2.2.0",
     "react": "^19.2.4",

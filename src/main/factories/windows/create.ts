@@ -7,6 +7,16 @@ import { WindowProps } from 'shared/types'
 
 import { PipelineInstance } from '../../pipeline/pipeline'
 
+const forwardedConsoleMessagePattern =
+    /(?:^|\s)window:[^:\s]+:console-message\b/
+
+function isReactDevToolsHook(sourceId?: string) {
+    return (
+        sourceId?.startsWith('chrome-extension://') &&
+        sourceId.endsWith('/build/installHook.js')
+    )
+}
+
 /**
  * Bind a window to a pipeline instance.
  * This binding require that the pipeline is already registered in IPC.
@@ -70,7 +80,8 @@ export function createWindow(
             if (
                 level < 2 ||
                 sourceId?.includes('/electron-log') ||
-                message.includes(`window:${id}:console-message`)
+                forwardedConsoleMessagePattern.test(message) ||
+                isReactDevToolsHook(sourceId)
             ) {
                 return
             }

@@ -37,6 +37,7 @@
     "clean:dev": "rimraf out",
     "predev": "yarn r clean:dev pipeline:install",
     "dev": "cross-env DEV_BUILD=true electron-vite dev",
+    "electron:install": "node ./node_modules/electron/install.js",
     "pipeline:install": "node ./bin/modules/prebuild/pipeline.js",
     "pipeline:refresh": "node ./bin/modules/prebuild/pipeline.js --refresh",
     "predist-debug:mac": "cross-env LOG_LEVEL=debug DEV_BUILD=true ENABLE_MISTRAL=true yarn build",

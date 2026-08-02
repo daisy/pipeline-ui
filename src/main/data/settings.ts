@@ -51,6 +51,7 @@ export function readSettings() {
         colorScheme: 'system',
         onClosingMainWindow: undefined, // Undeterminate to display the app-opening dialog
         editJobOnNewTab: true,
+        contextMenuValidationChecksAccessibility: false,
         ttsConfig: {
             preferredVoices: [],
             defaultVoices: [],

@@ -90,6 +90,18 @@ export function MainScreen() {
             App.store.getState()
         )
 
+        if (
+            App.store.getState().settings
+                .contextMenuValidationChecksAccessibility
+        ) {
+            const accessibilityOption = jobRequest.options.find(
+                (option) => option.name === 'accessibility-check'
+            )
+            if (accessibilityOption) {
+                accessibilityOption.value = true
+            }
+        }
+
         const sourceInput = jobRequest.inputs.find(
             (input) => input.name === 'source'
         )

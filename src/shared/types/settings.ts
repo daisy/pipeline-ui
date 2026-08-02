@@ -64,6 +64,7 @@ export type ApplicationSettings = {
     onClosingMainWindow?: keyof typeof ClosingMainWindowAction
     editJobOnNewTab?: boolean
     confirmOnCloseFinishedJob?: boolean
+    contextMenuValidationChecksAccessibility?: boolean
     ttsConfig?: TtsConfig
     autoCheckUpdate?: boolean
     textSize?: number

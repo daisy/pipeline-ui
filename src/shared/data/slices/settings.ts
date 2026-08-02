@@ -61,6 +61,13 @@ export const settings = createSlice({
             if (action.payload.voiceTableThreshold !== undefined) {
                 state.voiceTableThreshold = action.payload.voiceTableThreshold
             }
+            if (
+                action.payload.contextMenuValidationChecksAccessibility !==
+                undefined
+            ) {
+                state.contextMenuValidationChecksAccessibility =
+                    action.payload.contextMenuValidationChecksAccessibility
+            }
         },
         save: (state: ApplicationSettings) => {
             // save action to trigger middleware save on disk
@@ -106,6 +113,12 @@ export const settings = createSlice({
             action: PayloadAction<boolean>
         ) => {
             state.confirmOnCloseFinishedJob = action.payload
+        },
+        setContextMenuValidationChecksAccessibility: (
+            state: ApplicationSettings,
+            action: PayloadAction<boolean>
+        ) => {
+            state.contextMenuValidationChecksAccessibility = action.payload
         },
         setTtsConfig: (
             state: ApplicationSettings,
@@ -181,6 +194,7 @@ export const {
     setAutoCheckUpdate,
     setEditJobOnNewTab,
     setConfirmOnCloseFinishedJob,
+    setContextMenuValidationChecksAccessibility,
     setSponsorshipMessageLastShown,
     setFont,
     setTextSize,
@@ -202,6 +216,8 @@ export const selectors = {
     selectEditOnNewTab: (s: RootState) => s.settings.editJobOnNewTab,
     selectConfirmOnCloseFinishedJob: (s: RootState) =>
         s.settings.confirmOnCloseFinishedJob,
+    selectContextMenuValidationChecksAccessibility: (s: RootState) =>
+        s.settings.contextMenuValidationChecksAccessibility,
     selectTtsConfig: (s: RootState) => s.settings.ttsConfig,
     selectAutoCheckUpdate: (s: RootState) => s.settings.autoCheckUpdate,
 
@@ -232,4 +248,5 @@ export const {
     selectLastUsedScriptOptionOverrides,
     selectVoiceTableThreshold,
     selectConfirmOnCloseFinishedJob,
+    selectContextMenuValidationChecksAccessibility,
 } = selectors

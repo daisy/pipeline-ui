@@ -3,8 +3,10 @@ import {
     setEditJobOnNewTab,
     setClosingMainWindowAction,
     setConfirmOnCloseFinishedJob,
+    setContextMenuValidationChecksAccessibility,
 } from 'shared/data/slices/settings'
 import { ClosingMainWindowAction } from 'shared/types'
+import { PLATFORM } from 'shared/constants'
 const { App } = window
 
 export function Behavior({ newSettings }) {
@@ -15,6 +17,13 @@ export function Behavior({ newSettings }) {
 
     const confirmOnCloseFinishedJobChanged = (e) => {
         App.store.dispatch(setConfirmOnCloseFinishedJob(e.target.checked))
+        App.store.dispatch(save())
+    }
+
+    const contextMenuValidationChecksAccessibilityChanged = (e) => {
+        App.store.dispatch(
+            setContextMenuValidationChecksAccessibility(e.target.checked)
+        )
         App.store.dispatch(save())
     }
 
@@ -81,6 +90,25 @@ export function Behavior({ newSettings }) {
                     onChange={confirmOnCloseFinishedJobChanged}
                 />
             </div>
+            {PLATFORM.IS_WINDOWS && (
+                <div className="field">
+                    <label htmlFor="contextMenuValidationChecksAccessibility">
+                        Run the accessibility check for EPUB files validated
+                        from the right-click menu
+                    </label>
+                    <input
+                        type="checkbox"
+                        id="contextMenuValidationChecksAccessibility"
+                        checked={
+                            newSettings.contextMenuValidationChecksAccessibility ??
+                            false
+                        }
+                        onChange={
+                            contextMenuValidationChecksAccessibilityChanged
+                        }
+                    />
+                </div>
+            )}
             {/* insert local pipeline settings form part here */}
             {/* insert remote pipeline settings form part here */}
         </>

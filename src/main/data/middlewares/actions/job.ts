@@ -13,6 +13,7 @@ import {
     selectPipeline,
     selectVisibleJobs,
     selectWebservice,
+    setAnnouncement,
     updateJob,
 } from 'shared/data/slices/pipeline'
 import { MainWindowInstance } from 'main/windows'
@@ -242,4 +243,7 @@ export function runBatchJobs(
         // run the job
         runJob(newJob_, dispatch, getState)
     })
+    dispatch(
+        setAnnouncement(`${batchJobRequestInputValues.length} jobs created`)
+    )
 }

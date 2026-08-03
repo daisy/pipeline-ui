@@ -9,15 +9,15 @@ import { WebSocket, type CloseEvent } from 'ws'
 import {
     JobDataUpdate,
     jobSummaryXmlToJson,
+    jobXmlWithoutMessagesToJson,
     normalizeJobData,
 } from './job-data'
+import { mergeMessages } from './messages'
 import { processJobStatusUpdate } from './process-job-status-update'
 import { jobXmlToJson } from 'shared/parser/pipelineXmlConverter'
 
 type SocketType = 'messages' | 'status' | 'progress'
-type RestFetchReason =
-    | 'status-socket-check'
-    | 'status-socket-closed'
+type RestFetchReason = 'status-socket-check' | 'status-socket-closed'
 type Timer = NodeJS.Timeout
 type Sockets = Partial<Record<SocketType, WebSocket>>
 type SocketTimers = Partial<Record<SocketType, Timer>>
@@ -63,6 +63,10 @@ export function startMonitor(
     let fetchJobDataFn = pipelineAPI.createPipelineFetchFunction(
         () => j.jobData.href,
         jobXmlToJson
+    )
+    let fetchJobStatusFn = pipelineAPI.createPipelineFetchFunction(
+        () => j.jobData.href,
+        jobXmlWithoutMessagesToJson
     )
     const sockets: Sockets = {}
     const reconnectTimers: SocketTimers = {}
@@ -150,13 +154,72 @@ export function startMonitor(
         return fetchData
     }
 
+    // Fetch job status/log over REST without re-parsing the message tree.
+    const fetchJobStatus = async () => {
+        const fetchData = normalizeJobData(await fetchJobStatusFn(ws))
+        lastRestFetchAt = Date.now()
+        return fetchData
+    }
+
+    const messagesSocketIsActive = () =>
+        sockets.messages?.readyState === WebSocket.OPEN
+
+    const mergeFetchedMessages = (fetchData: JobDataUpdate) => {
+        if (!fetchData.messages) return fetchData
+        return {
+            ...fetchData,
+            messages: mergeMessages(
+                currentJob().jobData?.messages,
+                fetchData.messages
+            ),
+        }
+    }
+
+    const fetchRoutineJobData = async () => {
+        if (messagesSocketIsActive()) {
+            return {
+                data: await fetchJobStatus(),
+                includesMessages: false,
+            }
+        }
+        return {
+            data: mergeFetchedMessages(await fetchJobData()),
+            includesMessages: true,
+        }
+    }
+
     // Read small websocket status/progress fragments without forcing a full
     // message parse for every notification payload.
     const readSocketSummary = (data: WebSocket.RawData) =>
         normalizeJobData(jobSummaryXmlToJson(data))
 
     // Fetch terminal job metadata/results/log, including the final message tree.
-    const fetchTerminalJobData = fetchJobData
+    const fetchTerminalJobData = async () =>
+        mergeFetchedMessages(await fetchJobData())
+
+    const terminalJobDataFrom = (terminalData: Partial<JobDataUpdate>) =>
+        normalizeJobData({
+            ...currentJob().jobData,
+            ...terminalData,
+        }) as JobDataUpdate
+
+    const handleTerminalStatus = async (
+        terminalData: Partial<JobDataUpdate>
+    ) => {
+        try {
+            // REST can briefly lag behind a terminal websocket/status summary,
+            // so keep the terminal signal while adding final results/log/messages.
+            handleJobUpdate(
+                normalizeJobData({
+                    ...(await fetchTerminalJobData()),
+                    ...terminalData,
+                }) as JobDataUpdate
+            )
+        } catch (e) {
+            error('Error fetching terminal data for job', j, e)
+            handleJobUpdate(terminalJobDataFrom(terminalData))
+        }
+    }
 
     // Request a REST refresh, reusing or throttling fetches when possible.
     const fetchAndDispatchJobData = async (force = false) => {
@@ -168,11 +231,16 @@ export function startMonitor(
         ) {
             return false
         }
-        // Fetch job status from REST, then either finish or merge it into state.
+        // Fetch routine REST data, then either finish or merge it into state.
         activeRestFetch = (async () => {
-            const fetchData = await fetchJobData()
+            const { data: fetchData, includesMessages } =
+                await fetchRoutineJobData()
             if (TERMINAL_STATUSES.includes(fetchData.status)) {
-                handleJobUpdate(fetchData as JobDataUpdate)
+                if (includesMessages) {
+                    handleJobUpdate(fetchData as JobDataUpdate)
+                } else {
+                    await handleTerminalStatus(fetchData)
+                }
                 return true
             }
             dispatchJobDataUpdate(fetchData)
@@ -217,33 +285,24 @@ export function startMonitor(
         }
     }
 
-    // Update the messages field from websocket activity, checking REST for
-    // terminal state while we are there.
+    // Update the messages field from websocket activity.
     let socketOnMessage = async (event) => {
         const wsJobData = normalizeJobData(jobXmlToJson(event.data))
         if (wsJobData.messages && wsJobData.messages.length > 0) {
-            const fetchData = await fetchJobData()
-            if (TERMINAL_STATUSES.includes(fetchData.status)) {
-                handleJobUpdate(fetchData)
-                return
-            }
-            dispatchJobDataUpdate({ messages: fetchData.messages })
+            const mergedMessages = mergeMessages(
+                currentJob().jobData?.messages,
+                wsJobData.messages
+            )
+            dispatchJobDataUpdate({ messages: mergedMessages })
         }
         scheduleNextPoll()
     }
 
-    // Just update progress if it exists, with a full REST check to catch
-    // terminal state.
+    // Just update progress if it exists. Routine REST checks are scheduled
+    // separately so progress events cannot cause per-event REST fetches.
     let socketOnProgress = async (event) => {
         const wsJobData = readSocketSummary(event.data)
         if (wsJobData.progress !== undefined) {
-            if (!terminalStatusReceived) {
-                const fetchData = await fetchJobData()
-                if (TERMINAL_STATUSES.includes(fetchData.status)) {
-                    handleJobUpdate(fetchData)
-                    return
-                }
-            }
             dispatchJobDataUpdate({ progress: wsJobData.progress })
         }
         scheduleNextPoll()
@@ -253,28 +312,9 @@ export function startMonitor(
     let socketOnStatus = async (event) => {
         const wsJobData = readSocketSummary(event.data)
         if (wsJobData.status && TERMINAL_STATUSES.includes(wsJobData.status)) {
-            let fetchData: JobDataUpdate
-            try {
-                // Fetch terminal results/log data, including messages.
-                fetchData = await fetchTerminalJobData()
-            } catch (e) {
-                error('Error fetching terminal data for job', j, e)
-                fetchData = currentJob().jobData as JobDataUpdate
-            }
-            // REST can briefly lag behind the status socket, so keep the socket status.
-            handleJobUpdate(
-                normalizeJobData({
-                    ...fetchData,
-                    ...wsJobData,
-                }) as JobDataUpdate
-            )
+            await handleTerminalStatus(wsJobData)
         } else if (wsJobData.status) {
-            const fetchData = await fetchJobData()
-            if (TERMINAL_STATUSES.includes(fetchData.status)) {
-                handleJobUpdate(fetchData)
-                return
-            }
-            dispatchJobDataUpdate({ ...fetchData, status: wsJobData.status })
+            dispatchJobDataUpdate({ status: wsJobData.status })
         }
         scheduleNextPoll()
     }
@@ -309,9 +349,14 @@ export function startMonitor(
             delete sockets[type]
         }
         try {
-            const fetchData = await fetchJobData()
+            const { data: fetchData, includesMessages } =
+                await fetchRoutineJobData()
             if (TERMINAL_STATUSES.includes(fetchData.status)) {
-                handleJobUpdate(fetchData)
+                if (includesMessages) {
+                    handleJobUpdate(fetchData as JobDataUpdate)
+                } else {
+                    await handleTerminalStatus(fetchData)
+                }
                 return
             }
             dispatchJobDataUpdate(fetchData)

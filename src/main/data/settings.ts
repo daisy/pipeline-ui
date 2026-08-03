@@ -64,6 +64,7 @@ export function readSettings() {
         autoCheckUpdate: true,
         fontName: 'system',
         textSize: DefaultTextSize,
+        sponsorshipMessageLastShown: 0,
         aiEngineProperties: [],
         suggestOptionValues: true,
         sortScriptsByFrequency: true,

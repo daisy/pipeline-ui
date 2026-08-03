@@ -35,6 +35,7 @@ export const settings = createSlice({
         editJobOnNewTab: true,
         ttsConfig: undefined,
         autoCheckUpdate: true,
+        sponsorshipMessageLastShown: 0,
     } as ApplicationSettings,
     reducers: {
         // general state changer, not recommended based on how redux works
@@ -228,8 +229,7 @@ export const selectors = {
     selectSuggestOptionValues: (s: RootState) => s.settings.suggestOptionValues,
     selectLastUsedScriptOptionOverrides: (s: RootState) =>
         s.settings.lastUsedScriptOptionOverrides,
-    selectVoiceTableThreshold: (s: RootState) =>
-        s.settings.voiceTableThreshold,
+    selectVoiceTableThreshold: (s: RootState) => s.settings.voiceTableThreshold,
 }
 // prettier-ignore
 export const {

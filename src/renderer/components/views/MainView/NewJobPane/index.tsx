@@ -29,8 +29,8 @@ import { DragDropFilterFiles } from '../../../Widgets/DragDropFilterFiles'
 import { validateJobRequestSync } from 'renderer/utils/jobRequestValidator'
 
 // is dateInMs more than 2 weeks old
-function isExpired(dateInMs: number) {
-    if (dateInMs == 0) return true
+function isExpired(dateInMs?: number) {
+    if (dateInMs == null || dateInMs == 0) return true
 
     const TWOWEEKS_MS = 1209600000
     // const TWOWEEKS_MS = 500 // for testing

@@ -86,10 +86,41 @@
         RMDir /r "$APPDATA\pipeline-ui\DAISY Pipeline - App"
     SkipOldAppNameLogs:
 
-    ; Remove legacy generic Open With entries now covered by file associations
-    DeleteRegKey HKCU "SOFTWARE\Classes\SystemFileAssociations\.epub\shell\OpenWithDAISYPipeline"
-    DeleteRegKey HKCU "SOFTWARE\Classes\SystemFileAssociations\.opf\shell\OpenWithDAISYPipeline"
-    DeleteRegKey HKCU "SOFTWARE\Classes\SystemFileAssociations\.docx\shell\OpenWithDAISYPipeline"
+    ; Clean up dangling registry entries left by older installers, which used
+    ; electron-builder's fileAssociations mechanism and made DAISY Pipeline the
+    ; default handler for these file types. A normal upgrade already runs the
+    ; previous version's own uninstaller (which removes the ProgID key itself),
+    ; but that uninstall macro never clears the extension's default value, so
+    ; it's left pointing at a deleted ProgID name. Clear that explicitly here
+    ; too, in case an upgrade path was skipped (e.g. manual reinstall).
+    ReadRegStr $4 HKCU "SOFTWARE\Classes\.epub" ""
+    StrCmp $4 "EPUB" 0 SkipEpubAssocCleanup
+        DeleteRegValue HKCU "SOFTWARE\Classes\.epub" ""
+        DeleteRegKey HKCU "SOFTWARE\Classes\EPUB"
+    SkipEpubAssocCleanup:
+
+    ReadRegStr $4 HKCU "SOFTWARE\Classes\.opf" ""
+    StrCmp $4 "OPF Package Document" 0 SkipOpfAssocCleanup
+        DeleteRegValue HKCU "SOFTWARE\Classes\.opf" ""
+        DeleteRegKey HKCU "SOFTWARE\Classes\OPF Package Document"
+    SkipOpfAssocCleanup:
+
+    ReadRegStr $4 HKCU "SOFTWARE\Classes\.docx" ""
+    StrCmp $4 "Word Document" 0 SkipDocxAssocCleanup
+        DeleteRegValue HKCU "SOFTWARE\Classes\.docx" ""
+        DeleteRegKey HKCU "SOFTWARE\Classes\Word Document"
+    SkipDocxAssocCleanup:
+
+    ; Add Explorer context-menu entries for generic Open With.
+    ; Uses SystemFileAssociations (verb-only) rather than a real file
+    ; association, so DAISY Pipeline is never set as the default handler
+    ; for these file types.
+    WriteRegStr HKCU "SOFTWARE\Classes\SystemFileAssociations\.epub\shell\OpenWithDAISYPipeline" "MUIVerb" "Open with DAISY Pipeline"
+    WriteRegStr HKCU "SOFTWARE\Classes\SystemFileAssociations\.epub\shell\OpenWithDAISYPipeline\command" "" '"$INSTDIR\${PRODUCT_FILENAME}.exe" --action=open "%1"'
+    WriteRegStr HKCU "SOFTWARE\Classes\SystemFileAssociations\.opf\shell\OpenWithDAISYPipeline" "MUIVerb" "Open with DAISY Pipeline"
+    WriteRegStr HKCU "SOFTWARE\Classes\SystemFileAssociations\.opf\shell\OpenWithDAISYPipeline\command" "" '"$INSTDIR\${PRODUCT_FILENAME}.exe" --action=open "%1"'
+    WriteRegStr HKCU "SOFTWARE\Classes\SystemFileAssociations\.docx\shell\OpenWithDAISYPipeline" "MUIVerb" "Open with DAISY Pipeline"
+    WriteRegStr HKCU "SOFTWARE\Classes\SystemFileAssociations\.docx\shell\OpenWithDAISYPipeline\command" "" '"$INSTDIR\${PRODUCT_FILENAME}.exe" --action=open "%1"'
 
     ; Add Explorer context-menu entries for filename-specific generic Open With
     WriteRegStr HKCU "SOFTWARE\Classes\SystemFileAssociations\.html\shell\OpenWithDAISYPipeline" "MUIVerb" "Open with DAISY Pipeline"

@@ -27,27 +27,6 @@ module.exports = {
         app: FOLDERS.DEV_TEMP_BUILD,
         output: 'dist',
     },
-    fileAssociations: [
-        {
-            ext: 'epub',
-            name: 'EPUB',
-            description: 'Open with DAISY Pipeline',
-            role: 'Viewer',
-        },
-        {
-            ext: 'opf',
-            name: 'OPF Package Document',
-            description: 'Open with DAISY Pipeline',
-            role: 'Viewer',
-        },
-        {
-            ext: 'docx',
-            name: 'Word Document',
-            description: 'Open with DAISY Pipeline',
-            role: 'Viewer',
-        },
-    ],
-
     mac: {
         icon: `${FOLDERS.RESOURCES}/icons/logo.icns`,
         category: 'public.app-category.utilities',
@@ -58,6 +37,34 @@ module.exports = {
         extendInfo: {
             LSUIElement: 1,
         },
+        // Mac-only: adds "Open With > DAISY Pipeline" to Finder for these file
+        // types without claiming default-handler status (role: 'Viewer').
+        // Do NOT hoist this to the top level -- on Windows, electron-builder's
+        // NSIS target treats fileAssociations as a real default-association
+        // claim (APP_ASSOCIATE registers "shell\open" for the extension), which
+        // silently made Pipeline the default handler for .epub/.docx on install.
+        // Windows context-menu entries are handled separately and deliberately
+        // in build/installer.nsh (SystemFileAssociations verbs only).
+        fileAssociations: [
+            {
+                ext: 'epub',
+                name: 'EPUB',
+                description: 'Open with DAISY Pipeline',
+                role: 'Viewer',
+            },
+            {
+                ext: 'opf',
+                name: 'OPF Package Document',
+                description: 'Open with DAISY Pipeline',
+                role: 'Viewer',
+            },
+            {
+                ext: 'docx',
+                name: 'Word Document',
+                description: 'Open with DAISY Pipeline',
+                role: 'Viewer',
+            },
+        ],
     },
     pkg: {
         isRelocatable: false,

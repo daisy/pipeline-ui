@@ -147,7 +147,7 @@ export function AboutView({ title }) {
                         {versionLabel}: {version}
                         {buildDetails ||
                         (settings.logLevel && settings.logLevel !== 'info') ||
-                        BUILD_ENABLE_MISTRAL ? (
+                        BUILD_ENABLE_OCR ? (
                             <br />
                         ) : null}
                         {buildDetails && (
@@ -157,13 +157,13 @@ export function AboutView({ title }) {
                                 </small>
                                 {(settings.logLevel &&
                                     settings.logLevel !== 'info') ||
-                                BUILD_ENABLE_MISTRAL ? (
+                                BUILD_ENABLE_OCR ? (
                                     <br />
                                 ) : null}
                             </>
                         )}
                         {((settings.logLevel && settings.logLevel !== 'info') ||
-                            BUILD_ENABLE_MISTRAL) && (
+                            BUILD_ENABLE_OCR) && (
                             <small>
                                 <em>
                                     {settings.logLevel &&
@@ -171,10 +171,9 @@ export function AboutView({ title }) {
                                         `log level: ${settings.logLevel}`}
                                     {settings.logLevel &&
                                         settings.logLevel !== 'info' &&
-                                        BUILD_ENABLE_MISTRAL &&
+                                        BUILD_ENABLE_OCR &&
                                         ' · '}
-                                    {BUILD_ENABLE_MISTRAL &&
-                                        'with Mistral support'}
+                                    {BUILD_ENABLE_OCR && 'with OCR support'}
                                 </em>
                             </small>
                         )}

@@ -8,9 +8,9 @@ const { getSnapshotInfo } = require('./build-snapshot-info')
 
 const isDev = process.env.NODE_ENV !== 'production'
 
-const enableMistral =
-    process.env.ENABLE_MISTRAL !== undefined
-        ? process.env.ENABLE_MISTRAL === 'true'
+const enableOcr =
+    process.env.ENABLE_OCR !== undefined
+        ? process.env.ENABLE_OCR === 'true'
         : isDev
 
 const buildVersion =
@@ -30,7 +30,7 @@ const buildDescription =
 
 console.log('Build options:')
 console.log('  LOG_LEVEL:      ', process.env.LOG_LEVEL || '(default: info)')
-console.log('  ENABLE_MISTRAL: ', enableMistral)
+console.log('  ENABLE_OCR:     ', enableOcr)
 console.log('  BUILD_VERSION:  ', buildVersion || '(from package.json)')
 console.log('  BUILD_DETAILS:  ', buildDescription || '(none)')
 
@@ -45,7 +45,7 @@ module.exports = defineConfig({
         },
         define: {
             BUILD_LOG_LEVEL: JSON.stringify(process.env.LOG_LEVEL),
-            BUILD_ENABLE_MISTRAL: enableMistral,
+            BUILD_ENABLE_OCR: enableOcr,
         },
         plugins: [
             {
@@ -101,7 +101,7 @@ module.exports = defineConfig({
         },
         define: {
             'process.platform': JSON.stringify(process.platform),
-            BUILD_ENABLE_MISTRAL: enableMistral,
+            BUILD_ENABLE_OCR: enableOcr,
             BUILD_DETAILS: JSON.stringify(buildDescription),
             BUILD_VERSION: JSON.stringify(buildVersion),
         },

@@ -17,7 +17,7 @@ export function ExternalServices({
                 onChangeTtsEngineProperties={onChangeTtsEngineProperties}
                 onChangeTtsEngineConnected={onChangeTtsEngineConnected}
             />
-            {BUILD_ENABLE_MISTRAL && (
+            {BUILD_ENABLE_OCR && (
                 <>
                     <h2>OCR</h2>
                     <AiEngines />

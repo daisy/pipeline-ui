@@ -443,7 +443,7 @@ Then close the program using the port and restart this application.`,
                 '-Dorg.daisy.pipeline.home=' + this.props.pipelineHome,
                 '-Dorg.daisy.pipeline.tts.host.protection=false', // so we can send TTS engine properties
             ]
-            const aiEngineProperties = BUILD_ENABLE_MISTRAL
+            const aiEngineProperties = BUILD_ENABLE_OCR
                 ? selectAiEngineProperties(store.getState())
                 : []
             // #238 : include the current tts config settings file at engine launch

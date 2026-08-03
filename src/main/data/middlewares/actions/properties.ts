@@ -237,7 +237,9 @@ export function setProperties(
         .then(async () => {
             if (
                 action.payload.sendToAPI &&
-                newProperties.find((np) => np.name.indexOf('mistral') != -1)
+                newProperties.find((np) =>
+                    np.name.startsWith('org.daisy.pipeline.ocr.')
+                )
             ) {
                 const currentScripts = selectScripts(getState())
                 const currentScriptIds = new Set(

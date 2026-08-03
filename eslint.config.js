@@ -29,7 +29,7 @@ module.exports = [
                 setInterval: 'readonly',
                 clearInterval: 'readonly',
                 BUILD_LOG_LEVEL: 'readonly',
-                BUILD_ENABLE_MISTRAL: 'readonly',
+                BUILD_ENABLE_OCR: 'readonly',
                 BUILD_VERSION: 'readonly',
             },
         },

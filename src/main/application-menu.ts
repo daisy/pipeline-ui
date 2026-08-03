@@ -21,6 +21,7 @@ import {
     selectPrevJob,
 } from 'shared/data/slices/pipeline'
 import { DefaultTextSize, TextSizeOptions } from 'shared/types'
+import { getSponsorshipMessage } from './sponsorship'
 
 let lastMenuSignature: string | null = null
 
@@ -53,6 +54,10 @@ export function buildApplicationMenu() {
         },
         onGotoLink: async (link) => {
             await shell.openExternal(link)
+        },
+        onSupportOurWork: async () => {
+            const message = await getSponsorshipMessage()
+            await shell.openExternal(message.url)
         },
         onNextTab: async () => {
             store.dispatch(selectNextJob(selectEditOnNewTab(store.getState())))

@@ -17,6 +17,7 @@ export function buildMenuTemplate({
     onCreateJob,
     onShowSettings,
     onGotoLink,
+    onSupportOurWork,
     onNextTab,
     onPrevTab,
     onGotoTab,
@@ -320,7 +321,7 @@ export function buildMenuTemplate({
                         onGotoLink(
                             'https://daisy.org/info-help/guidance-training/tags/pipeline-app/'
                         )
-                    }
+                    },
                 },
                 {
                     label: 'Issue Tracker',
@@ -335,6 +336,10 @@ export function buildMenuTemplate({
                             'https://github.com/daisy/pipeline/discussions'
                         )
                     },
+                },
+                {
+                    label: 'Support our work',
+                    click: onSupportOurWork,
                 },
                 ...(!isMac
                     ? [

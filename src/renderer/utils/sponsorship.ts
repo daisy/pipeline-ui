@@ -1,23 +1,19 @@
+import {
+    DEFAULT_SPONSORSHIP_MESSAGE,
+    parseSponsorshipMessage,
+    SPONSORSHIP_DATA_URL,
+} from 'shared/constants'
+
 const { App } = window
 
-// default message
-let defaultSponsorshipMessage = {
-    active: true,
-    buttonText: 'Support our work',
-    messageText:
-        'If you find this tool useful, please help us by donating to support its ongoing maintenance.',
-    url: 'https://daisy.org/pipelineappSponsor',
-}
+let defaultSponsorshipMessage = DEFAULT_SPONSORSHIP_MESSAGE
 
 async function updateSponsorshipMessage() {
     // fetch the latest sponsorship message
     try {
-        let data = await App.oneTimeFetch(
-            'https://dl.daisy.org/tools/sponsorship.json'
-        )
+        let data = await App.oneTimeFetch(SPONSORSHIP_DATA_URL)
         if (data) {
-            let sponsorshipData = JSON.parse(data)
-            return sponsorshipData['PipelineApp']['en']
+            return parseSponsorshipMessage(data)
         } else {
             return defaultSponsorshipMessage
         }

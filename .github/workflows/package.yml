@@ -364,7 +364,7 @@ jobs:
             fi
 
             echo
-            echo "Also in testing (Pipeline2 project):"
+            echo "Ready for testing (from Pipeline2 project):"
             echo
 
             if jq -e 'length > 0' "$PROJECT_TESTING_ISSUES" > /dev/null; then

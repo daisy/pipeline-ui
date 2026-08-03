@@ -28,6 +28,7 @@ import { ScriptForm } from 'renderer/components/views/MainView/ScriptForm'
 import { TabList } from 'renderer/components/Widgets/TabList'
 import { CanDo } from 'shared/canDo'
 import * as Utils from 'shared/utils'
+import { BATCH_COLOR_COUNT, getBatchColorIndex } from 'shared/batchColor'
 const { App } = window
 
 export function MainView() {
@@ -35,6 +36,18 @@ export function MainView() {
     const visibleJobs = pipeline.jobs.filter(
         (job) => settings.editJobOnNewTab || !job.invisible
     )
+    const getBatchClassName = (job) =>
+        job.jobRequest?.batchId
+            ? `batch-color-${getBatchColorIndex(
+                  job.jobRequest.batchId,
+                  pipeline.jobs,
+                  BATCH_COLOR_COUNT
+              )}`
+            : ''
+    const getBatchLabel = (job) =>
+        job.jobRequest?.batchId
+            ? `${calculateJobName(job, pipeline.jobs)} (batch)`
+            : calculateJobName(job, pipeline.jobs)
 
     useEffect(() => {
         if (!(pipeline.jobs && pipeline.jobs.length > 0)) {
@@ -97,13 +110,14 @@ export function MainView() {
                         `${ID(job.internalId)}-tabpanel`
                     }
                     getTabTitle={(job, idx) =>
-                        `${idx + 1}. ${calculateJobName(job, pipeline.jobs)}`
+                        `${idx + 1}. ${getBatchLabel(job)}`
                     }
                     getTabLabel={(job, idx) => (
                         <h1>
-                            {idx + 1}. {calculateJobName(job, pipeline.jobs)}
+                            {idx + 1}. {getBatchLabel(job)}
                         </h1>
                     )}
+                    getTabClassName={(job, idx) => getBatchClassName(job)}
                     onTabClick={(job, idx) => {
                         App.store.dispatch(selectJob(job))
                         document

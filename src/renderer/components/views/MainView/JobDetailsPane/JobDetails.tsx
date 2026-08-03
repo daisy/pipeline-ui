@@ -17,6 +17,7 @@ import { useWindowStore } from 'renderer/store'
 import { useState, useEffect } from 'react'
 import { JobStatusIcon } from '../../../Widgets/SvgIcons'
 import { CanDo } from 'shared/canDo'
+import { BATCH_COLOR_COUNT, getBatchColorIndex } from 'shared/batchColor'
 
 const { App } = window
 
@@ -83,9 +84,25 @@ export function JobDetails({ job }: { job: Job }) {
     }
     const hasIndividualResults =
         (job.jobData.results?.namedResults?.length ?? 0) > 0
+    const batchId = job.jobRequest?.batchId
+    const batchJobsCount = batchId
+        ? pipeline.jobs.filter((j) => j.jobRequest?.batchId === batchId).length
+        : 0
+    const batchClassName = batchId
+        ? `batch-color-${getBatchColorIndex(
+              batchId,
+              pipeline.jobs,
+              BATCH_COLOR_COUNT
+          )}`
+        : ''
 
     return (
         <div className="job-details">
+            {batchId && (
+                <p className={`batch-indicator ${batchClassName}`}>
+                    Part of a batch of {batchJobsCount} jobs currently open
+                </p>
+            )}
             <section className="job-status info">
                 <div className="row">
                     <h2>Status:</h2>

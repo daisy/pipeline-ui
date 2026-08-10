@@ -1,5 +1,6 @@
 export enum SettingsMenuItem {
     General = '/general',
+    Engine = '/engine',
     Appearance = '/appearance',
     ExternalServices = '/external-services',
     TTSBrowseVoices = '/browse-voices',

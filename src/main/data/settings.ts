@@ -28,7 +28,7 @@ log.transports.file.resolvePathFn = () =>
 
 export function readSettings() {
     let settings: ApplicationSettings = {
-        settingsVersion: '1.9.0',
+        settingsVersion: '1.10.0',
         downloadFolder: pathToFileURL(
             resolve(app.getPath('home'), 'Documents', 'DAISY Pipeline results')
         ).href,
@@ -48,6 +48,7 @@ export function readSettings() {
             appDataFolder: app.getPath('userData'),
             logsFolder: resolve(logsBase, 'engine-logs'),
         },
+        engineMode: 'embedded',
         colorScheme: 'system',
         onClosingMainWindow: undefined, // Undeterminate to display the app-opening dialog
         editJobOnNewTab: true,

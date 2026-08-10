@@ -31,6 +31,8 @@ import packageJson from '../../../../../package.json'
 import { EngineStatusIcon } from 'renderer/components/Widgets/SvgIcons'
 // @ts-ignore
 import { ExternalServices } from './ExternalServices'
+// @ts-ignore
+import { Engine } from './Engine'
 
 const { App } = window
 
@@ -210,6 +212,11 @@ export function SettingsView(
             label: 'Appearance',
             section: SettingsMenuItem.Appearance,
             markup: <Appearance newSettings={newSettings} />,
+        },
+        {
+            label: 'Engine',
+            section: SettingsMenuItem.Engine,
+            markup: <Engine newSettings={newSettings} />,
         },
         {
             label: 'External Services',

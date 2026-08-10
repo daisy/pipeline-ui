@@ -24,6 +24,8 @@ import { selectColorScheme } from 'shared/data/slices/settings'
 import { setupClipboardEvents } from './ipcs/clipboard'
 import { checkForUpdate } from 'shared/data/slices/update'
 import { setupOneTimeFetchEvent } from './ipcs/one-time-fetch'
+import { setupPipelineConnectionEvents } from './ipcs/pipeline'
+import { setupAppEvents } from './ipcs/app'
 import { buildApplicationMenu } from './application-menu'
 import {
     captureExternalFileOpenFromArgv,
@@ -74,7 +76,9 @@ makeAppWithSingleInstanceLock(async () => {
     setupOpenInBrowserEvents()
     setupFileSystemEvents()
     setupClipboardEvents()
+    setupAppEvents()
     setupOneTimeFetchEvent()
+    setupPipelineConnectionEvents()
     setupMessageBoxEvent()
     buildApplicationMenu()
 

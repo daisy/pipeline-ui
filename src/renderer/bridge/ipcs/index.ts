@@ -1,3 +1,4 @@
+export * from './app'
 export * from './about-window/when-close'
 export * from './about-window/create'
 export * from './fileDialog'
@@ -6,6 +7,7 @@ export * from './folder'
 
 export * from './pipeline2/errors'
 export * from './pipeline2/messages'
+export * from './pipeline2/connection'
 
 export * from './settings'
 export * from './fileSystem'

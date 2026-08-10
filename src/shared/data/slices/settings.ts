@@ -4,6 +4,8 @@ import {
     ApplicationSettings,
     ClosingMainWindowAction,
     ColorScheme,
+    EngineConnectionMode,
+    ExternalEngineConfig,
     Font,
     KeyValue,
     PipelineInstanceProperties,
@@ -30,6 +32,7 @@ export const settings = createSlice({
                 lastStart: 0,
             },
         } as PipelineInstanceProperties,
+        engineMode: 'embedded',
         colorScheme: 'system',
         onClosingMainWindow: undefined, // Undeterminate to display the app-opening dialog
         editJobOnNewTab: true,
@@ -48,6 +51,10 @@ export const settings = createSlice({
             if (action.payload.pipelineInstanceProps)
                 state.pipelineInstanceProps =
                     action.payload.pipelineInstanceProps
+            if (action.payload.engineMode) {
+                state.engineMode = action.payload.engineMode
+            }
+            state.externalEngine = action.payload.externalEngine
             if (action.payload.colorScheme)
                 state.colorScheme = action.payload.colorScheme
             if (action.payload.onClosingMainWindow)
@@ -90,6 +97,18 @@ export const settings = createSlice({
             action: PayloadAction<PipelineInstanceProperties>
         ) => {
             state.pipelineInstanceProps = action.payload
+        },
+        setEngineMode: (
+            state: ApplicationSettings,
+            action: PayloadAction<EngineConnectionMode>
+        ) => {
+            state.engineMode = action.payload
+        },
+        setExternalEngineConfig: (
+            state: ApplicationSettings,
+            action: PayloadAction<ExternalEngineConfig | undefined>
+        ) => {
+            state.externalEngine = action.payload
         },
         setColorScheme: (
             state: ApplicationSettings,
@@ -189,6 +208,8 @@ export const {
     setDownloadPath,
     setSettings,
     setPipelineProperties,
+    setEngineMode,
+    setExternalEngineConfig,
     setColorScheme,
     setClosingMainWindowAction,
     setTtsConfig,
@@ -212,6 +233,8 @@ export const selectors = {
     selectDownloadPath: (state: RootState) => state.settings.downloadFolder,
     selectPipelineProperties: (s: RootState) =>
         s.settings.pipelineInstanceProps,
+    selectEngineMode: (s: RootState) => s.settings.engineMode,
+    selectExternalEngine: (s: RootState) => s.settings.externalEngine,
     selectColorScheme: (s: RootState) => s.settings.colorScheme,
     selectClosingAction: (s: RootState) => s.settings.onClosingMainWindow,
     selectEditOnNewTab: (s: RootState) => s.settings.editJobOnNewTab,
@@ -236,6 +259,8 @@ export const {
     selectSettings,
     selectDownloadPath,
     selectPipelineProperties,
+    selectEngineMode,
+    selectExternalEngine,
     selectColorScheme,
     selectClosingAction,
     selectTtsConfig,

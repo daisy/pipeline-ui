@@ -46,18 +46,28 @@ export type ScriptOptionOverrides = {
     optionOverrides: Array<NameValue>
 }
 
+export type EngineConnectionMode = 'embedded' | 'external'
+
+export type ExternalEngineConfig = {
+    webservice: Webservice
+    authId?: string
+    secret?: string
+}
+
 // Idea of evolutions :
 // allow connection to multiple pipelines at the same time with an array of pipeline properties
 // This could allow the calling of scripts from pipeline with different features enabled, like specific TTS systems (acapela or SAPI)
 
-// added in settings version 1.9.0:
-// voiceTableThreshold controls when Browse Voices auto-renders matching results
+// added in settings version 1.10.0:
+// engineMode/externalEngine configure whether the app uses the embedded engine or connects to an external web service
 export type ApplicationSettings = {
-    settingsVersion: '1.9.0'
+    settingsVersion: '1.10.0'
     // Default folder to download the results on the user disk
     downloadFolder?: string
     // Pipeline instance properties for IPCs
     pipelineInstanceProps?: PipelineInstanceProperties
+    engineMode: EngineConnectionMode
+    externalEngine?: ExternalEngineConfig
     // Dark mode selector
     colorScheme: keyof typeof ColorScheme
     // Actions to perform when closing the main window
@@ -82,6 +92,7 @@ export type ApplicationSettings = {
 export function migrateSettings(
     settings:
         | ApplicationSettings
+        | _ApplicationSettings_v190
         | _ApplicationSettings_v180
         | _ApplicationSettings_v170
         | _ApplicationSettings_v160
@@ -121,14 +132,25 @@ const migrators: Map<string, (prev: any) => any> = new Map<
     // Insert new migrators here as [ 'version', (prev) => ApplicationSettings ]
     // Don't forget to update the settings class of previous migrators
     [
+        '1.10.0',
+        (prev: _ApplicationSettings_v190): ApplicationSettings => {
+            const { settingsVersion, ...toKeep } = prev
+            return {
+                settingsVersion: '1.10.0',
+                engineMode: 'embedded',
+                ...toKeep,
+            } as ApplicationSettings
+        },
+    ],
+    [
         '1.9.0',
-        (prev: _ApplicationSettings_v180): ApplicationSettings => {
+        (prev: _ApplicationSettings_v180): _ApplicationSettings_v190 => {
             const { settingsVersion, ...toKeep } = prev
             return {
                 settingsVersion: '1.9.0',
                 voiceTableThreshold: DefaultVoiceTableThreshold,
                 ...toKeep,
-            } as ApplicationSettings
+            } as _ApplicationSettings_v190
         },
     ],
     [
@@ -157,7 +179,7 @@ const migrators: Map<string, (prev: any) => any> = new Map<
                                   gender,
                               })
                           ),
-                    }
+                      }
                     : prev.ttsConfig,
             } as _ApplicationSettings_v180
         },
@@ -279,6 +301,36 @@ const migrators: Map<string, (prev: any) => any> = new Map<
         },
     ],
 ])
+
+// added in settings version 1.9.0:
+// voiceTableThreshold controls when Browse Voices auto-renders matching results
+export type _ApplicationSettings_v190 = {
+    settingsVersion: '1.9.0'
+    // Default folder to download the results on the user disk
+    downloadFolder?: string
+    // Pipeline instance properties for IPCs
+    pipelineInstanceProps?: PipelineInstanceProperties
+    // Dark mode selector
+    colorScheme: keyof typeof ColorScheme
+    // Actions to perform when closing the main window
+    onClosingMainWindow?: keyof typeof ClosingMainWindowAction
+    editJobOnNewTab?: boolean
+    confirmOnCloseFinishedJob?: boolean
+    contextMenuValidationChecksAccessibility?: boolean
+    ttsConfig?: TtsConfig
+    autoCheckUpdate?: boolean
+    textSize?: number
+    fontName?: string
+    sponsorshipMessageLastShown?: number
+    aiEngineProperties?: Array<KeyValue>
+    scriptFrequency?: Array<ScriptFrequency>
+    sortScriptsByFrequency: boolean
+    suggestOptionValues: boolean
+    lastUsedScriptOptionOverrides: Array<ScriptOptionOverrides>
+    voiceTableThreshold: number
+    logLevel?: 'error' | 'warn' | 'info' | 'verbose' | 'debug' | 'silly'
+}
+
 // added in settings version 1.8.0:
 // removed id, href from stored TtsVoice; preview stripped on save and looked up live
 export type _ApplicationSettings_v180 = {

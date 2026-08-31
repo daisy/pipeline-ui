@@ -15,6 +15,7 @@ import {
 import { mergeMessages } from './messages'
 import { processJobStatusUpdate } from './process-job-status-update'
 import { jobXmlToJson } from 'shared/parser/pipelineXmlConverter'
+import { ParserException } from 'shared/parser/pipelineXmlConverter/parser'
 
 type SocketType = 'messages' | 'status' | 'progress'
 type RestFetchReason = 'status-socket-check' | 'status-socket-closed'
@@ -33,7 +34,14 @@ const MIN_REST_FETCH_INTERVAL_MS = 2000
 const SOCKET_INITIAL_RECONNECT_DELAY_MS = 500
 // Reconnect backoff tops out here while the socket keeps failing.
 const SOCKET_MAX_RECONNECT_DELAY_MS = 5000
+const PARSED_TEXT_LOG_LIMIT = 2000
 const TERMINAL_STATUSES = [JobStatus.ERROR, JobStatus.FAIL, JobStatus.SUCCESS]
+
+const parserResponsePreview = (e: unknown) => {
+    if (!(e instanceof ParserException) || !e.parsedText) return undefined
+    if (e.parsedText.length <= PARSED_TEXT_LOG_LIMIT) return e.parsedText
+    return `${e.parsedText.slice(0, PARSED_TEXT_LOG_LIMIT)}...`
+}
 
 /**
  * Start a job monitor that will continue until the job is done.
@@ -216,7 +224,14 @@ export function startMonitor(
                 }) as JobDataUpdate
             )
         } catch (e) {
-            error('Error fetching terminal data for job', j, e)
+            const parsedText = parserResponsePreview(e)
+            if (parsedText) {
+                error('Error fetching terminal data for job', currentJob(), e, {
+                    parsedText,
+                })
+            } else {
+                error('Error fetching terminal data for job', currentJob(), e)
+            }
             handleJobUpdate(terminalJobDataFrom(terminalData))
         }
     }

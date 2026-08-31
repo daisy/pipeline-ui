@@ -45,6 +45,7 @@ const API = {
     sniffEncoding: ipcs.sniffEncoding,
     copyToClipboard: ipcs.copyToClipboard,
     oneTimeFetch: ipcs.oneTimeFetch,
+    fetchVoicePreview: ipcs.fetchVoicePreview,
     onExternalFileOpen: ipcs.onExternalFileOpen,
     onScriptFormSubmit: (channel, listener) =>
         ipcRenderer.on(channel, listener),

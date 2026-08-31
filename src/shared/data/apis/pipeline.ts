@@ -38,6 +38,9 @@ interface Response {
     blob: () => Promise<{
         arrayBuffer: () => Promise<ArrayBuffer>
     }>
+    headers?: {
+        get: (name: string) => string | null
+    }
     status?: number
     statusText?: string
 }
@@ -231,6 +234,20 @@ export class PipelineAPI {
             this.fetchFunc(r.href)
                 .then((response) => response.blob())
                 .then((blob) => blob.arrayBuffer())
+    }
+    fetchBinary(href: string) {
+        return this.fetchFunc(href).then(async (response) => {
+            if (response.status !== undefined && response.status >= 400) {
+                throw new Error(
+                    `Request failed with HTTP ${response.status} ${response.statusText ?? ''}`.trim()
+                )
+            }
+            const blob = await response.blob()
+            return {
+                arrayBuffer: await blob.arrayBuffer(),
+                contentType: response.headers?.get('content-type'),
+            }
+        })
     }
     fetchDatatypeDetails(d: Datatype) {
         return this.createPipelineFetchFunction(

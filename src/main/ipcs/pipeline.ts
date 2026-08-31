@@ -8,6 +8,17 @@ export type PipelineConnectionTestResult = {
     error?: string
 }
 
+export type PipelineVoicePreviewResult =
+    | {
+          ok: true
+          audio: ArrayBuffer
+          contentType?: string
+      }
+    | {
+          ok: false
+          error: string
+      }
+
 function connectionTestErrorMessage(err: unknown) {
     const message = err instanceof Error ? err.message : String(err)
 
@@ -44,6 +55,35 @@ export function setupPipelineConnectionEvents() {
                 return {
                     alive: { alive: false },
                     error: connectionTestErrorMessage(err),
+                }
+            }
+        }
+    )
+
+    ipcMain.handle(
+        IPC.PIPELINE.VOICE_PREVIEW,
+        async (
+            event,
+            previewUrl: string
+        ): Promise<PipelineVoicePreviewResult> => {
+            if (!previewUrl) {
+                return {
+                    ok: false,
+                    error: 'No voice preview URL was provided.',
+                }
+            }
+            try {
+                const preview = await pipelineAPI.fetchBinary(previewUrl)
+                return {
+                    ok: true,
+                    audio: preview.arrayBuffer,
+                    contentType: preview.contentType ?? 'audio/wav',
+                }
+            } catch (err) {
+                const message = err instanceof Error ? err.message : String(err)
+                return {
+                    ok: false,
+                    error: message,
                 }
             }
         }

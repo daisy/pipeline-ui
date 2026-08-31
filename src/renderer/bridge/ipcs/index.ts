@@ -8,6 +8,7 @@ export * from './folder'
 export * from './pipeline2/errors'
 export * from './pipeline2/messages'
 export * from './pipeline2/connection'
+export * from './pipeline2/voice-preview'
 
 export * from './settings'
 export * from './fileSystem'

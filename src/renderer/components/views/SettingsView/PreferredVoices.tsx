@@ -1,9 +1,10 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { TtsVoice } from 'shared/types/ttsConfig'
 import { voicesTransliterations } from './BrowseVoices/voiceTransliterations'
-import { PauseIcon, PlayIcon, X } from 'renderer/components/Widgets/SvgIcons'
+import { PlayIcon, X } from 'renderer/components/Widgets/SvgIcons'
 import { SettingsMenuItem } from './types'
 import { formatGenderAgePart, parseGenderAge } from 'shared/utils'
+import { fetchVoicePreviewObjectUrl } from './voicePreview'
 
 // return the first part of the language code (e.g. 'en' for 'en-US')
 // or return the whole thing if there is no dash
@@ -28,6 +29,8 @@ export function PreferredVoices({
     ])
     const [defaultVoices, setDefaultVoices] = useState([...userDefaultVoices])
     const [uniqueLanguages, setUniqueLanguages] = useState([])
+    const activePreviewAudioRef = useRef<HTMLAudioElement | null>(null)
+    const previewAudioObjectUrlRef = useRef<string | null>(null)
 
     let languageNames = new Intl.DisplayNames(['en'], { type: 'language' })
 
@@ -86,7 +89,53 @@ export function PreferredVoices({
         }
         return tmpVoices
     }
-    let playVoicePreview = (v) => {}
+    let previewUrlForVoice = (voice: TtsVoice) =>
+        ttsVoices?.find(
+            (lv) => lv.engine === voice.engine && lv.name === voice.name
+        )?.preview ?? voice.preview
+
+    let clearPreviewAudio = () => {
+        const audio = activePreviewAudioRef.current
+        audio?.pause()
+        if (audio) {
+            audio.removeAttribute('src')
+            audio.load()
+        }
+        if (previewAudioObjectUrlRef.current) {
+            URL.revokeObjectURL(previewAudioObjectUrlRef.current)
+            previewAudioObjectUrlRef.current = null
+        }
+        activePreviewAudioRef.current = null
+    }
+
+    useEffect(() => () => clearPreviewAudio(), [])
+
+    let playVoicePreview = async (voice: TtsVoice, idx: number) => {
+        const previewUrl = previewUrlForVoice(voice)
+        const audioelm = document.getElementById(
+            `preview-${voice.lang}-${idx}`
+        ) as HTMLAudioElement
+        if (!audioelm || !previewUrl) return
+
+        if (activePreviewAudioRef.current === audioelm && !audioelm.paused) {
+            clearPreviewAudio()
+            return
+        }
+
+        clearPreviewAudio()
+        const objectUrl = await fetchVoicePreviewObjectUrl(previewUrl)
+        if (!objectUrl) return
+
+        activePreviewAudioRef.current = audioelm
+        previewAudioObjectUrlRef.current = objectUrl
+        audioelm.src = objectUrl
+        audioelm.load()
+        try {
+            await audioelm.play()
+        } catch {
+            clearPreviewAudio()
+        }
+    }
 
     return (
         <div className="tts-preferred-voices">
@@ -138,14 +187,16 @@ export function PreferredVoices({
                                             a.name > b.name ? 1 : -1
                                         )
                                         .map((v, idx) => {
+                                            const liveVoice = ttsVoices?.find(
+                                                (lv) =>
+                                                    lv.engine === v.engine &&
+                                                    lv.name === v.name
+                                            )
+                                            const previewUrl =
+                                                liveVoice?.preview ?? v.preview
                                             const available =
                                                 ttsVoices === null ||
-                                                ttsVoices.some(
-                                                    (lv) =>
-                                                        lv.engine ===
-                                                            v.engine &&
-                                                        lv.name === v.name
-                                                )
+                                                liveVoice !== undefined
                                             return (
                                                 <tr
                                                     key={`${v.engine}-${v.name}`}
@@ -169,36 +220,26 @@ export function PreferredVoices({
                                                         </span>
                                                         <audio
                                                             id={`preview-${v.lang}-${idx}`}
-                                                            src={
-                                                                ttsVoices?.find(
-                                                                    (lv) =>
-                                                                        lv.engine ===
-                                                                            v.engine &&
-                                                                        lv.name ===
-                                                                            v.name
-                                                                )?.preview
+                                                            onEnded={
+                                                                clearPreviewAudio
                                                             }
                                                         ></audio>
                                                         <button
                                                             type="button"
                                                             className="invisible"
+                                                            disabled={
+                                                                !previewUrl
+                                                            }
                                                             aria-label={`Preview for ${
                                                                 voicesTransliterations[
                                                                     v.name
                                                                 ] ?? v.name
                                                             }`}
                                                             onClick={() => {
-                                                                let audioelm =
-                                                                    document.getElementById(
-                                                                        `preview-${v.lang}-${idx}`
-                                                                    ) as HTMLAudioElement
-                                                                if (
-                                                                    audioelm.paused
-                                                                ) {
-                                                                    audioelm.play()
-                                                                } else {
-                                                                    audioelm.pause()
-                                                                }
+                                                                playVoicePreview(
+                                                                    v,
+                                                                    idx
+                                                                )
                                                             }}
                                                         >
                                                             <PlayIcon

@@ -18,6 +18,7 @@ export const IPC = {
     PIPELINE: {
         PROPS: 'pipeline: props-get',
         TEST_CONNECTION: 'pipeline: test-connection',
+        VOICE_PREVIEW: 'pipeline: voice-preview',
         MESSAGES: {
             SEND: 'pipeline: messages-send',
             UPDATE: 'pipeline: messages-update',

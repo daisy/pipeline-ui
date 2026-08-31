@@ -5,6 +5,7 @@ import { voicesTransliterations } from './voiceTransliterations'
 import { PauseIcon, PlayIcon, X } from 'renderer/components/Widgets/SvgIcons'
 import { formatGenderAgePart, parseGenderAge } from 'shared/utils'
 import { DefaultVoiceTableThreshold } from 'shared/types'
+import { fetchVoicePreviewObjectUrl } from '../voicePreview'
 
 export function BrowseVoices({
     availableVoices,
@@ -43,6 +44,7 @@ export function BrowseVoices({
     )
     const nameSearchInputRef = useRef<HTMLInputElement>(null)
     const previewAudioRef = useRef<HTMLAudioElement>(null)
+    const previewAudioObjectUrlRef = useRef<string | null>(null)
     const noAgeValue = 'none'
     const voiceTableThresholdMax = Math.max(1, availableVoices.length)
     const clampVoiceTableThreshold = (value: string | number) =>
@@ -68,10 +70,25 @@ export function BrowseVoices({
         onChangePreferredVoices(tmpVoices)
     }
 
+    const clearPreviewAudioObjectUrl = () => {
+        if (previewAudioObjectUrlRef.current) {
+            URL.revokeObjectURL(previewAudioObjectUrlRef.current)
+            previewAudioObjectUrlRef.current = null
+        }
+    }
+
     const stopPreview = () => {
-        previewAudioRef.current?.pause()
+        const audio = previewAudioRef.current
+        audio?.pause()
+        if (audio) {
+            audio.removeAttribute('src')
+            audio.load()
+        }
+        clearPreviewAudioObjectUrl()
         setPlayingPreviewKey(null)
     }
+
+    useEffect(() => () => clearPreviewAudioObjectUrl(), [])
 
     // return the first part of the language code (e.g. 'en' for 'en-US')
     // or return the whole thing if there is no dash
@@ -109,9 +126,7 @@ export function BrowseVoices({
     }
 
     const hasMatchingVoice = (filters: VoiceFilterValues) =>
-        availableVoices.some((voice) =>
-            voiceMatchesFilters(voice, filters)
-        )
+        availableVoices.some((voice) => voiceMatchesFilters(voice, filters))
 
     const selectedFilterValues: VoiceFilterValues = {
         lang,
@@ -371,13 +386,20 @@ export function BrowseVoices({
             return
         }
         audio.pause()
-        audio.src = previewUrl
+        clearPreviewAudioObjectUrl()
+        const objectUrl = await fetchVoicePreviewObjectUrl(previewUrl)
+        if (!objectUrl) {
+            setPlayingPreviewKey(null)
+            return
+        }
+        previewAudioObjectUrlRef.current = objectUrl
+        audio.src = objectUrl
         audio.load()
         try {
             await audio.play()
             setPlayingPreviewKey(key)
         } catch {
-            setPlayingPreviewKey(null)
+            stopPreview()
         }
     }
     const commitVoiceTableThreshold = () => {
@@ -555,9 +577,7 @@ export function BrowseVoices({
                 </div>
             </div>
             <div className="field voice-preview-text-control">
-                <label htmlFor="voice-preview-text">
-                    Custom preview text
-                </label>
+                <label htmlFor="voice-preview-text">Custom preview text</label>
                 <input
                     id="voice-preview-text"
                     type="text"
@@ -593,9 +613,7 @@ export function BrowseVoices({
                             }}
                             aria-label="Voices per page"
                         />
-                        <label htmlFor="voice-table-threshold">
-                            per page
-                        </label>
+                        <label htmlFor="voice-table-threshold">per page</label>
                         <div
                             className="voice-pagination"
                             aria-label="Voice result pages"
@@ -656,8 +674,7 @@ export function BrowseVoices({
                         {visibleVoices.map((voice) => {
                             const parsed = parseGenderAge(voice.gender)
                             const voiceName =
-                                voicesTransliterations[voice.name] ??
-                                voice.name
+                                voicesTransliterations[voice.name] ?? voice.name
                             const key = voiceKey(voice)
                             const previewIsPlaying = playingPreviewKey === key
                             const previewUrl = previewUrlForVoice(voice)
@@ -725,10 +742,7 @@ export function BrowseVoices({
                         })}
                     </tbody>
                 </table>
-                <audio
-                    ref={previewAudioRef}
-                    onEnded={() => setPlayingPreviewKey(null)}
-                />
+                <audio ref={previewAudioRef} onEnded={stopPreview} />
             </div>
         </>
     )

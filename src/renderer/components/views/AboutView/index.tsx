@@ -90,6 +90,15 @@ export function AboutView({ title }) {
     let buildDetails = BUILD_DETAILS
     let versionLabel = buildDetails ? 'Release' : 'App version'
     let engineVersion = pipeline.alive?.version
+    const buildOptionDetails = [
+        settings.logLevel && settings.logLevel !== 'info'
+            ? `log level: ${settings.logLevel}`
+            : null,
+        BUILD_ENABLE_OCR ? 'with OCR support' : null,
+        BUILD_ENABLE_EXTERNAL_ENGINE
+            ? 'with external engine support'
+            : null,
+    ].filter(Boolean)
     document.title = title
     let closeAboutBox = () => {
         window.close()
@@ -109,6 +118,9 @@ export function AboutView({ title }) {
         let info = [
             `${versionLabel}: ${version}`,
             buildDetails ? `Build details: ${buildDetails}` : null,
+            buildOptionDetails.length > 0
+                ? `Build options: ${buildOptionDetails.join(', ')}`
+                : null,
             `Engine version: ${engineVersion}`,
             `Engine is ${engineStatus.status}${
                 engineStatus.status == PipelineStatus.RUNNING
@@ -146,8 +158,7 @@ export function AboutView({ title }) {
                     <li>
                         {versionLabel}: {version}
                         {buildDetails ||
-                        (settings.logLevel && settings.logLevel !== 'info') ||
-                        BUILD_ENABLE_OCR ? (
+                        buildOptionDetails.length > 0 ? (
                             <br />
                         ) : null}
                         {buildDetails && (
@@ -155,26 +166,14 @@ export function AboutView({ title }) {
                                 <small>
                                     <em>{buildDetails}</em>
                                 </small>
-                                {(settings.logLevel &&
-                                    settings.logLevel !== 'info') ||
-                                BUILD_ENABLE_OCR ? (
+                                {buildOptionDetails.length > 0 ? (
                                     <br />
                                 ) : null}
                             </>
                         )}
-                        {((settings.logLevel && settings.logLevel !== 'info') ||
-                            BUILD_ENABLE_OCR) && (
+                        {buildOptionDetails.length > 0 && (
                             <small>
-                                <em>
-                                    {settings.logLevel &&
-                                        settings.logLevel !== 'info' &&
-                                        `log level: ${settings.logLevel}`}
-                                    {settings.logLevel &&
-                                        settings.logLevel !== 'info' &&
-                                        BUILD_ENABLE_OCR &&
-                                        ' · '}
-                                    {BUILD_ENABLE_OCR && 'with OCR support'}
-                                </em>
+                                <em>{buildOptionDetails.join(' · ')}</em>
                             </small>
                         )}
                     </li>

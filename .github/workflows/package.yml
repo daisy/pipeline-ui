@@ -49,13 +49,13 @@ jobs:
       - name: Install dependencies
         run: yarn install --frozen-lockfile --ignore-scripts
 
-      - name: Build and package (macOS)
+      - name: Build and package experimental (macOS)
         if: runner.os == 'macOS'
-        run: yarn dist-debug:mac
+        run: yarn dist-experimental:mac
 
-      - name: Build and package (Windows)
+      - name: Build and package experimental (Windows)
         if: runner.os == 'Windows'
-        run: yarn dist-debug:win
+        run: yarn dist-experimental:win
 
       - name: Store maven.log
         if: ${{ always() }}

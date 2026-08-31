@@ -42,6 +42,7 @@ export const getPipelineInstance = (state: RootState): EngineController => {
     try {
         if (_pipeline_instance == null) {
             _pipeline_instance =
+                BUILD_ENABLE_EXTERNAL_ENGINE &&
                 selectEngineMode(state) === 'external'
                     ? new ExternalEngineController(selectExternalEngine(state))
                     : new PipelineInstance(selectPipelineProperties(state))

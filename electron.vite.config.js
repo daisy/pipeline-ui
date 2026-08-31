@@ -8,10 +8,11 @@ const { getSnapshotInfo } = require('./build-snapshot-info')
 
 const isDev = process.env.NODE_ENV !== 'production'
 
-const enableOcr =
-    process.env.ENABLE_OCR !== undefined
-        ? process.env.ENABLE_OCR === 'true'
-        : isDev
+const featureFlagEnabled = (name) =>
+    process.env[name] !== undefined ? process.env[name] === 'true' : isDev
+
+const enableOcr = featureFlagEnabled('ENABLE_OCR')
+const enableExternalEngine = featureFlagEnabled('ENABLE_EXTERNAL_ENGINE')
 
 const buildVersion =
     process.env.DEV_BUILD === 'true'
@@ -29,10 +30,11 @@ const buildDescription =
         : undefined
 
 console.log('Build options:')
-console.log('  LOG_LEVEL:      ', process.env.LOG_LEVEL || '(default: info)')
-console.log('  ENABLE_OCR:     ', enableOcr)
-console.log('  BUILD_VERSION:  ', buildVersion || '(from package.json)')
-console.log('  BUILD_DETAILS:  ', buildDescription || '(none)')
+console.log('  LOG_LEVEL:              ', process.env.LOG_LEVEL || '(default: info)')
+console.log('  ENABLE_OCR:             ', enableOcr)
+console.log('  ENABLE_EXTERNAL_ENGINE: ', enableExternalEngine)
+console.log('  BUILD_VERSION:          ', buildVersion || '(from package.json)')
+console.log('  BUILD_DETAILS:          ', buildDescription || '(none)')
 
 module.exports = defineConfig({
     main: {
@@ -46,6 +48,7 @@ module.exports = defineConfig({
         define: {
             BUILD_LOG_LEVEL: JSON.stringify(process.env.LOG_LEVEL),
             BUILD_ENABLE_OCR: enableOcr,
+            BUILD_ENABLE_EXTERNAL_ENGINE: enableExternalEngine,
         },
         plugins: [
             {
@@ -83,6 +86,9 @@ module.exports = defineConfig({
                 '~': resolve('.'),
             },
         },
+        define: {
+            BUILD_ENABLE_EXTERNAL_ENGINE: enableExternalEngine,
+        },
     },
 
     renderer: {
@@ -102,6 +108,7 @@ module.exports = defineConfig({
         define: {
             'process.platform': JSON.stringify(process.platform),
             BUILD_ENABLE_OCR: enableOcr,
+            BUILD_ENABLE_EXTERNAL_ENGINE: enableExternalEngine,
             BUILD_DETAILS: JSON.stringify(buildDescription),
             BUILD_VERSION: JSON.stringify(buildVersion),
         },

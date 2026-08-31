@@ -30,6 +30,7 @@ module.exports = [
                 clearInterval: 'readonly',
                 BUILD_LOG_LEVEL: 'readonly',
                 BUILD_ENABLE_OCR: 'readonly',
+                BUILD_ENABLE_EXTERNAL_ENGINE: 'readonly',
                 BUILD_VERSION: 'readonly',
             },
         },

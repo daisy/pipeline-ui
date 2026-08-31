@@ -89,7 +89,12 @@ export function SettingsView(
     // const [selectedSection, setSelectedSection] = useState(
     //     SelectedMenuItem.General
     // )
-    const selectedSection = props.selectedItem ?? SettingsMenuItem.General
+    const requestedSection = props.selectedItem ?? SettingsMenuItem.General
+    const selectedSection =
+        !BUILD_ENABLE_EXTERNAL_ENGINE &&
+        requestedSection === SettingsMenuItem.Engine
+            ? SettingsMenuItem.General
+            : requestedSection
     const setSelectedSection = (section: SettingsMenuItem) => {
         // see the routes/index.tsx for the corresponding hash router
         window.location.hash = '#/settings' + section
@@ -213,11 +218,15 @@ export function SettingsView(
             section: SettingsMenuItem.Appearance,
             markup: <Appearance newSettings={newSettings} />,
         },
-        {
-            label: 'Engine',
-            section: SettingsMenuItem.Engine,
-            markup: <Engine newSettings={newSettings} />,
-        },
+        ...(BUILD_ENABLE_EXTERNAL_ENGINE
+            ? [
+                  {
+                      label: 'Engine',
+                      section: SettingsMenuItem.Engine,
+                      markup: <Engine newSettings={newSettings} />,
+                  },
+              ]
+            : []),
         {
             label: 'External Services',
             section: SettingsMenuItem.ExternalServices,

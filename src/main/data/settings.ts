@@ -151,5 +151,10 @@ export function readSettings() {
         log.transports.console.level = settings.logLevel as log.LevelOption
     }
 
+    if (!BUILD_ENABLE_EXTERNAL_ENGINE) {
+        settings.engineMode = 'embedded'
+        settings.externalEngine = undefined
+    }
+
     return settings
 }

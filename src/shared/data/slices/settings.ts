@@ -15,6 +15,17 @@ import {
 } from 'shared/types'
 import { RootState } from 'shared/types/store'
 
+const buildEngineMode = (
+    engineMode: EngineConnectionMode | undefined
+): EngineConnectionMode =>
+    BUILD_ENABLE_EXTERNAL_ENGINE && engineMode === 'external'
+        ? 'external'
+        : 'embedded'
+
+const buildExternalEngineConfig = (
+    externalEngine: ExternalEngineConfig | undefined
+) => (BUILD_ENABLE_EXTERNAL_ENGINE ? externalEngine : undefined)
+
 export const settings = createSlice({
     name: 'settings',
     initialState: {
@@ -52,9 +63,13 @@ export const settings = createSlice({
                 state.pipelineInstanceProps =
                     action.payload.pipelineInstanceProps
             if (action.payload.engineMode) {
-                state.engineMode = action.payload.engineMode
+                state.engineMode = buildEngineMode(action.payload.engineMode)
+            } else if (!BUILD_ENABLE_EXTERNAL_ENGINE) {
+                state.engineMode = 'embedded'
             }
-            state.externalEngine = action.payload.externalEngine
+            state.externalEngine = buildExternalEngineConfig(
+                action.payload.externalEngine
+            )
             if (action.payload.colorScheme)
                 state.colorScheme = action.payload.colorScheme
             if (action.payload.onClosingMainWindow)
@@ -102,13 +117,13 @@ export const settings = createSlice({
             state: ApplicationSettings,
             action: PayloadAction<EngineConnectionMode>
         ) => {
-            state.engineMode = action.payload
+            state.engineMode = buildEngineMode(action.payload)
         },
         setExternalEngineConfig: (
             state: ApplicationSettings,
             action: PayloadAction<ExternalEngineConfig | undefined>
         ) => {
-            state.externalEngine = action.payload
+            state.externalEngine = buildExternalEngineConfig(action.payload)
         },
         setColorScheme: (
             state: ApplicationSettings,
@@ -233,8 +248,9 @@ export const selectors = {
     selectDownloadPath: (state: RootState) => state.settings.downloadFolder,
     selectPipelineProperties: (s: RootState) =>
         s.settings.pipelineInstanceProps,
-    selectEngineMode: (s: RootState) => s.settings.engineMode,
-    selectExternalEngine: (s: RootState) => s.settings.externalEngine,
+    selectEngineMode: (s: RootState) => buildEngineMode(s.settings.engineMode),
+    selectExternalEngine: (s: RootState) =>
+        buildExternalEngineConfig(s.settings.externalEngine),
     selectColorScheme: (s: RootState) => s.settings.colorScheme,
     selectClosingAction: (s: RootState) => s.settings.onClosingMainWindow,
     selectEditOnNewTab: (s: RootState) => s.settings.editJobOnNewTab,

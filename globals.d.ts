@@ -1,5 +1,6 @@
 declare const BUILD_LOG_LEVEL: string | undefined
 declare const BUILD_ENABLE_OCR: boolean
+declare const BUILD_ENABLE_EXTERNAL_ENGINE: boolean
 declare const BUILD_DETAILS: string | undefined
 declare const BUILD_VERSION: string | undefined
 

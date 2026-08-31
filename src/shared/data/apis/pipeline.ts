@@ -10,6 +10,7 @@ import {
     voicesToJson,
     ttsConfigToXml,
 } from 'shared/parser/pipelineXmlConverter'
+import type { JobRequestToXmlOptions } from 'shared/parser/pipelineXmlConverter'
 import {
     Datatype,
     baseurl,
@@ -46,6 +47,12 @@ interface RequestInit {
     body?: {}
     headers?: {}
     signals?: AbortSignal
+}
+
+type LaunchJobOptions = {
+    body?: RequestInit['body']
+    headers?: RequestInit['headers']
+    jobRequestToXmlOptions?: JobRequestToXmlOptions
 }
 /**
  * PipelineAPI class to fetch data from the webserver.
@@ -183,17 +190,27 @@ export class PipelineAPI {
             (text) => text
         )
     }
-    launchJob(j: Job) {
+    launchJob(j: Job, launchJobOptions?: LaunchJobOptions) {
         return this.createPipelineFetchFunction(
             (ws) => `${baseurl(ws)}/jobs`,
             (text) => jobResponseXmlToJson(text),
             {
                 method: 'POST',
-                body: jobRequestToXml({
-                    ...j.jobRequest,
-                    nicename:
-                        j.jobRequest.nicename || j.jobData.nicename || 'Job',
-                }),
+                ...(launchJobOptions?.headers
+                    ? { headers: launchJobOptions.headers }
+                    : {}),
+                body:
+                    launchJobOptions?.body ??
+                    jobRequestToXml(
+                        {
+                            ...j.jobRequest,
+                            nicename:
+                                j.jobRequest.nicename ||
+                                j.jobData?.nicename ||
+                                'Job',
+                        },
+                        launchJobOptions?.jobRequestToXmlOptions
+                    ),
             }
         )
     }

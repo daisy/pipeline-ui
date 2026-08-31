@@ -1,6 +1,22 @@
-import { JobRequest } from 'shared/types'
+import { JobRequest, NameValue } from 'shared/types'
 
-function jobRequestToXml(jobRequest: JobRequest): string {
+export type JobRequestToXmlOptions = {
+    pathMapper?: (value: string, item: NameValue) => string | undefined
+}
+
+function itemValueToXmlValue(
+    value,
+    item: NameValue,
+    options?: JobRequestToXmlOptions
+) {
+    const convertedValue = convertValueIfPath(value, item.type) ?? ''
+    return options?.pathMapper?.(convertedValue, item) ?? convertedValue
+}
+
+function jobRequestToXml(
+    jobRequest: JobRequest,
+    options?: JobRequestToXmlOptions
+): string {
     let xmlString = `<?xml version="1.0" encoding="UTF-8" standalone="no"?>
   <jobRequest xmlns="http://www.daisy.org/ns/pipeline/data">
     <nicename>${jobRequest.nicename}</nicename>
@@ -19,16 +35,19 @@ function jobRequestToXml(jobRequest: JobRequest): string {
                               .map(
                                   (value) =>
                                       `<item value="${
-                                          convertValueIfPath(
+                                          itemValueToXmlValue(
                                               value,
-                                              input.type
+                                              input,
+                                              options
                                           ) ?? ''
                                       }"/>`
                               )
                               .join('')
-                        : `<item value="${
-                              input.value.toString().trim() ?? ''
-                          }"/>`
+                        : `<item value="${itemValueToXmlValue(
+                              input.value,
+                              input,
+                              options
+                          )}"/>`
                 }</input>`
         )
         .join('')}
@@ -45,14 +64,15 @@ function jobRequestToXml(jobRequest: JobRequest): string {
                               .map(
                                   (value) =>
                                       `<item value="${
-                                          convertValueIfPath(
+                                          itemValueToXmlValue(
                                               value,
-                                              option.type
+                                              option,
+                                              options
                                           ) ?? ''
                                       }"/>`
                               )
                               .join('')
-                        : (option.value.toString().trim() ?? '')
+                        : itemValueToXmlValue(option.value, option, options)
                 }</option>`
         )
         .join('')}

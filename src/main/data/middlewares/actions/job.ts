@@ -16,6 +16,7 @@ import {
     setAnnouncement,
     updateJob,
 } from 'shared/data/slices/pipeline'
+import { selectEngineMode } from 'shared/data/slices/settings'
 import { MainWindowInstance } from 'main/windows'
 import { removeJob as removeJobSlice } from 'shared/data/slices/pipeline'
 import { error, info } from 'electron-log'
@@ -27,6 +28,7 @@ import { v4 as uuidv4 } from 'uuid'
 import { getBatchInputValues, getBatchInput } from 'shared/utils'
 import { ScriptUsageEventData, UsageEntry } from 'main/data/usage'
 import { logJob } from 'main/usage'
+import { buildExternalJobRequestBody } from 'main/pipeline/job-data'
 
 export function removeJobs(action: PayloadAction<any>) {
     let removedJobs = action.payload as Job[]
@@ -120,8 +122,18 @@ export function runJob(jobToRun: Job, dispatch, getState: GetStateFunction) {
     } else if (webservice) {
         info('Launching job', JSON.stringify(jobToRun))
         dispatch(updateJob({ ...jobToRun, state: JobState.SUBMITTING }))
-        pipelineAPI
-            .launchJob(jobToRun)(webservice)
+        const launchJob = async () => {
+            if (selectEngineMode(getState()) === 'external') {
+                const body = await buildExternalJobRequestBody(jobToRun)
+                if (body) {
+                    info('Launching external job with uploaded job data')
+                    return pipelineAPI.launchJob(jobToRun, { body })(webservice)
+                }
+            }
+            return pipelineAPI.launchJob(jobToRun)(webservice)
+        }
+
+        launchJob()
             .then((jobResponse) => {
                 const updatedJob = {
                     ...jobToRun,

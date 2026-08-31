@@ -147,7 +147,10 @@ export function MainScreen() {
                     </>
                 ) : (
                     <main>
-                        <EngineStatus status={pipeline.status} />
+                        <EngineStatus
+                            status={pipeline.status}
+                            engineMode={settings.engineMode}
+                        />
                     </main>
                 )}
             </>

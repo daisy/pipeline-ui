@@ -338,7 +338,15 @@ export function SettingsView(
                         height="20"
                     />
                     <span>
-                        Engine is{'  '} <b>{engineStatus.status}</b>
+                        {engineStatus.status === PipelineStatus.ERROR ? (
+                            <>
+                                Engine has an <b>error</b>
+                            </>
+                        ) : (
+                            <>
+                                Engine is <b>{engineStatus.status}</b>
+                            </>
+                        )}
                     </span>
                 </div>
             </div>

@@ -5,7 +5,7 @@ import { join } from 'path'
 import { ENVIRONMENT, IPC, PLATFORM } from 'shared/constants'
 import { WindowProps } from 'shared/types'
 
-import { PipelineInstance } from '../../pipeline/pipeline'
+import { EngineController } from '../../pipeline/pipeline'
 
 const forwardedConsoleMessagePattern =
     /(?:^|\s)window:[^:\s]+:console-message\b/
@@ -26,7 +26,7 @@ function isReactDevToolsHook(sourceId?: string) {
  */
 export function bindWindowToPipeline(
     binding: BrowserWindow,
-    pipeline: PipelineInstance
+    pipeline: EngineController
 ) {
     // Keep the window id here as it is removed before the close event
     const windowID = binding.id

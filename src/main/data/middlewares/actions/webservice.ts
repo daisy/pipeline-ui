@@ -15,7 +15,11 @@ import {
     setScripts,
     setStatus,
 } from 'shared/data/slices/pipeline'
-import { save, setPipelineProperties } from 'shared/data/slices/settings'
+import {
+    save,
+    selectEngineMode,
+    setPipelineProperties,
+} from 'shared/data/slices/settings'
 import { getPipelineInstance } from '../../instance'
 import { AbortError } from 'node-fetch'
 import { GetStateFunction } from 'shared/types/store'
@@ -53,20 +57,22 @@ export function useWebservice(
             fetchAlive(newWebservice)
                 .then((alive) => {
                     info('useWebservice', 'Pipeline is ready to be used')
-                    // Save the pipeline properties in settings
-                    // and save settings
-                    const { onError, onMessage, ...serializable } =
-                        getPipelineInstance(getState()).props
-                    dispatch(
-                        setPipelineProperties({
-                            ...serializable,
-                            webservice: {
-                                ...newWebservice,
-                                lastStart: Date.now(),
-                            },
-                        })
-                    )
-                    dispatch(save())
+                    if (selectEngineMode(getState()) === 'embedded') {
+                        // Save the pipeline properties in settings
+                        // and save settings
+                        const { onError, onMessage, ...serializable } =
+                            getPipelineInstance(getState()).props
+                        dispatch(
+                            setPipelineProperties({
+                                ...serializable,
+                                webservice: {
+                                    ...newWebservice,
+                                    lastStart: Date.now(),
+                                },
+                            })
+                        )
+                        dispatch(save())
+                    }
                     dispatch(setAlive(alive))
                 })
                 // .then(() => pipelineAPI.fetchScripts()(newWebservice))

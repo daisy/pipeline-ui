@@ -33,7 +33,25 @@ import * as portscanner from 'portscanner'
 /**
  * Local DAISY Pipeline 2 management class
  */
-export class PipelineInstance {
+export interface EngineController {
+    props: PipelineInstanceProperties
+    messages: Array<string>
+    errors: Array<string>
+    launch(): Promise<PipelineState>
+    stop(appIsClosing?: boolean): Promise<void> | void
+    registerMessagesListener(
+        callerID: string,
+        callback: (data: string) => void
+    ): void
+    removeMessageListener(callerID: string): void
+    registerErrorsListener(
+        callerID: string,
+        callback: (data: string) => void
+    ): void
+    removeErrorsListener(callerID: string): void
+}
+
+export class PipelineInstance implements EngineController {
     props: PipelineInstanceProperties
     messages: Array<string>
     messagesListeners: Map<string, (data: string) => void> = new Map<

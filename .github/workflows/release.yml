@@ -84,6 +84,47 @@ jobs:
         if: runner.os == 'macOS'
         run: gh release upload ${{ github.ref_name }} dist/*.pkg --clobber
 
+      - name: Build experimental debug installers (macOS)
+        if: runner.os == 'macOS'
+        run: yarn release-debug:mac
+
+      - name: Sign experimental debug installers (macOS)
+        if: runner.os == 'macOS'
+        run: |
+          shopt -s nullglob
+          files=(dist/*snapshot*.pkg)
+          if [ ${#files[@]} -eq 0 ]; then
+            echo "::error::No debug installers found"
+            exit 1
+          fi
+          bash sign-installer-mac.sh "${files[@]}"
+        env:
+          DEV_ID_INSTALLER: ${{ secrets.DEV_ID_INSTALLER }}
+
+      - name: Upload experimental debug installers to release (macOS)
+        if: runner.os == 'macOS'
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          ASSET_DIR="$RUNNER_TEMP/experimental-assets"
+          mkdir -p "$ASSET_DIR"
+          shopt -s nullglob
+          files=(dist/*snapshot*.pkg)
+          if [ ${#files[@]} -eq 0 ]; then
+            echo "::error::No debug installers found"
+            exit 1
+          fi
+          for file in "${files[@]}"; do
+            name="$(basename "$file")"
+            platform="mac"
+            if [[ "$name" == *arm64* ]]; then
+              platform="mac-arm64"
+            elif [[ "$name" == *x64* ]]; then
+              platform="mac-x64"
+            fi
+            cp "$file" "$ASSET_DIR/daisy-pipeline-${VERSION}-experimental-${platform}.pkg"
+          done
+          gh release upload "${GITHUB_REF_NAME}" "$ASSET_DIR"/* --clobber
+
       - name: Clean up keychain (macOS)
         if: runner.os == 'macOS' && always()
         run: security delete-keychain $RUNNER_TEMP/signing.keychain-db
@@ -91,3 +132,25 @@ jobs:
       - name: Build and release (Windows)
         if: runner.os == 'Windows'
         run: yarn release:win
+
+      - name: Build experimental debug installer (Windows)
+        if: runner.os == 'Windows'
+        run: yarn release-debug:win
+
+      - name: Upload experimental debug installer to release (Windows)
+        if: runner.os == 'Windows'
+        shell: bash
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          ASSET_DIR="$RUNNER_TEMP/experimental-assets"
+          mkdir -p "$ASSET_DIR"
+          shopt -s nullglob
+          files=(dist/*snapshot*.exe)
+          if [ ${#files[@]} -eq 0 ]; then
+            echo "::error::No debug installer found"
+            exit 1
+          fi
+          for file in "${files[@]}"; do
+            cp "$file" "$ASSET_DIR/daisy-pipeline-${VERSION}-experimental-win.exe"
+          done
+          gh release upload "${GITHUB_REF_NAME}" "$ASSET_DIR"/* --clobber

@@ -49,13 +49,13 @@ jobs:
       - name: Install dependencies
         run: yarn install --frozen-lockfile --ignore-scripts
 
-      - name: Build and package experimental (macOS)
+      - name: Build and package debug (macOS)
         if: runner.os == 'macOS'
-        run: yarn dist-experimental:mac
+        run: yarn dist-debug:mac
 
-      - name: Build and package experimental (Windows)
+      - name: Build and package debug (Windows)
         if: runner.os == 'Windows'
-        run: yarn dist-experimental:win
+        run: yarn dist-debug:win
 
       - name: Store maven.log
         if: ${{ always() }}
@@ -424,11 +424,11 @@ jobs:
             elif [[ "$name" == *x64* ]]; then
               platform="mac-x64"
             fi
-            cp "$file" "$ASSET_DIR/daisy-pipeline-${RELEASE_NAME}-${platform}.pkg"
+            cp "$file" "$ASSET_DIR/daisy-pipeline-${RELEASE_NAME}-experimental-${platform}.pkg"
           done
 
           for file in artifacts/win/*.exe; do
-            cp "$file" "$ASSET_DIR/daisy-pipeline-${RELEASE_NAME}-win.exe"
+            cp "$file" "$ASSET_DIR/daisy-pipeline-${RELEASE_NAME}-experimental-win.exe"
           done
 
           gh release view "$SNAPSHOT_TAG" --repo ${{ github.repository }} --json assets \
@@ -488,11 +488,11 @@ jobs:
             elif [[ "$name" == *x64* ]]; then
               platform="mac-x64"
             fi
-            cp "$file" "$ASSET_DIR/daisy-pipeline-${RELEASE_NAME}-${platform}.pkg"
+            cp "$file" "$ASSET_DIR/daisy-pipeline-${RELEASE_NAME}-experimental-${platform}.pkg"
           done
 
           for file in artifacts/win/*.exe; do
-            cp "$file" "$ASSET_DIR/daisy-pipeline-${RELEASE_NAME}-win.exe"
+            cp "$file" "$ASSET_DIR/daisy-pipeline-${RELEASE_NAME}-experimental-win.exe"
           done
 
           gh release create "$TAG" "$ASSET_DIR"/* \

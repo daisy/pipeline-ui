@@ -17,11 +17,12 @@ const ocrEngines = BUILD_ENABLE_OCR
 
 const { App } = window
 
-export function AiEngines() {
+export function AiEngines({ disabled = false }: { disabled?: boolean }) {
     const { pipeline, settings } = useWindowStore()
 
     let onPropertyChange = (e, propKey) => {
         e.preventDefault()
+        if (disabled) return
         let aiEngineProperties_ = [...(settings.aiEngineProperties ?? [])]
         let idx = aiEngineProperties_.findIndex((p) => p.key == propKey)
         if (idx != -1) {
@@ -73,6 +74,7 @@ export function AiEngines() {
                                     <input
                                         id={propkey}
                                         type="text"
+                                        disabled={disabled}
                                         onChange={(e) =>
                                             onPropertyChange(e, propkey)
                                         }

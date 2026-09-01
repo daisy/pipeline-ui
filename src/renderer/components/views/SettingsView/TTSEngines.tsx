@@ -29,11 +29,13 @@ const clone = (propsArray: Array<{ key: string; value: string }>) => [
 export function TTSEngines({
     ttsEngineProperties,
     ttsEnginesConnected,
+    disabled = false,
     onChangeTtsEngineProperties,
     onChangeTtsEngineConnected,
 }: {
     ttsEngineProperties: Array<KeyValue>
     ttsEnginesConnected: Object
+    disabled?: boolean
     onChangeTtsEngineProperties: (props: Array<KeyValue>) => void
     onChangeTtsEngineConnected: (
         engineId: string,
@@ -133,6 +135,7 @@ export function TTSEngines({
 
     let onPropertyChange = (e, propName) => {
         e.preventDefault()
+        if (disabled) return
         let engineProperties_ = clone(engineProperties)
         let prop = engineProperties_.find((prop) => prop.key == propName)
         const newValue = e.target.value.trim()
@@ -177,6 +180,7 @@ export function TTSEngines({
     const connected = ttsEnginesConnected as Record<string, boolean>
 
     const connectToTTSEngine = (engineKey: string) => {
+        if (disabled) return
         const ttsProps = [
             ...engineProperties.filter(
                 (k) =>
@@ -210,6 +214,7 @@ export function TTSEngines({
     }
 
     const disconnectFromTTSEngine = (engineKey: string) => {
+        if (disabled) return
         // Send empty credential values + enabled=false to the engine
         // but keep the credential values in settings so the user can reconnect
         App.store.dispatch(
@@ -265,6 +270,7 @@ export function TTSEngines({
     }
 
     const engineNotReady = pipeline.status !== PipelineStatus.RUNNING
+    const controlsDisabled = disabled || engineNotReady
     const isStartingUp = engineNotReady || pipeline.ttsVoices === null
 
     return (
@@ -293,7 +299,7 @@ export function TTSEngines({
                                     <input
                                         id={propkey}
                                         type="text"
-                                        disabled={engineNotReady}
+                                        disabled={controlsDisabled}
                                         onChange={(e) =>
                                             onPropertyChange(e, propkey)
                                         }
@@ -374,7 +380,7 @@ export function TTSEngines({
                                                 connectToTTSEngine(engineId)
                                             }}
                                             disabled={
-                                                engineNotReady ||
+                                                controlsDisabled ||
                                                 !hasRequiredValues(engineId) ||
                                                 !!isConnecting[engineId] ||
                                                 (!hasChangedProps(engineId) &&
@@ -403,7 +409,7 @@ export function TTSEngines({
                                             disconnectFromTTSEngine(engineId)
                                         }}
                                         disabled={
-                                            engineNotReady ||
+                                            controlsDisabled ||
                                             !!isConnecting[engineId] ||
                                             engineStatus[engineId] !=
                                                 'available'

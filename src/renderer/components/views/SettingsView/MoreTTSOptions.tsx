@@ -52,12 +52,14 @@ export function MoreTTSOptions({
     ttsEngineProperties,
     onChangeTtsEngineProperties,
     ttsEnginesStates,
+    disabled = false,
 }: {
     ttsEngineProperties: Array<{ key: string; value: string }>
     onChangeTtsEngineProperties: (
         props: Array<{ key: string; value: string }>
     ) => void
     ttsEnginesStates: { [key: string]: TtsEngineState }
+    disabled?: boolean
 }) {
     // Clone array and objects in it to avoid updating the original props
     const [engineProperties, setEngineProperties] = useState<
@@ -91,6 +93,7 @@ export function MoreTTSOptions({
     }, [ttsEnginesStates])
 
     let onLexiconChange = async (filename) => {
+        if (disabled) return
         if (filename && filename.length > 0) {
             let fileurl = await App.pathToFileURL(filename[0])
             onPropertyChange('org.daisy.pipeline.tts.default-lexicon', fileurl)
@@ -98,11 +101,13 @@ export function MoreTTSOptions({
     }
 
     let clearLexicon = () => {
+        if (disabled) return
         onPropertyChange('org.daisy.pipeline.tts.default-lexicon', '')
         setLexiconKey((k) => k + 1)
     }
     let onInputChange = (e, propName) => {
         e.preventDefault()
+        if (disabled) return
         let propValue = e.target.value
         if (propName == 'org.daisy.pipeline.tts.speech-rate') {
             propValue = `${propValue}%`
@@ -112,11 +117,13 @@ export function MoreTTSOptions({
     }
     let onSelectChange = (e, propName) => {
         e.preventDefault()
+        if (disabled) return
         let propValue = e.target.value
         onPropertyChange(propName, propValue)
     }
 
     let onPropertyChange = (propName, propValue) => {
+        if (disabled) return
         let engineProperties_ = clone(engineProperties)
         let prop = engineProperties_.find((prop) => prop.key == propName)
         if (prop) {
@@ -150,6 +157,7 @@ export function MoreTTSOptions({
     }
 
     let resetSpeechRate = (e) => {
+        if (disabled) return
         onPropertyChange('org.daisy.pipeline.tts.speech-rate', '100%')
         setSpeechRateDisplay('100%')
     }
@@ -166,6 +174,7 @@ export function MoreTTSOptions({
                     type="range"
                     max="200"
                     min="25"
+                    disabled={disabled}
                     value={
                         engineProperties.find(
                             (prop) =>
@@ -187,6 +196,7 @@ export function MoreTTSOptions({
                 <button
                     type="button"
                     className="reset-speech-rate"
+                    disabled={disabled}
                     onClick={(e) => resetSpeechRate(e)}
                 >
                     Reset
@@ -213,6 +223,7 @@ export function MoreTTSOptions({
                 <label htmlFor="bitrate">MP3 bitrate</label>
                 <select
                     id="bitrate"
+                    disabled={disabled}
                     onChange={(e) =>
                         onSelectChange(e, 'org.daisy.pipeline.tts.mp3.bitrate')
                     }
@@ -236,6 +247,7 @@ export function MoreTTSOptions({
                 <label htmlFor="samplerate">Sample rate</label>
                 <select
                     id="samplerate"
+                    disabled={disabled}
                     onChange={(e) =>
                         onSelectChange(
                             e,
@@ -284,6 +296,7 @@ export function MoreTTSOptions({
                         elemId="lexicon-select"
                         mediaType={['application/pls+xml']}
                         onChange={onLexiconChange}
+                        enabled={!disabled}
                         initialValue={[
                             engineProperties.find(
                                 (p) =>
@@ -298,6 +311,7 @@ export function MoreTTSOptions({
                         <button
                             type="button"
                             className="invisible"
+                            disabled={disabled}
                             onClick={clearLexicon}
                             title="Clear lexicon"
                             aria-label="Clear lexicon"

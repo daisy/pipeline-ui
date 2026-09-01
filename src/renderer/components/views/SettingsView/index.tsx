@@ -90,11 +90,16 @@ export function SettingsView(
     //     SelectedMenuItem.General
     // )
     const requestedSection = props.selectedItem ?? SettingsMenuItem.General
+    const canUseAdminEndpoints =
+        !BUILD_ENABLE_EXTERNAL_ENGINE ||
+        settings.engineMode !== 'external' ||
+        (pipeline.clientCapability?.canUseAdminEndpoints ?? false)
     const selectedSection =
         !BUILD_ENABLE_EXTERNAL_ENGINE &&
         requestedSection === SettingsMenuItem.Engine
             ? SettingsMenuItem.General
             : requestedSection
+    const adminSettingsDisabled = !canUseAdminEndpoints
     const setSelectedSection = (section: SettingsMenuItem) => {
         // see the routes/index.tsx for the corresponding hash router
         window.location.hash = '#/settings' + section
@@ -233,6 +238,7 @@ export function SettingsView(
             markup: (
                 <ExternalServices
                     newSettings={newSettings}
+                    disabled={adminSettingsDisabled}
                     onChangeTtsEngineProperties={onTtsEnginePropertiesChange}
                     onChangeTtsEngineConnected={onTtsEngineConnectedChange}
                 />
@@ -285,6 +291,7 @@ export function SettingsView(
                         newSettings.ttsConfig.ttsEngineProperties
                     }
                     ttsEnginesStates={pipeline.ttsEnginesStates}
+                    disabled={adminSettingsDisabled}
                     onChangeTtsEngineProperties={onTtsEnginePropertiesChange}
                 />
             ),

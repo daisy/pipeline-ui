@@ -101,7 +101,7 @@ export function Behavior({ newSettings }) {
                         id="contextMenuValidationChecksAccessibility"
                         checked={
                             newSettings.contextMenuValidationChecksAccessibility ??
-                            false
+                            true
                         }
                         onChange={
                             contextMenuValidationChecksAccessibilityChanged

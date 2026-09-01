@@ -25,7 +25,10 @@ import {
 
 import { jobResponseXmlToJson } from 'shared/parser/pipelineXmlConverter/jobResponseToJson'
 import { propertiesXmlToJson } from 'shared/parser/pipelineXmlConverter/propertiesXmlToJson'
-import { propertyToXml } from 'shared/parser/pipelineXmlConverter/propertyToXml'
+import {
+    propertyToXml,
+    ttsConfigPropertyToXml,
+} from 'shared/parser/pipelineXmlConverter/propertyToXml'
 import { ttsEnginesToJson } from 'shared/parser/pipelineXmlConverter/ttsEnginesToJson'
 import { parametersXmlToJson } from 'shared/parser/pipelineXmlConverter/parametersXmlToJson'
 import { jobToStylesheetParametersXml } from 'shared/parser/pipelineXmlConverter/jobToStylesheetParametersXml'
@@ -309,6 +312,17 @@ export class PipelineAPI {
             {
                 method: 'PUT',
                 body: propertyToXml(prop),
+            }
+        )
+    }
+    setTtsConfigProperty(ttsConfig: TtsConfig) {
+        return this.createPipelineFetchFunction(
+            (ws) =>
+                `${baseurl(ws)}/admin/properties/org.daisy.pipeline.tts.config`,
+            (text) => null,
+            {
+                method: 'PUT',
+                body: ttsConfigPropertyToXml(ttsConfig),
             }
         )
     }

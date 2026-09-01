@@ -10,7 +10,6 @@ import {
 } from 'shared/data/slices/settings'
 import { checkForUpdate } from 'shared/data/slices/update'
 import { ttsConfigToXml } from 'shared/parser/pipelineXmlConverter/ttsConfigToXml'
-import { EngineProperty } from 'shared/types'
 import { RootState } from 'shared/types/store'
 import { pipelineAPI } from '../apis/pipeline'
 import { selectWebservice } from 'shared/data/slices/pipeline'
@@ -71,11 +70,7 @@ export function settingsMiddleware({ getState, dispatch }) {
                             //console.log("wrote file, setting engine property")
                             const webservice = selectWebservice(getState())
                             let ttsConfig = selectTtsConfig(getState())
-                            let ttsConfigProperty: EngineProperty = {
-                                name: 'org.daisy.pipeline.tts.config',
-                                value: ttsConfig.xmlFilepath,
-                            }
-                            pipelineAPI.setProperty(ttsConfigProperty)(
+                            pipelineAPI.setTtsConfigProperty(ttsConfig)(
                                 webservice
                             )
                         }

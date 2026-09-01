@@ -1,4 +1,6 @@
 import { EngineProperty } from 'shared/types'
+import { TtsConfig } from 'shared/types/ttsConfig'
+import { ttsConfigToXml } from './ttsConfigToXml'
 
 /**
  * Convert an EngineProperty to a proper xml string that can be used to update
@@ -13,4 +15,12 @@ function propertyToXml(prop: EngineProperty): string {
     }" value="${prop.value == null ? '' : prop.value}"/>`
 }
 
-export { propertyToXml }
+function ttsConfigPropertyToXml(ttsConfig: TtsConfig): string {
+    const configXml = ttsConfigToXml(ttsConfig)
+        .replace(/^\s*<\?xml[^>]*\?>\s*/, '')
+        .replace(/<config(?=[\s>])(?![^>]*\sxmlns=)/, '<config xmlns=""')
+
+    return `<property xmlns="http://www.daisy.org/ns/pipeline/data" name="org.daisy.pipeline.tts.config">${configXml}</property>`
+}
+
+export { propertyToXml, ttsConfigPropertyToXml }

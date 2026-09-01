@@ -305,6 +305,11 @@ export class PipelineAPI {
             (text) => propertiesXmlToJson(text)
         )
     }
+    requestProperties() {
+        return this.createPipelineRequestFunction(
+            (ws) => `${baseurl(ws)}/admin/properties`
+        )
+    }
     setProperty(prop: EngineProperty) {
         return this.createPipelineFetchFunction(
             (ws) => `${baseurl(ws)}/admin/properties/${prop.name}`,

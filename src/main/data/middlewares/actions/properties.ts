@@ -1,6 +1,7 @@
 import { PayloadAction } from '@reduxjs/toolkit'
 import { pipelineAPI } from 'main/data/apis/pipeline'
 import {
+    selectCanUseAdminEndpoints,
     selectWebservice,
     selectProperties,
     selectScripts,
@@ -18,6 +19,10 @@ export function setProperties(
     dispatch,
     getState: GetStateFunction
 ) {
+    if (action.payload.sendToAPI && !selectCanUseAdminEndpoints(getState())) {
+        return
+    }
+
     const webservice = selectWebservice(getState())
     const currentProperties = selectProperties(getState())
     const newProperties = action.payload.values as EngineProperty[]

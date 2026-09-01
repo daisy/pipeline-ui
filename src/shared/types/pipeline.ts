@@ -55,6 +55,7 @@ export type PipelineState = {
     selectedJobId: string
     datatypes?: Datatype[]
     alive: Alive
+    clientCapability: PipelineClientCapability
     properties?: { [key: string]: EngineProperty }
     ttsEnginesStates?: { [key: string]: TtsEngineState }
     announcement: string
@@ -131,6 +132,20 @@ export type Alive = {
     localfs?: boolean
     authentication?: boolean
     version?: string
+}
+
+export type PipelineClientAuthentication =
+    | 'unknown'
+    | 'disabled'
+    | 'authenticated'
+    | 'unauthenticated'
+
+export type PipelineClientRole = 'unknown' | 'admin' | 'client'
+
+export type PipelineClientCapability = {
+    authentication: PipelineClientAuthentication
+    role: PipelineClientRole
+    canUseAdminEndpoints: boolean
 }
 
 export enum Priority {

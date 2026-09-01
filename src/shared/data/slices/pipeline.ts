@@ -21,9 +21,16 @@ import {
     TtsVoice,
     EngineProperty,
     TtsEngineState,
+    PipelineClientCapability,
 } from 'shared/types'
 import { RootState } from 'shared/types/store'
 import { createAnnouncement } from 'shared/at-announce'
+
+const unknownClientCapability = {
+    authentication: 'unknown',
+    role: 'unknown',
+    canUseAdminEndpoints: false,
+} as PipelineClientCapability
 
 const initialState = {
     status: PipelineStatus.STOPPED,
@@ -35,6 +42,7 @@ const initialState = {
     internalJobCounter: 0,
     selectedJobId: '',
     alive: null,
+    clientCapability: unknownClientCapability,
     properties: {},
     ttsEnginesStates: {},
 } as PipelineState
@@ -91,6 +99,8 @@ export const pipeline = createSlice({
             param: PayloadAction<Webservice>
         ) => {
             state.webservice = param.payload
+            state.clientCapability = unknownClientCapability
+            state.properties = {}
         },
         setStatus: (
             state: PipelineState,
@@ -319,8 +329,8 @@ export const pipeline = createSlice({
                     (state.jobs.length + selectedJobIndex + 1) %
                     state.jobs.length
             } while (
-                (!alsoSelectInvisible &&
-                    state.jobs[selectedJobIndex].invisible)
+                !alsoSelectInvisible &&
+                state.jobs[selectedJobIndex].invisible
             )
             state.selectedJobId = state.jobs[selectedJobIndex].internalId
         },
@@ -337,13 +347,19 @@ export const pipeline = createSlice({
                     (state.jobs.length + selectedJobIndex - 1) %
                     state.jobs.length
             } while (
-                (!alsoSelectInvisible &&
-                    state.jobs[selectedJobIndex].invisible)
+                !alsoSelectInvisible &&
+                state.jobs[selectedJobIndex].invisible
             )
             state.selectedJobId = state.jobs[selectedJobIndex].internalId
         },
         setAlive: (state: PipelineState, param: PayloadAction<Alive>) => {
             state.alive = param.payload
+        },
+        setClientCapability: (
+            state: PipelineState,
+            param: PayloadAction<PipelineClientCapability>
+        ) => {
+            state.clientCapability = param.payload
         },
         setTtsEngineState: (
             state: PipelineState,
@@ -397,6 +413,7 @@ export const {
     selectNextJob,
     selectPrevJob,
     setAlive,
+    setClientCapability,
     setTtsVoices,
     setProperties,
     setTtsEngineState,
@@ -465,6 +482,13 @@ export const selectors = {
     selectDatatypes: (state: RootState) => state.pipeline.datatypes,
     selectTtsVoices: (state: RootState) => state.pipeline.ttsVoices ?? [],
     selectProperties: (state: RootState) => state.pipeline.properties,
+    selectClientCapability: (state: RootState) =>
+        state.pipeline.clientCapability ?? unknownClientCapability,
+    selectCanUseAdminEndpoints: (state: RootState) =>
+        !BUILD_ENABLE_EXTERNAL_ENGINE ||
+        state.settings?.engineMode !== 'external'
+            ? true
+            : (state.pipeline.clientCapability?.canUseAdminEndpoints ?? false),
     newJob: (pipeline: PipelineState) =>
         ({
             internalId: `job-${pipeline.internalJobCounter}`,
@@ -544,4 +568,6 @@ export const {
     prepareJobRequest,
     selectTtsVoices,
     selectProperties,
+    selectClientCapability,
+    selectCanUseAdminEndpoints,
 } = selectors

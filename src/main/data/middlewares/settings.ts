@@ -12,7 +12,10 @@ import { checkForUpdate } from 'shared/data/slices/update'
 import { ttsConfigToXml } from 'shared/parser/pipelineXmlConverter/ttsConfigToXml'
 import { RootState } from 'shared/types/store'
 import { pipelineAPI } from '../apis/pipeline'
-import { selectWebservice } from 'shared/data/slices/pipeline'
+import {
+    selectCanUseAdminEndpoints,
+    selectWebservice,
+} from 'shared/data/slices/pipeline'
 import { settingsFile } from '../settings'
 import { pathToFileURL } from 'url'
 
@@ -70,9 +73,14 @@ export function settingsMiddleware({ getState, dispatch }) {
                             //console.log("wrote file, setting engine property")
                             const webservice = selectWebservice(getState())
                             let ttsConfig = selectTtsConfig(getState())
-                            pipelineAPI.setTtsConfigProperty(ttsConfig)(
-                                webservice
-                            )
+                            if (
+                                webservice &&
+                                selectCanUseAdminEndpoints(getState())
+                            ) {
+                                pipelineAPI.setTtsConfigProperty(ttsConfig)(
+                                    webservice
+                                )
+                            }
                         }
                     )
                     break

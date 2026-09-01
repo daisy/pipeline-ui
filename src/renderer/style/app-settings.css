@@ -425,9 +425,30 @@
         input[type=range] {
             width: 10rem;
         }
+        input[type="number"] {
+            width: 6rem;
+        }
         .speech-rate-controls {
             display: flex;
             flex-direction: row;
+        }
+        .advanced-tts-options {
+            summary {
+                font-weight: bold;
+                width: fit-content;
+            }
+            .advanced-tts-fields {
+                display: flex;
+                flex-direction: column;
+                gap: 1rem;
+                margin-top: 1rem;
+            }
+            .timeout-tolerance-controls {
+                display: flex;
+                flex-wrap: wrap;
+                align-items: center;
+                gap: 0.5rem;
+            }
         }
     }
 }

@@ -5,12 +5,27 @@ import { SingleFileInput } from 'renderer/components/Widgets/SingleFileInput'
 import { X } from 'renderer/components/Widgets/SvgIcons'
 
 const { App } = window
+const TTS_TIMEOUT_TOLERANCE_PROPERTY =
+    'org.daisy.pipeline.tts.timeout.tolerance'
+const DEFAULT_TTS_TIMEOUT_TOLERANCE = '1.0'
 
 // Clone operation to ensure the full array is copied and avoid
 // having array of references to object we don't want to change
 const clone = (propsArray: Array<{ key: string; value: string }>) => [
     ...propsArray.map((kv) => ({ key: kv.key, value: kv.value })),
 ]
+
+const propertyValue = (
+    propsArray: Array<{ key: string; value: string }>,
+    propName: string
+) => propsArray.find((prop) => prop.key == propName)?.value
+
+const isValidTimeoutTolerance = (value: string) => {
+    const parsedValue = Number(value)
+    return (
+        value.trim() !== '' && Number.isFinite(parsedValue) && parsedValue >= 1
+    )
+}
 
 function getEnginesWithSampleRateSupport(ttsEnginesStates: {
     [key: string]: TtsEngineState
@@ -76,9 +91,12 @@ export function MoreTTSOptions({
         useState(getEnginesWithSpeechRateSupport(ttsEnginesStates))
 
     const [speechRateDisplay, setSpeechRateDisplay] = useState(
-        engineProperties.find(
-            (prop) => prop.key == 'org.daisy.pipeline.tts.speech-rate'
-        )?.value ?? '100%'
+        propertyValue(engineProperties, 'org.daisy.pipeline.tts.speech-rate') ??
+            '100%'
+    )
+    const [timeoutToleranceDisplay, setTimeoutToleranceDisplay] = useState(
+        propertyValue(engineProperties, TTS_TIMEOUT_TOLERANCE_PROPERTY) ??
+            DEFAULT_TTS_TIMEOUT_TOLERANCE
     )
 
     const [lexiconKey, setLexiconKey] = useState(0)
@@ -160,6 +178,30 @@ export function MoreTTSOptions({
         if (disabled) return
         onPropertyChange('org.daisy.pipeline.tts.speech-rate', '100%')
         setSpeechRateDisplay('100%')
+    }
+    let commitTimeoutTolerance = () => {
+        if (disabled) return
+        if (!isValidTimeoutTolerance(timeoutToleranceDisplay)) {
+            setTimeoutToleranceDisplay(
+                propertyValue(
+                    engineProperties,
+                    TTS_TIMEOUT_TOLERANCE_PROPERTY
+                ) ?? DEFAULT_TTS_TIMEOUT_TOLERANCE
+            )
+            return
+        }
+        onPropertyChange(
+            TTS_TIMEOUT_TOLERANCE_PROPERTY,
+            timeoutToleranceDisplay.trim()
+        )
+    }
+    let resetTimeoutTolerance = () => {
+        if (disabled) return
+        setTimeoutToleranceDisplay(DEFAULT_TTS_TIMEOUT_TOLERANCE)
+        onPropertyChange(
+            TTS_TIMEOUT_TOLERANCE_PROPERTY,
+            DEFAULT_TTS_TIMEOUT_TOLERANCE
+        )
     }
 
     return (
@@ -321,6 +363,51 @@ export function MoreTTSOptions({
                     )}
                 </div>
             </div>
+            <details className="advanced-tts-options">
+                <summary>Advanced</summary>
+                <div className="advanced-tts-fields">
+                    <div className="field">
+                        <label htmlFor="tts-timeout-tolerance">
+                            TTS timeout tolerance
+                        </label>
+                        <div className="timeout-tolerance-controls">
+                            <input
+                                id="tts-timeout-tolerance"
+                                type="number"
+                                min="1"
+                                step="0.1"
+                                disabled={disabled}
+                                value={timeoutToleranceDisplay}
+                                aria-describedby="tts-timeout-tolerance-info"
+                                aria-invalid={
+                                    !isValidTimeoutTolerance(
+                                        timeoutToleranceDisplay
+                                    )
+                                }
+                                onChange={(e) =>
+                                    setTimeoutToleranceDisplay(e.target.value)
+                                }
+                                onBlur={commitTimeoutTolerance}
+                                onKeyDown={(e) => {
+                                    if (e.key === 'Enter') {
+                                        commitTimeoutTolerance()
+                                    }
+                                }}
+                            />
+                            <button
+                                type="button"
+                                disabled={disabled}
+                                onClick={resetTimeoutTolerance}
+                            >
+                                Reset
+                            </button>
+                        </div>
+                        <p id="tts-timeout-tolerance-info" className="info">
+                            Multiplies TTS timeout limits. Default: 1.0.
+                        </p>
+                    </div>
+                </div>
+            </details>
         </div>
     )
 }

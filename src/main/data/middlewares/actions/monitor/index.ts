@@ -1,6 +1,6 @@
 import { Job, JobStatus, Webservice } from 'shared/types'
 import { error } from 'electron-log'
-import { pipelineAPI } from '../../../apis/pipeline'
+import { getPipelineRequestUrl, pipelineAPI } from '../../../apis/pipeline'
 
 import { updateJob, selectPipeline } from 'shared/data/slices/pipeline'
 import { GetStateFunction } from 'shared/types/store'
@@ -273,9 +273,10 @@ export function startMonitor(
         if (restPollRunning || activeRestFetch) return
         if (pollTimeout) clearTimeout(pollTimeout)
         const reason = scheduledRestFetchReason()
-        const interval = reason !== 'status-socket-check'
-            ? REST_FALLBACK_POLL_INTERVAL_MS
-            : REST_HEALTHY_POLL_INTERVAL_MS
+        const interval =
+            reason !== 'status-socket-check'
+                ? REST_FALLBACK_POLL_INTERVAL_MS
+                : REST_HEALTHY_POLL_INTERVAL_MS
         const delay = Math.max(interval - (Date.now() - lastRestFetchAt), 0)
         pollTimeout = setTimeout(pollJobData, delay)
     }
@@ -388,7 +389,7 @@ export function startMonitor(
     const socketUrl = (type: SocketType) => {
         const url = new URL(baseNotificationsUrl)
         url.searchParams.set('type', type)
-        return url.toString()
+        return getPipelineRequestUrl(url.toString(), getState())
     }
 
     // Open one websocket and attach the right message handler.

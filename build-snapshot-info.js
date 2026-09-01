@@ -33,17 +33,17 @@ function getSnapshotInfo() {
         process.env.UI_BRANCH ||
             process.env.GITHUB_REF_NAME ||
             run('git rev-parse --abbrev-ref HEAD'),
-        'develop',
+        'develop'
     )
     const engineBranch = normalizeBranch(
         process.env.ENGINE_BRANCH ||
             run('git -C engine rev-parse --abbrev-ref HEAD'),
-        'develop',
+        'develop'
     )
     const uiHash = run('git rev-parse --short HEAD') || 'unknown'
     const engineHash =
-        run('git rev-parse --short HEAD:engine') ||
         run('git -C engine rev-parse --short HEAD') ||
+        run('git rev-parse --short HEAD:engine') ||
         'unknown'
     const snapshotDate = getSnapshotDate()
     const releaseName = `${version}-snapshot-${snapshotDate}`

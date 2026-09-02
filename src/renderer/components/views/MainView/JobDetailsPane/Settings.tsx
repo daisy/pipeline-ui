@@ -8,6 +8,16 @@ import { getAllOptional, getAllRequired } from 'shared/utils'
 const { App } = window
 
 let isFile = (item) => ['anyURI', 'anyFileURI'].includes(item.type)
+let hasFileUrlScheme = (value) =>
+    typeof value === 'string' && value.startsWith('file://')
+
+async function displayValue(item, value) {
+    if (isFile(item) && hasFileUrlScheme(value)) {
+        return App.fileURLToPath(value)
+    }
+
+    return value
+}
 
 // return [{name, value}...]
 // it's a display convenience and not accessed for any other reason
@@ -24,16 +34,11 @@ async function getValuesForScriptItems(items, job) {
         if (Array.isArray(val)) {
             let newVals = []
             for (let valItem of val) {
-                if (isFile(item)) {
-                    let tmp = await App.fileURLToPath(valItem)
-                    newVals.push(tmp)
-                }
+                newVals.push(await displayValue(item, valItem))
             }
             val = [...newVals]
         } else {
-            if (isFile(item)) {
-                val = await App.fileURLToPath(val)
-            }
+            val = await displayValue(item, val)
         }
 
         // @ts-ignore

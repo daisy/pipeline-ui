@@ -17,6 +17,7 @@ const ScriptMediaType = {
     'html-to-pef': 'application/xhtml+xml',
     'epub3-to-pef': 'application/xhtml+xml',
     'epub3-to-epub3': 'application/xhtml+xml',
+    'epub3-to-ebraille': 'application/xhtml+xml',
     'epub-to-daisy': 'application/xhtml+xml',
     'zedai-to-epub3': 'application/z3998-auth+xml',
 }
@@ -44,6 +45,7 @@ const EmbossedMedia = (j: Job) => {
  * - "embossed AND (width:XXX) AND (height:XXX)" for "dtbook-to-pef", "html-to-pef" and "epub3-to-pef"
  * - "speech" for "dtbook-to-daisy3", "dtbook-to-epub3", "epub-to-daisy" and "zedai-to-epub3
  * - "braille, speech" or "braille" or "speech" for "epub3-to-epub3"
+ * - "braille" for "dtbook-to-ebraille" and "epub3-to-ebraille"
  */
 const ScriptMediaTag = {
     'dtbook-to-pef': (j: Job) => EmbossedMedia(j),
@@ -73,6 +75,7 @@ const ScriptMediaTag = {
     'epub-to-daisy': () => `<media value="speech"/>`,
     'zedai-to-epub3': () => `<media value="speech"/>`,
     'dtbook-to-ebraille': () => `<media value="braille"/>`,
+    'epub3-to-ebraille': () => `<media value="braille"/>`,
 }
 
 /**

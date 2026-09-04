@@ -15,11 +15,13 @@ on:
       - '[0-9]*.[0-9]*.[0-9]*'
       - '![0-9]*.[0-9]*.[0-9]*-*'
       - '[0-9]*.[0-9]*.[0-9]*-beta*'
-      - '[0-9]*.[0-9]*-beta*'
       - 'v[0-9]*.[0-9]*.[0-9]*'
       - '!v[0-9]*.[0-9]*.[0-9]*-*'
       - 'v[0-9]*.[0-9]*.[0-9]*-beta*'
-      - 'v[0-9]*.[0-9]*-beta*'
+
+concurrency:
+  group: release-${{ inputs.release_tag || github.ref_name }}
+  cancel-in-progress: false
 
 env:
   GH_TOKEN: ${{ secrets.GH_PIPELINE_TOKEN }}
@@ -35,6 +37,7 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     strategy:
+      fail-fast: false
       matrix:
         os: [macos-latest, windows-latest]
 
@@ -56,7 +59,17 @@ jobs:
             echo "::error::Release tag '${RELEASE_TAG}' was not found."
             exit 1
           fi
-          echo "RELEASE_VERSION=${RELEASE_TAG#v}" >> "$GITHUB_ENV"
+          if [[ ! "$RELEASE_TAG" =~ ^v?[0-9]+\.[0-9]+\.[0-9]+(-beta[0-9A-Za-z.-]*)?$ ]]; then
+            echo "::error::Release tag '${RELEASE_TAG}' must be a final or beta version tag, such as 1.12.0 or 1.12.0-beta.1."
+            exit 1
+          fi
+          RELEASE_VERSION="${RELEASE_TAG#v}"
+          APP_VERSION="$(node -p "require('./package.json').version")"
+          if [ "$RELEASE_VERSION" != "$APP_VERSION" ]; then
+            echo "::error::Release tag '${RELEASE_TAG}' does not match package.json version '${APP_VERSION}'."
+            exit 1
+          fi
+          echo "RELEASE_VERSION=$RELEASE_VERSION" >> "$GITHUB_ENV"
 
       - name: Check out engine submodule
         run: git submodule update --init engine
@@ -175,7 +188,9 @@ jobs:
         run: |
           KEYCHAIN_PATH="${RUNNER_TEMP}/signing.keychain-db"
           if [ -f "$KEYCHAIN_PATH" ]; then
-            security delete-keychain "$KEYCHAIN_PATH"
+            if ! security delete-keychain "$KEYCHAIN_PATH"; then
+              echo "::warning::Failed to delete signing keychain; continuing."
+            fi
           else
             echo "Signing keychain not found; skipping cleanup."
           fi

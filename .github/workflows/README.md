@@ -28,7 +28,7 @@ If the snapshot trigger requested a test snapshot, this workflow also creates a 
 
 ## release.yml — Release
 
-**Triggers:** version tag pushes — `1.2.3` or `v1.2.3` (final), and `1.2.3-beta.1`, `1.2-beta-1`, or matching `v...` tags (beta/preview). Can also be run manually with `release_tag` set to an existing tag.
+**Triggers:** version tag pushes — `1.2.3` or `v1.2.3` (final), and `1.2.3-beta.1` or matching `v...` tags (beta/preview). Can also be run manually with `release_tag` set to an existing tag.
 
 Builds signed, notarized installers on macOS and Windows and publishes them to a **draft** GitHub Release. The release stays as a draft until manually published. The workflow also builds debug installers with experimental feature flags enabled and uploads them as `daisy-pipeline-<version>-experimental-<platform>.<ext>` assets; macOS debug installers go through the same installer signing step.
 

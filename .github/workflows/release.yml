@@ -134,7 +134,13 @@ jobs:
 
       - name: Clean up keychain (macOS)
         if: runner.os == 'macOS' && always()
-        run: security delete-keychain "${RUNNER_TEMP}/signing.keychain-db"
+        run: |
+          KEYCHAIN_PATH="${RUNNER_TEMP}/signing.keychain-db"
+          if [ -f "$KEYCHAIN_PATH" ]; then
+            security delete-keychain "$KEYCHAIN_PATH"
+          else
+            echo "Signing keychain not found; skipping cleanup."
+          fi
 
       - name: Build and release (Windows)
         if: runner.os == 'Windows'

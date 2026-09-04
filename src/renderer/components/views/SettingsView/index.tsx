@@ -1,7 +1,15 @@
 import { useEffect, useState } from 'react'
 import { useWindowStore } from 'renderer/store'
-import { ApplicationSettings, PipelineStatus } from 'shared/types'
-import { save, setTtsConfig } from 'shared/data/slices/settings'
+import {
+    ApplicationSettings,
+    DefaultVoiceTableThreshold,
+    PipelineStatus,
+} from 'shared/types'
+import {
+    save,
+    setTtsConfig,
+    setVoiceTableThreshold,
+} from 'shared/data/slices/settings'
 //@ts-ignore
 import { TTSEngines } from './TTSEngines'
 //@ts-ignore
@@ -23,22 +31,13 @@ import packageJson from '../../../../../package.json'
 import { EngineStatusIcon } from 'renderer/components/Widgets/SvgIcons'
 // @ts-ignore
 import { ExternalServices } from './ExternalServices'
+// @ts-ignore
+import { Engine } from './Engine'
 
 const { App } = window
 
-export enum SettingsMenuItem {
-    General = '/general',
-    Appearance = '/appearance',
-    ExternalServices = '/external-services',
-    TTSBrowseVoices = '/browse-voices',
-    TTSPreferredVoices = '/preferred-voices',
-    TTSEngines = '/engines',
-    TTSMoreOptions = '/more-options',
-}
-
-export const SettingsMenuItems = Object.values(SettingsMenuItem).filter(
-    (item) => typeof item === 'string'
-)
+import { SettingsMenuItem, SettingsMenuItems } from './types'
+export { SettingsMenuItem, SettingsMenuItems }
 type VoiceFilter = { id: string; value: string }
 
 type SettingsViewProps = {
@@ -90,7 +89,17 @@ export function SettingsView(
     // const [selectedSection, setSelectedSection] = useState(
     //     SelectedMenuItem.General
     // )
-    const selectedSection = props.selectedItem ?? SettingsMenuItem.General
+    const requestedSection = props.selectedItem ?? SettingsMenuItem.General
+    const canUseAdminEndpoints =
+        !BUILD_ENABLE_EXTERNAL_ENGINE ||
+        settings.engineMode !== 'external' ||
+        (pipeline.clientCapability?.canUseAdminEndpoints ?? false)
+    const selectedSection =
+        !BUILD_ENABLE_EXTERNAL_ENGINE &&
+        requestedSection === SettingsMenuItem.Engine
+            ? SettingsMenuItem.General
+            : requestedSection
+    const adminSettingsDisabled = !canUseAdminEndpoints
     const setSelectedSection = (section: SettingsMenuItem) => {
         // see the routes/index.tsx for the corresponding hash router
         window.location.hash = '#/settings' + section
@@ -187,6 +196,14 @@ export function SettingsView(
     const onTtsVoiceFiltersChange = (vf: VoiceFilter[]) => {
         setVoiceFilters(vf)
     }
+    const onVoiceTableThresholdChange = (value: string | number) => {
+        const threshold = Math.max(
+            1,
+            Number(value) || DefaultVoiceTableThreshold
+        )
+        App.store.dispatch(setVoiceTableThreshold(threshold))
+        App.store.dispatch(save())
+    }
 
     let address = pipeline.webservice
         ? `${pipeline.webservice.host}:${pipeline.webservice.port}${pipeline.webservice.path}`
@@ -206,12 +223,22 @@ export function SettingsView(
             section: SettingsMenuItem.Appearance,
             markup: <Appearance newSettings={newSettings} />,
         },
+        ...(BUILD_ENABLE_EXTERNAL_ENGINE
+            ? [
+                  {
+                      label: 'Engine',
+                      section: SettingsMenuItem.Engine,
+                      markup: <Engine newSettings={newSettings} />,
+                  },
+              ]
+            : []),
         {
             label: 'External Services',
             section: SettingsMenuItem.ExternalServices,
             markup: (
                 <ExternalServices
                     newSettings={newSettings}
+                    disabled={adminSettingsDisabled}
                     onChangeTtsEngineProperties={onTtsEnginePropertiesChange}
                     onChangeTtsEngineConnected={onTtsEngineConnectedChange}
                 />
@@ -228,7 +255,8 @@ export function SettingsView(
                     ttsEnginesStates={pipeline.ttsEnginesStates}
                     onChangeVoiceFilters={onTtsVoiceFiltersChange}
                     voiceFilters={voiceFilters}
-                    onSelectSection={setSelectedSection}
+                    voiceTableThreshold={newSettings.voiceTableThreshold}
+                    onChangeVoiceTableThreshold={onVoiceTableThresholdChange}
                 />
             ) : (
                 <p>Loading voices...</p>
@@ -263,6 +291,7 @@ export function SettingsView(
                         newSettings.ttsConfig.ttsEngineProperties
                     }
                     ttsEnginesStates={pipeline.ttsEnginesStates}
+                    disabled={adminSettingsDisabled}
                     onChangeTtsEngineProperties={onTtsEnginePropertiesChange}
                 />
             ),
@@ -325,7 +354,15 @@ export function SettingsView(
                         height="20"
                     />
                     <span>
-                        Engine is{'  '} <b>{engineStatus.status}</b>
+                        {engineStatus.status === PipelineStatus.ERROR ? (
+                            <>
+                                Engine has an <b>error</b>
+                            </>
+                        ) : (
+                            <>
+                                Engine is <b>{engineStatus.status}</b>
+                            </>
+                        )}
                     </span>
                 </div>
             </div>

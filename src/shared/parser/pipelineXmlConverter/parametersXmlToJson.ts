@@ -22,7 +22,7 @@ function parametersXmlToJson(
                     default: propElem.getAttribute('default'),
                     kind: 'option',
                     isStylesheetParameter: true,
-                } as ScriptOption)
+                }) as ScriptOption
         )
     } catch (e) {
         try {

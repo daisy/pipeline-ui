@@ -15,7 +15,7 @@ export function AboutWindow() {
         frame: false,
 
         webPreferences: {
-            preload: join(__dirname, 'bridge.js'),
+            preload: join(__dirname, '../preload/bridge.js'),
             nodeIntegration: false,
             contextIsolation: true,
             spellcheck: false,

@@ -24,12 +24,34 @@ import { setTimeout } from 'timers/promises'
 import { resolveUnpacked, walk } from '../utils'
 import { DOMParser, XMLSerializer } from '@xmldom/xmldom'
 import fs from 'fs-extra'
-import { selectAiEngineProperties, selectTtsConfig } from 'shared/data/slices/settings'
+import {
+    selectAiEngineProperties,
+    selectTtsConfig,
+} from 'shared/data/slices/settings'
+import * as portscanner from 'portscanner'
 
 /**
  * Local DAISY Pipeline 2 management class
  */
-export class PipelineInstance {
+export interface EngineController {
+    props: PipelineInstanceProperties
+    messages: Array<string>
+    errors: Array<string>
+    launch(): Promise<PipelineState>
+    stop(appIsClosing?: boolean): Promise<void> | void
+    registerMessagesListener(
+        callerID: string,
+        callback: (data: string) => void
+    ): void
+    removeMessageListener(callerID: string): void
+    registerErrorsListener(
+        callerID: string,
+        callback: (data: string) => void
+    ): void
+    removeErrorsListener(callerID: string): void
+}
+
+export class PipelineInstance implements EngineController {
     props: PipelineInstanceProperties
     messages: Array<string>
     messagesListeners: Map<string, (data: string) => void> = new Map<
@@ -439,7 +461,7 @@ Then close the program using the port and restart this application.`,
                 '-Dorg.daisy.pipeline.home=' + this.props.pipelineHome,
                 '-Dorg.daisy.pipeline.tts.host.protection=false', // so we can send TTS engine properties
             ]
-            const aiEngineProperties = BUILD_ENABLE_MISTRAL
+            const aiEngineProperties = BUILD_ENABLE_OCR
                 ? selectAiEngineProperties(store.getState())
                 : []
             // #238 : include the current tts config settings file at engine launch
@@ -642,33 +664,17 @@ async function getAvailablePort(
     endPort: number,
     host: string = '127.0.0.1'
 ) {
-    let server = createServer()
-    let portChecked = startPort
-    let portOpened = 0
-
-    // Port seeking : if port is in use, retry with a different port
-    server.on('error', (err: NodeJS.ErrnoException) => {
-        info(`Port ${portChecked.toString()} is not usable : `)
+    try {
+        let availablePort = await portscanner.findAPortNotInUse(
+            startPort,
+            endPort,
+            host
+        )
+        return availablePort
+    } catch (err) {
+        info(
+            `Not able to find an available port. Tried ${startPort} to ${endPort} on host ${host}`
+        )
         info(err)
-        portChecked += 1
-        if (portChecked <= endPort) {
-            info(' -> Checking for ' + portChecked.toString())
-            server.listen(portChecked, host)
-        }
-    })
-    // Listening successfully on a port
-    server.on('listening', (event) => {
-        // close the server if listening a port succesfully
-        server.close(() => {
-            // select the port when the server is closed
-            portOpened = portChecked
-        })
-        info(portChecked.toString() + ' is available')
-    })
-    // Start the port seeking
-    server.listen(portChecked, host)
-    while (portOpened == 0 && portChecked <= endPort) {
-        await setTimeout(1000)
     }
-    return portOpened
 }

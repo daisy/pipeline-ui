@@ -17,6 +17,7 @@ import { sniffFile } from './sniffFile'
 import { Filetype } from 'shared/types'
 import path from 'path'
 import { fileURLToPath, pathToFileURL } from 'url'
+import { info, error, debug } from 'electron-log'
 
 function pathExists(path) {
     if (path.length == 0) return false
@@ -54,30 +55,43 @@ async function detectFiletype(filepath: string): Promise<Filetype> {
     // some special types exist where the result of sniffFile is also the filetype type
     let specialType = scriptInputFiletypes.find((ft) => ft.type == filetypeType)
     if (specialType) {
+        debug('detectFiletype', specialType)
         return specialType
     }
 
     // or the filetype could be given by the extension
     if (filetypeType == 'xhtml') {
-        return scriptInputFiletypes.find(
+        let scriptInputFiletype = scriptInputFiletypes.find(
             (mt) => mt.type == 'application/xhtml+xml'
         )
+        debug('detectFiletype', scriptInputFiletype)
+        return scriptInputFiletype
     } else if (filetypeType == 'html') {
-        return scriptInputFiletypes.find((mt) => mt.type == 'text/html')
+        let scriptInputFiletype = scriptInputFiletypes.find((mt) => mt.type == 'text/html')
+        debug('detectFiletype', scriptInputFiletype)
+        return scriptInputFiletype
     } else if (filetypeType == 'dtbook') {
-        return scriptInputFiletypes.find(
+        let scriptInputFiletype = scriptInputFiletypes.find(
             (mt) => mt.type == 'application/x-dtbook+xml'
         )
+        debug('detectFiletype', scriptInputFiletype)
+        return scriptInputFiletype
     } else if (filetypeType == 'zedai') {
-        return scriptInputFiletypes.find(
+
+        let scriptInputFiletype = scriptInputFiletypes.find(
             (mt) => mt.type == 'application/z3998-auth+xml'
         )
+        debug('detectFiletype', scriptInputFiletype)
+        return scriptInputFiletype
     } else if (filetypeType == 'xml') {
-        return scriptInputFiletypes.find((mt) => mt.type == 'application/xml')
+        let scriptInputFiletype = scriptInputFiletypes.find((mt) => mt.type == 'application/xml')
+        debug('detectFiletype', scriptInputFiletype)
+        return scriptInputFiletype
     } else {
         let mt = scriptInputFiletypes.find((mt) =>
             mt.extensions.includes(filetypeType)
         )
+        debug('detectFiletype', mt ?? null)
         return mt ?? null
     }
 }
@@ -152,17 +166,8 @@ function isDirectory(itemPath: string) {
     return false
 }
 function isURL(str: string) {
-    try {
-        // see if it can be a URL object
-        new URL(str)
-    } catch (_) {
-        return false
-    }
-    // however, this can return a false positive on windows, so check other things too
-    if (str.toLowerCase().startsWith('file://')) {
-        return true
-    }
-    return false
+    // use explicit scheme check instead of new URL() test to avoid false positives on windows
+    return /^[a-zA-Z][a-zA-Z0-9+\-.]{2,}:\/\//.test(str)
 }
 function setupFileSystemEvents() {
     // comes from the renderer process (ipcRenderer.send())

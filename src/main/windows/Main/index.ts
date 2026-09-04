@@ -137,7 +137,7 @@ export async function MainWindow() {
             resizable: true,
             alwaysOnTop: false,
             webPreferences: {
-                preload: join(__dirname, 'bridge.js'),
+                preload: join(__dirname, '../preload/bridge.js'),
                 nodeIntegration: false,
                 contextIsolation: true,
                 spellcheck: false,
@@ -176,10 +176,10 @@ export async function MainWindow() {
                                     result.response == 0
                                         ? 'keepall'
                                         : result.response == 1
-                                        ? 'keepengine'
-                                        : result.response == 2
-                                        ? 'close'
-                                        : 'ask'
+                                          ? 'keepengine'
+                                          : result.response == 2
+                                            ? 'close'
+                                            : 'ask'
 
                                 if (result.checkboxChecked) {
                                     store.dispatch(

@@ -21,7 +21,11 @@ const MultiUriInput: React.FC<MultiFileInputProps> = ({
     required = false,
 }) => {
     const [files, setFiles] = useState<string[]>(
-        Array.isArray(initialValue) ? initialValue : initialValue ? [initialValue] : []
+        Array.isArray(initialValue)
+            ? initialValue
+            : initialValue
+              ? [initialValue]
+              : []
     )
     const [text, setText] = useState<string>('')
 

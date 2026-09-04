@@ -1,6 +1,7 @@
 import { PayloadAction } from '@reduxjs/toolkit'
 import { pipelineAPI } from 'main/data/apis/pipeline'
 import {
+    selectCanUseAdminEndpoints,
     selectWebservice,
     selectProperties,
     selectScripts,
@@ -10,11 +11,7 @@ import {
     setTtsVoices,
 } from 'shared/data/slices/pipeline'
 import { selectTtsConfig } from 'shared/data/slices/settings'
-import {
-    EngineProperty,
-    TtsEngineState,
-    TtsVoice,
-} from 'shared/types'
+import { EngineProperty, TtsEngineState, TtsVoice } from 'shared/types'
 import { GetStateFunction } from 'shared/types/store'
 
 export function setProperties(
@@ -22,6 +19,10 @@ export function setProperties(
     dispatch,
     getState: GetStateFunction
 ) {
+    if (action.payload.sendToAPI && !selectCanUseAdminEndpoints(getState())) {
+        return
+    }
+
     const webservice = selectWebservice(getState())
     const currentProperties = selectProperties(getState())
     const newProperties = action.payload.values as EngineProperty[]
@@ -241,7 +242,9 @@ export function setProperties(
         .then(async () => {
             if (
                 action.payload.sendToAPI &&
-                newProperties.find((np) => np.name.indexOf('mistral') != -1)
+                newProperties.find((np) =>
+                    np.name.startsWith('org.daisy.pipeline.ocr.')
+                )
             ) {
                 const currentScripts = selectScripts(getState())
                 const currentScriptIds = new Set(

@@ -41,6 +41,51 @@
         background-color: var(--bg);
         border-radius: var(--br);
     }
+
+    .batch-indicator {
+        position: relative;
+        margin: 0;
+        padding: .5rem;
+        padding-left: 1.25rem;
+        background-color: var(--bg);
+        border-radius: var(--br);
+    }
+
+    .batch-indicator::before {
+        content: '';
+        position: absolute;
+        left: 0.35rem;
+        top: 0.5rem;
+        bottom: 0.5rem;
+        width: 4px;
+        border-radius: 2px;
+        background-color: transparent;
+    }
+
+    .batch-color-0::before {
+        background-color: var(--batch-1);
+    }
+
+    .batch-color-1::before {
+        background-color: var(--batch-2);
+    }
+
+    .batch-color-2::before {
+        background-color: var(--batch-3);
+    }
+
+    .batch-color-3::before {
+        background-color: var(--batch-4);
+    }
+
+    .batch-color-4::before {
+        background-color: var(--batch-5);
+    }
+
+    .batch-color-5::before {
+        background-color: var(--batch-6);
+    }
+
     .job-configuration ul, .job-results ul {
         padding-left: 1rem;
     }

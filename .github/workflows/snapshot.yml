@@ -10,18 +10,50 @@ on:
       engine_sha:
         description: 'Engine commit SHA (defaults to HEAD of engine develop branch)'
         required: false
+      create_test_snapshot:
+        description: 'Also create a test snapshot release'
+        required: false
+        default: false
+        type: boolean
 
 jobs:
   update-snapshot-branch:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Verify GH_PIPELINE_TOKEN can push to repository
+        env:
+          GH_PIPELINE_TOKEN: ${{ secrets.GH_PIPELINE_TOKEN }}
+          GH_REPOSITORY: ${{ github.repository }}
+        run: |
+          if [ -z "$GH_PIPELINE_TOKEN" ]; then
+            echo "::error::GH_PIPELINE_TOKEN is not available to this workflow"
+            exit 1
+          fi
+
+          RESPONSE="$(mktemp)"
+          STATUS="$(curl -sS -o "$RESPONSE" -w "%{http_code}" \
+            -H "Authorization: Bearer $GH_PIPELINE_TOKEN" \
+            -H "Accept: application/vnd.github+json" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            "https://api.github.com/repos/$GH_REPOSITORY")"
+          if [ "$STATUS" != "200" ]; then
+            echo "::error::GH_PIPELINE_TOKEN cannot access $GH_REPOSITORY (GitHub API status $STATUS)"
+            exit 1
+          fi
+
+          CAN_PUSH="$(jq -r '.permissions.push // false' "$RESPONSE")"
+          if [ "$CAN_PUSH" != "true" ]; then
+            echo "::error::GH_PIPELINE_TOKEN can read $GH_REPOSITORY but does not have push permission"
+            exit 1
+          fi
+
       - name: Check out pipeline-ui develop
         uses: actions/checkout@v4
         with:
           ref: refs/heads/develop
           fetch-depth: 0
-          token: ${{ secrets.GH_PIPELINE_TOKEN }}
+          persist-credentials: false
 
       - name: Verify checkout
         run: git log --oneline -3
@@ -52,8 +84,17 @@ jobs:
           git add engine
 
       - name: Create or update develop-engine-snapshot branch
+        env:
+          GH_PIPELINE_TOKEN: ${{ secrets.GH_PIPELINE_TOKEN }}
+          GH_REPOSITORY: ${{ github.repository }}
         run: |
           SHA="${{ steps.engine.outputs.sha }}"
+          TEST_SNAPSHOT="${{ github.event.inputs.create_test_snapshot }}"
+          COMMIT_MESSAGE="ci: trigger package build for engine ${SHA:0:7}"
+          if [ "$TEST_SNAPSHOT" = "true" ]; then
+            COMMIT_MESSAGE="$COMMIT_MESSAGE [test-snapshot]"
+          fi
+          git remote set-url origin "https://x-access-token:${GH_PIPELINE_TOKEN}@github.com/${GH_REPOSITORY}.git"
           git diff --cached --quiet || git commit -m "chore: update engine submodule to ${SHA:0:7} (engine develop)"
-          git commit --allow-empty -m "ci: trigger package build for engine ${SHA:0:7}"
+          git commit --allow-empty -m "$COMMIT_MESSAGE"
           git push origin HEAD:refs/heads/develop-engine-snapshot --force

@@ -10,10 +10,12 @@ import {
 } from 'shared/data/slices/settings'
 import { checkForUpdate } from 'shared/data/slices/update'
 import { ttsConfigToXml } from 'shared/parser/pipelineXmlConverter/ttsConfigToXml'
-import { EngineProperty } from 'shared/types'
 import { RootState } from 'shared/types/store'
 import { pipelineAPI } from '../apis/pipeline'
-import { selectWebservice } from 'shared/data/slices/pipeline'
+import {
+    selectCanUseAdminEndpoints,
+    selectWebservice,
+} from 'shared/data/slices/pipeline'
 import { settingsFile } from '../settings'
 import { pathToFileURL } from 'url'
 
@@ -71,13 +73,14 @@ export function settingsMiddleware({ getState, dispatch }) {
                             //console.log("wrote file, setting engine property")
                             const webservice = selectWebservice(getState())
                             let ttsConfig = selectTtsConfig(getState())
-                            let ttsConfigProperty: EngineProperty = {
-                                name: 'org.daisy.pipeline.tts.config',
-                                value: ttsConfig.xmlFilepath,
+                            if (
+                                webservice &&
+                                selectCanUseAdminEndpoints(getState())
+                            ) {
+                                pipelineAPI.setTtsConfigProperty(ttsConfig)(
+                                    webservice
+                                )
                             }
-                            pipelineAPI.setProperty(ttsConfigProperty)(
-                                webservice
-                            )
                         }
                     )
                     break

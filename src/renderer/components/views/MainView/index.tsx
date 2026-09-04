@@ -15,8 +15,6 @@ import {
     selectJob,
     selectNextJob,
     selectPrevJob,
-    removeBatchJob,
-    setAnnouncement,
 } from 'shared/data/slices/pipeline'
 // @ts-ignore
 import { NewJobPane } from './NewJobPane'
@@ -24,25 +22,32 @@ import { calculateJobName } from 'shared/jobName'
 import { PLATFORM } from 'shared/constants'
 import { Plus, X } from '../../Widgets/SvgIcons'
 // @ts-ignore
-import { BatchJobDetailsPane } from 'renderer/components/Views/MainView/JobDetailsPane/BatchJobPane'
+import { SingleJobDetailsPane } from 'renderer/components/views/MainView/JobDetailsPane/SingleJobPane'
 // @ts-ignore
-import { SingleJobDetailsPane } from 'renderer/components/Views/MainView/JobDetailsPane/SingleJobPane'
-// @ts-ignore
-import { ScriptForm } from 'renderer/components/Views/MainView/ScriptForm'
+import { ScriptForm } from 'renderer/components/views/MainView/ScriptForm'
 import { TabList } from 'renderer/components/Widgets/TabList'
-import { areAllJobsInBatchDone } from 'shared/utils'
 import { CanDo } from 'shared/canDo'
 import * as Utils from 'shared/utils'
-import { createAnnouncement } from 'shared/at-announce'
+import { BATCH_COLOR_COUNT, getBatchColorIndex } from 'shared/batchColor'
 const { App } = window
 
 export function MainView() {
     const { pipeline, settings } = useWindowStore()
     const visibleJobs = pipeline.jobs.filter(
-        (job) =>
-            (settings.editJobOnNewTab || !job.invisible) &&
-            (!job.jobRequest?.batchId || job.isPrimaryForBatch)
+        (job) => settings.editJobOnNewTab || !job.invisible
     )
+    const getBatchClassName = (job) =>
+        job.jobRequest?.batchId
+            ? `batch-color-${getBatchColorIndex(
+                  job.jobRequest.batchId,
+                  pipeline.jobs,
+                  BATCH_COLOR_COUNT
+              )}`
+            : ''
+    const getBatchLabel = (job) =>
+        job.jobRequest?.batchId
+            ? `${calculateJobName(job, pipeline.jobs)} (batch)`
+            : calculateJobName(job, pipeline.jobs)
 
     useEffect(() => {
         if (!(pipeline.jobs && pipeline.jobs.length > 0)) {
@@ -88,30 +93,6 @@ export function MainView() {
                 break
         }
     }
-    // let canClose = (job) => {
-    //     if (job.jobRequest && job.jobRequest.batchId) {
-    //         let jobsInBatch = pipeline.jobs.filter(
-    //             (j) =>
-    //                 j.jobRequest &&
-    //                 j.jobRequest.batchId &&
-    //                 j.jobRequest.batchId == job.jobRequest.batchId
-    //         )
-    //         return areAllJobsInBatchDone(job, jobsInBatch)
-    //     } else if (job.jobData?.status) {
-    //         return (
-    //             [JobStatus.ERROR, JobStatus.FAIL, JobStatus.SUCCESS].includes(
-    //                 job.jobData?.status
-    //             ) || job.state == JobState.NEW
-    //         )
-    //     } else if (job.jobRequestError) {
-    //         return true
-    //     } else if (job.state == JobState.NEW) {
-    //         return true
-    //     }
-    // }
-
-    
-
     return (
         <main>
             <div className="tablist-container">
@@ -129,13 +110,14 @@ export function MainView() {
                         `${ID(job.internalId)}-tabpanel`
                     }
                     getTabTitle={(job, idx) =>
-                        `${idx + 1}. ${calculateJobName(job, pipeline.jobs)}`
+                        `${idx + 1}. ${getBatchLabel(job)}`
                     }
                     getTabLabel={(job, idx) => (
                         <h1>
-                            {idx + 1}. {calculateJobName(job, pipeline.jobs)}
+                            {idx + 1}. {getBatchLabel(job)}
                         </h1>
                     )}
+                    getTabClassName={(job, idx) => getBatchClassName(job)}
                     onTabClick={(job, idx) => {
                         App.store.dispatch(selectJob(job))
                         document
@@ -185,25 +167,24 @@ export function MainView() {
                             type="button"
                             id={`cancel-job-${job.internalId}`}
                             onClick={async (e) => {
-                                if (job.jobRequest?.batchId) {
-                                    // remove all jobs in batch
-                                    let jobsInBatch = pipeline.jobs.filter(
-                                        (j) =>
-                                            j.jobRequest &&
-                                            j.jobRequest.batchId &&
-                                            j.jobRequest.batchId ==
-                                                job.jobRequest.batchId
-                                    )
-                                    let result = await App.showMessageBoxYesNo(
-                                        'Are you sure you want to close these jobs?'
-                                    )
-                                    if (result) {
-                                        App.store.dispatch(
-                                            removeBatchJob(jobsInBatch)
-                                        )
-                                    }
+                                // remove a single job
+                                if (
+                                    job.state === JobState.NEW &&
+                                    Utils.isJobUnchanged(job, settings)
+                                ) {
+                                    App.store.dispatch(removeJob(job))
+                                } else if (
+                                    ((job.jobData?.status &&
+                                        [
+                                            JobStatus.ERROR,
+                                            JobStatus.FAIL,
+                                            JobStatus.SUCCESS,
+                                        ].includes(job.jobData.status)) ||
+                                        !!job.jobRequestError) &&
+                                    settings.confirmOnCloseFinishedJob === false
+                                ) {
+                                    App.store.dispatch(removeJob(job))
                                 } else {
-                                    // remove a single job
                                     let result = await App.showMessageBoxYesNo(
                                         'Are you sure you want to close this job?'
                                     )
@@ -236,26 +217,8 @@ export function MainView() {
                                         <ScriptForm job={job} />
                                     )}
                                 {job.script != null &&
-                                    job.state != JobState.NEW &&
-                                    job.jobRequest.batchId == null && (
+                                    job.state != JobState.NEW && (
                                         <SingleJobDetailsPane job={job} />
-                                    )}
-                                {job.script != null &&
-                                    job.state != JobState.NEW &&
-                                    job.jobRequest.batchId != null && (
-                                        <BatchJobDetailsPane
-                                            jobs={[
-                                                job,
-                                                pipeline.jobs.filter(
-                                                    (j) =>
-                                                        j.internalId !=
-                                                            job.internalId &&
-                                                        j.jobRequest?.batchId ==
-                                                            job.jobRequest
-                                                                ?.batchId
-                                                ),
-                                            ].flat()}
-                                        />
                                     )}
                             </div>
                         )}

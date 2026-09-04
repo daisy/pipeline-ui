@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react'
-import { Upload } from 'lucide-react'
+import { Upload } from './SvgIcons'
 import { FileInputProps } from './FileInput'
 import { debug } from 'electron-log'
 import { PLATFORM, ENVIRONMENT } from 'shared/constants'
@@ -85,7 +85,7 @@ const DragFileInput: React.FC<FileInputProps> = ({
                 onDrop={onDrop}
                 id={elemId}
             >
-                <Upload size={32} />
+                <Upload width="32" height="32" />
                 <p className="drop-target-text">Drop files here</p>
             </div>
             <div className="buttons">

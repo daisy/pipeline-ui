@@ -1,10 +1,21 @@
 import { app, BrowserWindow } from 'electron'
+import { error, warn } from 'electron-log'
+import { join } from 'path'
 
 import { ENVIRONMENT, IPC, PLATFORM } from 'shared/constants'
 import { WindowProps } from 'shared/types'
-import { APP_CONFIG } from '~/app.config'
 
-import { PipelineInstance } from '../../pipeline/pipeline'
+import { EngineController } from '../../pipeline/pipeline'
+
+const forwardedConsoleMessagePattern =
+    /(?:^|\s)window:[^:\s]+:console-message\b/
+
+function isReactDevToolsHook(sourceId?: string) {
+    return (
+        sourceId?.startsWith('chrome-extension://') &&
+        sourceId.endsWith('/build/installHook.js')
+    )
+}
 
 /**
  * Bind a window to a pipeline instance.
@@ -15,7 +26,7 @@ import { PipelineInstance } from '../../pipeline/pipeline'
  */
 export function bindWindowToPipeline(
     binding: BrowserWindow,
-    pipeline: PipelineInstance
+    pipeline: EngineController
 ) {
     // Keep the window id here as it is removed before the close event
     const windowID = binding.id
@@ -40,14 +51,49 @@ export function createWindow(
 ) {
     const window = new BrowserWindow(settings)
 
-    const devServerURL = `${APP_CONFIG.RENDERER.DEV_SERVER.URL}#/${id}${hash}`
+    const devServerURL = `${process.env['ELECTRON_RENDERER_URL']}#/${id}${hash}`
 
     ENVIRONMENT.IS_DEV
         ? window.loadURL(devServerURL)
-        : window.loadFile('index.html', {
+        : window.loadFile(join(__dirname, '../renderer/index.html'), {
               hash: `/${id}${hash}`,
           })
     window.on('closed', window.destroy)
+    window.on('unresponsive', () => warn(`window:${id}:unresponsive`))
+    window.webContents.on(
+        'did-fail-load',
+        (_event, errorCode, errorDescription, validatedURL, isMainFrame) => {
+            error(`window:${id}:did-fail-load`, {
+                errorCode,
+                errorDescription,
+                validatedURL,
+                isMainFrame,
+            })
+        }
+    )
+    window.webContents.on('preload-error', (_event, preloadPath, err) => {
+        error(`window:${id}:preload-error`, { preloadPath, err })
+    })
+    window.webContents.on(
+        'console-message',
+        (_event, level, message, line, sourceId) => {
+            if (
+                level < 2 ||
+                sourceId?.includes('/electron-log') ||
+                forwardedConsoleMessagePattern.test(message) ||
+                isReactDevToolsHook(sourceId)
+            ) {
+                return
+            }
+
+            const payload = { level, message, line, sourceId }
+            if (level >= 3) {
+                error(`window:${id}:console-message`, payload)
+            } else {
+                warn(`window:${id}:console-message`, payload)
+            }
+        }
+    )
 
     // bypass CORS
     window.webContents.session.webRequest.onBeforeSendHeaders(

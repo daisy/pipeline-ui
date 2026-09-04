@@ -5,8 +5,7 @@ function errorXmlToJson(xmlString: string): JobRequestError {
     let errorElm = null
     try {
         errorElm = parseXml(xmlString, 'error')
-    }
-    catch(error) {
+    } catch (error) {
         return null
     }
     let descElms = errorElm.getElementsByTagName('description')

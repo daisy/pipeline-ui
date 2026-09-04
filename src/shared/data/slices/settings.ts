@@ -4,6 +4,8 @@ import {
     ApplicationSettings,
     ClosingMainWindowAction,
     ColorScheme,
+    EngineConnectionMode,
+    ExternalEngineConfig,
     Font,
     KeyValue,
     PipelineInstanceProperties,
@@ -12,6 +14,17 @@ import {
     TtsConfig,
 } from 'shared/types'
 import { RootState } from 'shared/types/store'
+
+const buildEngineMode = (
+    engineMode: EngineConnectionMode | undefined
+): EngineConnectionMode =>
+    BUILD_ENABLE_EXTERNAL_ENGINE && engineMode === 'external'
+        ? 'external'
+        : 'embedded'
+
+const buildExternalEngineConfig = (
+    externalEngine: ExternalEngineConfig | undefined
+) => (BUILD_ENABLE_EXTERNAL_ENGINE ? externalEngine : undefined)
 
 export const settings = createSlice({
     name: 'settings',
@@ -30,11 +43,13 @@ export const settings = createSlice({
                 lastStart: 0,
             },
         } as PipelineInstanceProperties,
+        engineMode: 'embedded',
         colorScheme: 'system',
         onClosingMainWindow: undefined, // Undeterminate to display the app-opening dialog
         editJobOnNewTab: true,
         ttsConfig: undefined,
         autoCheckUpdate: true,
+        sponsorshipMessageLastShown: 0,
     } as ApplicationSettings,
     reducers: {
         // general state changer, not recommended based on how redux works
@@ -47,6 +62,14 @@ export const settings = createSlice({
             if (action.payload.pipelineInstanceProps)
                 state.pipelineInstanceProps =
                     action.payload.pipelineInstanceProps
+            if (action.payload.engineMode) {
+                state.engineMode = buildEngineMode(action.payload.engineMode)
+            } else if (!BUILD_ENABLE_EXTERNAL_ENGINE) {
+                state.engineMode = 'embedded'
+            }
+            state.externalEngine = buildExternalEngineConfig(
+                action.payload.externalEngine
+            )
             if (action.payload.colorScheme)
                 state.colorScheme = action.payload.colorScheme
             if (action.payload.onClosingMainWindow)
@@ -57,6 +80,16 @@ export const settings = createSlice({
                 state.ttsConfig = action.payload.ttsConfig
             if (action.payload.autoCheckUpdate !== undefined) {
                 state.autoCheckUpdate = action.payload.autoCheckUpdate
+            }
+            if (action.payload.voiceTableThreshold !== undefined) {
+                state.voiceTableThreshold = action.payload.voiceTableThreshold
+            }
+            if (
+                action.payload.contextMenuValidationChecksAccessibility !==
+                undefined
+            ) {
+                state.contextMenuValidationChecksAccessibility =
+                    action.payload.contextMenuValidationChecksAccessibility
             }
         },
         save: (state: ApplicationSettings) => {
@@ -80,6 +113,18 @@ export const settings = createSlice({
         ) => {
             state.pipelineInstanceProps = action.payload
         },
+        setEngineMode: (
+            state: ApplicationSettings,
+            action: PayloadAction<EngineConnectionMode>
+        ) => {
+            state.engineMode = buildEngineMode(action.payload)
+        },
+        setExternalEngineConfig: (
+            state: ApplicationSettings,
+            action: PayloadAction<ExternalEngineConfig | undefined>
+        ) => {
+            state.externalEngine = buildExternalEngineConfig(action.payload)
+        },
         setColorScheme: (
             state: ApplicationSettings,
             action: PayloadAction<keyof typeof ColorScheme>
@@ -97,6 +142,18 @@ export const settings = createSlice({
             action: PayloadAction<boolean>
         ) => {
             state.editJobOnNewTab = action.payload
+        },
+        setConfirmOnCloseFinishedJob: (
+            state: ApplicationSettings,
+            action: PayloadAction<boolean>
+        ) => {
+            state.confirmOnCloseFinishedJob = action.payload
+        },
+        setContextMenuValidationChecksAccessibility: (
+            state: ApplicationSettings,
+            action: PayloadAction<boolean>
+        ) => {
+            state.contextMenuValidationChecksAccessibility = action.payload
         },
         setTtsConfig: (
             state: ApplicationSettings,
@@ -152,6 +209,12 @@ export const settings = createSlice({
         ) => {
             state.lastUsedScriptOptionOverrides = action.payload
         },
+        setVoiceTableThreshold: (
+            state: ApplicationSettings,
+            action: PayloadAction<number>
+        ) => {
+            state.voiceTableThreshold = action.payload
+        },
     },
 })
 
@@ -160,11 +223,15 @@ export const {
     setDownloadPath,
     setSettings,
     setPipelineProperties,
+    setEngineMode,
+    setExternalEngineConfig,
     setColorScheme,
     setClosingMainWindowAction,
     setTtsConfig,
     setAutoCheckUpdate,
     setEditJobOnNewTab,
+    setConfirmOnCloseFinishedJob,
+    setContextMenuValidationChecksAccessibility,
     setSponsorshipMessageLastShown,
     setFont,
     setTextSize,
@@ -173,6 +240,7 @@ export const {
     setSortScriptsByFrequency,
     setSuggestOptionValues,
     setLastUsedScriptOptionOverrides,
+    setVoiceTableThreshold,
 } = settings.actions
 
 export const selectors = {
@@ -180,9 +248,16 @@ export const selectors = {
     selectDownloadPath: (state: RootState) => state.settings.downloadFolder,
     selectPipelineProperties: (s: RootState) =>
         s.settings.pipelineInstanceProps,
+    selectEngineMode: (s: RootState) => buildEngineMode(s.settings.engineMode),
+    selectExternalEngine: (s: RootState) =>
+        buildExternalEngineConfig(s.settings.externalEngine),
     selectColorScheme: (s: RootState) => s.settings.colorScheme,
     selectClosingAction: (s: RootState) => s.settings.onClosingMainWindow,
     selectEditOnNewTab: (s: RootState) => s.settings.editJobOnNewTab,
+    selectConfirmOnCloseFinishedJob: (s: RootState) =>
+        s.settings.confirmOnCloseFinishedJob,
+    selectContextMenuValidationChecksAccessibility: (s: RootState) =>
+        s.settings.contextMenuValidationChecksAccessibility,
     selectTtsConfig: (s: RootState) => s.settings.ttsConfig,
     selectAutoCheckUpdate: (s: RootState) => s.settings.autoCheckUpdate,
 
@@ -193,12 +268,15 @@ export const selectors = {
     selectSuggestOptionValues: (s: RootState) => s.settings.suggestOptionValues,
     selectLastUsedScriptOptionOverrides: (s: RootState) =>
         s.settings.lastUsedScriptOptionOverrides,
+    selectVoiceTableThreshold: (s: RootState) => s.settings.voiceTableThreshold,
 }
 // prettier-ignore
 export const {
     selectSettings,
     selectDownloadPath,
     selectPipelineProperties,
+    selectEngineMode,
+    selectExternalEngine,
     selectColorScheme,
     selectClosingAction,
     selectTtsConfig,
@@ -209,4 +287,7 @@ export const {
     selectSortScriptsByFrequency,
     selectSuggestOptionValues,
     selectLastUsedScriptOptionOverrides,
+    selectVoiceTableThreshold,
+    selectConfirmOnCloseFinishedJob,
+    selectContextMenuValidationChecksAccessibility,
 } = selectors

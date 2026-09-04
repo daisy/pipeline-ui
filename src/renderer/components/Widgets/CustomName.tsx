@@ -5,7 +5,9 @@ import { useState } from 'react'
 const { App } = window
 
 export function CustomName({ job }) {
-    const [value, setValue] = useState((job.jobRequest && job.jobRequest.nicename) || '')
+    const [value, setValue] = useState(
+        (job.jobRequest && job.jobRequest.nicename) || ''
+    )
 
     return (
         <div className="custom-name field">

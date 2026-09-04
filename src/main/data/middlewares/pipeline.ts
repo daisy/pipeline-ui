@@ -10,8 +10,8 @@ import {
     updateScript,
     updateDatatype,
     removeJobs,
-    removeBatchJob, setProperties,
-    requestStylesheetParameters
+    setProperties,
+    requestStylesheetParameters,
 } from 'shared/data/slices/pipeline'
 
 import { Datatype, Job, Script } from 'shared/types'
@@ -48,9 +48,6 @@ export function pipelineMiddleware({ getState, dispatch }) {
                 break
             case removeJobs.type: // Batch removal of jobs in engine (no state check on removal)
                 actions.removeJobs(action)
-                break
-            case removeBatchJob.type: // Batch removal of jobs but warn the user first
-                actions.removeBatchJob(action, dispatch, getState)
                 break
             case removeJob.type:
                 actions.removeJob(action, dispatch, getState)

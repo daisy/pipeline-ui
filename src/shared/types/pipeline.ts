@@ -27,7 +27,7 @@ export function baseurl(ws: Webservice) {
     if (host == '0.0.0.0') {
         host = '127.0.0.1'
     }
-    // eslint-disable-next-line
+
     return `${ws.ssl ? 'https' : 'http'}://${host}${ws.port ? ':' + ws.port : ''}${ws.path ?? ''}`
 }
 
@@ -55,6 +55,7 @@ export type PipelineState = {
     selectedJobId: string
     datatypes?: Datatype[]
     alive: Alive
+    clientCapability: PipelineClientCapability
     properties?: { [key: string]: EngineProperty }
     ttsEnginesStates?: { [key: string]: TtsEngineState }
     announcement: string
@@ -131,6 +132,20 @@ export type Alive = {
     localfs?: boolean
     authentication?: boolean
     version?: string
+}
+
+export type PipelineClientAuthentication =
+    | 'unknown'
+    | 'disabled'
+    | 'authenticated'
+    | 'unauthenticated'
+
+export type PipelineClientRole = 'unknown' | 'admin' | 'client'
+
+export type PipelineClientCapability = {
+    authentication: PipelineClientAuthentication
+    role: PipelineClientRole
+    canUseAdminEndpoints: boolean
 }
 
 export enum Priority {
@@ -218,17 +233,13 @@ export type Job = {
      */
     stylesheetParameters?: ScriptOption[]
     is2StepsJob?: boolean
-    /**
-     * There is one job per tab except for batch jobs
-     * In this case, the job-tab association is only for the 'primary' job in the batch
-     * eg the job for which the tab was made in the first place
-    */
-    isPrimaryForBatch?: boolean
     // keep track of what we downloaded
     // this prevents multiple output folders from being created, in the case where
     // web socket callbacks happen more than once
     resultsDownloaded?: boolean
     logDownloaded?: boolean
+    // File paths seeded by OS "Open with" before the user chooses a script.
+    openWithSource?: string[]
 }
 // JobData is the JSON representation of Pipeline WS data for a single job
 export type JobData = {
@@ -305,6 +316,8 @@ export type Script = {
     homepage?: string
     batchable: boolean // not 2 step and not multidoc
     multidoc: boolean // the primary input supports an array of documents
+    inputFilesets?: Array<string>
+    outputFilesets?: Array<string>
 }
 
 export type NameValue = {

@@ -75,7 +75,7 @@ function getFiletypeFilters(mediaType) {
     filters.push({ name: 'Any file', extensions: ['*'] })
 
     // remove empty extensions
-    filters = filters.filter(f => f.extensions.length != 0)
+    filters = filters.filter((f) => f.extensions.length != 0)
 
     return filters
 }

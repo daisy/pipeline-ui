@@ -2,9 +2,11 @@ import { FilelistWithRelevantScripts } from './FilelistWithRelevantScripts'
 import { getRelevantScripts } from '../scriptFilters'
 import { DragFileInput } from '../Widgets/DragFileInput'
 import { useState, useEffect } from 'react'
+import { useWindowStore } from 'renderer/store'
 import { FileTreeEntry } from 'main/ipcs/fileSystem'
 import { ID } from 'renderer/utils'
 import { X } from './SvgIcons'
+import { setAnnouncement } from 'shared/data/slices/pipeline'
 const { App } = window
 
 export function DragDropFilterFiles({
@@ -13,6 +15,7 @@ export function DragDropFilterFiles({
     onChange,
     initialValue,
 }) {
+    const { pipeline } = useWindowStore()
     // files is [{filepath, filetype},...]
     const [files, setFiles] = useState(initialValue)
     const [filteredFiles, setFilteredFiles] = useState(initialValue)
@@ -20,6 +23,7 @@ export function DragDropFilterFiles({
     const [uniqueFiletypes, setUniqueFiletypes] = useState(
         Array.from(new Set(initialValue.map((f) => f.filetype.type)))
     )
+    const [unsupportedMessage, setUnsupportedMessage] = useState('')
 
     // update dependent states when files changes
     useEffect(() => {
@@ -69,26 +73,32 @@ export function DragDropFilterFiles({
         let uniqueNewFiles = newFiles.filter(
             (file) => currentFiles.indexOf(file) == -1
         )
-        // debug(`Unique new files`, uniqueNewFiles)
         let uniqueNewFilesThatAreSupported = []
+        let rejectedCount = 0
         // assign a filetype to each one
         for (let file of uniqueNewFiles) {
-            // debug(`Detecting type of ${file}`)
-
             let filetype = await App.detectFiletype(file)
-            // debug(`...${filetype}`)
             if (filetype) {
                 uniqueNewFilesThatAreSupported.push({
                     filepath: file,
                     filetype,
                 })
+            } else {
+                rejectedCount++
             }
         }
-        // debug(
-        //     `Unique new files that are supported ${JSON.stringify(
-        //         uniqueNewFilesThatAreSupported
-        //     )}`
-        // )
+
+        if (rejectedCount > 0 && uniqueNewFilesThatAreSupported.length === 0) {
+            const msg =
+                rejectedCount === 1
+                    ? 'File type not recognized'
+                    : 'File types not recognized'
+            setUnsupportedMessage(msg)
+            App.store.dispatch(setAnnouncement(msg))
+        } else {
+            setUnsupportedMessage('')
+            App.store.dispatch(setAnnouncement(''))
+        }
 
         let filesCopy = [...files]
         filesCopy = filesCopy.concat(
@@ -138,6 +148,9 @@ export function DragDropFilterFiles({
                 mediaType={[]}
                 onChange={onDragInputChange}
             />
+            {unsupportedMessage && (
+                <p className="error">{unsupportedMessage}</p>
+            )}
 
             {files.length > 0 && (
                 <>
@@ -195,7 +208,8 @@ export function DragDropFilterFiles({
                                     key={idx}
                                     files={filesOfType.map((f) => f.filepath)}
                                     relevantScripts={getRelevantScripts(
-                                        filetype
+                                        filetype,
+                                        pipeline.scripts
                                     )}
                                     categoryName={filesOfType[0]?.filetype.name}
                                     jobInternalId={job?.internalId}
@@ -204,7 +218,14 @@ export function DragDropFilterFiles({
                             )
                         })}
                     </div>
-                    <button onClick={() => setFiles([])} type="button">
+                    <button
+                        onClick={() => {
+                            setFiles([])
+                            setUnsupportedMessage('')
+                            App.store.dispatch(setAnnouncement(''))
+                        }}
+                        type="button"
+                    >
                         Clear files
                     </button>
                 </>

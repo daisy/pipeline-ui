@@ -23,10 +23,10 @@ exe : src/resources/daisy-pipeline
 release: src/resources/daisy-pipeline
 ifeq ($(OS), WINDOWS)
 	exec("yarn.cmd");
-	exec("yarn.cmd", "release");
+	exec("yarn.cmd", "release:win");
 else
 	exec("yarn");
-	exec("yarn", "release");
+	exec("yarn", "release:mac");
 endif
 
 # ifeq ($(OS), WINDOWS)
@@ -56,9 +56,9 @@ endif
 # engine/pipeline2-$(ENGINE_VERSION)_windows.zip :
 # 	exec("$(MAKE)", "-C", "engine", "dist-zip-$(zip_classifier)");
 engine/pipeline2-$(ENGINE_VERSION)_windows.zip :
-	exec("$(MAKE)", "-C", "engine", "dist-zip-win");
+	exec("$(MAKE)", "-C", "engine", "FIXED_BUILD=true", "dist-zip-win");
 engine/pipeline2-$(ENGINE_VERSION)_mac.zip :
-	exec("$(MAKE)", "-C", "engine", "dist-zip-mac");
+	exec("$(MAKE)", "-C", "engine", "FIXED_BUILD=true", "dist-zip-mac");
 
 clean :
 ifeq ($(OS), WINDOWS)

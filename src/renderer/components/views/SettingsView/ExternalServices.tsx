@@ -5,6 +5,7 @@ import { TTSEngines } from './TTSEngines'
 
 export function ExternalServices({
     newSettings,
+    disabled = false,
     onChangeTtsEngineProperties,
     onChangeTtsEngineConnected,
 }) {
@@ -14,13 +15,14 @@ export function ExternalServices({
             <TTSEngines
                 ttsEngineProperties={newSettings.ttsConfig.ttsEngineProperties}
                 ttsEnginesConnected={newSettings.ttsConfig.ttsEnginesConnected}
+                disabled={disabled}
                 onChangeTtsEngineProperties={onChangeTtsEngineProperties}
                 onChangeTtsEngineConnected={onChangeTtsEngineConnected}
             />
-            {BUILD_ENABLE_MISTRAL && (
+            {BUILD_ENABLE_OCR && (
                 <>
                     <h2>OCR</h2>
-                    <AiEngines />
+                    <AiEngines disabled={disabled} />
                 </>
             )}
         </>

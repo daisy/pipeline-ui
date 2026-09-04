@@ -1,0 +1,116 @@
+import {
+    save,
+    setEditJobOnNewTab,
+    setClosingMainWindowAction,
+    setConfirmOnCloseFinishedJob,
+    setContextMenuValidationChecksAccessibility,
+} from 'shared/data/slices/settings'
+import { ClosingMainWindowAction } from 'shared/types'
+import { PLATFORM } from 'shared/constants'
+const { App } = window
+
+export function Behavior({ newSettings }) {
+    const editJobOnNewTabChanged = (e) => {
+        App.store.dispatch(setEditJobOnNewTab(e.target.checked))
+        App.store.dispatch(save())
+    }
+
+    const confirmOnCloseFinishedJobChanged = (e) => {
+        App.store.dispatch(setConfirmOnCloseFinishedJob(e.target.checked))
+        App.store.dispatch(save())
+    }
+
+    const contextMenuValidationChecksAccessibilityChanged = (e) => {
+        App.store.dispatch(
+            setContextMenuValidationChecksAccessibility(e.target.checked)
+        )
+        App.store.dispatch(save())
+    }
+
+    const ClosingActionChanged = (e) => {
+        App.store.dispatch(
+            setClosingMainWindowAction(
+                Object.keys(ClosingMainWindowAction)[
+                    e.target.selectedIndex
+                ] as keyof typeof ClosingMainWindowAction
+            )
+        )
+        App.store.dispatch(save())
+    }
+
+    return (
+        <>
+            <div className="field">
+                <label htmlFor="editJobOnNewTab">
+                    Editing jobs in new tabs
+                </label>
+                <span className="description">
+                    If checked, editing a job will open a pre-filled new job
+                    instead of reusing the existing job.
+                </span>
+                <input
+                    type="checkbox"
+                    id="editJobOnNewTab"
+                    checked={newSettings.editJobOnNewTab}
+                    onChange={editJobOnNewTabChanged}
+                />
+            </div>
+            <div className="field">
+                <label htmlFor="OnMainWindowClosing">
+                    Action on closing the app window
+                </label>
+                <select
+                    id="OnMainWindowClosing"
+                    onChange={(e) => ClosingActionChanged(e)}
+                    value={newSettings.onClosingMainWindow}
+                >
+                    {Object.entries(ClosingMainWindowAction).map(
+                        ([k, v]: [string, string]) => {
+                            return (
+                                <option key={k} value={k}>
+                                    {v}
+                                </option>
+                            )
+                        }
+                    )}
+                </select>
+            </div>
+            <div className="field">
+                <label htmlFor="confirmOnCloseFinishedJob">
+                    Confirm before closing finished jobs
+                </label>
+                <span className="description">
+                    If checked, a confirmation dialog appears when closing a
+                    finished job.
+                </span>
+                <input
+                    type="checkbox"
+                    id="confirmOnCloseFinishedJob"
+                    checked={newSettings.confirmOnCloseFinishedJob ?? true}
+                    onChange={confirmOnCloseFinishedJobChanged}
+                />
+            </div>
+            {PLATFORM.IS_WINDOWS && (
+                <div className="field">
+                    <label htmlFor="contextMenuValidationChecksAccessibility">
+                        Run the accessibility check for EPUB files validated
+                        from the right-click menu
+                    </label>
+                    <input
+                        type="checkbox"
+                        id="contextMenuValidationChecksAccessibility"
+                        checked={
+                            newSettings.contextMenuValidationChecksAccessibility ??
+                            true
+                        }
+                        onChange={
+                            contextMenuValidationChecksAccessibilityChanged
+                        }
+                    />
+                </div>
+            )}
+            {/* insert local pipeline settings form part here */}
+            {/* insert remote pipeline settings form part here */}
+        </>
+    )
+}

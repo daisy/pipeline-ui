@@ -13,13 +13,14 @@ import {
     selectPipeline,
     selectVisibleJobs,
     selectWebservice,
+    setAnnouncement,
     updateJob,
 } from 'shared/data/slices/pipeline'
+import { selectEngineMode } from 'shared/data/slices/settings'
 import { MainWindowInstance } from 'main/windows'
 import { removeJob as removeJobSlice } from 'shared/data/slices/pipeline'
 import { error, info } from 'electron-log'
-import { startMonitor as origStartMonitor } from './monitor' // polling job monitor
-import { startMonitor } from './ws-monitor' // web socket job monitor
+import { startMonitor } from './monitor'
 import { ParserException } from 'shared/parser/pipelineXmlConverter/parser'
 import { GetStateFunction } from 'shared/types/store'
 import { PayloadAction } from '@reduxjs/toolkit'
@@ -27,6 +28,7 @@ import { v4 as uuidv4 } from 'uuid'
 import { getBatchInputValues, getBatchInput } from 'shared/utils'
 import { ScriptUsageEventData, UsageEntry } from 'main/data/usage'
 import { logJob } from 'main/usage'
+import { buildExternalJobRequestBody } from 'main/pipeline/job-data'
 
 export function removeJobs(action: PayloadAction<any>) {
     let removedJobs = action.payload as Job[]
@@ -43,18 +45,6 @@ export function removeJobs(action: PayloadAction<any>) {
                 )
             })
         }
-    }
-}
-export function removeBatchJob(
-    action: PayloadAction<any>,
-    dispatch,
-    getState: GetStateFunction
-) {
-    const visibleJobs = selectVisibleJobs(getState())
-    removeJobs(action)
-    // add a job if the batch was the last job
-    if (visibleJobs.length == action.payload.length) {
-        dispatch(addJob(newJob(selectPipeline(getState()))))
     }
 }
 
@@ -123,6 +113,7 @@ export function runJob(jobToRun: Job, dispatch, getState: GetStateFunction) {
     if (jobToRun.jobData && jobToRun.jobData.results) {
         jobToRun.jobData.results = undefined
     }
+    jobToRun.resultsDownloaded = false
     if (
         jobToRun.state === JobState.SUBMITTED ||
         jobToRun.state === JobState.SUBMITTING
@@ -131,8 +122,18 @@ export function runJob(jobToRun: Job, dispatch, getState: GetStateFunction) {
     } else if (webservice) {
         info('Launching job', JSON.stringify(jobToRun))
         dispatch(updateJob({ ...jobToRun, state: JobState.SUBMITTING }))
-        pipelineAPI
-            .launchJob(jobToRun)(webservice)
+        const launchJob = async () => {
+            if (selectEngineMode(getState()) === 'external') {
+                const body = await buildExternalJobRequestBody(jobToRun)
+                if (body) {
+                    info('Launching external job with uploaded job data')
+                    return pipelineAPI.launchJob(jobToRun, { body })(webservice)
+                }
+            }
+            return pipelineAPI.launchJob(jobToRun)(webservice)
+        }
+
+        launchJob()
             .then((jobResponse) => {
                 const updatedJob = {
                     ...jobToRun,
@@ -147,7 +148,6 @@ export function runJob(jobToRun: Job, dispatch, getState: GetStateFunction) {
                     updatedJob.jobData = jobResponse as JobData
                     // start a job monitor
                     startMonitor(updatedJob, webservice, getState, dispatch)
-                    // origStartMonitor(updatedJob, webservice, getState, dispatch)
                 }
                 dispatch(updateJob(updatedJob))
                 return updatedJob
@@ -211,8 +211,6 @@ export function runBatchJobs(
 
     // mark the job request as a batch request
     job.jobRequest.batchId = uuidv4()
-    // mark this job as batch primary
-    job.isPrimaryForBatch = true
 
     // get the batch input
     let batchInput = getBatchInput(job.script)
@@ -226,7 +224,7 @@ export function runBatchJobs(
 
     // use one for the default job
     job.jobRequest.inputs.find((input) => input.name == batchInput.name).value =
-        batchJobRequestInputValues[0]
+        [batchJobRequestInputValues[0]]
     // run the default job
     runJob(job, dispatch, getState)
 
@@ -241,13 +239,11 @@ export function runBatchJobs(
         // @ts-ignore
         newJob_.jobRequest.inputs = job.jobRequest.inputs.map((input) => {
             if (input.name == batchInput.name) {
-                return { name: input.name, value: inputValue }
+                return { name: input.name, value: [inputValue] }
             } else {
                 return input
             }
         })
-        newJob_.isPrimaryForBatch = false
-
         // normally, the addJob action assigns an ID and adds job to state.pipeline.jobs
         // we aren't dispatching new actions from within this function so we'll do it
         // manually
@@ -259,4 +255,7 @@ export function runBatchJobs(
         // run the job
         runJob(newJob_, dispatch, getState)
     })
+    dispatch(
+        setAnnouncement(`${batchJobRequestInputValues.length} jobs created`)
+    )
 }

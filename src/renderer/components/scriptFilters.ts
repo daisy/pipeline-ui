@@ -1,39 +1,40 @@
-import { useWindowStore } from 'renderer/store'
 import { debug } from 'electron-log'
 
 // return the scripts relevant to the given filetype
-export function getRelevantScripts(filetype) {
-    const { pipeline } = useWindowStore()
+export function getRelevantScripts(filetype, scripts) {
     let retval
     if (filetype == 'ncc') {
-        retval = pipeline.scripts.filter((s) => s.id.indexOf('daisy202-') != -1)
+        retval = scripts.filter((s) =>
+            s.inputFilesets.some((f) => f == 'daisy202')
+        )
     } else if (filetype == 'daisy3opf') {
-        retval = pipeline.scripts
-            .filter((s) => s.id.indexOf('daisy3-') != -1)
-            .concat(
-                pipeline.scripts.filter((s) => s.id.indexOf('nimas-') != -1)
-            )
+        retval = scripts.filter((s) =>
+            s.inputFilesets.some((f) => f == 'daisy3')
+        )
     } else if (filetype == 'epub3opf') {
-        retval = pipeline.scripts
-            .filter((s) => s.id.indexOf('epub3-') != -1)
-            .concat(pipeline.scripts.filter((s) => s.id.indexOf('epub-') != -1))
+        retval = scripts.filter((s) =>
+            s.inputFilesets.some((f) => f == 'epub3')
+        )
     } else if (filetype == 'epub2opf') {
-        retval = pipeline.scripts
-            .filter((s) => s.id.indexOf('epub2-') != -1)
-            .concat(pipeline.scripts.filter((s) => s.id.indexOf('epub-') != -1))
+        retval = scripts.filter((s) =>
+            s.inputFilesets.some((f) => f == 'epub2')
+        )
     } else if (filetype == 'word') {
-        retval = pipeline.scripts.filter((s) => s.id.indexOf('word-') != -1)
+        retval = scripts.filter((s) =>
+            s.inputFilesets.some((f) => f == 'docx')
+        )
     } else if (filetype == 'text/html' || filetype == 'application/xhtml+xml') {
-        retval = pipeline.scripts.filter((s) => s.id.indexOf('html-') != -1)
+        retval = scripts.filter((s) =>
+            s.inputFilesets.some((f) => f == 'html')
+        )
+    } else if (filetype == 'pdf') {
+        retval = scripts.filter((s) =>
+            s.inputFilesets.some((f) => f == 'pdf')
+        )
     } else {
-        retval = pipeline.scripts.filter((s) =>
+        retval = scripts.filter((s) =>
             s.inputs.find((i) => i.mediaType.includes(filetype))
         )
     }
-    // debug(
-    //     `Relevant scripts for ${filetype}: ${JSON.stringify(
-    //         retval.map((v) => v?.id ?? '')
-    //     )}`
-    // )
     return retval
 }

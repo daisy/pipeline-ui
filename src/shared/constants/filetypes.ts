@@ -89,7 +89,7 @@ export const mediaTypesFileFilters: Array<Filetype> = [
         type: 'application/x-obfl+xml',
         name: 'Open Braille Formatting Language',
         extensions: ['obfl'],
-    }
+    },
 ]
 
 // this is a set of filetypes that are accepted as primary script inputs
@@ -123,7 +123,12 @@ let scriptInputFiletypes: Array<Filetype> = [
         type: 'obfl',
         name: 'Open Braille Formatting Language',
         extensions: ['obfl'],
-    }
+    },
+    {
+        type: 'pdf',
+        name: 'Portable Document Format',
+        extensions: ['pdf'],
+    },
 ]
 // filter out the things that are never found as script sources
 scriptInputFiletypes = scriptInputFiletypes.concat(
@@ -135,6 +140,7 @@ scriptInputFiletypes = scriptInputFiletypes.concat(
             mt.type != 'application/xml' &&
             mt.type != 'application/vnd.pipeline.tts-config+xml' &&
             mt.type != 'application/pls+xml' &&
+            mt.type != 'application/xslt+xml' &&
             mt.type != '*'
     )
 )

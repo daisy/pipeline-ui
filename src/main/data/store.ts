@@ -7,6 +7,7 @@ import { IPC } from 'shared/constants'
 import { middlewares } from './middlewares'
 import { readSettings } from './settings'
 import { getInitialState } from 'shared/data/store'
+import { configurePipelineAPIState } from './apis/pipeline'
 
 let preloadedState: RootState = getInitialState()
 
@@ -74,6 +75,8 @@ export const store = configureStore({
     middleware: (getDefaultMiddleware) =>
         getDefaultMiddleware().concat(...middlewares, forwardToFrontend),
 })
+
+configurePipelineAPIState(() => store.getState())
 
 // Register every actions of the store as IPC channel
 export function registerStoreIPC() {

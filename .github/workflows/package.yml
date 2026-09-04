@@ -28,14 +28,16 @@ jobs:
           cache: yarn
 
       - name: Set up Java
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v2
         with:
-          distribution: temurin
-          java-version: 17
+          distribution: adopt
+          java-version: 8
 
       - name: Install GNU Make (macOS)
         if: runner.os == 'macOS'
-        run: brew install make
+        run: |
+          brew update
+          brew install make
 
       - name: Cache Maven dependencies
         uses: actions/cache@v4
@@ -47,13 +49,20 @@ jobs:
       - name: Install dependencies
         run: yarn install --frozen-lockfile --ignore-scripts
 
-      - name: Build and package (macOS)
+      - name: Build and package debug (macOS)
         if: runner.os == 'macOS'
         run: yarn dist-debug:mac
 
-      - name: Build and package (Windows)
+      - name: Build and package debug (Windows)
         if: runner.os == 'Windows'
         run: yarn dist-debug:win
+
+      - name: Store maven.log
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: "maven-${{matrix.os}}.log"
+          path: engine/maven.log
 
       - name: Upload artifact (macOS)
         if: runner.os == 'macOS'
@@ -75,8 +84,78 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+      issues: read
 
     steps:
+      - name: Verify GH_PIPELINE_TOKEN can read Pipeline2 project
+        env:
+          GH_PIPELINE_TOKEN: ${{ secrets.GH_PIPELINE_TOKEN }}
+          PROJECT_ORG: daisy
+          PROJECT_NUMBER: 16
+          PROJECT_STATUS_FIELD: Status
+          PROJECT_STATUS_VALUE: Testing
+        run: |
+          if [ -z "$GH_PIPELINE_TOKEN" ]; then
+            echo "::error::GH_PIPELINE_TOKEN is not available to this workflow"
+            exit 1
+          fi
+
+          RESPONSE="$RUNNER_TEMP/project-fields.json"
+          # shellcheck disable=SC2016
+          QUERY='
+            query($org: String!, $number: Int!) {
+              organization(login: $org) {
+                projectV2(number: $number) {
+                  fields(first: 20) {
+                    nodes {
+                      __typename
+                      ... on ProjectV2SingleSelectField {
+                        name
+                        options {
+                          name
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          '
+          if ! GH_TOKEN="$GH_PIPELINE_TOKEN" gh api graphql \
+            -f query="$QUERY" \
+            -f org="$PROJECT_ORG" \
+            -F number="$PROJECT_NUMBER" \
+            > "$RESPONSE"; then
+            echo "::error::GH_PIPELINE_TOKEN cannot read daisy project 16. Add read:project scope or Organization Projects: Read access."
+            exit 1
+          fi
+
+          if jq -e '.errors and (.errors | length > 0)' "$RESPONSE" > /dev/null; then
+            jq -r '.errors[].message' "$RESPONSE"
+            echo "::error::GH_PIPELINE_TOKEN cannot read daisy project 16. Add read:project scope or Organization Projects: Read access."
+            exit 1
+          fi
+
+          if ! jq -e '.data.organization.projectV2 != null' "$RESPONSE" > /dev/null; then
+            echo "::error::Could not read daisy project 16 with GH_PIPELINE_TOKEN."
+            exit 1
+          fi
+
+          if ! jq -e \
+            --arg field "$PROJECT_STATUS_FIELD" \
+            --arg value "$PROJECT_STATUS_VALUE" \
+            '.data.organization.projectV2.fields.nodes[]
+              | select(.__typename == "ProjectV2SingleSelectField" and .name == $field)
+              | .options[]
+              | select(.name == $value)' \
+            "$RESPONSE" > /dev/null; then
+            echo "::error::Project daisy/16 does not have a single-select '$PROJECT_STATUS_FIELD' option named '$PROJECT_STATUS_VALUE'."
+            exit 1
+          fi
+
+      - name: Check out snapshot source
+        uses: actions/checkout@v4
+
       - name: Download macOS artifact
         uses: actions/download-artifact@v4
         with:
@@ -89,24 +168,338 @@ jobs:
           name: daisy-pipeline-win
           path: artifacts/win
 
-      - name: Create Snapshot release if it doesn't exist
+      - name: Resolve Snapshot metadata
+        id: snapshot-metadata
+        run: |
+          APP_VERSION="$(jq -r '.version' package.json)"
+          UI_BRANCH="${GITHUB_REF_NAME:-$(git rev-parse --abbrev-ref HEAD)}"
+          if [ "$UI_BRANCH" = "HEAD" ]; then
+            UI_BRANCH="develop-engine-snapshot"
+          fi
+          UI_HASH="$(git rev-parse --short HEAD)"
+          ENGINE_BRANCH="develop"
+          ENGINE_HASH="$(git rev-parse --short HEAD:engine)"
+          COMMIT_DATE="$(git show -s --format=%cI HEAD)"
+          SNAPSHOT_DATE="$(date -u -d "$COMMIT_DATE" +%Y%m%d)"
+          RELEASE_NAME="${APP_VERSION}-snapshot-${SNAPSHOT_DATE}"
+          RELEASE_DESCRIPTION="ui ${UI_BRANCH}@${UI_HASH}, engine ${ENGINE_BRANCH}@${ENGINE_HASH}"
+
+          echo "app_version=$APP_VERSION" >> "$GITHUB_OUTPUT"
+          echo "release_name=$RELEASE_NAME" >> "$GITHUB_OUTPUT"
+          echo "release_description=$RELEASE_DESCRIPTION" >> "$GITHUB_OUTPUT"
+          echo "ui_branch=$UI_BRANCH" >> "$GITHUB_OUTPUT"
+          echo "ui_hash=$UI_HASH" >> "$GITHUB_OUTPUT"
+          echo "engine_branch=$ENGINE_BRANCH" >> "$GITHUB_OUTPUT"
+          echo "engine_hash=$ENGINE_HASH" >> "$GITHUB_OUTPUT"
+          echo "snapshot_date=$SNAPSHOT_DATE" >> "$GITHUB_OUTPUT"
+
+      - name: Build Snapshot release notes
+        id: snapshot-notes
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PROJECT_GH_TOKEN: ${{ secrets.GH_PIPELINE_TOKEN }}
+          PROJECT_ORG: daisy
+          PROJECT_NUMBER: 16
+          PROJECT_STATUS_FIELD: Status
+          PROJECT_STATUS_VALUE: Testing
+          REPO: ${{ github.repository }}
+          RELEASE_NAME: ${{ steps.snapshot-metadata.outputs.release_name }}
+          RELEASE_DESCRIPTION: ${{ steps.snapshot-metadata.outputs.release_description }}
         run: |
-          gh release view snapshot --repo ${{ github.repository }} > /dev/null 2>&1 || \
-            gh release create snapshot \
+          NOTES="$RUNNER_TEMP/snapshot-release-notes.md"
+          MILESTONES="$RUNNER_TEMP/open-milestones.json"
+          ISSUES="$RUNNER_TEMP/ready-for-testing-issues.json"
+          PROJECT_PAGES="$RUNNER_TEMP/project-testing-pages.jsonl"
+          PROJECT_ITEMS="$RUNNER_TEMP/project-testing-items.json"
+          PROJECT_TESTING_ISSUES="$RUNNER_TEMP/project-testing-issues.json"
+
+          gh api --paginate "repos/$REPO/milestones?state=open&per_page=100" > "$MILESTONES"
+          echo "[]" > "$ISSUES"
+
+          MILESTONE_TITLE="$(jq -sr '
+            add
+            | sort_by((.due_on // "9999-12-31T23:59:59Z"), .number)
+            | .[0].title // ""
+          ' "$MILESTONES")"
+          MILESTONE_URL="$(jq -sr '
+            add
+            | sort_by((.due_on // "9999-12-31T23:59:59Z"), .number)
+            | .[0].html_url // ""
+          ' "$MILESTONES")"
+
+          if [ -n "$MILESTONE_TITLE" ]; then
+            gh issue list \
+              --repo "$REPO" \
+              --state open \
+              --label "ready-for-testing" \
+              --milestone "$MILESTONE_TITLE" \
+              --limit 1000 \
+              --json number,title,url \
+              > "$ISSUES"
+          fi
+
+          if [ -z "$PROJECT_GH_TOKEN" ]; then
+            echo "::error::GH_PIPELINE_TOKEN is not available to read daisy project 16"
+            exit 1
+          fi
+
+          # shellcheck disable=SC2016
+          PROJECT_QUERY='
+            query($org: String!, $number: Int!, $cursor: String, $statusField: String!) {
+              organization(login: $org) {
+                projectV2(number: $number) {
+                  items(first: 100, after: $cursor) {
+                    pageInfo {
+                      hasNextPage
+                      endCursor
+                    }
+                    nodes {
+                      content {
+                        __typename
+                        ... on Issue {
+                          number
+                          title
+                          url
+                          repository {
+                            name
+                            owner {
+                              login
+                            }
+                          }
+                        }
+                      }
+                      fieldValueByName(name: $statusField) {
+                        ... on ProjectV2ItemFieldSingleSelectValue {
+                          name
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          '
+          : > "$PROJECT_PAGES"
+          CURSOR=""
+          while :; do
+            PAGE="$RUNNER_TEMP/project-page.json"
+            if [ -n "$CURSOR" ]; then
+              GH_TOKEN="$PROJECT_GH_TOKEN" gh api graphql \
+                -f query="$PROJECT_QUERY" \
+                -f org="$PROJECT_ORG" \
+                -F number="$PROJECT_NUMBER" \
+                -f cursor="$CURSOR" \
+                -f statusField="$PROJECT_STATUS_FIELD" \
+                > "$PAGE"
+            else
+              GH_TOKEN="$PROJECT_GH_TOKEN" gh api graphql \
+                -f query="$PROJECT_QUERY" \
+                -f org="$PROJECT_ORG" \
+                -F number="$PROJECT_NUMBER" \
+                -f statusField="$PROJECT_STATUS_FIELD" \
+                > "$PAGE"
+            fi
+
+            if jq -e '.errors and (.errors | length > 0)' "$PAGE" > /dev/null; then
+              jq -r '.errors[].message' "$PAGE"
+              echo "::error::Failed to read daisy project 16 testing items."
+              exit 1
+            fi
+
+            jq -c '.data.organization.projectV2.items.nodes[]?' "$PAGE" >> "$PROJECT_PAGES"
+            HAS_NEXT="$(jq -r '.data.organization.projectV2.items.pageInfo.hasNextPage' "$PAGE")"
+            if [ "$HAS_NEXT" != "true" ]; then
+              break
+            fi
+            CURSOR="$(jq -r '.data.organization.projectV2.items.pageInfo.endCursor // empty' "$PAGE")"
+            if [ -z "$CURSOR" ]; then
+              echo "::error::GitHub project pagination indicated another page but returned no cursor."
+              exit 1
+            fi
+          done
+
+          if [ -s "$PROJECT_PAGES" ]; then
+            jq -s '.' "$PROJECT_PAGES" > "$PROJECT_ITEMS"
+          else
+            echo "[]" > "$PROJECT_ITEMS"
+          fi
+
+          jq -n \
+            --slurpfile ready "$ISSUES" \
+            --slurpfile project "$PROJECT_ITEMS" \
+            --arg status "$PROJECT_STATUS_VALUE" \
+            '
+              ($ready[0] | map(.url)) as $ready_urls
+              | $project[0]
+              | map(select(.content.__typename == "Issue"))
+              | map(select(.fieldValueByName.name == $status))
+              | map({
+                  number: .content.number,
+                  title: .content.title,
+                  url: .content.url,
+                  repo: "\(.content.repository.owner.login)/\(.content.repository.name)"
+                })
+              | map(select(.url as $url | ($ready_urls | index($url) | not)))
+              | sort_by(.repo, .number)
+            ' > "$PROJECT_TESTING_ISSUES"
+
+          {
+            echo "Latest snapshot builds from engine develop and pipeline-ui develop branches."
+            echo
+            echo "$RELEASE_NAME"
+            echo "$RELEASE_DESCRIPTION"
+            echo
+
+            if [ -n "$MILESTONE_TITLE" ]; then
+              echo "Ready for testing in current milestone: [$MILESTONE_TITLE]($MILESTONE_URL)"
+              echo
+
+              if jq -e 'length > 0' "$ISSUES" > /dev/null; then
+                jq -r 'sort_by(.number)[] | "- [#\(.number) \(.title)](\(.url))"' "$ISSUES"
+              else
+                echo "_No open ready-for-testing issues for this milestone._"
+              fi
+            else
+              echo "_No open milestone found._"
+            fi
+
+            echo
+            echo "Ready for testing (from Pipeline2 project):"
+            echo
+
+            if jq -e 'length > 0' "$PROJECT_TESTING_ISSUES" > /dev/null; then
+              jq -r '.[] | "- [\(.repo)#\(.number) \(.title)](\(.url))"' "$PROJECT_TESTING_ISSUES"
+            else
+              echo "_No additional items in testing._"
+            fi
+          } > "$NOTES"
+
+          echo "milestone_title=${MILESTONE_TITLE:-no milestone}" >> "$GITHUB_OUTPUT"
+          echo "project_testing_count=$(jq 'length' "$PROJECT_TESTING_ISSUES")" >> "$GITHUB_OUTPUT"
+          cat "$NOTES"
+
+      - name: Create or update Snapshot release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SNAPSHOT_TAG: latest-dev-snapshot
+        run: |
+          NOTES="$RUNNER_TEMP/snapshot-release-notes.md"
+
+          git tag -f "$SNAPSHOT_TAG" "$GITHUB_SHA"
+          git push --force origin "refs/tags/$SNAPSHOT_TAG"
+
+          if gh release view "$SNAPSHOT_TAG" --repo ${{ github.repository }} > /dev/null 2>&1; then
+            gh release edit "$SNAPSHOT_TAG" \
               --repo ${{ github.repository }} \
               --draft \
-              --title "Snapshot" \
-              --notes "Latest snapshot build from engine develop."
+              --latest=false \
+              --prerelease \
+              --title "Latest Development Snapshot" \
+              --notes-file "$NOTES"
+          else
+            gh release create "$SNAPSHOT_TAG" \
+              --repo ${{ github.repository }} \
+              --draft \
+              --latest=false \
+              --prerelease \
+              --target "$GITHUB_SHA" \
+              --title "Latest Development Snapshot" \
+              --notes-file "$NOTES"
+          fi
 
-      - name: Replace Snapshot release assets
+      - name: Replace Latest Development Snapshot release assets
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SNAPSHOT_TAG: latest-dev-snapshot
+          RELEASE_NAME: ${{ steps.snapshot-metadata.outputs.release_name }}
         run: |
-          gh release view snapshot --repo ${{ github.repository }} --json assets \
+          ASSET_DIR="$RUNNER_TEMP/latest-dev-snapshot-assets"
+          mkdir -p "$ASSET_DIR"
+
+          for file in artifacts/mac/*.pkg; do
+            name="$(basename "$file")"
+            platform="mac"
+            if [[ "$name" == *arm64* ]]; then
+              platform="mac-arm64"
+            elif [[ "$name" == *x64* ]]; then
+              platform="mac-x64"
+            fi
+            cp "$file" "$ASSET_DIR/daisy-pipeline-${RELEASE_NAME}-experimental-${platform}.pkg"
+          done
+
+          for file in artifacts/win/*.exe; do
+            cp "$file" "$ASSET_DIR/daisy-pipeline-${RELEASE_NAME}-experimental-win.exe"
+          done
+
+          gh release view "$SNAPSHOT_TAG" --repo ${{ github.repository }} --json assets \
             --jq '.assets[].name' | while read name; do
-              gh release delete-asset snapshot "$name" --repo ${{ github.repository }} --yes
+              gh release delete-asset "$SNAPSHOT_TAG" "$name" --repo ${{ github.repository }} --yes
             done
-          gh release upload snapshot artifacts/mac/*.pkg artifacts/win/*.exe \
+          gh release upload "$SNAPSHOT_TAG" "$ASSET_DIR"/* \
             --repo ${{ github.repository }}
+
+      - name: Create Test Snapshot release
+        if: github.event_name == 'push' && contains(github.event.head_commit.message, '[test-snapshot]')
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          RELEASE_NAME: ${{ steps.snapshot-metadata.outputs.release_name }}
+          SNAPSHOT_DATE: ${{ steps.snapshot-metadata.outputs.snapshot_date }}
+        run: |
+          NOTES="$RUNNER_TEMP/snapshot-release-notes.md"
+          BASE_TAG="test-snapshot-${SNAPSHOT_DATE}"
+          NEXT_SUFFIX="$(gh release list \
+            --repo "$REPO" \
+            --limit 1000 \
+            --json tagName \
+            --jq '.[].tagName' \
+            | awk -v base="$BASE_TAG" '
+                $0 == base {
+                  if (max < 1) {
+                    max = 1
+                  }
+                }
+                index($0, base "-") == 1 {
+                  n = substr($0, length(base) + 2)
+                  if (n ~ /^[0-9]+$/ && n + 0 > max) {
+                    max = n + 0
+                  }
+                }
+                END {
+                  if (max == 0) {
+                    print ""
+                  } else {
+                    print max + 1
+                  }
+                }
+              ')"
+          TAG="$BASE_TAG"
+          if [ -n "$NEXT_SUFFIX" ]; then
+            TAG="${BASE_TAG}-${NEXT_SUFFIX}"
+          fi
+          ASSET_DIR="$RUNNER_TEMP/test-snapshot-assets"
+          mkdir -p "$ASSET_DIR"
+
+          for file in artifacts/mac/*.pkg; do
+            name="$(basename "$file")"
+            platform="mac"
+            if [[ "$name" == *arm64* ]]; then
+              platform="mac-arm64"
+            elif [[ "$name" == *x64* ]]; then
+              platform="mac-x64"
+            fi
+            cp "$file" "$ASSET_DIR/daisy-pipeline-${RELEASE_NAME}-experimental-${platform}.pkg"
+          done
+
+          for file in artifacts/win/*.exe; do
+            cp "$file" "$ASSET_DIR/daisy-pipeline-${RELEASE_NAME}-experimental-win.exe"
+          done
+
+          gh release create "$TAG" "$ASSET_DIR"/* \
+            --repo "$REPO" \
+            --draft \
+            --latest=false \
+            --prerelease \
+            --target "$GITHUB_SHA" \
+            --title "$RELEASE_NAME" \
+            --notes-file "$NOTES"

@@ -26,7 +26,9 @@ export function CustomFieldDocumentation({ datatypes }) {
                             return (
                                 <>
                                     <li key={idx}>
-                                        <CustomFieldDocumentationItem docitem={d} />
+                                        <CustomFieldDocumentationItem
+                                            docitem={d}
+                                        />
                                     </li>
                                 </>
                             )
@@ -34,8 +36,11 @@ export function CustomFieldDocumentation({ datatypes }) {
                     </ul>
                 </>
             ) : (
-                <><p>Allowed syntax:</p>
-                <CustomFieldDocumentationItem docitem={allDocumentation[0]} />
+                <>
+                    <p>Allowed syntax:</p>
+                    <CustomFieldDocumentationItem
+                        docitem={allDocumentation[0]}
+                    />
                 </>
             )}
         </div>

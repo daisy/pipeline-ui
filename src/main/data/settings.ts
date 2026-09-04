@@ -8,6 +8,7 @@ import { ttsConfigToXml } from 'shared/parser/pipelineXmlConverter/ttsConfigToXm
 import {
     ApplicationSettings,
     DefaultTextSize,
+    DefaultVoiceTableThreshold,
     migrateSettings,
 } from 'shared/types'
 import { fileURLToPath, pathToFileURL } from 'url'
@@ -27,7 +28,7 @@ log.transports.file.resolvePathFn = () =>
 
 export function readSettings() {
     let settings: ApplicationSettings = {
-        settingsVersion: '1.8.0',
+        settingsVersion: '1.10.0',
         downloadFolder: pathToFileURL(
             resolve(app.getPath('home'), 'Documents', 'DAISY Pipeline results')
         ).href,
@@ -47,9 +48,11 @@ export function readSettings() {
             appDataFolder: app.getPath('userData'),
             logsFolder: resolve(logsBase, 'engine-logs'),
         },
+        engineMode: 'embedded',
         colorScheme: 'system',
         onClosingMainWindow: undefined, // Undeterminate to display the app-opening dialog
         editJobOnNewTab: true,
+        contextMenuValidationChecksAccessibility: true,
         ttsConfig: {
             preferredVoices: [],
             defaultVoices: [],
@@ -62,11 +65,13 @@ export function readSettings() {
         autoCheckUpdate: true,
         fontName: 'system',
         textSize: DefaultTextSize,
+        sponsorshipMessageLastShown: 0,
         aiEngineProperties: [],
         suggestOptionValues: true,
         sortScriptsByFrequency: true,
         scriptFrequency: [],
         lastUsedScriptOptionOverrides: [],
+        voiceTableThreshold: DefaultVoiceTableThreshold,
         logLevel: 'info',
     }
     try {
@@ -90,6 +95,8 @@ export function readSettings() {
                 pipelineInstanceProps: {
                     ...settings.pipelineInstanceProps,
                     ...loaded?.pipelineInstanceProps,
+                    pipelineHome: settings.pipelineInstanceProps.pipelineHome,
+                    jrePath: settings.pipelineInstanceProps.jrePath,
                     logsFolder: resolve(logsBase, 'engine-logs'),
                     webservice: {
                         ...settings.pipelineInstanceProps.webservice,
@@ -142,6 +149,11 @@ export function readSettings() {
     if (settings.logLevel) {
         log.transports.file.level = settings.logLevel as log.LevelOption
         log.transports.console.level = settings.logLevel as log.LevelOption
+    }
+
+    if (!BUILD_ENABLE_EXTERNAL_ENGINE) {
+        settings.engineMode = 'embedded'
+        settings.externalEngine = undefined
     }
 
     return settings

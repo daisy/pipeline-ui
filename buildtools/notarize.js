@@ -11,16 +11,8 @@ exports.default = async function notarizing(context) {
     if (electronPlatformName !== 'darwin') {
         return
     }
-    if (process.env.GITHUB_BASE_REF) {
-        console.log(
-            'skipped notarizing: current build is a part of pull request'
-        )
-        return
-    }
-    if (process.env.GITHUB_REF) {
-        console.log(
-            'skipped notarizing: credentials have not been set up on Github yet'
-        )
+    if (!process.env.APPLE_ID) {
+        console.log('skipped notarizing: APPLE_ID not set')
         return
     }
     if (process.env.SKIP_NOTARIZATION) {

@@ -179,7 +179,7 @@ export function CustomField({
                                                         ? 'Show less'
                                                         : 'Show more'}
                                                 </summary>
-                                                <p
+                                                <div
                                                     key={
                                                         controlId +
                                                         '-' +
@@ -193,7 +193,7 @@ export function CustomField({
                                                             selectedOptionDescription
                                                         }
                                                     </MarkdownDescription>
-                                                </p>
+                                                </div>
                                             </details>
                                         )
                                     }

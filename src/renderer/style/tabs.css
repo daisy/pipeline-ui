@@ -17,6 +17,7 @@
     border-radius: var(--br);
     border: none;
     outline: none;
+    position: relative;
     
     font-size: var(--fontsize-larger);
     
@@ -32,6 +33,45 @@
         background-color: var(--bg);
         color: var(--fg);
     }
+}
+
+[role="tab"] {
+    padding-left: 1rem;
+}
+
+[role="tab"]::before {
+    content: '';
+    position: absolute;
+    left: 0.35rem;
+    top: 0.5rem;
+    bottom: 0.5rem;
+    width: 4px;
+    border-radius: 2px;
+    background-color: transparent;
+}
+
+[role="tab"].batch-color-0::before {
+    background-color: var(--batch-1);
+}
+
+[role="tab"].batch-color-1::before {
+    background-color: var(--batch-2);
+}
+
+[role="tab"].batch-color-2::before {
+    background-color: var(--batch-3);
+}
+
+[role="tab"].batch-color-3::before {
+    background-color: var(--batch-4);
+}
+
+[role="tab"].batch-color-4::before {
+    background-color: var(--batch-5);
+}
+
+[role="tab"].batch-color-5::before {
+    background-color: var(--batch-6);
 }
 
 [role="tab"][aria-selected="true"] {

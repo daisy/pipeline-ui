@@ -21,10 +21,16 @@ import {
     TtsVoice,
     EngineProperty,
     TtsEngineState,
-    ScriptOption,
+    PipelineClientCapability,
 } from 'shared/types'
 import { RootState } from 'shared/types/store'
 import { createAnnouncement } from 'shared/at-announce'
+
+const unknownClientCapability = {
+    authentication: 'unknown',
+    role: 'unknown',
+    canUseAdminEndpoints: false,
+} as PipelineClientCapability
 
 const initialState = {
     status: PipelineStatus.STOPPED,
@@ -36,18 +42,11 @@ const initialState = {
     internalJobCounter: 0,
     selectedJobId: '',
     alive: null,
+    clientCapability: unknownClientCapability,
     properties: {},
     ttsEnginesStates: {},
 } as PipelineState
 
-function isNonPrimaryInBatch(job) {
-    let retval =
-        job &&
-        job.jobRequest &&
-        job.jobRequest.batchId &&
-        !job.isPrimaryForBatch
-    return retval
-}
 export const pipeline = createSlice({
     name: 'pipeline',
     initialState,
@@ -100,6 +99,8 @@ export const pipeline = createSlice({
             param: PayloadAction<Webservice>
         ) => {
             state.webservice = param.payload
+            state.clientCapability = unknownClientCapability
+            state.properties = {}
         },
         setStatus: (
             state: PipelineState,
@@ -140,7 +141,10 @@ export const pipeline = createSlice({
         },
         setProperties: (
             state: PipelineState,
-            param: PayloadAction<{values: Array<EngineProperty>, sendToAPI: boolean}>
+            param: PayloadAction<{
+                values: Array<EngineProperty>
+                sendToAPI: boolean
+            }>
         ) => {
             // Merge EngineProperty array (retrieved from engine api) into properties map
             state.properties = param.payload.values.reduce(
@@ -256,32 +260,6 @@ export const pipeline = createSlice({
                 state.selectedJobId = state.jobs[0].internalId
             }
         },
-        // same as above
-        removeBatchJob: (state: PipelineState, param: PayloadAction<Job[]>) => {
-            const removedId = param.payload.map((j) => j.internalId)
-            state.jobs = state.jobs.filter(
-                (j) => !removedId.includes(j.internalId)
-            )
-            if (state.jobs.length === 0) {
-                state.selectedJobId = ''
-            } else if (removedId.includes(state.selectedJobId)) {
-                state.selectedJobId = state.jobs[0].internalId
-            }
-        },
-        cancelBatchJob: (state: PipelineState, param: PayloadAction<Job[]>) => {
-            let jobIdsToCancel = param.payload
-                .filter((j) => j.jobData?.status == JobStatus.IDLE)
-                .map((j) => j.internalId)
-
-            state.jobs = state.jobs.filter(
-                (j) => !jobIdsToCancel.includes(j.internalId)
-            )
-            if (state.jobs.length === 0) {
-                state.selectedJobId = ''
-            } else if (jobIdsToCancel.includes(state.selectedJobId)) {
-                state.selectedJobId = state.jobs[0].internalId
-            }
-        },
         /**
          * Request script options from stylesheet parameters endpoint
          *
@@ -346,17 +324,13 @@ export const pipeline = createSlice({
                 (j) => j.internalId == state.selectedJobId
             )
 
-            let i = 0
             do {
                 selectedJobIndex =
                     (state.jobs.length + selectedJobIndex + 1) %
                     state.jobs.length
-                ++i
             } while (
-                (!alsoSelectInvisible &&
-                    state.jobs[selectedJobIndex].invisible) ||
-                (isNonPrimaryInBatch(state.jobs[selectedJobIndex]) &&
-                    i < state.jobs.length)
+                !alsoSelectInvisible &&
+                state.jobs[selectedJobIndex].invisible
             )
             state.selectedJobId = state.jobs[selectedJobIndex].internalId
         },
@@ -368,22 +342,24 @@ export const pipeline = createSlice({
             let selectedJobIndex = state.jobs.findIndex(
                 (j) => j.internalId == state.selectedJobId
             )
-            let i = 0
             do {
                 selectedJobIndex =
                     (state.jobs.length + selectedJobIndex - 1) %
                     state.jobs.length
-                ++i
             } while (
-                (!alsoSelectInvisible &&
-                    state.jobs[selectedJobIndex].invisible) ||
-                (isNonPrimaryInBatch(state.jobs[selectedJobIndex]) &&
-                    i < state.jobs.length)
+                !alsoSelectInvisible &&
+                state.jobs[selectedJobIndex].invisible
             )
             state.selectedJobId = state.jobs[selectedJobIndex].internalId
         },
         setAlive: (state: PipelineState, param: PayloadAction<Alive>) => {
             state.alive = param.payload
+        },
+        setClientCapability: (
+            state: PipelineState,
+            param: PayloadAction<PipelineClientCapability>
+        ) => {
+            state.clientCapability = param.payload
         },
         setTtsEngineState: (
             state: PipelineState,
@@ -433,12 +409,11 @@ export const {
     restoreJob,
     removeJob,
     removeJobs,
-    removeBatchJob,
-    cancelBatchJob,
     selectJob,
     selectNextJob,
     selectPrevJob,
     setAlive,
+    setClientCapability,
     setTtsVoices,
     setProperties,
     setTtsEngineState,
@@ -478,7 +453,21 @@ export const selectors = {
                 (state.settings.editJobOnNewTab || !j.invisible) &&
                 ((j.jobRequest != null &&
                     j.jobRequest != ({ nicename: '' } as JobRequest)) ||
-                    (j.jobData != null && j.jobData != ({} as JobData)))
+                    (j.jobData != null && j.jobData != ({} as JobData))) &&
+                !(
+                    j.state === JobState.NEW &&
+                    utils.isJobUnchanged(j, state.settings)
+                ) &&
+                !(
+                    ((j.jobData?.status &&
+                        [
+                            JobStatus.ERROR,
+                            JobStatus.FAIL,
+                            JobStatus.SUCCESS,
+                        ].includes(j.jobData.status)) ||
+                        !!j.jobRequestError) &&
+                    state.settings.confirmOnCloseFinishedJob === false
+                )
         ),
     selectRunningJobs: (state: RootState) =>
         state.pipeline.jobs.filter(
@@ -493,6 +482,13 @@ export const selectors = {
     selectDatatypes: (state: RootState) => state.pipeline.datatypes,
     selectTtsVoices: (state: RootState) => state.pipeline.ttsVoices ?? [],
     selectProperties: (state: RootState) => state.pipeline.properties,
+    selectClientCapability: (state: RootState) =>
+        state.pipeline.clientCapability ?? unknownClientCapability,
+    selectCanUseAdminEndpoints: (state: RootState) =>
+        !BUILD_ENABLE_EXTERNAL_ENGINE ||
+        state.settings?.engineMode !== 'external'
+            ? true
+            : (state.pipeline.clientCapability?.canUseAdminEndpoints ?? false),
     newJob: (pipeline: PipelineState) =>
         ({
             internalId: `job-${pipeline.internalJobCounter}`,
@@ -500,7 +496,7 @@ export const selectors = {
             jobRequest: null,
             resultsDownloaded: false,
             logDownloaded: false,
-        } as Job),
+        }) as Job,
     prepareJobRequest: (
         job: Job,
         script: Script,
@@ -572,4 +568,6 @@ export const {
     prepareJobRequest,
     selectTtsVoices,
     selectProperties,
+    selectClientCapability,
+    selectCanUseAdminEndpoints,
 } = selectors

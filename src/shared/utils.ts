@@ -3,7 +3,6 @@ import { selectPipeline } from './data/slices/pipeline'
 import {
     ApplicationSettings,
     Job,
-    JobStatus,
     NameValue,
     PipelineState,
     Script,
@@ -11,6 +10,30 @@ import {
     ScriptItemBase,
     ScriptOption,
 } from './types'
+
+export function parseGenderAge(raw: string = ''): {
+    gender: string
+    age?: string
+} {
+    const [rawGender, rawAge] = raw.trim().toLowerCase().split('-')
+    if (rawGender === '*') {
+        return { gender: 'unknown', age: 'unknown' }
+    }
+
+    const gender = rawGender || 'neutral'
+    const age = rawAge || undefined
+
+    return { gender, age }
+}
+
+export function formatGenderAgePart(value?: string): string {
+    if (!value) {
+        return '—'
+    }
+
+    const normalized = value === '*' ? 'unknown' : value
+    return normalized.charAt(0).toUpperCase() + normalized.substring(1)
+}
 
 // returns true if the script does not support sequences for input
 // and is not a 2-steps script
@@ -110,38 +133,6 @@ export function getAllOptional(script: Script) {
         : []
 }
 
-export function areAllJobsInBatchDone(
-    primaryJob: Job,
-    jobsInBatch: Array<Job>
-) {
-    let numJobsDone = getCompletedCountInBatch(primaryJob, jobsInBatch)
-    return numJobsDone == jobsInBatch?.length
-}
-
-export function getCompletedCountInBatch(
-    primaryJob: Job,
-    jobsInBatch: Array<Job>
-) {
-    if (jobsInBatch) {
-        return (
-            jobsInBatch.filter((j) =>
-                [JobStatus.ERROR, JobStatus.FAIL, JobStatus.SUCCESS].includes(
-                    j.jobData?.status
-                )
-            ).length + jobsInBatch.filter((j) => j.jobRequestError).length
-        )
-    }
-
-    return 0
-}
-
-export function getIdleCountInBatch(primaryJob: Job, jobsInBatch: Array<Job>) {
-    let numJobsIdle =
-        jobsInBatch?.filter((j) => j.jobData.status == JobStatus.IDLE).length ??
-        0
-    return numJobsIdle
-}
-
 export function isScriptTTSEnhanced(script: Script) {
     let ttsInput = script.inputs.find((i) =>
         i.mediaType.includes('application/vnd.pipeline.tts-config+xml')
@@ -181,39 +172,11 @@ export function findInputType(type) {
     return inputType
 }
 
-export function getJobsInBatch(state: PipelineState, job: Job) {
-    if (!state.jobs || state.jobs.length == 0) {
-        return []
-    }
-    if (!job) {
-        return []
-    }
-    if (!job.jobRequest) {
-        return []
-    }
-    if (job.jobRequest.batchId == null || job.jobRequest.batchId == '') {
-        return []
-    }
-
-    let jobsInBatch = state.jobs.filter(
-        (j) => j.jobRequest?.batchId == job.jobRequest.batchId
-    )
-    return jobsInBatch
-}
-
 export function closeOrCancelLabel(state: PipelineState, job: Job) {
     if (CanDo.closeJob(state, job)) {
-        if (job?.jobRequest?.batchId) {
-            return 'Close all jobs'
-        } else {
-            return 'Close job'
-        }
+        return 'Close job'
     } else if (CanDo.cancelJob(state, job)) {
-        if (job?.jobRequest?.batchId) {
-            return 'Cancel scheduled jobs'
-        } else {
-            return 'Cancel job'
-        }
+        return 'Cancel job'
     }
     return 'Cancel job'
 }
@@ -244,4 +207,30 @@ export function getStoredOptionValue(
         }
     }
     return null
+}
+
+export function isJobUnchanged(
+    job: Job,
+    settings: ApplicationSettings
+): boolean {
+    if (job.script == null) return true
+    if (!job.jobRequest) return true
+
+    const allInputsEmpty = job.jobRequest.inputs.every((input) => {
+        const v = input.value
+        return v == null || (Array.isArray(v) && v.length === 0)
+    })
+    if (!allInputsEmpty) return false
+
+    return job.jobRequest.options.every((option) => {
+        const scriptOption = job.script.options?.find(
+            (o) => o.name === option.name
+        )
+        if (!scriptOption) return true
+        const initialValue =
+            getStoredOptionValue(job.script, scriptOption, settings) ||
+            scriptOption.default ||
+            null
+        return option.value === initialValue
+    })
 }

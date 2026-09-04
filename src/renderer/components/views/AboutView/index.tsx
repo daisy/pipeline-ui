@@ -85,9 +85,20 @@ const UpdateButton = (update: UpdateState) => {
 export function AboutView({ title }) {
     const { App } = window
 
-    const { pipeline, update } = useWindowStore()
-    let version = packageJson.version
+    const { pipeline, update, settings } = useWindowStore()
+    let version = BUILD_VERSION ?? packageJson.version
+    let buildDetails = BUILD_DETAILS
+    let versionLabel = buildDetails ? 'Release' : 'App version'
     let engineVersion = pipeline.alive?.version
+    const buildOptionDetails = [
+        settings.logLevel && settings.logLevel !== 'info'
+            ? `log level: ${settings.logLevel}`
+            : null,
+        BUILD_ENABLE_OCR ? 'with OCR support' : null,
+        BUILD_ENABLE_EXTERNAL_ENGINE
+            ? 'with external engine support'
+            : null,
+    ].filter(Boolean)
     document.title = title
     let closeAboutBox = () => {
         window.close()
@@ -104,14 +115,21 @@ export function AboutView({ title }) {
     let engineStatus = pipelineEngineStatus()
 
     let copyToClipboard = (e) => {
-        let info = `App version: ${version}, 
-        Engine version: ${engineVersion}, 
-        Engine is ${engineStatus.status} ${
-            engineStatus.status == PipelineStatus.RUNNING
-                ? ` on ${engineStatus.address}`
-                : ''
-        }
-        `
+        let info = [
+            `${versionLabel}: ${version}`,
+            buildDetails ? `Build details: ${buildDetails}` : null,
+            buildOptionDetails.length > 0
+                ? `Build options: ${buildOptionDetails.join(', ')}`
+                : null,
+            `Engine version: ${engineVersion}`,
+            `Engine is ${engineStatus.status}${
+                engineStatus.status == PipelineStatus.RUNNING
+                    ? ` on ${engineStatus.address}`
+                    : ''
+            }`,
+        ]
+            .filter(Boolean)
+            .join('\n')
         App.copyToClipboard(info)
     }
 
@@ -137,7 +155,28 @@ export function AboutView({ title }) {
             </a>
             <p className="versions">
                 <ul>
-                    <li>App version: {version}</li>
+                    <li>
+                        {versionLabel}: {version}
+                        {buildDetails ||
+                        buildOptionDetails.length > 0 ? (
+                            <br />
+                        ) : null}
+                        {buildDetails && (
+                            <>
+                                <small>
+                                    <em>{buildDetails}</em>
+                                </small>
+                                {buildOptionDetails.length > 0 ? (
+                                    <br />
+                                ) : null}
+                            </>
+                        )}
+                        {buildOptionDetails.length > 0 && (
+                            <small>
+                                <em>{buildOptionDetails.join(' · ')}</em>
+                            </small>
+                        )}
+                    </li>
                     <li>Engine version: {engineVersion}</li>
                     <li>
                         Engine is{'  '}

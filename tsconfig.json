@@ -9,7 +9,7 @@
     ],
     "jsx": "react-jsx",
     "importHelpers": true,
-    "moduleResolution": "node",
+    "moduleResolution": "bundler",
     "resolveJsonModule": true,
     "esModuleInterop": true,
     "sourceMap": true,
@@ -19,14 +19,13 @@
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "noEmit": true,
-    "baseUrl": ".",
     "paths": {
       "*": [
         "./src/*"
       ],
       "~/*": [
         "./*"
-      ],
+      ]
     }
   },
   "include": [

@@ -1,5 +1,5 @@
 // @ts-ignore
-export * from './Views/MainView'
+export * from './views/MainView'
 // @ts-ignore
-export * from './Views/SettingsView'
+export * from './views/SettingsView'
 export * from './Widgets/SvgIcons'

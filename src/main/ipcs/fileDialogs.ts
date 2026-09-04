@@ -1,8 +1,6 @@
 import { ipcMain, dialog, BrowserWindow } from 'electron'
 // helper functions
-import {
-    IPC_EVENT_showOpenFileDialog
-} from '../../shared/main-renderer-events'
+import { IPC_EVENT_showOpenFileDialog } from '../../shared/main-renderer-events'
 
 /*
 dialogOptions: https://www.electronjs.org/docs/latest/api/dialog

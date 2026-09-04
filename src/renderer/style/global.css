@@ -27,6 +27,12 @@
     --ok:#277A00;
     --warning: #A36A00;
     --error: #DF2935;
+    --batch-1: #0072B2;
+    --batch-2: #B3195F;
+    --batch-3: #009E73;
+    --batch-4: #D24FA3;
+    --batch-5: #5F6368;
+    --batch-6: #D95F4C;
     --fg: black;
     --bg: white;
     --fg-off: oklch(from var(--fg) calc(l + 0.7) c h);
@@ -70,6 +76,12 @@
         --ok: #57A773;
         --error: #FF595E;
         --warning: #FABC2A;
+        --batch-1: #56B4E9;
+        --batch-2: #FF8AB3;
+        --batch-3: #009E73;
+        --batch-4: #F0A3D3;
+        --batch-5: #AEB4BC;
+        --batch-6: #FF9B85;
 
         --hover: oklch(from var(--secondary) calc(l - 0.2) c h);
         --hover-contrast: var(--secondary-contrast);

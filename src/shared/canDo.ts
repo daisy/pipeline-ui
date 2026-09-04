@@ -5,11 +5,6 @@ import {
     PipelineState,
     PipelineStatus,
 } from './types'
-import {
-    areAllJobsInBatchDone,
-    getIdleCountInBatch,
-    getJobsInBatch,
-} from './utils'
 
 // determine if actions should be enabled or not
 
@@ -41,9 +36,7 @@ export const CanDo = {
         if (!job) {
             return false
         }
-        if (job.jobRequest && job.jobRequest?.batchId) {
-            return areAllJobsInBatchDone(job, getJobsInBatch(state, job))
-        } else if (job.jobData?.status) {
+        if (job.jobData?.status) {
             let retval =
                 [JobStatus.ERROR, JobStatus.FAIL, JobStatus.SUCCESS].includes(
                     job.jobData?.status
@@ -51,8 +44,6 @@ export const CanDo = {
             return retval
         } else if (job.jobRequestError) {
             return true
-            // } else if (job.state == JobState.NEW) {
-            //     return true
         } else {
             return false
         }
@@ -68,11 +59,9 @@ export const CanDo = {
         if (!state || !job) {
             return false
         }
-        if (job?.jobRequest?.batchId) {
-            return getIdleCountInBatch(job, getJobsInBatch(state, job)) > 0
-        } else {
-            return job.state == JobState.NEW
-        }
+        return (
+            job.state == JobState.NEW || job.jobData?.status === JobStatus.IDLE
+        )
     },
 
     // Returns whether job can be edited
@@ -81,10 +70,8 @@ export const CanDo = {
         pipelineStatus: PipelineStatus,
         job: Job
     ) => {
-        return (
-            canDeleteJob(state, pipelineStatus, job) &&
-            (job.jobRequest.batchId == null || job.jobRequest.batchId == '')
-        )
+        if (job?.jobRequestError) return true
+        return canDeleteJob(state, pipelineStatus, job)
     },
 }
 
@@ -94,30 +81,13 @@ function canDeleteJob(
     pipelineStatus: PipelineStatus,
     job: Job
 ) {
-    let jobsInBatch = getJobsInBatch(state, job)
-    if (job?.isPrimaryForBatch) {
-        return areAllJobsInBatchDone(job, jobsInBatch)
-    } else {
-        return (
-            pipelineStatus == PipelineStatus.RUNNING &&
-            job &&
-            (job.state == JobState.SUBMITTED || job.state == JobState.ENDED) &&
-            job.jobData &&
-            [JobStatus.SUCCESS, JobStatus.ERROR, JobStatus.FAIL].includes(
-                job.jobData.status
-            )
+    return (
+        pipelineStatus == PipelineStatus.RUNNING &&
+        job &&
+        (job.state == JobState.SUBMITTED || job.state == JobState.ENDED) &&
+        job.jobData &&
+        [JobStatus.SUCCESS, JobStatus.ERROR, JobStatus.FAIL].includes(
+            job.jobData.status
         )
-    }
+    )
 }
-
-// this was used in the menu but I think the version copied from the form (above) is better
-// function canCloseJob(state: PipelineState, job: Job) {
-//     if (job?.isPrimaryForBatch) {
-//         return areAllJobsInBatchDone(job, getJobsInBatch(state, job))
-//     } else {
-//         return (
-//             job &&
-//             (job.state == JobState.SUBMITTED || job.state == JobState.ENDED)
-//         )
-//     }
-// }

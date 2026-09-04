@@ -10,6 +10,7 @@ import {
     voicesToJson,
     ttsConfigToXml,
 } from 'shared/parser/pipelineXmlConverter'
+import type { JobRequestToXmlOptions } from 'shared/parser/pipelineXmlConverter'
 import {
     Datatype,
     baseurl,
@@ -24,7 +25,10 @@ import {
 
 import { jobResponseXmlToJson } from 'shared/parser/pipelineXmlConverter/jobResponseToJson'
 import { propertiesXmlToJson } from 'shared/parser/pipelineXmlConverter/propertiesXmlToJson'
-import { propertyToXml } from 'shared/parser/pipelineXmlConverter/propertyToXml'
+import {
+    propertyToXml,
+    ttsConfigPropertyToXml,
+} from 'shared/parser/pipelineXmlConverter/propertyToXml'
 import { ttsEnginesToJson } from 'shared/parser/pipelineXmlConverter/ttsEnginesToJson'
 import { parametersXmlToJson } from 'shared/parser/pipelineXmlConverter/parametersXmlToJson'
 import { jobToStylesheetParametersXml } from 'shared/parser/pipelineXmlConverter/jobToStylesheetParametersXml'
@@ -37,6 +41,9 @@ interface Response {
     blob: () => Promise<{
         arrayBuffer: () => Promise<ArrayBuffer>
     }>
+    headers?: {
+        get: (name: string) => string | null
+    }
     status?: number
     statusText?: string
 }
@@ -46,6 +53,12 @@ interface RequestInit {
     body?: {}
     headers?: {}
     signals?: AbortSignal
+}
+
+type LaunchJobOptions = {
+    body?: RequestInit['body']
+    headers?: RequestInit['headers']
+    jobRequestToXmlOptions?: JobRequestToXmlOptions
 }
 /**
  * PipelineAPI class to fetch data from the webserver.
@@ -183,17 +196,27 @@ export class PipelineAPI {
             (text) => text
         )
     }
-    launchJob(j: Job) {
+    launchJob(j: Job, launchJobOptions?: LaunchJobOptions) {
         return this.createPipelineFetchFunction(
             (ws) => `${baseurl(ws)}/jobs`,
             (text) => jobResponseXmlToJson(text),
             {
                 method: 'POST',
-                body: jobRequestToXml({
-                    ...j.jobRequest,
-                    nicename:
-                        j.jobRequest.nicename || j.jobData.nicename || 'Job',
-                }),
+                ...(launchJobOptions?.headers
+                    ? { headers: launchJobOptions.headers }
+                    : {}),
+                body:
+                    launchJobOptions?.body ??
+                    jobRequestToXml(
+                        {
+                            ...j.jobRequest,
+                            nicename:
+                                j.jobRequest.nicename ||
+                                j.jobData?.nicename ||
+                                'Job',
+                        },
+                        launchJobOptions?.jobRequestToXmlOptions
+                    ),
             }
         )
     }
@@ -214,6 +237,20 @@ export class PipelineAPI {
             this.fetchFunc(r.href)
                 .then((response) => response.blob())
                 .then((blob) => blob.arrayBuffer())
+    }
+    fetchBinary(href: string) {
+        return this.fetchFunc(href).then(async (response) => {
+            if (response.status !== undefined && response.status >= 400) {
+                throw new Error(
+                    `Request failed with HTTP ${response.status} ${response.statusText ?? ''}`.trim()
+                )
+            }
+            const blob = await response.blob()
+            return {
+                arrayBuffer: await blob.arrayBuffer(),
+                contentType: response.headers?.get('content-type'),
+            }
+        })
     }
     fetchDatatypeDetails(d: Datatype) {
         return this.createPipelineFetchFunction(
@@ -268,6 +305,11 @@ export class PipelineAPI {
             (text) => propertiesXmlToJson(text)
         )
     }
+    requestProperties() {
+        return this.createPipelineRequestFunction(
+            (ws) => `${baseurl(ws)}/admin/properties`
+        )
+    }
     setProperty(prop: EngineProperty) {
         return this.createPipelineFetchFunction(
             (ws) => `${baseurl(ws)}/admin/properties/${prop.name}`,
@@ -275,6 +317,17 @@ export class PipelineAPI {
             {
                 method: 'PUT',
                 body: propertyToXml(prop),
+            }
+        )
+    }
+    setTtsConfigProperty(ttsConfig: TtsConfig) {
+        return this.createPipelineFetchFunction(
+            (ws) =>
+                `${baseurl(ws)}/admin/properties/org.daisy.pipeline.tts.config`,
+            (text) => null,
+            {
+                method: 'PUT',
+                body: ttsConfigPropertyToXml(ttsConfig),
             }
         )
     }

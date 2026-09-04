@@ -1,5 +1,5 @@
 const { writeFile } = require('fs/promises')
-const { resolve } = require('path')
+const { resolve, relative } = require('path')
 
 const packageJSON = require('../../../package.json')
 
@@ -13,7 +13,7 @@ async function createPackageJSONDistVersion() {
     } = packageJSON
 
     const packageJSONDistVersion = {
-        main: main?.split('/')?.reverse()?.[0] || 'index.js',
+        main: './' + relative(resolve(devTempBuildFolder), resolve(main)),
         ...restOfPackageJSON,
     }
 

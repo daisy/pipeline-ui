@@ -1,12 +1,20 @@
-import { PipelineInstance } from 'main/pipeline'
+import {
+    EngineController,
+    ExternalEngineController,
+    PipelineInstance,
+} from 'main/pipeline'
 import { error } from 'electron-log'
 import { RootState } from 'shared/types/store'
-import { selectPipelineProperties } from 'shared/data/slices/settings'
+import {
+    selectEngineMode,
+    selectExternalEngine,
+    selectPipelineProperties,
+} from 'shared/data/slices/settings'
 import { ipcMain } from 'electron'
 import { IPC } from 'shared/constants/ipc'
 
 // Store managed pipeline instance
-let _pipeline_instance: PipelineInstance = null
+let _pipeline_instance: EngineController = null
 
 export function registerInstanceManagementIPCs() {
     // get properties of the instance
@@ -30,12 +38,14 @@ export function registerInstanceManagementIPCs() {
  * @param state the current store state, required to initialize the instance
  * @returns the initialized pipeline instance
  */
-export const getPipelineInstance = (state: RootState): PipelineInstance => {
+export const getPipelineInstance = (state: RootState): EngineController => {
     try {
         if (_pipeline_instance == null) {
-            _pipeline_instance = new PipelineInstance(
-                selectPipelineProperties(state)
-            )
+            _pipeline_instance =
+                BUILD_ENABLE_EXTERNAL_ENGINE &&
+                selectEngineMode(state) === 'external'
+                    ? new ExternalEngineController(selectExternalEngine(state))
+                    : new PipelineInstance(selectPipelineProperties(state))
         }
         return _pipeline_instance
     } catch (e) {

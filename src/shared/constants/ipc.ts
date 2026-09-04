@@ -1,4 +1,7 @@
 export const IPC = {
+    APP: {
+        RESTART: 'app: restart',
+    },
     WINDOWS: {
         ABOUT: {
             CREATE: 'windows: create-about-window',
@@ -14,6 +17,8 @@ export const IPC = {
     // debug/management panel is required later
     PIPELINE: {
         PROPS: 'pipeline: props-get',
+        TEST_CONNECTION: 'pipeline: test-connection',
+        VOICE_PREVIEW: 'pipeline: voice-preview',
         MESSAGES: {
             SEND: 'pipeline: messages-send',
             UPDATE: 'pipeline: messages-update',

@@ -1,0 +1,413 @@
+import { useEffect, useState } from 'react'
+import { setProperties } from 'shared/data/slices/pipeline'
+import { TtsEngineState } from 'shared/types'
+import { SingleFileInput } from 'renderer/components/Widgets/SingleFileInput'
+import { X } from 'renderer/components/Widgets/SvgIcons'
+
+const { App } = window
+const TTS_TIMEOUT_TOLERANCE_PROPERTY =
+    'org.daisy.pipeline.tts.timeout.tolerance'
+const DEFAULT_TTS_TIMEOUT_TOLERANCE = '1.0'
+
+// Clone operation to ensure the full array is copied and avoid
+// having array of references to object we don't want to change
+const clone = (propsArray: Array<{ key: string; value: string }>) => [
+    ...propsArray.map((kv) => ({ key: kv.key, value: kv.value })),
+]
+
+const propertyValue = (
+    propsArray: Array<{ key: string; value: string }>,
+    propName: string
+) => propsArray.find((prop) => prop.key == propName)?.value
+
+const isValidTimeoutTolerance = (value: string) => {
+    const parsedValue = Number(value)
+    return (
+        value.trim() !== '' && Number.isFinite(parsedValue) && parsedValue >= 1
+    )
+}
+
+function getEnginesWithSampleRateSupport(ttsEnginesStates: {
+    [key: string]: TtsEngineState
+}) {
+    let enginesWithSampleRateSupport = []
+    // until the API provides this info, we can just hardcode it
+    // google is the only one that support it now
+    let hasSampleRateSupport = (engineId) => engineId == 'google'
+    for (const engine in ttsEnginesStates) {
+        if (
+            hasSampleRateSupport(engine) &&
+            ttsEnginesStates[engine].status == 'available'
+        ) {
+            enginesWithSampleRateSupport.push(engine)
+        }
+    }
+    return enginesWithSampleRateSupport
+}
+
+function getEnginesWithSpeechRateSupport(ttsEnginesStates: {
+    [key: string]: TtsEngineState
+}) {
+    let enginesWithSpeechRateSupport = []
+    for (const engine in ttsEnginesStates) {
+        if (
+            ttsEnginesStates[engine].features &&
+            ttsEnginesStates[engine].features?.find((f) =>
+                ['speech-rate'].includes(f)
+            ) &&
+            ttsEnginesStates[engine].status == 'available'
+        ) {
+            enginesWithSpeechRateSupport.push(engine)
+        }
+    }
+    return enginesWithSpeechRateSupport
+}
+
+export function MoreTTSOptions({
+    ttsEngineProperties,
+    onChangeTtsEngineProperties,
+    ttsEnginesStates,
+    disabled = false,
+}: {
+    ttsEngineProperties: Array<{ key: string; value: string }>
+    onChangeTtsEngineProperties: (
+        props: Array<{ key: string; value: string }>
+    ) => void
+    ttsEnginesStates: { [key: string]: TtsEngineState }
+    disabled?: boolean
+}) {
+    // Clone array and objects in it to avoid updating the original props
+    const [engineProperties, setEngineProperties] = useState<
+        Array<{ key: string; value: string }>
+    >(clone(ttsEngineProperties))
+
+    const [enginePropsChanged, setEnginePropsChanged] = useState<{
+        [engineKey: string]: string
+    }>({})
+
+    const [enginesWithSampleRateSupport, setEnginesWithSampleRateSupport] =
+        useState(getEnginesWithSampleRateSupport(ttsEnginesStates))
+    const [enginesWithSpeechRateSupport, setEnginesWithSpeechRateSupport] =
+        useState(getEnginesWithSpeechRateSupport(ttsEnginesStates))
+
+    const [speechRateDisplay, setSpeechRateDisplay] = useState(
+        propertyValue(engineProperties, 'org.daisy.pipeline.tts.speech-rate') ??
+            '100%'
+    )
+    const [timeoutToleranceDisplay, setTimeoutToleranceDisplay] = useState(
+        propertyValue(engineProperties, TTS_TIMEOUT_TOLERANCE_PROPERTY) ??
+            DEFAULT_TTS_TIMEOUT_TOLERANCE
+    )
+
+    const [lexiconKey, setLexiconKey] = useState(0)
+
+    useEffect(() => {
+        setEnginesWithSampleRateSupport(
+            getEnginesWithSampleRateSupport(ttsEnginesStates)
+        )
+        setEnginesWithSpeechRateSupport(
+            getEnginesWithSpeechRateSupport(ttsEnginesStates)
+        )
+    }, [ttsEnginesStates])
+
+    let onLexiconChange = async (filename) => {
+        if (disabled) return
+        if (filename && filename.length > 0) {
+            let fileurl = await App.pathToFileURL(filename[0])
+            onPropertyChange('org.daisy.pipeline.tts.default-lexicon', fileurl)
+        }
+    }
+
+    let clearLexicon = () => {
+        if (disabled) return
+        onPropertyChange('org.daisy.pipeline.tts.default-lexicon', '')
+        setLexiconKey((k) => k + 1)
+    }
+    let onInputChange = (e, propName) => {
+        e.preventDefault()
+        if (disabled) return
+        let propValue = e.target.value
+        if (propName == 'org.daisy.pipeline.tts.speech-rate') {
+            propValue = `${propValue}%`
+            setSpeechRateDisplay(propValue)
+        }
+        onPropertyChange(propName, propValue)
+    }
+    let onSelectChange = (e, propName) => {
+        e.preventDefault()
+        if (disabled) return
+        let propValue = e.target.value
+        onPropertyChange(propName, propValue)
+    }
+
+    let onPropertyChange = (propName, propValue) => {
+        if (disabled) return
+        let engineProperties_ = clone(engineProperties)
+        let prop = engineProperties_.find((prop) => prop.key == propName)
+        if (prop) {
+            prop.value = propValue
+        } else {
+            prop = {
+                key: propName,
+                value: propValue.trim(),
+            }
+            engineProperties_.push(prop)
+        }
+        // Search for updates compared to original props
+        let realProp = (ttsEngineProperties || []).find(
+            (prop) => prop.key == propName
+        )
+        setEnginePropsChanged({
+            ...enginePropsChanged,
+            [propName]:
+                realProp == undefined ||
+                (realProp && realProp.value != prop.value),
+        })
+        setEngineProperties([...engineProperties_])
+        App.store.dispatch(
+            setProperties({
+                values: [{ name: propName, value: propValue }],
+                sendToAPI: true,
+            })
+        )
+
+        onChangeTtsEngineProperties([...engineProperties_])
+    }
+
+    let resetSpeechRate = (e) => {
+        if (disabled) return
+        onPropertyChange('org.daisy.pipeline.tts.speech-rate', '100%')
+        setSpeechRateDisplay('100%')
+    }
+    let commitTimeoutTolerance = () => {
+        if (disabled) return
+        if (!isValidTimeoutTolerance(timeoutToleranceDisplay)) {
+            setTimeoutToleranceDisplay(
+                propertyValue(
+                    engineProperties,
+                    TTS_TIMEOUT_TOLERANCE_PROPERTY
+                ) ?? DEFAULT_TTS_TIMEOUT_TOLERANCE
+            )
+            return
+        }
+        onPropertyChange(
+            TTS_TIMEOUT_TOLERANCE_PROPERTY,
+            timeoutToleranceDisplay.trim()
+        )
+    }
+    let resetTimeoutTolerance = () => {
+        if (disabled) return
+        setTimeoutToleranceDisplay(DEFAULT_TTS_TIMEOUT_TOLERANCE)
+        onPropertyChange(
+            TTS_TIMEOUT_TOLERANCE_PROPERTY,
+            DEFAULT_TTS_TIMEOUT_TOLERANCE
+        )
+    }
+
+    return (
+        <div className="more-tts-options">
+            <div className="field">
+                <label htmlFor="speechRate">
+                    Speech rate: {speechRateDisplay}
+                </label>
+
+                <input
+                    id="speechRate"
+                    type="range"
+                    max="200"
+                    min="25"
+                    disabled={disabled}
+                    value={
+                        engineProperties.find(
+                            (prop) =>
+                                prop.key == 'org.daisy.pipeline.tts.speech-rate'
+                        )?.value // if the value is non-null
+                            ? engineProperties
+                                  .find(
+                                      (prop) =>
+                                          prop.key ==
+                                          'org.daisy.pipeline.tts.speech-rate'
+                                  )
+                                  .value.slice(0, -1) // use the value minus the '%' at the end
+                            : '100' // otherwise default to 100
+                    }
+                    onChange={(e) =>
+                        onInputChange(e, 'org.daisy.pipeline.tts.speech-rate')
+                    }
+                ></input>
+                <button
+                    type="button"
+                    className="reset-speech-rate"
+                    disabled={disabled}
+                    onClick={(e) => resetSpeechRate(e)}
+                >
+                    Reset
+                </button>
+
+                <p className="info">
+                    {enginesWithSpeechRateSupport.length > 0 ? (
+                        <>
+                            Setting the speech rate is currently supported on{' '}
+                            {enginesWithSpeechRateSupport
+                                .map((e) => ttsEnginesStates[e].name)
+                                .join(', ')}{' '}
+                            voices.
+                        </>
+                    ) : (
+                        <>
+                            No speech engine supporting speech rate is currently
+                            enabled.
+                        </>
+                    )}
+                </p>
+            </div>
+            <div className="field">
+                <label htmlFor="bitrate">MP3 bitrate</label>
+                <select
+                    id="bitrate"
+                    disabled={disabled}
+                    onChange={(e) =>
+                        onSelectChange(e, 'org.daisy.pipeline.tts.mp3.bitrate')
+                    }
+                    value={
+                        engineProperties.find(
+                            (prop) =>
+                                prop.key == 'org.daisy.pipeline.tts.mp3.bitrate'
+                        )?.value ?? ''
+                    }
+                >
+                    <option value="32">32 kbps</option>
+                    <option value="96">96 kbps</option>
+                    <option value="128">128 kbps</option>
+                    <option value="160">160 kbps</option>
+                    <option value="192">192 kbps</option>
+                    <option value="256">256 kbps</option>
+                    <option value="320">320 kbps</option>
+                </select>
+            </div>
+            <div className="field">
+                <label htmlFor="samplerate">Sample rate</label>
+                <select
+                    id="samplerate"
+                    disabled={disabled}
+                    onChange={(e) =>
+                        onSelectChange(
+                            e,
+                            'org.daisy.pipeline.tts.google.samplerate'
+                        )
+                    }
+                    value={
+                        engineProperties.find(
+                            (prop) =>
+                                prop.key ==
+                                'org.daisy.pipeline.tts.google.samplerate'
+                        )?.value ?? '44100'
+                    }
+                >
+                    <option value="8000">8000 Hz</option>
+                    <option value="11025">11025 Hz</option>
+                    <option value="16000">16000 Hz</option>
+                    <option value="22050">22050 Hz</option>
+                    <option value="44100">44100 Hz</option>
+                    <option value="48000">48000 Hz</option>
+                </select>
+                <p className="info">
+                    {enginesWithSampleRateSupport.length > 0 ? (
+                        <>
+                            Setting the sample rate is currently supported on{' '}
+                            {enginesWithSampleRateSupport
+                                .map((e) => ttsEnginesStates[e].name)
+                                .join(', ')}{' '}
+                            voices.
+                        </>
+                    ) : (
+                        <>
+                            No speech engine supporting sample rate is currently
+                            enabled.
+                        </>
+                    )}
+                </p>
+            </div>
+            <div className="field">
+                <label htmlFor="lexicon-select">Choose a lexicon:</label>
+                <div style={{ display: 'flex', alignItems: 'flex-end' }}>
+                    <SingleFileInput
+                        key={lexiconKey}
+                        allowFile={true}
+                        allowFolder={false}
+                        elemId="lexicon-select"
+                        mediaType={['application/pls+xml']}
+                        onChange={onLexiconChange}
+                        enabled={!disabled}
+                        initialValue={[
+                            engineProperties.find(
+                                (p) =>
+                                    p.key ==
+                                    'org.daisy.pipeline.tts.default-lexicon'
+                            )?.value ?? '',
+                        ]}
+                    />
+                    {engineProperties.find(
+                        (p) => p.key == 'org.daisy.pipeline.tts.default-lexicon'
+                    )?.value && (
+                        <button
+                            type="button"
+                            className="invisible"
+                            disabled={disabled}
+                            onClick={clearLexicon}
+                            title="Clear lexicon"
+                            aria-label="Clear lexicon"
+                        >
+                            <X width="20" height="20" />
+                        </button>
+                    )}
+                </div>
+            </div>
+            <details className="advanced-tts-options">
+                <summary>Advanced</summary>
+                <div className="advanced-tts-fields">
+                    <div className="field">
+                        <label htmlFor="tts-timeout-tolerance">
+                            TTS timeout tolerance
+                        </label>
+                        <div className="timeout-tolerance-controls">
+                            <input
+                                id="tts-timeout-tolerance"
+                                type="number"
+                                min="1"
+                                step="0.1"
+                                disabled={disabled}
+                                value={timeoutToleranceDisplay}
+                                aria-describedby="tts-timeout-tolerance-info"
+                                aria-invalid={
+                                    !isValidTimeoutTolerance(
+                                        timeoutToleranceDisplay
+                                    )
+                                }
+                                onChange={(e) =>
+                                    setTimeoutToleranceDisplay(e.target.value)
+                                }
+                                onBlur={commitTimeoutTolerance}
+                                onKeyDown={(e) => {
+                                    if (e.key === 'Enter') {
+                                        commitTimeoutTolerance()
+                                    }
+                                }}
+                            />
+                            <button
+                                type="button"
+                                disabled={disabled}
+                                onClick={resetTimeoutTolerance}
+                            >
+                                Reset
+                            </button>
+                        </div>
+                        <p id="tts-timeout-tolerance-info" className="info">
+                            Multiplies TTS timeout limits. Default: 1.0.
+                        </p>
+                    </div>
+                </div>
+            </details>
+        </div>
+    )
+}

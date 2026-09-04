@@ -51,6 +51,7 @@ jobs:
       - name: Resolve release tag
         shell: bash
         run: |
+          set -euo pipefail
           if [ -z "$RELEASE_TAG" ]; then
             echo "::error::Release tag is required."
             exit 1
@@ -69,7 +70,13 @@ jobs:
             echo "::error::Release tag '${RELEASE_TAG}' does not match package.json version '${APP_VERSION}'."
             exit 1
           fi
+          if [ "$RELEASE_TAG" = "$RELEASE_VERSION" ]; then
+            COUNTERPART_TAG="v${RELEASE_VERSION}"
+          else
+            COUNTERPART_TAG="$RELEASE_VERSION"
+          fi
           echo "RELEASE_VERSION=$RELEASE_VERSION" >> "$GITHUB_ENV"
+          echo "COUNTERPART_TAG=$COUNTERPART_TAG" >> "$GITHUB_ENV"
 
       - name: Check out engine submodule
         run: git submodule update --init engine
@@ -101,17 +108,33 @@ jobs:
         run: yarn install --frozen-lockfile --ignore-scripts
 
       - name: Ensure draft GitHub release exists
+        shell: bash
         run: |
-          if gh release view "$RELEASE_TAG" --repo "${{ github.repository }}" > /dev/null 2>&1; then
-            echo "Release $RELEASE_TAG already exists."
+          set -euo pipefail
+          if gh release view "$COUNTERPART_TAG" --repo "$GITHUB_REPOSITORY" > /dev/null 2>&1; then
+            echo "::error::Release '$COUNTERPART_TAG' also exists. Delete or rename it before releasing '$RELEASE_TAG' to avoid v/non-v asset ambiguity."
+            exit 1
+          fi
+
+          RELEASE_IS_DRAFT="$(gh release view "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" --json isDraft --jq '.isDraft' 2>/dev/null || true)"
+          if [ "$RELEASE_IS_DRAFT" = "true" ]; then
+            echo "Draft release $RELEASE_TAG already exists."
+          elif [ "$RELEASE_IS_DRAFT" = "false" ]; then
+            echo "::error::Release '$RELEASE_TAG' already exists and is not a draft."
+            exit 1
           elif gh release create "$RELEASE_TAG" \
-            --repo "${{ github.repository }}" \
+            --repo "$GITHUB_REPOSITORY" \
             --verify-tag \
             --draft \
             --title "$RELEASE_TAG"; then
             echo "Created draft release $RELEASE_TAG."
           else
-            gh release view "$RELEASE_TAG" --repo "${{ github.repository }}"
+            RELEASE_IS_DRAFT="$(gh release view "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" --json isDraft --jq '.isDraft')"
+            if [ "$RELEASE_IS_DRAFT" != "true" ]; then
+              echo "::error::Release '$RELEASE_TAG' exists but is not a draft."
+              exit 1
+            fi
+            echo "Draft release $RELEASE_TAG already exists."
           fi
 
       - name: Import installer signing certificate (macOS)
@@ -219,3 +242,11 @@ jobs:
             cp "$file" "$ASSET_DIR/daisy-pipeline-${RELEASE_VERSION}-experimental-win.exe"
           done
           gh release upload "$RELEASE_TAG" "$ASSET_DIR"/* --clobber
+
+      - name: Store maven.log
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: "release-maven-${{ matrix.os }}.log"
+          path: engine/maven.log
+          if-no-files-found: warn

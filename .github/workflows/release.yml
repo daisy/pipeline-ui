@@ -1,6 +1,14 @@
 name: Release
 
+run-name: Release ${{ inputs.release_tag || github.ref_name }}
+
 on:
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: 'Existing tag to release, for example 1.12.0'
+        required: true
+        type: string
   push:
     tags:
       # GitHub Actions tag filters are globs, not regular expressions.
@@ -20,6 +28,7 @@ env:
   APPLE_ID_TEAM: ${{ secrets.APPLE_ID_TEAM }}
   CSC_LINK: ${{ secrets.CSC_LINK }}
   CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}
+  RELEASE_TAG: ${{ inputs.release_tag || github.ref_name }}
 
 jobs:
   build:
@@ -32,6 +41,22 @@ jobs:
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
+        with:
+          ref: ${{ env.RELEASE_TAG }}
+          fetch-depth: 0
+
+      - name: Resolve release tag
+        shell: bash
+        run: |
+          if [ -z "$RELEASE_TAG" ]; then
+            echo "::error::Release tag is required."
+            exit 1
+          fi
+          if ! git rev-parse -q --verify "refs/tags/${RELEASE_TAG}^{commit}" > /dev/null; then
+            echo "::error::Release tag '${RELEASE_TAG}' was not found."
+            exit 1
+          fi
+          echo "RELEASE_VERSION=${RELEASE_TAG#v}" >> "$GITHUB_ENV"
 
       - name: Check out engine submodule
         run: git submodule update --init engine
@@ -62,6 +87,20 @@ jobs:
       - name: Install dependencies
         run: yarn install --frozen-lockfile --ignore-scripts
 
+      - name: Ensure draft GitHub release exists
+        run: |
+          if gh release view "$RELEASE_TAG" --repo "${{ github.repository }}" > /dev/null 2>&1; then
+            echo "Release $RELEASE_TAG already exists."
+          elif gh release create "$RELEASE_TAG" \
+            --repo "${{ github.repository }}" \
+            --verify-tag \
+            --draft \
+            --title "$RELEASE_TAG"; then
+            echo "Created draft release $RELEASE_TAG."
+          else
+            gh release view "$RELEASE_TAG" --repo "${{ github.repository }}"
+          fi
+
       - name: Import installer signing certificate (macOS)
         if: runner.os == 'macOS'
         run: |
@@ -89,7 +128,7 @@ jobs:
 
       - name: Re-upload signed installers to release (macOS)
         if: runner.os == 'macOS'
-        run: gh release upload ${{ github.ref_name }} dist/*.pkg --clobber
+        run: gh release upload "$RELEASE_TAG" dist/*.pkg --clobber
 
       - name: Build experimental debug installers (macOS)
         if: runner.os == 'macOS'
@@ -111,7 +150,6 @@ jobs:
       - name: Upload experimental debug installers to release (macOS)
         if: runner.os == 'macOS'
         run: |
-          VERSION="${GITHUB_REF_NAME#v}"
           ASSET_DIR="$RUNNER_TEMP/experimental-assets"
           mkdir -p "$ASSET_DIR"
           shopt -s nullglob
@@ -128,9 +166,9 @@ jobs:
             elif [[ "$name" == *x64* ]]; then
               platform="mac-x64"
             fi
-            cp "$file" "$ASSET_DIR/daisy-pipeline-${VERSION}-experimental-${platform}.pkg"
+            cp "$file" "$ASSET_DIR/daisy-pipeline-${RELEASE_VERSION}-experimental-${platform}.pkg"
           done
-          gh release upload "${GITHUB_REF_NAME}" "$ASSET_DIR"/* --clobber
+          gh release upload "$RELEASE_TAG" "$ASSET_DIR"/* --clobber
 
       - name: Clean up keychain (macOS)
         if: runner.os == 'macOS' && always()
@@ -154,7 +192,6 @@ jobs:
         if: runner.os == 'Windows'
         shell: bash
         run: |
-          VERSION="${GITHUB_REF_NAME#v}"
           ASSET_DIR="$RUNNER_TEMP/experimental-assets"
           mkdir -p "$ASSET_DIR"
           shopt -s nullglob
@@ -164,6 +201,6 @@ jobs:
             exit 1
           fi
           for file in "${files[@]}"; do
-            cp "$file" "$ASSET_DIR/daisy-pipeline-${VERSION}-experimental-win.exe"
+            cp "$file" "$ASSET_DIR/daisy-pipeline-${RELEASE_VERSION}-experimental-win.exe"
           done
-          gh release upload "${GITHUB_REF_NAME}" "$ASSET_DIR"/* --clobber
+          gh release upload "$RELEASE_TAG" "$ASSET_DIR"/* --clobber

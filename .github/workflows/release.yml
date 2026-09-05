@@ -28,8 +28,6 @@ env:
   APPLE_ID: ${{ secrets.APPLE_ID }}
   APPLE_ID_PASS: ${{ secrets.APPLE_ID_PASS }}
   APPLE_ID_TEAM: ${{ secrets.APPLE_ID_TEAM }}
-  CSC_LINK: ${{ secrets.CSC_LINK }}
-  CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}
   RELEASE_TAG: ${{ inputs.release_tag || github.ref_name }}
 
 jobs:
@@ -191,6 +189,8 @@ jobs:
             exit 1
           fi
         env:
+          CSC_LINK: ${{ secrets.CSC_LINK }}
+          CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}
           INSTALLER_CERT_P12: ${{ secrets.INSTALLER_CERT_P12 }}
           INSTALLER_CERT_PASSWORD: ${{ secrets.INSTALLER_CERT_PASSWORD }}
 

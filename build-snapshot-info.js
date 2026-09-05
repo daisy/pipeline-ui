@@ -57,4 +57,11 @@ function getSnapshotInfo() {
     }
 }
 
-module.exports = { getSnapshotInfo }
+function getExperimentalReleaseInfo() {
+    return {
+        releaseName: `${version}-experimental`,
+        version,
+    }
+}
+
+module.exports = { getExperimentalReleaseInfo, getSnapshotInfo }

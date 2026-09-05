@@ -143,8 +143,8 @@ jobs:
           gh release view "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" --json assets \
             --jq '.assets[].name' | while IFS= read -r name; do
               case "$name" in
-                *.blockmap|latest*.yml|builder-debug.yml)
-                  echo "Deleting release metadata asset $name"
+                *.blockmap|latest*.yml|builder-debug.yml|*snapshot*)
+                  echo "Deleting generated release clutter asset $name"
                   gh release delete-asset "$RELEASE_TAG" "$name" --repo "$GITHUB_REPOSITORY" --yes || true
                   ;;
               esac
@@ -235,23 +235,21 @@ jobs:
             gh release upload "$RELEASE_TAG" "$file" --repo "$GITHUB_REPOSITORY" --clobber
           done
 
-      - name: Build experimental debug installers (macOS)
+      - name: Build experimental release installers (macOS)
         if: runner.os == 'macOS'
         run: |
           yarn clean
-          yarn release-debug:mac
-        env:
-          DEV_BUILD: 'true'
+          yarn release-experimental:mac
 
-      - name: Sign experimental debug installers (macOS)
+      - name: Sign experimental release installers (macOS)
         if: runner.os == 'macOS'
         shell: bash
         run: |
           set -euo pipefail
           shopt -s nullglob
-          files=(dist/*snapshot*.pkg)
+          files=(dist/*experimental*.pkg)
           if [ ${#files[@]} -eq 0 ]; then
-            echo "::error::No debug installers found"
+            echo "::error::No experimental release installers found"
             find dist -maxdepth 1 -type f -print || true
             exit 1
           fi
@@ -259,7 +257,7 @@ jobs:
         env:
           DEV_ID_INSTALLER: ${{ secrets.DEV_ID_INSTALLER }}
 
-      - name: Upload experimental debug installers to release (macOS)
+      - name: Upload experimental release installers to release (macOS)
         if: runner.os == 'macOS'
         shell: bash
         run: |
@@ -267,9 +265,9 @@ jobs:
           ASSET_DIR="$RUNNER_TEMP/experimental-assets"
           mkdir -p "$ASSET_DIR"
           shopt -s nullglob
-          files=(dist/*snapshot*.pkg)
+          files=(dist/*experimental*.pkg)
           if [ ${#files[@]} -eq 0 ]; then
-            echo "::error::No debug installers found"
+            echo "::error::No experimental release installers found"
             find dist -maxdepth 1 -type f -print || true
             exit 1
           fi
@@ -316,15 +314,13 @@ jobs:
           fi
           gh release upload "$RELEASE_TAG" "${files[0]}" --repo "$GITHUB_REPOSITORY" --clobber
 
-      - name: Build experimental debug installer (Windows)
+      - name: Build experimental release installer (Windows)
         if: runner.os == 'Windows'
         run: |
           yarn clean
-          yarn release-debug:win
-        env:
-          DEV_BUILD: 'true'
+          yarn release-experimental:win
 
-      - name: Upload experimental debug installer to release (Windows)
+      - name: Upload experimental release installer to release (Windows)
         if: runner.os == 'Windows'
         shell: bash
         run: |
@@ -332,14 +328,14 @@ jobs:
           ASSET_DIR="$RUNNER_TEMP/experimental-assets"
           mkdir -p "$ASSET_DIR"
           shopt -s nullglob
-          files=(dist/*snapshot*.exe)
+          files=(dist/*experimental*.exe)
           if [ ${#files[@]} -eq 0 ]; then
-            echo "::error::No debug installer found"
+            echo "::error::No experimental release installer found"
             find dist -maxdepth 1 -type f -print || true
             exit 1
           fi
           if [ ${#files[@]} -ne 1 ]; then
-            echo "::error::Expected one debug Windows installer, found ${#files[@]}"
+            echo "::error::Expected one experimental release Windows installer, found ${#files[@]}"
             find dist -maxdepth 1 -type f -print || true
             exit 1
           fi

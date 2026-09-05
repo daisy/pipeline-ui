@@ -4,9 +4,15 @@ const { cpSync, existsSync } = require('fs')
 const react = require('@vitejs/plugin-react')
 
 const { APP_CONFIG } = require('./app.config')
-const { getSnapshotInfo } = require('./build-snapshot-info')
+const {
+    getExperimentalReleaseInfo,
+    getSnapshotInfo,
+} = require('./build-snapshot-info')
 
 const isDev = process.env.NODE_ENV !== 'production'
+const isDevBuild = process.env.DEV_BUILD === 'true'
+const isExperimentalReleaseBuild =
+    process.env.EXPERIMENTAL_RELEASE_BUILD === 'true'
 
 const featureFlagEnabled = (name) =>
     process.env[name] !== undefined ? process.env[name] === 'true' : isDev
@@ -14,15 +20,19 @@ const featureFlagEnabled = (name) =>
 const enableOcr = featureFlagEnabled('ENABLE_OCR')
 const enableExternalEngine = featureFlagEnabled('ENABLE_EXTERNAL_ENGINE')
 
-const buildVersion =
-    process.env.DEV_BUILD === 'true'
-        ? (() => {
-              const { releaseName } = getSnapshotInfo()
-              return releaseName
-          })()
-        : undefined
+const buildVersion = isExperimentalReleaseBuild
+    ? (() => {
+          const { releaseName } = getExperimentalReleaseInfo()
+          return releaseName
+      })()
+    : isDevBuild
+      ? (() => {
+            const { releaseName } = getSnapshotInfo()
+            return releaseName
+        })()
+      : undefined
 const buildDescription =
-    process.env.DEV_BUILD === 'true'
+    !isExperimentalReleaseBuild && isDevBuild
         ? (() => {
               const { releaseDescription } = getSnapshotInfo()
               return releaseDescription

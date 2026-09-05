@@ -88,7 +88,7 @@ export function AboutView({ title }) {
     const { pipeline, update, settings } = useWindowStore()
     let version = BUILD_VERSION ?? packageJson.version
     let buildDetails = BUILD_DETAILS
-    let versionLabel = buildDetails ? 'Release' : 'App version'
+    let versionLabel = BUILD_VERSION ? 'Release' : 'App version'
     let engineVersion = pipeline.alive?.version
     const buildOptionDetails = [
         settings.logLevel && settings.logLevel !== 'info'

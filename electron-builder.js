@@ -1,5 +1,8 @@
 const { APP_CONFIG } = require('./app.config')
-const { getSnapshotInfo } = require('./build-snapshot-info')
+const {
+    getExperimentalReleaseInfo,
+    getSnapshotInfo,
+} = require('./build-snapshot-info')
 
 const { APP_ID, AUTHOR, TITLE, DESCRIPTION, FOLDERS, ARTIFACT_NAME } =
     APP_CONFIG
@@ -8,16 +11,21 @@ const CURRENT_YEAR = new Date().getFullYear()
 // take off the suffix '- App' -- we only want that to appear on the window title
 let adjustedAppName = TITLE.replace(' - App', '')
 
-const devVersion =
-    process.env.DEV_BUILD === 'true'
+const buildVersion =
+    process.env.EXPERIMENTAL_RELEASE_BUILD === 'true'
         ? (() => {
-              const { releaseName } = getSnapshotInfo()
+              const { releaseName } = getExperimentalReleaseInfo()
               return releaseName
           })()
-        : undefined
+        : process.env.DEV_BUILD === 'true'
+          ? (() => {
+                const { releaseName } = getSnapshotInfo()
+                return releaseName
+            })()
+          : undefined
 
 module.exports = {
-    ...(devVersion ? { extraMetadata: { version: devVersion } } : {}),
+    ...(buildVersion ? { extraMetadata: { version: buildVersion } } : {}),
     appId: APP_ID,
     productName: adjustedAppName,
     copyright: `Copyright © ${CURRENT_YEAR} — ${AUTHOR.name}`,

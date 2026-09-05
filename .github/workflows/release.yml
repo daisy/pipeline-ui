@@ -232,14 +232,7 @@ jobs:
             exit 1
           fi
           for file in "${files[@]}"; do
-            name="$(basename "$file")"
-            label="macOS"
-            if [[ "$name" == *arm64* ]]; then
-              label="macOS Apple silicon"
-            elif [[ "$name" == *x64* ]]; then
-              label="macOS Intel"
-            fi
-            gh release upload "$RELEASE_TAG" "$file#$label" --repo "$GITHUB_REPOSITORY" --clobber
+            gh release upload "$RELEASE_TAG" "$file" --repo "$GITHUB_REPOSITORY" --clobber
           done
 
       - name: Build experimental debug installers (macOS)
@@ -285,16 +278,12 @@ jobs:
             platform="mac"
             if [[ "$name" == *arm64* ]]; then
               platform="mac-arm64"
-              label="macOS Apple silicon experimental"
             elif [[ "$name" == *x64* ]]; then
               platform="mac-x64"
-              label="macOS Intel experimental"
-            else
-              label="macOS experimental"
             fi
             asset="$ASSET_DIR/daisy-pipeline-${RELEASE_VERSION}-experimental-${platform}.pkg"
             cp "$file" "$asset"
-            gh release upload "$RELEASE_TAG" "$asset#$label" --repo "$GITHUB_REPOSITORY" --clobber
+            gh release upload "$RELEASE_TAG" "$asset" --repo "$GITHUB_REPOSITORY" --clobber
           done
 
       - name: Clean up keychain (macOS)
@@ -325,7 +314,7 @@ jobs:
             find dist -maxdepth 1 -type f -print || true
             exit 1
           fi
-          gh release upload "$RELEASE_TAG" "${files[0]}#Windows" --repo "$GITHUB_REPOSITORY" --clobber
+          gh release upload "$RELEASE_TAG" "${files[0]}" --repo "$GITHUB_REPOSITORY" --clobber
 
       - name: Build experimental debug installer (Windows)
         if: runner.os == 'Windows'
@@ -357,7 +346,7 @@ jobs:
           for file in "${files[@]}"; do
             asset="$ASSET_DIR/daisy-pipeline-${RELEASE_VERSION}-experimental-win.exe"
             cp "$file" "$asset"
-            gh release upload "$RELEASE_TAG" "$asset#Windows experimental" --repo "$GITHUB_REPOSITORY" --clobber
+            gh release upload "$RELEASE_TAG" "$asset" --repo "$GITHUB_REPOSITORY" --clobber
           done
 
       - name: Store maven.log

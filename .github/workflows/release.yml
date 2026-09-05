@@ -211,6 +211,8 @@ jobs:
       - name: Build experimental debug installers (macOS)
         if: runner.os == 'macOS'
         run: yarn release-debug:mac
+        env:
+          DEV_BUILD: 'true'
 
       - name: Sign experimental debug installers (macOS)
         if: runner.os == 'macOS'
@@ -269,6 +271,8 @@ jobs:
       - name: Build experimental debug installer (Windows)
         if: runner.os == 'Windows'
         run: yarn release-debug:win
+        env:
+          DEV_BUILD: 'true'
 
       - name: Upload experimental debug installer to release (Windows)
         if: runner.os == 'Windows'

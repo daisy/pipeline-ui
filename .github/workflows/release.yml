@@ -219,6 +219,7 @@ jobs:
           files=(dist/*snapshot*.pkg)
           if [ ${#files[@]} -eq 0 ]; then
             echo "::error::No debug installers found"
+            find dist -maxdepth 1 -type f -print || true
             exit 1
           fi
           bash sign-installer-mac.sh "${files[@]}"
@@ -234,6 +235,7 @@ jobs:
           files=(dist/*snapshot*.pkg)
           if [ ${#files[@]} -eq 0 ]; then
             echo "::error::No debug installers found"
+            find dist -maxdepth 1 -type f -print || true
             exit 1
           fi
           for file in "${files[@]}"; do
@@ -278,6 +280,7 @@ jobs:
           files=(dist/*snapshot*.exe)
           if [ ${#files[@]} -eq 0 ]; then
             echo "::error::No debug installer found"
+            find dist -maxdepth 1 -type f -print || true
             exit 1
           fi
           for file in "${files[@]}"; do

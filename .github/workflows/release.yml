@@ -210,7 +210,9 @@ jobs:
 
       - name: Build experimental debug installers (macOS)
         if: runner.os == 'macOS'
-        run: yarn release-debug:mac
+        run: |
+          yarn clean
+          yarn release-debug:mac
         env:
           DEV_BUILD: 'true'
 
@@ -270,7 +272,9 @@ jobs:
 
       - name: Build experimental debug installer (Windows)
         if: runner.os == 'Windows'
-        run: yarn release-debug:win
+        run: |
+          yarn clean
+          yarn release-debug:win
         env:
           DEV_BUILD: 'true'
 

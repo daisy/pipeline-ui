@@ -135,6 +135,21 @@ jobs:
             echo "Draft release $RELEASE_TAG already exists."
           fi
 
+      - name: Remove auto-published release metadata
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          gh release view "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" --json assets \
+            --jq '.assets[].name' | while IFS= read -r name; do
+              case "$name" in
+                *.blockmap|latest*.yml|builder-debug.yml)
+                  echo "Deleting release metadata asset $name"
+                  gh release delete-asset "$RELEASE_TAG" "$name" --repo "$GITHUB_REPOSITORY" --yes || true
+                  ;;
+              esac
+            done
+
       - name: Import macOS signing certificates
         if: runner.os == 'macOS'
         shell: bash
@@ -194,9 +209,9 @@ jobs:
           INSTALLER_CERT_P12: ${{ secrets.INSTALLER_CERT_P12 }}
           INSTALLER_CERT_PASSWORD: ${{ secrets.INSTALLER_CERT_PASSWORD }}
 
-      - name: Build and release (macOS)
+      - name: Build installers (macOS)
         if: runner.os == 'macOS'
-        run: yarn release:mac
+        run: yarn dist-signed:mac
 
       - name: Sign installer (macOS)
         if: runner.os == 'macOS'
@@ -204,9 +219,28 @@ jobs:
         env:
           DEV_ID_INSTALLER: ${{ secrets.DEV_ID_INSTALLER }}
 
-      - name: Re-upload signed installers to release (macOS)
+      - name: Upload signed installers to release (macOS)
         if: runner.os == 'macOS'
-        run: gh release upload "$RELEASE_TAG" dist/*.pkg --clobber
+        shell: bash
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+          files=(dist/*.pkg)
+          if [ ${#files[@]} -eq 0 ]; then
+            echo "::error::No macOS installers found"
+            find dist -maxdepth 1 -type f -print || true
+            exit 1
+          fi
+          for file in "${files[@]}"; do
+            name="$(basename "$file")"
+            label="macOS"
+            if [[ "$name" == *arm64* ]]; then
+              label="macOS Apple silicon"
+            elif [[ "$name" == *x64* ]]; then
+              label="macOS Intel"
+            fi
+            gh release upload "$RELEASE_TAG" "$file#$label" --repo "$GITHUB_REPOSITORY" --clobber
+          done
 
       - name: Build experimental debug installers (macOS)
         if: runner.os == 'macOS'
@@ -218,7 +252,9 @@ jobs:
 
       - name: Sign experimental debug installers (macOS)
         if: runner.os == 'macOS'
+        shell: bash
         run: |
+          set -euo pipefail
           shopt -s nullglob
           files=(dist/*snapshot*.pkg)
           if [ ${#files[@]} -eq 0 ]; then
@@ -232,7 +268,9 @@ jobs:
 
       - name: Upload experimental debug installers to release (macOS)
         if: runner.os == 'macOS'
+        shell: bash
         run: |
+          set -euo pipefail
           ASSET_DIR="$RUNNER_TEMP/experimental-assets"
           mkdir -p "$ASSET_DIR"
           shopt -s nullglob
@@ -247,12 +285,17 @@ jobs:
             platform="mac"
             if [[ "$name" == *arm64* ]]; then
               platform="mac-arm64"
+              label="macOS Apple silicon experimental"
             elif [[ "$name" == *x64* ]]; then
               platform="mac-x64"
+              label="macOS Intel experimental"
+            else
+              label="macOS experimental"
             fi
-            cp "$file" "$ASSET_DIR/daisy-pipeline-${RELEASE_VERSION}-experimental-${platform}.pkg"
+            asset="$ASSET_DIR/daisy-pipeline-${RELEASE_VERSION}-experimental-${platform}.pkg"
+            cp "$file" "$asset"
+            gh release upload "$RELEASE_TAG" "$asset#$label" --repo "$GITHUB_REPOSITORY" --clobber
           done
-          gh release upload "$RELEASE_TAG" "$ASSET_DIR"/* --clobber
 
       - name: Clean up keychain (macOS)
         if: runner.os == 'macOS' && always()
@@ -266,9 +309,23 @@ jobs:
             echo "Signing keychain not found; skipping cleanup."
           fi
 
-      - name: Build and release (Windows)
+      - name: Build installer (Windows)
         if: runner.os == 'Windows'
-        run: yarn release:win
+        run: yarn dist-signed:win
+
+      - name: Upload installer to release (Windows)
+        if: runner.os == 'Windows'
+        shell: bash
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+          files=(dist/*.exe)
+          if [ ${#files[@]} -ne 1 ]; then
+            echo "::error::Expected one Windows installer, found ${#files[@]}"
+            find dist -maxdepth 1 -type f -print || true
+            exit 1
+          fi
+          gh release upload "$RELEASE_TAG" "${files[0]}#Windows" --repo "$GITHUB_REPOSITORY" --clobber
 
       - name: Build experimental debug installer (Windows)
         if: runner.os == 'Windows'
@@ -282,6 +339,7 @@ jobs:
         if: runner.os == 'Windows'
         shell: bash
         run: |
+          set -euo pipefail
           ASSET_DIR="$RUNNER_TEMP/experimental-assets"
           mkdir -p "$ASSET_DIR"
           shopt -s nullglob
@@ -291,10 +349,16 @@ jobs:
             find dist -maxdepth 1 -type f -print || true
             exit 1
           fi
+          if [ ${#files[@]} -ne 1 ]; then
+            echo "::error::Expected one debug Windows installer, found ${#files[@]}"
+            find dist -maxdepth 1 -type f -print || true
+            exit 1
+          fi
           for file in "${files[@]}"; do
-            cp "$file" "$ASSET_DIR/daisy-pipeline-${RELEASE_VERSION}-experimental-win.exe"
+            asset="$ASSET_DIR/daisy-pipeline-${RELEASE_VERSION}-experimental-win.exe"
+            cp "$file" "$asset"
+            gh release upload "$RELEASE_TAG" "$asset#Windows experimental" --repo "$GITHUB_REPOSITORY" --clobber
           done
-          gh release upload "$RELEASE_TAG" "$ASSET_DIR"/* --clobber
 
       - name: Store maven.log
         if: ${{ always() }}

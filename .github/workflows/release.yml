@@ -137,17 +137,59 @@ jobs:
             echo "Draft release $RELEASE_TAG already exists."
           fi
 
-      - name: Import installer signing certificate (macOS)
+      - name: Import macOS signing certificates
         if: runner.os == 'macOS'
+        shell: bash
         run: |
-          CERT_PATH=$RUNNER_TEMP/installer.p12
-          KEYCHAIN_PATH=$RUNNER_TEMP/signing.keychain-db
-          echo -n "$INSTALLER_CERT_P12" | base64 --decode -o "$CERT_PATH"
-          security create-keychain -p "${{ github.run_id }}" "$KEYCHAIN_PATH"
+          set -euo pipefail
+
+          KEYCHAIN_PATH="$RUNNER_TEMP/signing.keychain-db"
+          KEYCHAIN_PASSWORD="$GITHUB_RUN_ID"
+          APP_CERT_PATH="$RUNNER_TEMP/app-signing.p12"
+          INSTALLER_CERT_PATH="$RUNNER_TEMP/installer.p12"
+
+          write_cert() {
+            local source="$1"
+            local destination="$2"
+
+            if [[ "$source" == http://* || "$source" == https://* ]]; then
+              curl -fsSL "$source" -o "$destination"
+            elif [[ "$source" == file://* ]]; then
+              cp "${source#file://}" "$destination"
+            elif [[ "$source" == data:*base64,* ]]; then
+              printf '%s' "${source#*,}" | base64 --decode -o "$destination"
+            else
+              printf '%s' "$source" | base64 --decode -o "$destination"
+            fi
+          }
+
+          : "${CSC_LINK:?CSC_LINK secret is required.}"
+          : "${CSC_KEY_PASSWORD:?CSC_KEY_PASSWORD secret is required.}"
+          : "${INSTALLER_CERT_P12:?INSTALLER_CERT_P12 secret is required.}"
+          : "${INSTALLER_CERT_PASSWORD:?INSTALLER_CERT_PASSWORD secret is required.}"
+
+          write_cert "$CSC_LINK" "$APP_CERT_PATH"
+          write_cert "$INSTALLER_CERT_P12" "$INSTALLER_CERT_PATH"
+
+          security create-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
           security set-keychain-settings -lut 21600 "$KEYCHAIN_PATH"
-          security unlock-keychain -p "${{ github.run_id }}" "$KEYCHAIN_PATH"
-          security import "$CERT_PATH" -P "$INSTALLER_CERT_PASSWORD" -A -t cert -f pkcs12 -k "$KEYCHAIN_PATH"
-          security list-keychain -d user -s "$KEYCHAIN_PATH"
+          security unlock-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+          USER_KEYCHAINS=()
+          while IFS= read -r keychain; do
+            [ -n "$keychain" ] && USER_KEYCHAINS+=("$keychain")
+          done < <(security list-keychains -d user | sed -E 's/^[[:space:]]*"(.+)"$/\1/')
+          security list-keychains -d user -s "$KEYCHAIN_PATH" "${USER_KEYCHAINS[@]}"
+          security default-keychain -d user -s "$KEYCHAIN_PATH"
+
+          security import "$APP_CERT_PATH" -P "$CSC_KEY_PASSWORD" -A -t cert -f pkcs12 -k "$KEYCHAIN_PATH"
+          security import "$INSTALLER_CERT_PATH" -P "$INSTALLER_CERT_PASSWORD" -A -t cert -f pkcs12 -k "$KEYCHAIN_PATH"
+          security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+
+          security find-identity -v -p codesigning "$KEYCHAIN_PATH"
+          if ! security find-identity -v -p codesigning "$KEYCHAIN_PATH" | grep -q 'Developer ID Application: US Fund for DAISY (SAMG8AWD69)'; then
+            echo "::error::Developer ID Application signing identity was not imported."
+            exit 1
+          fi
         env:
           INSTALLER_CERT_P12: ${{ secrets.INSTALLER_CERT_P12 }}
           INSTALLER_CERT_PASSWORD: ${{ secrets.INSTALLER_CERT_PASSWORD }}

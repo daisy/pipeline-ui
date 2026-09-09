@@ -1,7 +1,11 @@
 import { ipcMain } from 'electron'
+import { info, error } from 'electron-log'
 import { IPC } from 'shared/constants'
 import { Alive, Webservice } from 'shared/types'
 import { pipelineAPI } from 'main/data/apis/pipeline'
+import { store } from 'main/data/store'
+import { selectTtsConfig } from 'shared/data/slices/settings'
+import { selectWebservice } from 'shared/data/slices/pipeline'
 
 export type PipelineConnectionTestResult = {
     alive: Alive
@@ -67,13 +71,33 @@ export function setupPipelineConnectionEvents() {
             previewUrl: string
         ): Promise<PipelineVoicePreviewResult> => {
             if (!previewUrl) {
+                error('VOICE_PREVIEW: no preview URL was provided')
                 return {
                     ok: false,
                     error: 'No voice preview URL was provided.',
                 }
             }
+            info('VOICE_PREVIEW: fetching', previewUrl)
             try {
+                // The engine only serves a preview if a /voices call with
+                // matching properties immediately preceded it (otherwise it
+                // returns 400 "No /voices call preceeded this call, or
+                // settings were changed"). Re-issue that call right before
+                // requesting the preview so the client always honors the
+                // engine's calling convention.
+                const state = store.getState()
+                await pipelineAPI.fetchTtsVoices(selectTtsConfig(state))(
+                    selectWebservice(state)
+                )
                 const preview = await pipelineAPI.fetchBinary(previewUrl)
+                info(
+                    'VOICE_PREVIEW: fetched',
+                    previewUrl,
+                    'bytes:',
+                    preview.arrayBuffer.byteLength,
+                    'contentType:',
+                    preview.contentType
+                )
                 return {
                     ok: true,
                     audio: preview.arrayBuffer,
@@ -81,6 +105,7 @@ export function setupPipelineConnectionEvents() {
                 }
             } catch (err) {
                 const message = err instanceof Error ? err.message : String(err)
+                error('VOICE_PREVIEW: failed', previewUrl, message)
                 return {
                     ok: false,
                     error: message,

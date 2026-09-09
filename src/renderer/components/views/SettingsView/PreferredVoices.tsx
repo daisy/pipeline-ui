@@ -115,7 +115,14 @@ export function PreferredVoices({
         const audioelm = document.getElementById(
             `preview-${voice.lang}-${idx}`
         ) as HTMLAudioElement
-        if (!audioelm || !previewUrl) return
+        if (!audioelm || !previewUrl) {
+            console.warn(
+                'playVoicePreview: no preview URL available for voice',
+                voice.engine,
+                voice.name
+            )
+            return
+        }
 
         if (activePreviewAudioRef.current === audioelm && !audioelm.paused) {
             clearPreviewAudio()
@@ -124,7 +131,13 @@ export function PreferredVoices({
 
         clearPreviewAudio()
         const objectUrl = await fetchVoicePreviewObjectUrl(previewUrl)
-        if (!objectUrl) return
+        if (!objectUrl) {
+            console.error(
+                'playVoicePreview: failed to fetch preview audio for',
+                previewUrl
+            )
+            return
+        }
 
         activePreviewAudioRef.current = audioelm
         previewAudioObjectUrlRef.current = objectUrl

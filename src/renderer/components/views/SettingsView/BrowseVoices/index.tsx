@@ -380,7 +380,14 @@ export function BrowseVoices({
         const key = voiceKey(voice)
         const audio = previewAudioRef.current
         const previewUrl = previewUrlForVoice(voice)
-        if (!audio || !previewUrl) return
+        if (!audio || !previewUrl) {
+            console.warn(
+                'toggleVoicePreview: no preview URL available for voice',
+                voice.engine,
+                voice.name
+            )
+            return
+        }
         if (playingPreviewKey === key && !audio.paused) {
             stopPreview()
             return
@@ -389,6 +396,10 @@ export function BrowseVoices({
         clearPreviewAudioObjectUrl()
         const objectUrl = await fetchVoicePreviewObjectUrl(previewUrl)
         if (!objectUrl) {
+            console.error(
+                'toggleVoicePreview: failed to fetch preview audio for',
+                previewUrl
+            )
             setPlayingPreviewKey(null)
             return
         }

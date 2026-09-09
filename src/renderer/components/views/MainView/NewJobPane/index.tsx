@@ -4,7 +4,11 @@ Select a script and submit a new job
 import { useEffect, useState } from 'react'
 import { useWindowStore } from 'renderer/store'
 import { Filetype, Job, Script } from 'shared/types'
-import { prepareJobRequest, updateJob } from 'shared/data/slices/pipeline'
+import {
+    prepareJobRequest,
+    setAnnouncement,
+    updateJob,
+} from 'shared/data/slices/pipeline'
 import {
     save,
     setSponsorshipMessageLastShown,
@@ -27,6 +31,10 @@ import { is2StepsScript } from 'shared/utils'
 import { SelectScript } from '../../../Widgets/SelectScript'
 import { DragDropFilterFiles } from '../../../Widgets/DragDropFilterFiles'
 import { validateJobRequestSync } from 'renderer/utils/jobRequestValidator'
+import {
+    getUnsupportedFilesMessage,
+    hasRelevantScripts,
+} from '../../../scriptFilters'
 
 // is dateInMs more than 2 weeks old
 function isExpired(dateInMs?: number) {
@@ -52,23 +60,46 @@ export function NewJobPane({ job }: { job?: Job }) {
     )
 
     const [files, setFiles] = useState<SeededFile[]>([])
+    const [openWithUnsupportedMessage, setOpenWithUnsupportedMessage] =
+        useState('')
 
     useEffect(() => {
         if (!job) return
         if (!job.openWithSource || job.openWithSource.length === 0) return
+        if (!pipeline.scripts || pipeline.scripts.length === 0) return
         let cancelled = false
 
         async function seedOpenWithFiles() {
             const seededFiles: SeededFile[] = []
+            const unsupportedCounts = {
+                unrecognized: 0,
+                noRelevantScript: 0,
+            }
             for (const filePath of job.openWithSource) {
                 const filetype = await App.detectFiletype(filePath)
-                if (filetype) {
-                    seededFiles.push({ filepath: filePath, filetype })
+                if (!filetype) {
+                    unsupportedCounts.unrecognized++
+                    continue
                 }
+
+                if (!hasRelevantScripts(filetype, pipeline.scripts)) {
+                    unsupportedCounts.noRelevantScript++
+                    continue
+                }
+
+                seededFiles.push({ filepath: filePath, filetype })
             }
             if (cancelled) return
 
             setFiles(seededFiles)
+            const msg = getUnsupportedFilesMessage(
+                unsupportedCounts,
+                seededFiles.length
+            )
+            setOpenWithUnsupportedMessage(msg)
+            if (msg) {
+                App.store.dispatch(setAnnouncement(msg))
+            }
             const { openWithSource, ...jobWithoutOpenWithSource } = job
             App.store.dispatch(updateJob(jobWithoutOpenWithSource))
         }
@@ -77,7 +108,7 @@ export function NewJobPane({ job }: { job?: Job }) {
         return () => {
             cancelled = true
         }
-    }, [job?.internalId])
+    }, [job?.internalId, job?.openWithSource, pipeline.scripts])
 
     // see if it's time to show the sponsorship message again
     useEffect(() => {
@@ -204,6 +235,7 @@ export function NewJobPane({ job }: { job?: Job }) {
                     job={job}
                     createJob={createJob}
                     initialValue={files}
+                    initialUnsupportedMessage={openWithUnsupportedMessage}
                     onChange={onDragDropFilesChange}
                 />
                 {files.length == 0 && (

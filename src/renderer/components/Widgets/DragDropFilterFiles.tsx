@@ -1,10 +1,13 @@
 import { FilelistWithRelevantScripts } from './FilelistWithRelevantScripts'
-import { getRelevantScripts } from '../scriptFilters'
+import {
+    getRelevantScripts,
+    getUnsupportedFilesMessage,
+    hasRelevantScripts,
+} from '../scriptFilters'
 import { DragFileInput } from '../Widgets/DragFileInput'
 import { useState, useEffect } from 'react'
 import { useWindowStore } from 'renderer/store'
 import { FileTreeEntry } from 'main/ipcs/fileSystem'
-import { ID } from 'renderer/utils'
 import { X } from './SvgIcons'
 import { setAnnouncement } from 'shared/data/slices/pipeline'
 const { App } = window
@@ -14,16 +17,19 @@ export function DragDropFilterFiles({
     createJob,
     onChange,
     initialValue,
+    initialUnsupportedMessage = '',
 }) {
     const { pipeline } = useWindowStore()
     // files is [{filepath, filetype},...]
     const [files, setFiles] = useState(initialValue)
     const [filteredFiles, setFilteredFiles] = useState(initialValue)
     const [filterText, setFilterText] = useState('')
-    const [uniqueFiletypes, setUniqueFiletypes] = useState(
-        Array.from(new Set(initialValue.map((f) => f.filetype.type)))
+    const [uniqueFiletypes, setUniqueFiletypes] = useState<string[]>(
+        Array.from(new Set<string>(initialValue.map((f) => f.filetype.type)))
     )
-    const [unsupportedMessage, setUnsupportedMessage] = useState('')
+    const [unsupportedMessage, setUnsupportedMessage] = useState(
+        initialUnsupportedMessage
+    )
 
     // update dependent states when files changes
     useEffect(() => {
@@ -34,7 +40,9 @@ export function DragDropFilterFiles({
 
     useEffect(() => {
         setUniqueFiletypes(
-            Array.from(new Set(filteredFiles.map((f) => f.filetype.type)))
+            Array.from(
+                new Set<string>(filteredFiles.map((f) => f.filetype.type))
+            )
         )
     }, [filteredFiles])
 
@@ -42,6 +50,10 @@ export function DragDropFilterFiles({
         let filteredFiles_ = applyFilterToFiles()
         setFilteredFiles(filteredFiles_)
     }, [filterText])
+
+    useEffect(() => {
+        setUnsupportedMessage(initialUnsupportedMessage)
+    }, [initialUnsupportedMessage])
 
     let applyFilterToFiles = () => {
         let filteredFiles_ = files.filter(
@@ -74,31 +86,35 @@ export function DragDropFilterFiles({
             (file) => currentFiles.indexOf(file) == -1
         )
         let uniqueNewFilesThatAreSupported = []
-        let rejectedCount = 0
+        let unsupportedCounts = {
+            unrecognized: 0,
+            noRelevantScript: 0,
+        }
         // assign a filetype to each one
         for (let file of uniqueNewFiles) {
             let filetype = await App.detectFiletype(file)
-            if (filetype) {
-                uniqueNewFilesThatAreSupported.push({
-                    filepath: file,
-                    filetype,
-                })
-            } else {
-                rejectedCount++
+            if (!filetype) {
+                unsupportedCounts.unrecognized++
+                continue
             }
+
+            if (!hasRelevantScripts(filetype, pipeline.scripts)) {
+                unsupportedCounts.noRelevantScript++
+                continue
+            }
+
+            uniqueNewFilesThatAreSupported.push({
+                filepath: file,
+                filetype,
+            })
         }
 
-        if (rejectedCount > 0 && uniqueNewFilesThatAreSupported.length === 0) {
-            const msg =
-                rejectedCount === 1
-                    ? 'File type not recognized'
-                    : 'File types not recognized'
-            setUnsupportedMessage(msg)
-            App.store.dispatch(setAnnouncement(msg))
-        } else {
-            setUnsupportedMessage('')
-            App.store.dispatch(setAnnouncement(''))
-        }
+        const msg = getUnsupportedFilesMessage(
+            unsupportedCounts,
+            uniqueNewFilesThatAreSupported.length
+        )
+        setUnsupportedMessage(msg)
+        App.store.dispatch(setAnnouncement(msg))
 
         let filesCopy = [...files]
         filesCopy = filesCopy.concat(

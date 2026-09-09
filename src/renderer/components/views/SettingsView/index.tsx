@@ -380,10 +380,12 @@ export function SettingsView(
                 )}-tab`}
                 tabIndex={0}
             >
-                <form onSubmit={() => window.close()}>
+                <form onSubmit={(e) => e.preventDefault()}>
                     <fieldset>{getSelectedItem().markup}</fieldset>
                     <div className="controls">
-                        <button type="submit">Close</button>
+                        <button type="button" onClick={() => window.close()}>
+                            Close
+                        </button>
                     </div>
                 </form>
             </div>

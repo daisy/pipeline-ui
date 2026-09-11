@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useWindowStore } from 'renderer/store'
 import { externalLinkClick } from 'renderer/utils'
 import { PipelineStatus } from 'shared/types'
@@ -114,6 +114,8 @@ export function AboutView({ title }) {
 
     let engineStatus = pipelineEngineStatus()
 
+    const [copied, setCopied] = useState(false)
+
     let copyToClipboard = (e) => {
         let info = [
             `${versionLabel}: ${version}`,
@@ -131,7 +133,14 @@ export function AboutView({ title }) {
             .filter(Boolean)
             .join('\n')
         App.copyToClipboard(info)
+        setCopied(true)
     }
+
+    useEffect(() => {
+        if (!copied) return
+        let timer = setTimeout(() => setCopied(false), 2000)
+        return () => clearTimeout(timer)
+    }, [copied])
 
     useEffect(() => {
         App.store.dispatch(checkForUpdate())
@@ -145,8 +154,10 @@ export function AboutView({ title }) {
 
     return (
         <main className="about">
-            <h1>{title}</h1>
-            <img src={pipelineLogo} alt="DAISY Pipeline logo" />
+            <div className="heading">
+                <img src={pipelineLogo} alt="DAISY Pipeline logo" />
+                <h1>{title}</h1>
+            </div>
             <a
                 href="https://daisy.org/pipeline"
                 onClick={(e) => externalLinkClick(e, App)}
@@ -157,24 +168,21 @@ export function AboutView({ title }) {
                 <ul>
                     <li>
                         {versionLabel}: {version}
-                        {buildDetails ||
-                        buildOptionDetails.length > 0 ? (
-                            <br />
-                        ) : null}
-                        {buildDetails && (
-                            <>
-                                <small>
-                                    <em>{buildDetails}</em>
-                                </small>
-                                {buildOptionDetails.length > 0 ? (
-                                    <br />
-                                ) : null}
-                            </>
-                        )}
-                        {buildOptionDetails.length > 0 && (
-                            <small>
-                                <em>{buildOptionDetails.join(' · ')}</em>
-                            </small>
+                        {(buildDetails || buildOptionDetails.length > 0) && (
+                            <span className="build-info">
+                                {buildDetails && (
+                                    <small>
+                                        <em>{buildDetails}</em>
+                                    </small>
+                                )}
+                                {buildOptionDetails.length > 0 && (
+                                    <small>
+                                        <em>
+                                            {buildOptionDetails.join(' · ')}
+                                        </em>
+                                    </small>
+                                )}
+                            </span>
                         )}
                     </li>
                     <li>Engine version: {engineVersion}</li>
@@ -192,15 +200,22 @@ export function AboutView({ title }) {
                         </span>
                     </li>
                 </ul>
-                <button
-                    type="button"
-                    className="copy invisible"
-                    title="Copy information to clipboard"
-                    aria-label="Copy information to clipboard"
-                    onClick={(e) => copyToClipboard(e)}
-                >
-                    <Copy width="30" height="30" />
-                </button>
+                <span className="copy-wrapper">
+                    <button
+                        type="button"
+                        className="copy invisible"
+                        title="Copy information to clipboard"
+                        aria-label="Copy information to clipboard"
+                        onClick={(e) => copyToClipboard(e)}
+                    >
+                        <Copy width="30" height="30" />
+                    </button>
+                    {copied && (
+                        <small className="copied-message" aria-live="polite">
+                            Copied!
+                        </small>
+                    )}
+                </span>
             </p>
             <div className="actions">
                 {update.updateMessage && (

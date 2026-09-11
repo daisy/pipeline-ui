@@ -9,7 +9,7 @@ export function AboutWindow() {
         id: 'about',
         title: `${APP_CONFIG.TITLE} - About`,
         width: 500,
-        height: 450,
+        height: 400,
         resizable: false,
         alwaysOnTop: false, // if true, this will hide alert dialogs
         frame: false,

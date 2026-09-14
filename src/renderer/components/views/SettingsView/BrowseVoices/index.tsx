@@ -42,6 +42,9 @@ export function BrowseVoices({
     const [playingPreviewKey, setPlayingPreviewKey] = useState<string | null>(
         null
     )
+    const [loadingPreviewKey, setLoadingPreviewKey] = useState<string | null>(
+        null
+    )
     const nameSearchInputRef = useRef<HTMLInputElement>(null)
     const previewAudioRef = useRef<HTMLAudioElement>(null)
     const previewAudioObjectUrlRef = useRef<string | null>(null)
@@ -394,7 +397,9 @@ export function BrowseVoices({
         }
         audio.pause()
         clearPreviewAudioObjectUrl()
+        setLoadingPreviewKey(key)
         const objectUrl = await fetchVoicePreviewObjectUrl(previewUrl)
+        setLoadingPreviewKey(null)
         if (!objectUrl) {
             console.error(
                 'toggleVoicePreview: failed to fetch preview audio for',
@@ -688,6 +693,7 @@ export function BrowseVoices({
                                 voicesTransliterations[voice.name] ?? voice.name
                             const key = voiceKey(voice)
                             const previewIsPlaying = playingPreviewKey === key
+                            const previewIsLoading = loadingPreviewKey === key
                             const previewUrl = previewUrlForVoice(voice)
                             const alreadyPreferred =
                                 preferredVoices.find(
@@ -710,11 +716,17 @@ export function BrowseVoices({
                                     <td>
                                         <button
                                             type="button"
-                                            className="invisible"
+                                            className={
+                                                previewIsLoading
+                                                    ? 'invisible loading'
+                                                    : 'invisible'
+                                            }
                                             onClick={() =>
                                                 toggleVoicePreview(voice)
                                             }
-                                            disabled={!previewUrl}
+                                            disabled={
+                                                !previewUrl || previewIsLoading
+                                            }
                                             aria-label={`${
                                                 previewIsPlaying
                                                     ? 'Pause preview'

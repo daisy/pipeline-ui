@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { TtsVoice } from 'shared/types/ttsConfig'
 import { voicesTransliterations } from './BrowseVoices/voiceTransliterations'
-import { PlayIcon, X } from 'renderer/components/Widgets/SvgIcons'
+import { PauseIcon, PlayIcon, X } from 'renderer/components/Widgets/SvgIcons'
 import { SettingsMenuItem } from './types'
 import { formatGenderAgePart, parseGenderAge } from 'shared/utils'
 import { fetchVoicePreviewObjectUrl } from './voicePreview'
@@ -31,6 +31,12 @@ export function PreferredVoices({
     const [uniqueLanguages, setUniqueLanguages] = useState([])
     const activePreviewAudioRef = useRef<HTMLAudioElement | null>(null)
     const previewAudioObjectUrlRef = useRef<string | null>(null)
+    const [playingPreviewKey, setPlayingPreviewKey] = useState<string | null>(
+        null
+    )
+    const [loadingPreviewKey, setLoadingPreviewKey] = useState<string | null>(
+        null
+    )
 
     let languageNames = new Intl.DisplayNames(['en'], { type: 'language' })
 
@@ -106,11 +112,13 @@ export function PreferredVoices({
             previewAudioObjectUrlRef.current = null
         }
         activePreviewAudioRef.current = null
+        setPlayingPreviewKey(null)
     }
 
     useEffect(() => () => clearPreviewAudio(), [])
 
     let playVoicePreview = async (voice: TtsVoice, idx: number) => {
+        const key = `${voice.engine}-${voice.name}`
         const previewUrl = previewUrlForVoice(voice)
         const audioelm = document.getElementById(
             `preview-${voice.lang}-${idx}`
@@ -130,7 +138,9 @@ export function PreferredVoices({
         }
 
         clearPreviewAudio()
+        setLoadingPreviewKey(key)
         const objectUrl = await fetchVoicePreviewObjectUrl(previewUrl)
+        setLoadingPreviewKey(null)
         if (!objectUrl) {
             console.error(
                 'playVoicePreview: failed to fetch preview audio for',
@@ -145,6 +155,7 @@ export function PreferredVoices({
         audioelm.load()
         try {
             await audioelm.play()
+            setPlayingPreviewKey(key)
         } catch {
             clearPreviewAudio()
         }
@@ -210,6 +221,11 @@ export function PreferredVoices({
                                             const available =
                                                 ttsVoices === null ||
                                                 liveVoice !== undefined
+                                            const previewKey = `${v.engine}-${v.name}`
+                                            const previewIsPlaying =
+                                                playingPreviewKey === previewKey
+                                            const previewIsLoading =
+                                                loadingPreviewKey === previewKey
                                             return (
                                                 <tr
                                                     key={`${v.engine}-${v.name}`}
@@ -239,11 +255,20 @@ export function PreferredVoices({
                                                         ></audio>
                                                         <button
                                                             type="button"
-                                                            className="invisible"
-                                                            disabled={
-                                                                !previewUrl
+                                                            className={
+                                                                previewIsLoading
+                                                                    ? 'invisible loading'
+                                                                    : 'invisible'
                                                             }
-                                                            aria-label={`Preview for ${
+                                                            disabled={
+                                                                !previewUrl ||
+                                                                previewIsLoading
+                                                            }
+                                                            aria-label={`${
+                                                                previewIsPlaying
+                                                                    ? 'Pause preview'
+                                                                    : 'Preview'
+                                                            } for ${
                                                                 voicesTransliterations[
                                                                     v.name
                                                                 ] ?? v.name
@@ -255,10 +280,17 @@ export function PreferredVoices({
                                                                 )
                                                             }}
                                                         >
-                                                            <PlayIcon
-                                                                width="20"
-                                                                height="20"
-                                                            />
+                                                            {previewIsPlaying ? (
+                                                                <PauseIcon
+                                                                    width="20"
+                                                                    height="20"
+                                                                />
+                                                            ) : (
+                                                                <PlayIcon
+                                                                    width="20"
+                                                                    height="20"
+                                                                />
+                                                            )}
                                                         </button>
                                                     </th>
 

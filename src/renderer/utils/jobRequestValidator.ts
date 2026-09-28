@@ -19,7 +19,17 @@ export function validateJobRequestSync(
 ) {
     let validationResults = []
     let validateField = (item: NameValue, field: ScriptItemBase) => {
+        if (!field) return
         let required = field.required
+        if (!required && !valueIsNotEmpty(item.value)) {
+            validationResults.push({
+                item,
+                validValue: true,
+                message: '',
+                required,
+            })
+            return
+        }
         let valueValidation = validateSync(item.value, field.type, pipeline)
         validationResults.push({
             item,
@@ -47,7 +57,17 @@ export async function validateJobRequestAsync(
 ): Promise<ValidationInfo[]> {
     let validationResults = []
     let validateField = async (item: NameValue, field: ScriptItemBase) => {
+        if (!field) return
         let required = field.required
+        if (!required && !valueIsNotEmpty(item.value)) {
+            validationResults.push({
+                item,
+                validValue: true,
+                message: '',
+                required,
+            })
+            return
+        }
         let valueValidation = await validateAsync(
             item.value,
             field.type,

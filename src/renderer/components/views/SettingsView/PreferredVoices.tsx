@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { TtsVoice } from 'shared/types/ttsConfig'
 import { voicesTransliterations } from './BrowseVoices/voiceTransliterations'
-import { PlayIcon, X } from 'renderer/components/Widgets/SvgIcons'
+import { PauseIcon, PlayIcon, X } from 'renderer/components/Widgets/SvgIcons'
 import { SettingsMenuItem } from './types'
 import { formatGenderAgePart, parseGenderAge } from 'shared/utils'
 import { fetchVoicePreviewObjectUrl } from './voicePreview'
@@ -29,8 +29,13 @@ export function PreferredVoices({
     ])
     const [defaultVoices, setDefaultVoices] = useState([...userDefaultVoices])
     const [uniqueLanguages, setUniqueLanguages] = useState([])
-    const activePreviewAudioRef = useRef<HTMLAudioElement | null>(null)
+    const [playingPreviewKey, setPlayingPreviewKey] = useState<string | null>(
+        null
+    )
+    const previewAudioRef = useRef<HTMLAudioElement>(null)
     const previewAudioObjectUrlRef = useRef<string | null>(null)
+
+    const voiceKey = (voice: TtsVoice) => `${voice.engine}-${voice.name}`
 
     let languageNames = new Intl.DisplayNames(['en'], { type: 'language' })
 
@@ -42,6 +47,9 @@ export function PreferredVoices({
     }, [preferredVoices])
 
     let removeFromPreferredVoices = (voice: TtsVoice) => {
+        if (playingPreviewKey === voiceKey(voice)) {
+            stopPreview()
+        }
         let tmpVoices = [...preferredVoices]
         let idx = tmpVoices.findIndex(
             (v) => v.engine === voice.engine && v.name === voice.name
@@ -94,46 +102,50 @@ export function PreferredVoices({
             (lv) => lv.engine === voice.engine && lv.name === voice.name
         )?.preview ?? voice.preview
 
-    let clearPreviewAudio = () => {
-        const audio = activePreviewAudioRef.current
+    const clearPreviewAudioObjectUrl = () => {
+        if (previewAudioObjectUrlRef.current) {
+            URL.revokeObjectURL(previewAudioObjectUrlRef.current)
+            previewAudioObjectUrlRef.current = null
+        }
+    }
+
+    const stopPreview = () => {
+        const audio = previewAudioRef.current
         audio?.pause()
         if (audio) {
             audio.removeAttribute('src')
             audio.load()
         }
-        if (previewAudioObjectUrlRef.current) {
-            URL.revokeObjectURL(previewAudioObjectUrlRef.current)
-            previewAudioObjectUrlRef.current = null
-        }
-        activePreviewAudioRef.current = null
+        clearPreviewAudioObjectUrl()
+        setPlayingPreviewKey(null)
     }
 
-    useEffect(() => () => clearPreviewAudio(), [])
+    useEffect(() => () => stopPreview(), [])
 
-    let playVoicePreview = async (voice: TtsVoice, idx: number) => {
+    const toggleVoicePreview = async (voice: TtsVoice) => {
+        const key = voiceKey(voice)
+        const audio = previewAudioRef.current
         const previewUrl = previewUrlForVoice(voice)
-        const audioelm = document.getElementById(
-            `preview-${voice.lang}-${idx}`
-        ) as HTMLAudioElement
-        if (!audioelm || !previewUrl) return
-
-        if (activePreviewAudioRef.current === audioelm && !audioelm.paused) {
-            clearPreviewAudio()
+        if (!audio || !previewUrl) return
+        if (playingPreviewKey === key && !audio.paused) {
+            stopPreview()
             return
         }
-
-        clearPreviewAudio()
+        audio.pause()
+        clearPreviewAudioObjectUrl()
         const objectUrl = await fetchVoicePreviewObjectUrl(previewUrl)
-        if (!objectUrl) return
-
-        activePreviewAudioRef.current = audioelm
+        if (!objectUrl) {
+            setPlayingPreviewKey(null)
+            return
+        }
         previewAudioObjectUrlRef.current = objectUrl
-        audioelm.src = objectUrl
-        audioelm.load()
+        audio.src = objectUrl
+        audio.load()
         try {
-            await audioelm.play()
+            await audio.play()
+            setPlayingPreviewKey(key)
         } catch {
-            clearPreviewAudio()
+            stopPreview()
         }
     }
 
@@ -186,7 +198,7 @@ export function PreferredVoices({
                                         .sort((a, b) =>
                                             a.name > b.name ? 1 : -1
                                         )
-                                        .map((v, idx) => {
+                                        .map((v) => {
                                             const liveVoice = ttsVoices?.find(
                                                 (lv) =>
                                                     lv.engine === v.engine &&
@@ -197,6 +209,13 @@ export function PreferredVoices({
                                             const available =
                                                 ttsVoices === null ||
                                                 liveVoice !== undefined
+                                            const voiceName =
+                                                voicesTransliterations[
+                                                    v.name
+                                                ] ?? v.name
+                                            const key = voiceKey(v)
+                                            const previewIsPlaying =
+                                                playingPreviewKey === key
                                             return (
                                                 <tr
                                                     key={`${v.engine}-${v.name}`}
@@ -208,9 +227,7 @@ export function PreferredVoices({
                                                 >
                                                     <th className="voice-name">
                                                         <span>
-                                                            {voicesTransliterations[
-                                                                v.name
-                                                            ] ?? v.name}
+                                                            {voiceName}
                                                             {!available && (
                                                                 <span className="unavailable-label">
                                                                     {' '}
@@ -218,34 +235,34 @@ export function PreferredVoices({
                                                                 </span>
                                                             )}
                                                         </span>
-                                                        <audio
-                                                            id={`preview-${v.lang}-${idx}`}
-                                                            onEnded={
-                                                                clearPreviewAudio
-                                                            }
-                                                        ></audio>
                                                         <button
                                                             type="button"
                                                             className="invisible"
                                                             disabled={
                                                                 !previewUrl
                                                             }
-                                                            aria-label={`Preview for ${
-                                                                voicesTransliterations[
-                                                                    v.name
-                                                                ] ?? v.name
-                                                            }`}
+                                                            aria-label={`${
+                                                                previewIsPlaying
+                                                                    ? 'Pause preview'
+                                                                    : 'Preview'
+                                                            } for ${voiceName}`}
                                                             onClick={() => {
-                                                                playVoicePreview(
-                                                                    v,
-                                                                    idx
+                                                                toggleVoicePreview(
+                                                                    v
                                                                 )
                                                             }}
                                                         >
-                                                            <PlayIcon
-                                                                width="20"
-                                                                height="20"
-                                                            />
+                                                            {previewIsPlaying ? (
+                                                                <PauseIcon
+                                                                    width="20"
+                                                                    height="20"
+                                                                />
+                                                            ) : (
+                                                                <PlayIcon
+                                                                    width="20"
+                                                                    height="20"
+                                                                />
+                                                            )}
                                                         </button>
                                                     </th>
 
@@ -360,6 +377,7 @@ export function PreferredVoices({
                         </div>
                     )
                 })}
+            <audio ref={previewAudioRef} onEnded={stopPreview} />
         </div>
     )
 }

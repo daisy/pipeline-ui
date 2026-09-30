@@ -65,17 +65,24 @@ export function getStatus(job) {
 }
 
 export function valueIsNotEmpty(value) {
-    if (!value) {
+    if (value === null || value === undefined) {
         return false
     }
     if (Array.isArray(value)) {
+        if (value.length === 0) {
+            return false
+        }
         return (
-            value.find((v) => typeof v == 'string' && v.trim() == '') ==
-            undefined
+            value.find(
+                (v) =>
+                    v === null ||
+                    v === undefined ||
+                    (typeof v === 'string' && v.trim() === '')
+            ) === undefined
         )
     }
-    if (typeof value != 'string') {
-        return true
+    if (typeof value === 'string') {
+        return value.trim() !== ''
     }
-    return value.trim() != ''
+    return true
 }

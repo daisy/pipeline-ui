@@ -19,8 +19,22 @@ export function validateJobRequestSync(
 ) {
     let validationResults = []
     let validateField = (item: NameValue, field: ScriptItemBase) => {
-        let required = field.required
-        let valueValidation = validateSync(item.value, field.type, pipeline)
+        let required = field?.required ?? false
+        if (!required && !valueIsNotEmpty(item.value)) {
+            validationResults.push({
+                item,
+                validValue: true,
+                message: '',
+                required,
+            })
+            return
+        }
+        let valueValidation = validateSync(
+            item.value,
+            field?.type ?? item?.type,
+            pipeline,
+            required
+        )
         validationResults.push({
             item,
             validValue: valueValidation.valid,
@@ -29,11 +43,11 @@ export function validateJobRequestSync(
         })
     }
     for (let input of jobRequest.inputs) {
-        let scriptInput = script.inputs?.find((i) => i.name == input.name)
+        let scriptInput = script?.inputs?.find((i) => i.name == input.name)
         validateField(input, scriptInput)
     }
     for (let option of jobRequest.options) {
-        let scriptOption = script.options?.find((o) => o.name == option.name)
+        let scriptOption = script?.options?.find((o) => o.name == option.name)
         validateField(option, scriptOption)
     }
     return validationResults
@@ -47,12 +61,22 @@ export async function validateJobRequestAsync(
 ): Promise<ValidationInfo[]> {
     let validationResults = []
     let validateField = async (item: NameValue, field: ScriptItemBase) => {
-        let required = field.required
+        let required = field?.required ?? false
+        if (!required && !valueIsNotEmpty(item.value)) {
+            validationResults.push({
+                item,
+                validValue: true,
+                message: '',
+                required,
+            })
+            return
+        }
         let valueValidation = await validateAsync(
             item.value,
-            field.type,
+            field?.type ?? item?.type,
             App,
-            datatypes
+            datatypes,
+            required
         )
         validationResults.push({
             item,
@@ -62,21 +86,30 @@ export async function validateJobRequestAsync(
         })
     }
     for (let input of jobRequest.inputs) {
-        let scriptInput = script.inputs?.find((i) => i.name == input.name)
+        let scriptInput = script?.inputs?.find((i) => i.name == input.name)
         await validateField(input, scriptInput)
     }
     for (let option of jobRequest.options) {
-        let scriptOption = script.options?.find((o) => o.name == option.name)
+        let scriptOption = script?.options?.find((o) => o.name == option.name)
         await validateField(option, scriptOption)
     }
     return validationResults
 }
 
-async function validateAsync(value, type, App, datatypes) {
+async function validateAsync(
+    value,
+    type,
+    App,
+    datatypes,
+    required: boolean = false
+) {
     let isValid = false
     let message = ''
     if (type == 'anyFileURI') {
-        if (Array.isArray(value)) {
+        if (!required && !valueIsNotEmpty(value)) {
+            isValid = true
+            message = ''
+        } else if (Array.isArray(value)) {
             if (value.length == 0) isValid = false
             else {
                 let retvals = []
@@ -86,12 +119,16 @@ async function validateAsync(value, type, App, datatypes) {
                 }
                 isValid = retvals.find((v) => v == false) == undefined
             }
+            if (!isValid) message = 'File does not exist or is not a file.'
         } else {
             isValid = await App.isFile(value)
+            if (!isValid) message = 'File does not exist or is not a file.'
         }
-        if (!isValid) message = 'File does not exist or is not a file.'
     } else if (type == 'anyDirURI') {
-        if (Array.isArray(value)) {
+        if (!required && !valueIsNotEmpty(value)) {
+            isValid = true
+            message = ''
+        } else if (Array.isArray(value)) {
             if (value.length == 0) isValid = false
             else {
                 let retvals = []
@@ -99,30 +136,36 @@ async function validateAsync(value, type, App, datatypes) {
                     let retval = await App.isDirectory(v)
                     retvals.push(retval)
                 }
-                isValid = retvals.find((v) => false) == undefined
+                isValid = retvals.find((v) => v == false) == undefined
             }
+            if (!isValid)
+                message = 'Directory does not exist or is not a directory.'
         } else {
             isValid = await App.isDirectory(value)
+            if (!isValid)
+                message = 'Directory does not exist or is not a directory.'
         }
-
-        if (!isValid)
-            message = 'Directory does not exist or is not a directory.'
     } else {
-        let retval = validate(value, type, datatypes)
+        let retval = validate(value, type, datatypes, required)
         isValid = retval.valid
         message = retval.message
     }
     return { valid: isValid, message }
 }
 
-function validateSync(value, type, datatypes) {
+function validateSync(value, type, datatypes, required: boolean = false) {
     let isValid = false
     let message = ''
     if (type == 'anyFileURI' || type == 'anyDirURI') {
-        isValid = valueIsNotEmpty(value)
-        if (!isValid) message = 'Value is empty.'
+        if (!required && !valueIsNotEmpty(value)) {
+            isValid = true
+            message = ''
+        } else {
+            isValid = valueIsNotEmpty(value)
+            if (!isValid) message = 'Value is empty.'
+        }
     } else {
-        let retval = validate(value, type, datatypes)
+        let retval = validate(value, type, datatypes, required)
         isValid = retval.valid
         message = retval.message
     }
@@ -130,11 +173,16 @@ function validateSync(value, type, datatypes) {
 }
 
 // validates everything except anyFileURI and anyDirURI
-function validate(value, type, datatypes) {
+function validate(value, type, datatypes, required: boolean = false) {
     let isValid = false
     let message = ''
     if (!valueIsNotEmpty(value)) {
-        isValid = false
+        if (!required) {
+            isValid = true
+            message = ''
+        } else {
+            isValid = false
+        }
     } else if (['xsd:dateTime', 'xs:dateTime', 'datetime'].includes(type)) {
         let tmp = new Date(value)
         isValid = tmp.toString() != 'Invalid Date'

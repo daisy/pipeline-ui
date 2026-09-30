@@ -355,12 +355,17 @@ export function ScriptForm({ job }: { job: Job }) {
 
     let relevantError = (name) => {
         let errorMessage = job.errors?.find((e) => e.fieldName === name)?.error
-        let validationError = job.jobRequest.validation.find(
+        let validationError = job.jobRequest.validation?.find(
             (v) => v.item.name == name
         )
         if (errorMessage) {
             return errorMessage
-        } else if (validationError) {
+        } else if (
+            validationError &&
+            !validationError.validValue &&
+            (validationError.required ||
+                valueIsNotEmpty(validationError.item.value))
+        ) {
             return validationError.message
         } else {
             return ''

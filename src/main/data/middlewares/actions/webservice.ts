@@ -22,6 +22,7 @@ import {
 import {
     save,
     selectEngineMode,
+    selectTtsConfig,
     setPipelineProperties,
 } from 'shared/data/slices/settings'
 import { getPipelineInstance } from '../../instance'
@@ -183,16 +184,21 @@ function syncAdminProperties(
     }
 }
 
-function refreshTtsVoices(
+export function refreshTtsVoices(
     webservice: Webservice,
     dispatch,
     getState: GetStateFunction
 ) {
-    pipelineAPI
-        .fetchTtsVoices(getState().settings.ttsConfig)(webservice)
-        .then((voices) => dispatch(setTtsVoices(voices)))
+    const ttsConfig = selectTtsConfig(getState())
+    return pipelineAPI
+        .fetchTtsVoices(ttsConfig)(webservice)
+        .then((voices) => {
+            dispatch(setTtsVoices(voices))
+            return voices
+        })
         .catch((e) => {
-            error('useWebservice', 'Could not fetch TTS voices', e)
+            error('refreshTtsVoices', 'Could not fetch TTS voices', e)
+            return null
         })
 }
 

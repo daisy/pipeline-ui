@@ -2,6 +2,9 @@ import { ipcMain } from 'electron'
 import { IPC } from 'shared/constants'
 import { Alive, Webservice } from 'shared/types'
 import { pipelineAPI } from 'main/data/apis/pipeline'
+import { store } from 'main/data/store'
+import { selectWebservice, selectTtsVoices } from 'shared/data/slices/pipeline'
+import { refreshTtsVoices } from 'main/data/middlewares/actions/webservice'
 
 export type PipelineConnectionTestResult = {
     alive: Alive
@@ -80,6 +83,49 @@ export function setupPipelineConnectionEvents() {
                     contentType: preview.contentType ?? 'audio/wav',
                 }
             } catch (err) {
+                const state = store.getState()
+                const webservice = selectWebservice(state)
+                if (webservice) {
+                    try {
+                        const rawUrl = previewUrl.split('?')[0]
+                        const query = previewUrl.includes('?')
+                            ? previewUrl.slice(previewUrl.indexOf('?'))
+                            : ''
+                        const currentVoices = selectTtsVoices(state)
+                        const matchingVoice = currentVoices.find(
+                            (v) => v.preview?.split('?')[0] === rawUrl
+                        )
+                        const freshVoices = await refreshTtsVoices(
+                            webservice,
+                            store.dispatch,
+                            store.getState
+                        )
+                        if (freshVoices && freshVoices.length > 0) {
+                            const newVoice = matchingVoice
+                                ? freshVoices.find(
+                                      (v) =>
+                                          v.engine === matchingVoice.engine &&
+                                          v.name === matchingVoice.name
+                                  )
+                                : freshVoices.find(
+                                      (v) => v.preview?.split('?')[0] === rawUrl
+                                  )
+                            if (newVoice?.preview) {
+                                const retryUrl = newVoice.preview + query
+                                const retryPreview =
+                                    await pipelineAPI.fetchBinary(retryUrl)
+                                return {
+                                    ok: true,
+                                    audio: retryPreview.arrayBuffer,
+                                    contentType:
+                                        retryPreview.contentType ?? 'audio/wav',
+                                }
+                            }
+                        }
+                    } catch {
+                        // ignore retry failure and return original error
+                    }
+                }
                 const message = err instanceof Error ? err.message : String(err)
                 return {
                     ok: false,

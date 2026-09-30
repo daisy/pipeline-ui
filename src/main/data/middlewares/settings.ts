@@ -1,6 +1,6 @@
 import { PayloadAction } from '@reduxjs/toolkit'
 import { nativeTheme } from 'electron'
-import { info } from 'electron-log'
+import { info, error } from 'electron-log'
 import { writeFile, writeFileSync } from 'fs'
 import {
     save,
@@ -18,6 +18,7 @@ import {
 } from 'shared/data/slices/pipeline'
 import { settingsFile } from '../settings'
 import { pathToFileURL } from 'url'
+import { refreshTtsVoices } from './actions/webservice'
 
 function startCheckingUpdates(dispatch) {
     return setInterval(() => {
@@ -69,17 +70,48 @@ export function settingsMiddleware({ getState, dispatch }) {
                     writeFile(
                         new URL(settings.ttsConfig.xmlFilepath),
                         ttsConfigToXml(settings.ttsConfig),
-                        () => {
-                            //console.log("wrote file, setting engine property")
+                        (err) => {
+                            if (err) {
+                                error(
+                                    'settingsMiddleware',
+                                    'Error writing TTS config XML file',
+                                    err
+                                )
+                            }
                             const webservice = selectWebservice(getState())
                             let ttsConfig = selectTtsConfig(getState())
-                            if (
-                                webservice &&
-                                selectCanUseAdminEndpoints(getState())
-                            ) {
-                                pipelineAPI.setTtsConfigProperty(ttsConfig)(
-                                    webservice
-                                )
+                            if (webservice) {
+                                if (selectCanUseAdminEndpoints(getState())) {
+                                    pipelineAPI
+                                        .setTtsConfigProperty(ttsConfig)(
+                                            webservice
+                                        )
+                                        .then(() => {
+                                            refreshTtsVoices(
+                                                webservice,
+                                                dispatch,
+                                                getState
+                                            )
+                                        })
+                                        .catch((propertyErr) => {
+                                            error(
+                                                'settingsMiddleware',
+                                                'Could not set TTS config property',
+                                                propertyErr
+                                            )
+                                            refreshTtsVoices(
+                                                webservice,
+                                                dispatch,
+                                                getState
+                                            )
+                                        })
+                                } else {
+                                    refreshTtsVoices(
+                                        webservice,
+                                        dispatch,
+                                        getState
+                                    )
+                                }
                             }
                         }
                     )

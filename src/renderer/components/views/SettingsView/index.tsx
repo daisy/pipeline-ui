@@ -126,16 +126,15 @@ export function SettingsView(
         App.store.dispatch(save())
     }
     const onTtsVoicesDefaultsChange = (voices) => {
+        const preferred = newSettings.ttsConfig.preferredVoices
         // make sure the default voices are also preferred voices
         let tmpVoices = [...voices]
         tmpVoices = tmpVoices.filter((vx) =>
-            settings.ttsConfig.preferredVoices.find(
-                (v) => v.engine === vx.engine && v.name === vx.name
-            )
+            preferred.find((v) => v.engine === vx.engine && v.name === vx.name)
         )
 
         const newConfig = {
-            preferredVoices: settings.ttsConfig.preferredVoices.map(savedVoice),
+            preferredVoices: preferred.map(savedVoice),
             defaultVoices: tmpVoices.map(savedVoice),
             ttsEngineProperties: [...settings.ttsConfig.ttsEngineProperties],
             xmlFilepath: newSettings.ttsConfig.xmlFilepath,
@@ -151,7 +150,7 @@ export function SettingsView(
         // make sure the default voices are also preferred voices
         let tmpVoices = [...defaultVoices]
         tmpVoices = tmpVoices.filter((vx) =>
-            settings.ttsConfig.preferredVoices.find(
+            preferredVoices.find(
                 (v) => v.engine === vx.engine && v.name === vx.name
             )
         )

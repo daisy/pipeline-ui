@@ -62,9 +62,14 @@ export function BrowseVoices({
         setVoiceTableThresholdInput(String(normalizedVoiceTableThreshold))
     }, [normalizedVoiceTableThreshold])
 
+    useEffect(() => {
+        setPreferredVoices([...userPreferredVoices])
+    }, [userPreferredVoices])
+
     let languageNames = new Intl.DisplayNames(['en'], { type: 'language' })
 
     let addToPreferredVoices = (voice: TtsVoice) => {
+        stopPreview()
         let tmpVoices = [...preferredVoices, voice]
         setPreferredVoices(tmpVoices)
         onChangePreferredVoices(tmpVoices)

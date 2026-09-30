@@ -41,7 +41,16 @@ export function PreferredVoices({
         setUniqueLanguages(uniqueLangs)
     }, [preferredVoices])
 
+    useEffect(() => {
+        setPreferredVoices([...userPreferredVoices])
+    }, [userPreferredVoices])
+
+    useEffect(() => {
+        setDefaultVoices([...userDefaultVoices])
+    }, [userDefaultVoices])
+
     let removeFromPreferredVoices = (voice: TtsVoice) => {
+        clearPreviewAudio()
         let tmpVoices = [...preferredVoices]
         let idx = tmpVoices.findIndex(
             (v) => v.engine === voice.engine && v.name === voice.name
@@ -61,6 +70,7 @@ export function PreferredVoices({
     }
 
     let selectDefault = (e, voice) => {
+        clearPreviewAudio()
         let tmpVoices = defaultVoices ? [...defaultVoices] : []
         let oldDefaultIdx =
             tmpVoices?.findIndex(
@@ -74,6 +84,7 @@ export function PreferredVoices({
         onChangeDefaultVoices(tmpVoices)
     }
     let clearDefaultVoice = (langCode, notify = true) => {
+        clearPreviewAudio()
         let tmpVoices = defaultVoices ? [...defaultVoices] : []
         let oldDefaultIdx = tmpVoices.findIndex(
             (vx) => getLang(vx.lang) == langCode

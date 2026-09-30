@@ -2,24 +2,101 @@ main.about {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 1rem;
+    box-sizing: border-box;
     height: 100%;
-    margin: 2rem;
+    margin: 0;
+    padding: 0.75rem 1.5rem;
+    gap: 0.5rem;
+    overflow-y: auto;
+    overflow-x: hidden;
 
+    h1 {
+        font-size: var(--fontsize-larger);
+        line-height: 1.2;
+        margin: 0;
+    }
+
+    img {
+        width: 64px;
+        height: 64px;
+        object-fit: contain;
+    }
+
+    a {
+        font-size: var(--fontsize);
+        line-height: 1.3;
+        text-align: center;
+    }
+
+    .versions,
     p.versions {
         display: flex;
         flex-direction: row;
-        margin-bottom: 1rem;
+        align-items: center;
+        justify-content: center;
+        gap: 0.75rem;
+        margin: 0;
+        padding: 0.4rem 0.75rem;
         background-color: var(--bg-off);
+        border-radius: var(--br);
 
         ul {
             list-style-type: none;
+            margin: 0;
             padding: 0;
+            line-height: 1.4;
+        }
+
+        li {
+            margin: 0;
+        }
+
+        li + li {
+            margin-top: 0.2rem;
+        }
+
+        small {
+            display: inline-block;
+            font-size: var(--fontsize-smaller);
+            line-height: 1.3;
         }
 
         button {
             height: min-content;
             align-self: center;
+            flex-shrink: 0;
+            padding: 4px;
+            margin: 0;
+        }
+    }
+
+    .actions {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.35rem;
+        margin: 0;
+        text-align: center;
+
+        .updateMessage {
+            margin: 0;
+            font-size: var(--fontsize-smaller);
+            line-height: 1.3;
+        }
+
+        progress {
+            width: 100%;
+            max-width: 250px;
+            height: 12px;
+        }
+
+        div {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
         }
     }
 }
+

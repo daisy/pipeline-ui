@@ -95,9 +95,7 @@ export function AboutView({ title }) {
             ? `log level: ${settings.logLevel}`
             : null,
         BUILD_ENABLE_OCR ? 'with OCR support' : null,
-        BUILD_ENABLE_EXTERNAL_ENGINE
-            ? 'with external engine support'
-            : null,
+        BUILD_ENABLE_EXTERNAL_ENGINE ? 'with external engine support' : null,
     ].filter(Boolean)
     document.title = title
     let closeAboutBox = () => {
@@ -153,12 +151,11 @@ export function AboutView({ title }) {
             >
                 Visit the DAISY Pipeline homepage
             </a>
-            <p className="versions">
+            <div className="versions">
                 <ul>
                     <li>
                         {versionLabel}: {version}
-                        {buildDetails ||
-                        buildOptionDetails.length > 0 ? (
+                        {buildDetails || buildOptionDetails.length > 0 ? (
                             <br />
                         ) : null}
                         {buildDetails && (
@@ -166,9 +163,7 @@ export function AboutView({ title }) {
                                 <small>
                                     <em>{buildDetails}</em>
                                 </small>
-                                {buildOptionDetails.length > 0 ? (
-                                    <br />
-                                ) : null}
+                                {buildOptionDetails.length > 0 ? <br /> : null}
                             </>
                         )}
                         {buildOptionDetails.length > 0 && (
@@ -201,7 +196,7 @@ export function AboutView({ title }) {
                 >
                     <Copy width="30" height="30" />
                 </button>
-            </p>
+            </div>
             <div className="actions">
                 {update.updateMessage && (
                     <p className="updateMessage">

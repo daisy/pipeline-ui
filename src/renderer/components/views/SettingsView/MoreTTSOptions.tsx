@@ -390,6 +390,7 @@ export function MoreTTSOptions({
                                 onBlur={commitTimeoutTolerance}
                                 onKeyDown={(e) => {
                                     if (e.key === 'Enter') {
+                                        e.preventDefault()
                                         commitTimeoutTolerance()
                                     }
                                 }}

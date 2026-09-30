@@ -30,6 +30,7 @@
   ],
   "license": "MIT",
   "scripts": {
+    "typecheck": "tsc --noEmit",
     "prebuild": "yarn r predev",
     "build": "cross-env NODE_ENV=production electron-vite build",
     "build:ci": "cross-env NODE_ENV=production electron-vite build",

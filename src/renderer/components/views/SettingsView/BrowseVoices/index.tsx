@@ -553,6 +553,11 @@ export function BrowseVoices({
                             type="search"
                             value={nameSearch}
                             onChange={(e) => selectNameSearch(e.target.value)}
+                            onKeyDown={(e) => {
+                                if (e.key === 'Enter') {
+                                    e.preventDefault()
+                                }
+                            }}
                         />
                         <button
                             type="button"
@@ -583,6 +588,11 @@ export function BrowseVoices({
                     type="text"
                     value={customPreviewText}
                     onChange={(e) => setCustomPreviewText(e.target.value)}
+                    onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                            e.preventDefault()
+                        }
+                    }}
                 />
             </div>
             <div className="voice-count-row">
@@ -608,6 +618,7 @@ export function BrowseVoices({
                             onBlur={commitVoiceTableThreshold}
                             onKeyDown={(e) => {
                                 if (e.key === 'Enter') {
+                                    e.preventDefault()
                                     commitVoiceTableThreshold()
                                 }
                             }}

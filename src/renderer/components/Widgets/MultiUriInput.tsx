@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { FileInput, FileInputProps } from './FileInput'
 import { FileList } from './FileList'
 import { FileAsType } from './File'
@@ -7,6 +7,9 @@ interface MultiFileInputProps extends FileInputProps {
     initialValue?: string[]
     required?: boolean
 }
+
+let toList = (value): string[] =>
+    Array.isArray(value) ? value : value ? [value] : []
 
 // a list of files with a browse button
 const MultiUriInput: React.FC<MultiFileInputProps> = ({
@@ -20,14 +23,16 @@ const MultiUriInput: React.FC<MultiFileInputProps> = ({
     enabled = true,
     required = false,
 }) => {
-    const [files, setFiles] = useState<string[]>(
-        Array.isArray(initialValue)
-            ? initialValue
-            : initialValue
-              ? [initialValue]
-              : []
-    )
+    const [files, setFiles] = useState<string[]>(toList(initialValue))
     const [text, setText] = useState<string>('')
+
+    // follow changes made outside this field, e.g. the "default" and
+    // "last-used" buttons. Compare by content: the form passes a new array
+    // on every render.
+    const initialKey = JSON.stringify(toList(initialValue))
+    useEffect(() => {
+        setFiles(toList(initialValue))
+    }, [initialKey])
 
     const addFiles = (newFiles: string[]) => {
         // make list unique

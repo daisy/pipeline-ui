@@ -1,5 +1,5 @@
 // a browse button with a non-editable text field showing the selected file
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { FileInput, FileInputProps } from './FileInput'
 import { getArr0 } from 'renderer/utils'
 import { File, FileAsType } from './File'
@@ -16,7 +16,13 @@ const SingleFileInput: React.FC<FileInputProps> = ({
     enabled = true,
     required = false,
 }) => {
-    const [file, setFile] = useState<string>(getArr0(initialValue))
+    const [file, setFile] = useState<string>(getArr0(initialValue) ?? '')
+    // follow changes made outside this field, e.g. the "default" and
+    // "last-used" buttons
+    const initialFile = getArr0(initialValue) ?? ''
+    useEffect(() => {
+        setFile(initialFile)
+    }, [initialFile])
     let isValid = () => required && file && file.trim() != ''
     // debug("SingleFileInput initialValue", initialValue)
     let getLabel = () => {

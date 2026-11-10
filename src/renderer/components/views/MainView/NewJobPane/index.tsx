@@ -17,6 +17,9 @@ import { externalLinkClick, ID } from 'renderer/utils'
 
 const { App } = window
 
+// how many of the most-used scripts to list first (#433)
+const MAX_FREQUENT_SCRIPTS = 5
+
 type SeededFile = {
     filepath: string
     filetype: Filetype
@@ -136,24 +139,21 @@ export function NewJobPane({ job }: { job?: Job }) {
         settings.sortScriptsByFrequency &&
         settings.scriptFrequency.length > 0
     ) {
-        settings.scriptFrequency.map((sf) => {
-            let idx = scriptsInOrder.findIndex((s) => s.id == sf.scriptId)
-            frequentScripts.push(scriptsInOrder[idx])
-            scriptsInOrder.splice(idx, 1)
-        })
-        frequentScripts.sort((a, b) => {
-            let freqA = settings.scriptFrequency.find(
-                (sf) => sf.scriptId == a.id
-            ).count
-            let freqB = settings.scriptFrequency.find(
-                (sf) => sf.scriptId == b.id
-            ).count
-
-            if (freqA == freqB) {
-                return a.nicename > b.nicename ? 1 : -1
-            }
-            return freqA > freqB ? -1 : 1
-        })
+        // the most-used scripts, most used first, ties alphabetical.
+        // Skip usage entries for scripts that aren't listed any more.
+        const countFor = (script: Script) =>
+            settings.scriptFrequency.find((sf) => sf.scriptId == script.id)
+                ?.count ?? 0
+        frequentScripts = scriptsInOrder
+            .filter((s) =>
+                settings.scriptFrequency.some((sf) => sf.scriptId == s.id)
+            )
+            .sort((a, b) => countFor(b) - countFor(a))
+            .slice(0, MAX_FREQUENT_SCRIPTS)
+        // the others stay in the alphabetical list
+        scriptsInOrder = scriptsInOrder.filter(
+            (s) => !frequentScripts.includes(s)
+        )
     }
 
     // top level script selection

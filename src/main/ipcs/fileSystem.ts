@@ -197,6 +197,15 @@ function setupFileSystemEvents() {
     })
     ipcMain.handle(IPC_EVENT_pathToFileURL, (event, payload) => {
         try {
+            // an empty value means "no file"; pathToFileURL('') would
+            // resolve it to the current working directory
+            if (
+                payload === null ||
+                payload === undefined ||
+                (typeof payload === 'string' && payload.trim() === '')
+            ) {
+                return ''
+            }
             if (isURL(payload)) {
                 return payload
             }

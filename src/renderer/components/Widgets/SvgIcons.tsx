@@ -206,7 +206,7 @@ export function JobStatusIcon(status: JobStatus, { width, height }) {
 export function TTSEngineStatusIcon(status: string, { width, height }) {
     if (status == 'available') {
         return Success({ width, height })
-    } else if (status == 'disabled') {
+    } else if (status == 'disabled' || status == 'error') {
         return Failed({ width, height })
     } else {
         return <></>

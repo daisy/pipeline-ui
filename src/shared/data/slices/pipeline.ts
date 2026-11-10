@@ -21,6 +21,7 @@ import {
     TtsVoice,
     EngineProperty,
     TtsEngineState,
+    OcrServiceState,
     PipelineClientCapability,
 } from 'shared/types'
 import { RootState } from 'shared/types/store'
@@ -45,6 +46,7 @@ const initialState = {
     clientCapability: unknownClientCapability,
     properties: {},
     ttsEnginesStates: {},
+    ocrServicesStates: {},
 } as PipelineState
 
 export const pipeline = createSlice({
@@ -379,6 +381,21 @@ export const pipeline = createSlice({
                 state.ttsEnginesStates
             )
         },
+        // merge the given states into the current ones, per service
+        setOcrServicesState: (
+            state: PipelineState,
+            param: PayloadAction<{ [serviceKey: string]: OcrServiceState }>
+        ) => {
+            state.ocrServicesStates = {
+                ...(state.ocrServicesStates ?? {}),
+            }
+            for (const key of Object.keys(param.payload)) {
+                state.ocrServicesStates[key] = {
+                    ...(state.ocrServicesStates[key] ?? {}),
+                    ...param.payload[key],
+                }
+            }
+        },
         setAnnouncement: (
             state: PipelineState,
             param: PayloadAction<string>
@@ -417,6 +434,7 @@ export const {
     setTtsVoices,
     setProperties,
     setTtsEngineState,
+    setOcrServicesState,
     requestStylesheetParameters,
     setAnnouncement,
 } = pipeline.actions

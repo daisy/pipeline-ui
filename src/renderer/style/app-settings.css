@@ -388,7 +388,7 @@
             &.available svg {
                 fill: var(--ok);
             }
-            &.disabled svg {
+            &.disabled svg, &.error svg {
                 fill: var(--error);
             }
         }

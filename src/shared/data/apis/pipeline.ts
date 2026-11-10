@@ -30,6 +30,7 @@ import {
     ttsConfigPropertyToXml,
 } from 'shared/parser/pipelineXmlConverter/propertyToXml'
 import { ttsEnginesToJson } from 'shared/parser/pipelineXmlConverter/ttsEnginesToJson'
+import { ocrServicesToJson } from 'shared/parser/pipelineXmlConverter/ocrServicesToJson'
 import { parametersXmlToJson } from 'shared/parser/pipelineXmlConverter/parametersXmlToJson'
 import { jobToStylesheetParametersXml } from 'shared/parser/pipelineXmlConverter/jobToStylesheetParametersXml'
 
@@ -336,6 +337,15 @@ export class PipelineAPI {
         return this.createPipelineFetchFunction(
             (ws) => `${baseurl(ws)}/tts-engines`,
             (text) => ttsEnginesToJson(text)
+        )
+    }
+    // OCR services status, e.g. whether the Mistral API key works
+    // (https://github.com/daisy/pipeline-ui/issues/386).
+    // Resolves to null if the engine doesn't have this endpoint.
+    fetchOcrServicesState() {
+        return this.createPipelineFetchFunction(
+            (ws) => `${baseurl(ws)}/ocr/services`,
+            (text) => ocrServicesToJson(text)
         )
     }
     // New /stylesheet-parameters endpoint : https://github.com/daisy/pipeline-ui/issues/198

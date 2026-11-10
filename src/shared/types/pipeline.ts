@@ -58,9 +58,23 @@ export type PipelineState = {
     clientCapability: PipelineClientCapability
     properties?: { [key: string]: EngineProperty }
     ttsEnginesStates?: { [key: string]: TtsEngineState }
+    // OCR services by name (e.g. 'mistral'), from the /ocr/services endpoint
+    ocrServicesStates?: { [key: string]: OcrServiceState }
     announcement: string
     // messages: Array<string>
     // errors: Array<string>
+}
+
+// Display-ready state of an OCR service (see ocrServicesToJson)
+export type OcrServiceState = {
+    status?:
+        | 'available' // connected
+        | 'disconnected' // no API key, or turned off by the user
+        | 'error' // the engine could not use the service
+        | 'connecting'
+        | 'disconnecting'
+    message?: string // first line is the short message
+    name?: string // display name, e.g. "Mistral OCR"
 }
 
 export enum PipelineType {

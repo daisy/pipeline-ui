@@ -9,9 +9,15 @@ import {
     setScripts,
     setTtsEngineState,
     setTtsVoices,
+    setOcrServicesState,
 } from 'shared/data/slices/pipeline'
 import { selectTtsConfig } from 'shared/data/slices/settings'
-import { EngineProperty, TtsEngineState, TtsVoice } from 'shared/types'
+import {
+    EngineProperty,
+    OcrServiceState,
+    TtsEngineState,
+    TtsVoice,
+} from 'shared/types'
 import { GetStateFunction } from 'shared/types/store'
 
 export function setProperties(
@@ -240,12 +246,20 @@ export function setProperties(
             }
         })
         .then(async () => {
-            if (
-                action.payload.sendToAPI &&
+            const hasOcrProperties =
                 newProperties.find((np) =>
                     np.name.startsWith('org.daisy.pipeline.ocr.')
-                )
+                ) !== undefined
+            // Refresh the OCR services status after the user changes OCR
+            // properties, and once at startup (sendToAPI: false is the initial
+            // sync; the engine got the properties at launch)
+            if (
+                BUILD_ENABLE_OCR &&
+                (hasOcrProperties || !action.payload.sendToAPI)
             ) {
+                await refreshOcrServicesStates(dispatch, getState, webservice)
+            }
+            if (action.payload.sendToAPI && hasOcrProperties) {
                 const currentScripts = selectScripts(getState())
                 const currentScriptIds = new Set(
                     currentScripts.map((s) => s.id)
@@ -266,9 +280,15 @@ export function setProperties(
                                 pipelineAPI.fetchScriptDetails(s)()
                             )
                         )
+                        // follow the engine's list both ways: drop scripts it
+                        // no longer lists (e.g. an OCR script after disconnecting)
+                        // and keep the details already loaded for the others
+                        const listedIds = new Set(scripts.map((s) => s.id))
                         dispatch(
                             setScripts([
-                                ...selectScripts(getState()),
+                                ...selectScripts(getState()).filter((s) =>
+                                    listedIds.has(s.id)
+                                ),
                                 ...newDetailed,
                             ])
                         )
@@ -298,4 +318,40 @@ export function setProperties(
                 }
             }
         })
+}
+
+/**
+ * Ask the engine whether each OCR service works with the current properties
+ * (it checks the API key with the service) and store the result.
+ */
+async function refreshOcrServicesStates(
+    dispatch,
+    getState: GetStateFunction,
+    webservice
+) {
+    let states: { [key: string]: OcrServiceState } | null = null
+    try {
+        states = await pipelineAPI.fetchOcrServicesState()(webservice)
+    } catch (e) {
+        states = null
+    }
+    if (states) {
+        dispatch(setOcrServicesState(states))
+        return
+    }
+    // The engine couldn't be asked (request failed, or an engine without the
+    // /ocr/services endpoint): don't leave services stuck on "Connecting...".
+    const current = getState().pipeline.ocrServicesStates ?? {}
+    const unsettled: { [key: string]: OcrServiceState } = {}
+    for (const key of Object.keys(current)) {
+        if (['connecting', 'disconnecting'].includes(current[key].status)) {
+            unsettled[key] = {
+                status: 'error',
+                message: 'Could not check the connection status',
+            }
+        }
+    }
+    if (Object.keys(unsettled).length > 0) {
+        dispatch(setOcrServicesState(unsettled))
+    }
 }

@@ -92,8 +92,13 @@ export function requestStylesheetParameters(
             return Promise.all(tempDatatypes)
         })
         .then((tempDatatypes) => {
-            let allDatatypes = getState().pipeline.datatypes
-            allDatatypes = allDatatypes.concat(tempDatatypes)
+            // replace datatypes with the same id instead of adding duplicates
+            // each time the parameters are fetched
+            const fetched = tempDatatypes.filter((dt) => dt?.id)
+            const fetchedIds = new Set(fetched.map((dt) => dt.id))
+            const allDatatypes = getState()
+                .pipeline.datatypes.filter((dt) => !fetchedIds.has(dt.id))
+                .concat(fetched)
             dispatch(setDatatypes(allDatatypes))
         })
         .catch((e) => {

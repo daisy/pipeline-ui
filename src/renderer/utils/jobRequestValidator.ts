@@ -95,7 +95,14 @@ export async function validateJobRequestAsync(
 async function validateAsync(value, type, App, datatypes) {
     let isValid = false
     let message = ''
-    if (type == 'anyFileURI') {
+    if (
+        (type == 'anyFileURI' || type == 'anyDirURI') &&
+        !valueIsNotEmpty(value)
+    ) {
+        // empty (and required, or we wouldn't be here): the file widgets
+        // already say "File required" / "At least one item is required"
+        isValid = false
+    } else if (type == 'anyFileURI') {
         if (Array.isArray(value)) {
             if (value.length == 0) isValid = false
             else {
@@ -139,8 +146,8 @@ function validateSync(value, type, datatypes) {
     let isValid = false
     let message = ''
     if (type == 'anyFileURI' || type == 'anyDirURI') {
+        // no message: the file widgets already say a value is required
         isValid = valueIsNotEmpty(value)
-        if (!isValid) message = 'Value is empty.'
     } else {
         let retval = validate(value, type, datatypes)
         isValid = retval.valid
@@ -172,17 +179,15 @@ function validate(value, type, datatypes) {
     } else if (
         ['xsd:integer', 'xs:integer', 'integer', 'number'].includes(type)
     ) {
-        if (typeof value === 'string') {
-            try {
-                parseInt(value)
-                isValid = true
-            } catch (err) {
-                isValid = false
-            }
-        } else {
-            isValid = typeof value === 'number'
-        }
-        if (!isValid) message = `Number required (received ${typeof value})`
+        // parseInt never throws, so check the text itself
+        // ('number' is the app's own generic numeric type, so allow decimals)
+        isValid = matchesXsdType(
+            value,
+            type == 'number' ? 'decimal' : 'integer'
+        )
+        if (!isValid)
+            message =
+                type == 'number' ? 'Number required' : 'Whole number required'
     } else if (type == 'nonNegativeInteger') {
         // number fields hand over their value as a string
         isValid = matchesXsdType(value, 'nonNegativeInteger')

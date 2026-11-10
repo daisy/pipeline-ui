@@ -18,6 +18,7 @@ import { useState, useEffect } from 'react'
 import { JobStatusIcon } from '../../../Widgets/SvgIcons'
 import { CanDo } from 'shared/canDo'
 import { BATCH_COLOR_COUNT, getBatchColorIndex } from 'shared/batchColor'
+import { CopyCliButton } from './CopyCliButton'
 
 const { App } = window
 
@@ -145,6 +146,9 @@ export function JobDetails({ job }: { job: Job }) {
                     <h2>Job Configuration</h2>
                 </summary>
                 <Settings job={job} />
+                {job.script && job.jobRequest && (
+                    <CopyCliButton job={job} />
+                )}
             </details>
 
             <section className="job-results">

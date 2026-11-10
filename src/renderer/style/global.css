@@ -216,3 +216,75 @@ summary:hover {
     height:1px;
     overflow:hidden;
 }
+
+/* button with a main action and an arrow that opens a menu of alternatives */
+.split-button {
+    position: relative;
+    display: inline-flex;
+    align-items: stretch;
+
+    .split-button-main {
+        border-top-right-radius: 0;
+        border-bottom-right-radius: 0;
+        margin-right: 0;
+    }
+    .split-button-arrow {
+        display: flex;
+        align-items: center;
+        border-top-left-radius: 0;
+        border-bottom-left-radius: 0;
+        margin-left: 0;
+        border-left: 1px solid oklch(from var(--secondary-contrast) l c h / 0.25);
+        padding: 6px 8px;
+    }
+    .split-button-arrow[aria-expanded="true"] {
+        background-color: var(--primary);
+        color: var(--primary-contrast);
+    }
+
+    .split-button-menu {
+        position: absolute;
+        top: calc(100% + 4px);
+        left: 0;
+        z-index: 10;
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+        min-width: 100%;
+        padding: 4px;
+        background-color: var(--bg);
+        color: var(--fg);
+        border: var(--bw) solid var(--fg-off);
+        border-radius: var(--br);
+        box-shadow: 0 4px 12px oklch(0 0 0 / 0.2);
+
+        [role="menuitemradio"] {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 2px;
+            width: 100%;
+            text-align: left;
+            background-color: transparent;
+            color: var(--fg);
+            padding: 6px 8px 6px 28px;
+            position: relative;
+            margin: 0;
+
+            small {
+                white-space: normal;
+                color: inherit;
+            }
+            &:hover, &:focus {
+                background-color: var(--hover);
+                color: var(--hover-contrast);
+            }
+        }
+        [role="menuitemradio"][aria-checked="true"]::before {
+            content: '✓';
+            position: absolute;
+            left: 10px;
+            top: 6px;
+        }
+    }
+}

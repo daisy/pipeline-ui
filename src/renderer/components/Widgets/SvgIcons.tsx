@@ -115,6 +115,24 @@ export function Down({ width, height }) {
         </svg>
     )
 }
+export function ChevronDown({ width, height }) {
+    return (
+        <svg
+            role="presentation"
+            width={width}
+            height={height}
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+        >
+            <polyline points="6 9 12 15 18 9"></polyline>
+        </svg>
+    )
+}
+
 export function Failed({ width, height }) {
     return (
         <svg

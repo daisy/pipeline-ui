@@ -5,6 +5,7 @@ import { store } from './data/store'
 import { MainWindow } from './windows'
 import { showMessageBoxYesNo } from './ipcs/messageBox'
 import { IPC } from 'shared/constants'
+import { jobRequestIsValid } from 'shared/canDo'
 import {
     save,
     selectEditOnNewTab,
@@ -138,10 +139,7 @@ function getMenuSignature() {
             jobRequestName: job.jobRequest?.nicename,
             jobDataName: job.jobData?.nicename,
             hasJobRequest: Boolean(job.jobRequest),
-            requiredInvalid:
-                job.jobRequest?.validation?.some(
-                    (v) => v.required && !v.validValue
-                ) ?? false,
+            jobRequestValid: jobRequestIsValid(job.jobRequest),
             is2StepsJob: job.is2StepsJob,
             stylesheetParametersPending:
                 job.is2StepsJob && job.stylesheetParameters == null,

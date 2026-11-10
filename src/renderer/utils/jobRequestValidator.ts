@@ -20,6 +20,16 @@ export function validateJobRequestSync(
     let validationResults = []
     let validateField = (item: NameValue, field: ScriptItemBase) => {
         let required = field.required
+        // an optional field left empty is fine, don't check its value
+        if (!required && !valueIsNotEmpty(item.value)) {
+            validationResults.push({
+                item,
+                validValue: true,
+                message: '',
+                required,
+            })
+            return
+        }
         let valueValidation = validateSync(item.value, field.type, pipeline)
         validationResults.push({
             item,
@@ -48,6 +58,16 @@ export async function validateJobRequestAsync(
     let validationResults = []
     let validateField = async (item: NameValue, field: ScriptItemBase) => {
         let required = field.required
+        // an optional field left empty is fine, don't check whether it exists
+        if (!required && !valueIsNotEmpty(item.value)) {
+            validationResults.push({
+                item,
+                validValue: true,
+                message: '',
+                required,
+            })
+            return
+        }
         let valueValidation = await validateAsync(
             item.value,
             field.type,
@@ -99,7 +119,7 @@ async function validateAsync(value, type, App, datatypes) {
                     let retval = await App.isDirectory(v)
                     retvals.push(retval)
                 }
-                isValid = retvals.find((v) => false) == undefined
+                isValid = retvals.find((v) => v == false) == undefined
             }
         } else {
             isValid = await App.isDirectory(value)
@@ -164,14 +184,12 @@ function validate(value, type, datatypes) {
         }
         if (!isValid) message = `Number required (received ${typeof value})`
     } else if (type == 'nonNegativeInteger') {
-        isValid = typeof value === 'number' && value >= 0
-        if (!isValid && typeof value !== 'number')
-            message = `Non-negative number required (received ${typeof value})`
-        if (!isValid && value < 0)
-            message = 'Non-negative number required (received negative number)'
+        // number fields hand over their value as a string
+        isValid = matchesXsdType(value, 'nonNegativeInteger')
+        if (!isValid) message = 'Non-negative whole number required'
     } else if (['xsd:float', 'xsd:double', 'xsd:decimal'].includes(type)) {
-        isValid = typeof value === 'number'
-        if (!isValid) message = `Number required (received ${typeof value})`
+        isValid = matchesXsdType(value, 'decimal')
+        if (!isValid) message = 'Number required'
     } else if (type == 'anyURI') {
         isValid = true // TODO
     } else {
@@ -187,11 +205,36 @@ function validate(value, type, datatypes) {
     }
     return { valid: isValid, message }
 }
+// Check a value against a simple XML Schema type name (e.g. from a datatype's
+// <data type="..."/> choice). Types we don't know how to check are accepted;
+// the engine validates the job request too.
+function matchesXsdType(value, type: string) {
+    const str = `${value}`.trim()
+    switch (type?.replace(/^xsd?:/, '')) {
+        case 'integer':
+            return /^[+-]?\d+$/.test(str)
+        case 'nonNegativeInteger':
+            return /^\+?\d+$/.test(str)
+        case 'positiveInteger':
+            return /^\+?\d+$/.test(str) && /[1-9]/.test(str)
+        case 'decimal':
+        case 'float':
+        case 'double':
+            return str !== '' && !isNaN(Number(str))
+        case 'boolean':
+            return ['true', 'false', '1', '0'].includes(str.toLowerCase())
+        default:
+            return true
+    }
+}
+
 function validateCustom(value, datatype: Datatype) {
     if (!datatype) {
-        return false
+        // no definition for this datatype in the app, so nothing to check
+        // against; leave it to the engine instead of blocking the job
+        return true
     }
-    if (!value) {
+    if (!valueIsNotEmpty(value)) {
         return false
     }
     let isValid = false
@@ -215,7 +258,10 @@ function validateCustom(value, datatype: Datatype) {
                 isValid = false
             }
         } else if (dtChoice.hasOwnProperty('type')) {
-            // TODO what are the possible values for 'type' in this case?
+            // @ts-ignore
+            if (matchesXsdType(value, dtChoice.type)) {
+                isValid = true
+            }
         }
     })
 

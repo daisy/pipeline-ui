@@ -3,12 +3,7 @@ Fill out fields for a new job and submit it
 */
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useWindowStore } from 'renderer/store'
-import {
-    externalLinkClick,
-    findValue,
-    ID,
-    valueIsNotEmpty,
-} from 'renderer/utils/utils'
+import { externalLinkClick, findValue, ID } from 'renderer/utils/utils'
 import {
     requestStylesheetParameters,
     runBatchJobs,
@@ -16,6 +11,7 @@ import {
     updateJob,
 } from 'shared/data/slices/pipeline'
 import { Job, JobState, ScriptItemBase, ScriptOption } from 'shared/types'
+import { jobRequestIsValid } from 'shared/canDo'
 
 import { FormField } from '../../../Widgets/FormField'
 import {
@@ -39,10 +35,8 @@ export function ScriptForm({ job }: { job: Job }) {
     const [hasDownloadFolder, setHasDownloadFolder] = useState(
         settings.downloadFolder?.trim() != ''
     )
-    const [isValidJobRequest, setIsValidJobRequest] = useState(
-        job.jobRequest.validation.find((v) => v.required && !v.validValue) ==
-            undefined
-    )
+    // same rule as the Run menu item (CanDo.runJob)
+    const isValidJobRequest = jobRequestIsValid(job.jobRequest)
     const submitButtonRef = useRef(null)
 
     let required = getAllRequired(job.script)
@@ -200,13 +194,7 @@ export function ScriptForm({ job }: { job: Job }) {
             App,
             pipeline.datatypes
         )
-        let invalidItems = requestValidationResult.filter(
-            (v) =>
-                (v.required && !valueIsNotEmpty(v.item.value)) ||
-                (valueIsNotEmpty(v.item.value) && !v.validValue)
-        )
         modifiedJobRequest.validation = [...requestValidationResult]
-        setIsValidJobRequest(invalidItems.length == 0)
         App.store.dispatch(
             updateJob({
                 ...job,
@@ -355,12 +343,12 @@ export function ScriptForm({ job }: { job: Job }) {
 
     let relevantError = (name) => {
         let errorMessage = job.errors?.find((e) => e.fieldName === name)?.error
-        let validationError = job.jobRequest.validation.find(
+        let validationError = job.jobRequest.validation?.find(
             (v) => v.item.name == name
         )
         if (errorMessage) {
             return errorMessage
-        } else if (validationError) {
+        } else if (validationError && !validationError.validValue) {
             return validationError.message
         } else {
             return ''

@@ -69,9 +69,15 @@ export function valueIsNotEmpty(value) {
         return false
     }
     if (Array.isArray(value)) {
+        // an empty list, or a list with a blank entry, counts as empty
         return (
-            value.find((v) => typeof v == 'string' && v.trim() == '') ==
-            undefined
+            value.length > 0 &&
+            value.every(
+                (v) =>
+                    v !== null &&
+                    v !== undefined &&
+                    !(typeof v == 'string' && v.trim() == '')
+            )
         )
     }
     if (typeof value != 'string') {

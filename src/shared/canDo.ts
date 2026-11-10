@@ -4,7 +4,17 @@ import {
     JobStatus,
     PipelineState,
     PipelineStatus,
+    JobRequest,
 } from './types'
+
+// Whether every field of a job request passed validation.
+// The validator marks empty optional fields as valid, so this covers both
+// "required field is empty" and "a filled-in field has a bad value".
+// Used for the Run button, the Run menu item, and the menu rebuild check
+// so they always agree.
+export function jobRequestIsValid(jobRequest: JobRequest | null | undefined) {
+    return (jobRequest?.validation ?? []).every((v) => v.validValue)
+}
 
 // determine if actions should be enabled or not
 
@@ -17,9 +27,7 @@ export const CanDo = {
             job.state == JobState.NEW &&
             job.jobRequest != null &&
             downloadFolder != '' &&
-            job.jobRequest.validation.find(
-                (v) => v.required && !v.validValue
-            ) == undefined
+            jobRequestIsValid(job.jobRequest)
         )
     },
 

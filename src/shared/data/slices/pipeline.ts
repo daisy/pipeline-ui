@@ -175,11 +175,21 @@ export const pipeline = createSlice({
         editJob: (state: PipelineState, param: PayloadAction<Job>) => {
             // Create a new job to backup
             const temp = newJob(state)
-            state.jobs.push({
-                ...param.payload,
-                internalId: temp.internalId,
-                invisible: true,
-            })
+            // Put the backup (the original job, with its results or errors)
+            // just before the job being edited, so that with "edit job on
+            // new tab" the two tabs stay next to each other (#340)
+            const editedIndex = state.jobs.findIndex(
+                (job) => job.internalId == param.payload.internalId
+            )
+            state.jobs.splice(
+                editedIndex == -1 ? state.jobs.length : editedIndex,
+                0,
+                {
+                    ...param.payload,
+                    internalId: temp.internalId,
+                    invisible: true,
+                }
+            )
             state.internalJobCounter += 1
             state.jobs = state.jobs.map((job) => {
                 if (job.internalId == param.payload.internalId) {

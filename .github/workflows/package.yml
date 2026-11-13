@@ -33,6 +33,19 @@ jobs:
           distribution: adopt
           java-version: 8
 
+      # Trying maven 3.9 to get rid of an error
+      # We may be able to remove this step in the future
+      - name: Set up Maven 3.9
+        shell: bash
+        run: |
+          MAVEN_VERSION=3.9.11
+          cd "$RUNNER_TEMP"
+          curl -fsSL -o maven.tar.gz \
+            "https://archive.apache.org/dist/maven/maven-3/$MAVEN_VERSION/binaries/apache-maven-$MAVEN_VERSION-bin.tar.gz"
+          tar -xzf maven.tar.gz
+          echo "$RUNNER_TEMP/apache-maven-$MAVEN_VERSION/bin" >> "$GITHUB_PATH"
+          "$RUNNER_TEMP/apache-maven-$MAVEN_VERSION/bin/mvn" --version
+
       - name: Install GNU Make (macOS)
         if: runner.os == 'macOS'
         run: |
